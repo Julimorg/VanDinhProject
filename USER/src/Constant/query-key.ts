@@ -1,0 +1,25 @@
+
+
+export const QueryKeys = {
+SERVICE: 'service',
+DETAILSERVICE:'detailservice',
+LANGUAGE:'language',
+INVOICE:'invoice',
+USER: 'user',
+DELETESERVICE:'deletesrevice',
+EDITDISCOUNTSERVICE:'editdiscountservice',
+STATISTIC : 'statistic',
+SERVICEDISCOUNT:'servicediscount',
+CREATEDISCOUNTSERVICE:'creatediscountservice',
+GETDISCOUNTCODE:'getdiscountcode',
+GATE: "gate",
+GATE_BY_ID: "gateById",
+ACCEPT_NEW_GATE: "acceptNewGate",
+REFRESH_TOKEN: "refreshToken",
+PRODUCT_GATE: "productGate",
+GET_MOMO: "getMomo",
+RECEIPTER_STATISTIC: "receipterStatistic",
+RECEIPTER_STATISTIC_DETAIL: "receipterStatisticDetail",
+PERMISSION:'permissison',
+PERMISSIONBYID:'permissionbyid',
+}

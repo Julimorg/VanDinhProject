@@ -1,0 +1,20 @@
+{
+  "login": {
+    "title": "Đăng Nhập",
+    "description": "Vui lòng đăng nhập để bắt đầu ca làm việc của bạn",
+    "username": "Tên người dùng",
+    "password": "Mật khẩu",
+    "loginButton": "Đăng nhập",
+    "usernamePlaceholder": "Nhập tên người dùng",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "loginFailed": "Tên người dùng hoặc mật khẩu không đúng!",
+    "loginSuccess": "Đăng nhập thành công",
+    "needHelp": "Có vấn đề đăng nhập? Vui lòng liên hệ quản trị viên",
+    "copyright": "© 2025 Zentry - Hệ thống Quản lý Vé Thông minh"
+  },
+  "language": {
+    "others": "Ngôn ngữ khác",
+    "vi": "Việt Nam",
+    "en": "English"
+  }
+}

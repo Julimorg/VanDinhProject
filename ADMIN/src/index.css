@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.ant-menu-item-selected {
+  border-radius: 8px !important;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #printable,
+  #printable * {
+    visibility: visible !important;
+    color: #000 !important;
+    font-size: 16pt !important;
+    font-family: Arial, sans-serif !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  #printable table,
+  #printable th,
+  #printable td {
+    border: 1px solid #000 !important;
+    border-collapse: collapse !important;
+    padding: 8px !important;
+    font-weight: 700 !important;
+  }
+
+  header,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  #printable {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 20px;
+    background: #fff !important;
+  }
+
+  #printable .qr-wrapper img,
+  #printable .qr-wrapper canvas,
+  #printable .qr-wrapper svg {
+    width: 300px !important;
+    height: 300px !important;
+    max-width: none !important;
+    max-height: none !important;
+  }
+
+  @page {
+    size: A5 portrait;
+    margin: 10mm;
+  }
+}
+

@@ -1,0 +1,20 @@
+{
+  "login": {
+    "title": "Login",
+    "description": "Please log in to start your shift",
+    "username": "Username",
+    "password": "Password",
+    "loginButton": "Log in",
+    "usernamePlaceholder": "Enter username",
+    "passwordPlaceholder": "Enter password",
+    "loginFailed": "Incorrect username or password!",
+    "loginSuccess": "Login successful",
+    "needHelp": "Having trouble logging in? Contact admin",
+    "copyright": "© 2025 Zentry - Smart Ticket Management System"
+  },
+  "language": {
+    "others": "Others Language",
+    "vi": "Vietnamese",
+    "en": "English"
+  }
+}

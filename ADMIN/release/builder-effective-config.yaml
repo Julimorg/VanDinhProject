@@ -1,0 +1,18 @@
+directories:
+  output: release
+  buildResources: public
+appId: com.zentryman.app
+productName: Zentry Man
+files:
+  - filter:
+      - dist/**/*
+      - dist-electron/**/*
+      - node_modules/**/*
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: ./public/zentryIcon.ico
+asar: false
+electronVersion: 36.4.0

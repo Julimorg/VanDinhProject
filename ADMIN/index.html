@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="./public/zentry.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- ở thẻ meta này "CẦN THIẾT" để cấu hình Secuiry Policy cho cả Electron và Web  -->
+    <!-- Ở đây sẽ tùy cấu hình cho môi trường Production và môi trường Dev  -->
+   <!-- <meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://zen-api.stlsolution.com; connect-src 'self' http://localhost:5173 ws://localhost:5173 https://zen-api.stlsolution.com;"
+/> -->
+
+    <title>ZENTRY</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

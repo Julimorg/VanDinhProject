@@ -1,0 +1,10 @@
+# Ensure consistent line endings
+* text=auto
+
+# Force LF for all source files
+*.js text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.md text eol=lf
