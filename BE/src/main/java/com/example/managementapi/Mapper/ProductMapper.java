@@ -24,6 +24,9 @@ public interface ProductMapper {
     CreateProductRes toCreateProductResponse(Product product);
 
     //get list product
+    @Mapping(source = "supplier.supplierName", target = "supplierName")
+    @Mapping(source = "color.colorName", target = "colorName")
+    @Mapping(source = "category.categoryName", target = "categoryName")
     GetProductsRes toGetProductsResponses(Product products);
 
     //Req

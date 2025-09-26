@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -25,9 +26,9 @@ public class UpdateProductRes {
     private double discount;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal productPrice;
-
-    //
     private String supplierName;
     private String colorName;
     private String categoryName;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 }

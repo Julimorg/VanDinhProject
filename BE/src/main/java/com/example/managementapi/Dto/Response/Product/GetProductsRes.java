@@ -26,6 +26,9 @@ public class GetProductsRes {
     private double discount;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal productPrice;
+    private String supplierName;
+    private String colorName;
+    private String categoryName;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 }
