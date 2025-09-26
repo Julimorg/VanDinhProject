@@ -100,6 +100,7 @@ public class ProductService {
 
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
+        //Có thể dùng @Mapper để trả về supplierName, colorName, categoryName trong Mapper thay vì set trong service
         if(savedProduct.getSupplier() != null){
             response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }

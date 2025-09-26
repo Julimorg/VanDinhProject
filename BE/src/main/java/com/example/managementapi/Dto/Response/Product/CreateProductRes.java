@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -23,10 +24,8 @@ public class CreateProductRes {
     private int productQuantity;
     private double discount;
     private BigDecimal productPrice;
-
-    //
     private String supplierName;
     private String colorName;
     private String categoryName;
-
+    private LocalDateTime createAt;
 }
