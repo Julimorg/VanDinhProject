@@ -51,13 +51,13 @@ public class Product {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @ManyToOne
-    @JoinColumn(name = "supplier_id")
-    private Supplier suppliers;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id", nullable = false)
+    private Supplier supplier;
 
-    @ManyToOne
-    @JoinColumn(name = "color_id")
-    private Color colors;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "color_id", nullable = false)
+    private Color color;
 
     @ManyToOne
     @JoinColumn(name = "category_id")

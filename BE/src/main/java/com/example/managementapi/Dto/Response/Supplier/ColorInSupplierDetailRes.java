@@ -1,26 +1,24 @@
-package com.example.managementapi.Dto.Response.Color;
+package com.example.managementapi.Dto.Response.Supplier;
 
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateColorRes {
+public class ColorInSupplierDetailRes {
     private String colorId;
     private String colorName;
     private String colorCode;
     private String colorDescription;
-    private SupplierInColorDetailRes supplier;
     private String colorImg;
 
-
-    private LocalDateTime createAt;
-
 }
+

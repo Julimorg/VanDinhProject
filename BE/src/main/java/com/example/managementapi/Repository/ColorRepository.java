@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 //? JpaSpecificationExecutor -> support Query với SpecificationExecutor
 @Repository
 public interface ColorRepository extends JpaRepository<Color, String>, JpaSpecificationExecutor<Color> {
+
 }

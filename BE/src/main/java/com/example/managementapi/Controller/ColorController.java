@@ -30,12 +30,30 @@ public class ColorController {
 
     private final ColorService colorService;
 
-    @GetMapping("/get-color")
-    public ApiResponse<List<GetColorRes>> getColor(){
-        return ApiResponse.<List<GetColorRes>>builder()
+    @GetMapping("/search-color")
+    public ApiResponse<Page<GetColorRes>> searchColor(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "filter", required = false) String filter,
+            @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable){
+
+        return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(colorService.getColor())
+                .data(colorService.searchColor(keyword, filter, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+
+    @GetMapping("/get-color")
+    public ApiResponse<Page<GetColorRes>> getColor(
+            @RequestParam(required = false) String supplierName,
+            @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable
+    ){
+        return ApiResponse.<Page<GetColorRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(colorService.getColor(supplierName, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -52,20 +70,7 @@ public class ColorController {
 
     //? Định nghĩa Endpoint Có Body theo FormData
     @PostMapping(value = "/create-color", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<CreateColorRes> createColor(
-            //? Set up các Key Và Value cho FormData
-            @RequestPart("colorName") String colorName,
-            @RequestPart(value = "colorCode") String colorCode,
-            @RequestPart(value = "colorDescription") String colorDescription,
-            @RequestPart(value = "colorImg") MultipartFile colorImg) {
-
-        //? Điịnh nghĩa lại Object Dto CreateColorReq từ các Set up Key và Value
-        CreateColorReq request = CreateColorReq.builder()
-                .colorName(colorName)
-                .colorCode(colorCode)
-                .colorDescription(colorDescription)
-                .colorImg(colorImg)
-                .build();
+    public ApiResponse<CreateColorRes> createColor(@ModelAttribute CreateColorReq request) {
 
         return ApiResponse.<CreateColorRes>builder()
                 .status_code(HttpStatus.OK.value())
@@ -98,13 +103,6 @@ public class ColorController {
                 .build();
     }
 
-    @GetMapping("/search-color")
-    public Page<GetColorRes> searchColor(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "filter", required = false) String filter,
-            @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable){
-        return colorService.searchColor(keyword, filter, pageable);
-    }
 
     @DeleteMapping("/delete-color/{colorId}")
     public ApiResponse<String> deleteColor(@PathVariable String colorId) {

@@ -23,8 +23,7 @@ public class GetColorDetailRes {
     private String colorDescription;
     private String colorImg;
 
-    private List<GetSupplierRes> supplier;
-
+    private SupplierInColorDetailRes supplier;
 
     private LocalDateTime createAt;
     private LocalDateTime updateAt;

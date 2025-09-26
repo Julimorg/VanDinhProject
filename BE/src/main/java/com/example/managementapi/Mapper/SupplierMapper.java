@@ -28,7 +28,7 @@ public interface SupplierMapper {
     @Mapping(target = "colors", ignore = true)
     void toUpdateSupplierReq(@MappingTarget Supplier supplier, UpdateSupplierReq request);
 
-    @Mapping(target = "colorId", source = "colors")
+
     UpdateSupplierRes toUpdateSupplierRes(Supplier supplier);
 
     default List<String> mapColorsToIds(List<Color> colors) {
@@ -40,7 +40,7 @@ public interface SupplierMapper {
 
     GetSupplierRes toGetSuppliers(Supplier supplier);
 
-    GetSupplierDetailRes toGetSupplierDetailRes(Supplier supplier);
+    GetSupplierDetailRes  toGetSupplierDetailRes(Supplier supplier);
 
 
 }

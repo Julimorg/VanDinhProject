@@ -4,6 +4,7 @@ import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.User.ForgetPass.ChangePassword;
 import com.example.managementapi.Dto.Request.User.ForgetPass.VerifyOtp;
 import com.example.managementapi.Service.ForgetPassService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -42,8 +43,8 @@ public class ForgetPasswordController {
                 .build();
     }
 
-    @PostMapping("/change-password/{email}")
-    public ApiResponse<String> changePasswordHandler(@RequestBody ChangePassword changePassword,
+    @PatchMapping("/change-password/{email}")
+    public ApiResponse<String> changePasswordHandler(@RequestBody @Valid ChangePassword changePassword,
                                                      @PathVariable String email){
         forgetPassService.changePasswordHandler(changePassword, email);
 

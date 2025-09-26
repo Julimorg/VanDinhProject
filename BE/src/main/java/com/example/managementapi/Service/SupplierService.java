@@ -47,9 +47,9 @@ public class SupplierService {
     private ColorRepository colorRepository;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
-    public List<GetSupplierRes> getSuppliers(){
-        return supplierRepository.findAll().stream()
-                .map(supplier -> supplierMapper.toGetSuppliers(supplier)).toList();
+    public Page<GetSupplierRes> getSuppliers(Pageable pageable){
+        return supplierRepository.findAll(pageable)
+                .map(supplier -> supplierMapper.toGetSuppliers(supplier));
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")

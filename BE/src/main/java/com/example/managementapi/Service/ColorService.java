@@ -4,13 +4,12 @@ import com.cloudinary.Cloudinary;
 import com.example.managementapi.Dto.Request.Color.CreateColorReq;
 import com.example.managementapi.Dto.Request.Color.UpdateColorReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
-import com.example.managementapi.Dto.Response.Color.CreateColorRes;
-import com.example.managementapi.Dto.Response.Color.GetColorDetailRes;
-import com.example.managementapi.Dto.Response.Color.GetColorRes;
-import com.example.managementapi.Dto.Response.Color.UpdateColorRes;
+import com.example.managementapi.Dto.Response.Color.*;
 import com.example.managementapi.Entity.Color;
+import com.example.managementapi.Entity.Supplier;
 import com.example.managementapi.Mapper.ColorMapper;
 import com.example.managementapi.Repository.ColorRepository;
+import com.example.managementapi.Repository.SupplierRepository;
 import com.example.managementapi.Specification.ColorSpecification;
 import com.example.managementapi.Util.FileUpLoadUtil;
 import lombok.AllArgsConstructor;
@@ -21,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,27 +30,37 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class ColorService {
-    @Autowired
+
+    private final SupplierRepository supplierRepository;
+
     private final ColorRepository colorRepository;
 
-    @Autowired
     private final CloudinaryService cloudinaryService;
 
-    @Autowired
     private final ColorMapper colorMapper;
 
-    public List<GetColorRes> getColor(){
-        return colorRepository
-                .findAll()
-                .stream()
-                .map(color -> colorMapper.toGetColorRes(color))
-                .toList();
+    public Page<GetColorRes> searchColor(String keyword, String filter,  Pageable pageable){
+        Specification<Color> spec = ColorSpecification.searchByCriteria(keyword, filter);
+        Page<Color> colorPage = colorRepository.findAll(spec, pageable);
+        return colorPage.map(color -> colorMapper.toGetColorRes(color));
     }
+
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
+    public Page<GetColorRes> getColor(String supplierName,Pageable pageable){
+        Specification<Color> spec = ColorSpecification.filterBySupplier(supplierName);
+        return colorRepository
+                .findAll(spec, pageable)
+                .map(color -> colorMapper.toGetColorRes(color));
+
+    }
+
     public GetColorDetailRes getColorDetail(String colorId){
-        return colorMapper
-                .toGetColorDetailRes(colorRepository
-                        .findById(colorId)
-                        .orElseThrow(() -> new RuntimeException("Color not found!")));
+
+        Color color = colorRepository.findById(colorId)
+                .orElseThrow(() -> new RuntimeException("Color not found!"));
+
+        return colorMapper.toGetColorDetailRes(color);
     }
     public CreateColorRes createColor(CreateColorReq request){
 
@@ -76,6 +86,15 @@ public class ColorService {
         }
 
         Color color = colorMapper.toCreateColorReq(request);
+
+        if(request.getSupplierId().isEmpty())
+            throw new RuntimeException("Supplier cannot be empty");
+
+        Supplier supplier = supplierRepository
+                    .findById(request.getSupplierId())
+                    .orElseThrow(() -> new RuntimeException("Supplier not found!"));
+
+        color.setSupplier(supplier);
 
         //? gán url đã hứng vào field colorImg
         color.setColorImg(imageUrl);
@@ -112,12 +131,6 @@ public class ColorService {
 
         color = colorRepository.save(color);
         return colorMapper.toUpdateColorRes(color);
-    }
-
-    public Page<GetColorRes> searchColor(String keyword, String filter,  Pageable pageable){
-        Specification<Color> spec = ColorSpecification.searchByCriteria(keyword, filter);
-        Page<Color> colorPage = colorRepository.findAll(spec, pageable);
-        return colorPage.map(color -> colorMapper.toGetColorRes(color));
     }
 
     public void deleteColor(String colorId){

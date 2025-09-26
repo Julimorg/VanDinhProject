@@ -76,12 +76,12 @@ public class ProductService {
 
         if(request.getSupplierId() != null){
             Supplier supplier = supplierRepository.findById(request.getSupplierId()).orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_EXISTED));
-            product.setSuppliers(supplier);
+            product.setSupplier(supplier);
         }
 
         if(request.getColorId() != null){
             Color color = colorRepository.findById(request.getColorId()).orElseThrow(() -> new AppException(ErrorCode.COLOR_NOT_EXISTED));
-            product.setColors(color);
+            product.setColor(color);
         }
 
         if(request.getCategoryId() != null){
@@ -100,12 +100,12 @@ public class ProductService {
 
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
-        if(savedProduct.getSuppliers() != null){
-            response.setSupplierName(savedProduct.getSuppliers().getSupplierName());
+        if(savedProduct.getSupplier() != null){
+            response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
 
-        if(savedProduct.getColors() != null){
-            response.setColorName(savedProduct.getColors().getColorName());
+        if(savedProduct.getColor() != null){
+            response.setColorName(savedProduct.getColor().getColorName());
         }
 
         if(savedProduct.getCategory() != null){
@@ -134,12 +134,12 @@ public class ProductService {
 
         ProductRes response = productMapper.toProductResponse(product);
 
-        if (product.getSuppliers() != null) {
-            response.setSupplierName(product.getSuppliers().getSupplierName());
+        if (product.getSupplier() != null) {
+            response.setSupplierName(product.getSupplier().getSupplierName());
         }
 
-        if(product.getColors() != null){
-            response.setColorName(product.getColors().getColorName());
+        if(product.getColor() != null){
+            response.setColorName(product.getColor().getColorName());
         }
 
         if(product.getCategory() != null){
@@ -177,12 +177,12 @@ public class ProductService {
 
         UpdateProductRes response = productMapper.toUpdateProductRes(savedProduct);
 
-        if (savedProduct.getSuppliers() != null) {
-            response.setSupplierName(savedProduct.getSuppliers().getSupplierName());
+        if (savedProduct.getSupplier() != null) {
+            response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
 
-        if(savedProduct.getColors() != null){
-            response.setColorName(savedProduct.getColors().getColorName());
+        if(savedProduct.getColor() != null){
+            response.setColorName(savedProduct.getColor().getColorName());
         }
 
         if(savedProduct.getCategory() != null){

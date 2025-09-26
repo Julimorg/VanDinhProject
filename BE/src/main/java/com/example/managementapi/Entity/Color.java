@@ -31,10 +31,11 @@ public class Color {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @ManyToMany(mappedBy = "colors")
-    private List<Supplier> supplier;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id", nullable = false)
+    private Supplier supplier;
 
-    @OneToMany(mappedBy = "colors",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+
+    @OneToMany(mappedBy = "color", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Product> products;
-
 }

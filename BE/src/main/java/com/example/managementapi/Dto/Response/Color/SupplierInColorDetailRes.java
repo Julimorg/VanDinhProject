@@ -1,5 +1,6 @@
 package com.example.managementapi.Dto.Response.Color;
 
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierRes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,15 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateColorRes {
-    private String colorId;
-    private String colorName;
-    private String colorCode;
-    private String colorDescription;
-    private SupplierInColorDetailRes supplier;
-    private String colorImg;
-
-
-    private LocalDateTime createAt;
-
+public class SupplierInColorDetailRes {
+    private String supplierId;
+    private String supplierName;
 }

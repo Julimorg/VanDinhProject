@@ -20,7 +20,6 @@ public class UpdateSupplierRes {
     private String supplierPhone;
     private String supplierEmail;
     private String supplierImg;
-    private List<String> colorId;
 
     private LocalDateTime updateAt;
 }

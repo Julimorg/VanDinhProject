@@ -2,11 +2,9 @@ package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.Color.CreateColorReq;
 import com.example.managementapi.Dto.Request.Color.UpdateColorReq;
-import com.example.managementapi.Dto.Response.Color.CreateColorRes;
-import com.example.managementapi.Dto.Response.Color.GetColorDetailRes;
-import com.example.managementapi.Dto.Response.Color.GetColorRes;
-import com.example.managementapi.Dto.Response.Color.UpdateColorRes;
+import com.example.managementapi.Dto.Response.Color.*;
 import com.example.managementapi.Entity.Color;
+import com.example.managementapi.Entity.Supplier;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -26,6 +24,11 @@ public interface ColorMapper {
 
     GetColorRes toGetColorRes(Color color);
 
+
+    SupplierInColorDetailRes toSupplierInColorDetailRes(Supplier supplier);
+
+    @Mapping(source = "colorId", target = "colorId")
+    @Mapping(source = "colorName", target = "colorName")
     GetColorDetailRes toGetColorDetailRes(Color color);
 
 

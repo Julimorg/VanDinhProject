@@ -1,6 +1,7 @@
 package com.example.managementapi.Specification;
 
 import com.example.managementapi.Entity.Color;
+import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 
 public class ColorSpecification {
@@ -32,17 +33,13 @@ public class ColorSpecification {
         };
     }
 
-    public static Specification<Color> filterBySupplier(String filter){
-        return(root, query, criteriaBuilder) -> {
-            if(filter == null || filter.isEmpty())
-            {
-                return criteriaBuilder.conjunction();
+    public static Specification<Color> filterBySupplier(String filter) {
+        return (root, query, cb) -> {
+            if (filter == null || filter.isEmpty()) {
+                return cb.conjunction();
             }
-            return criteriaBuilder.or(
-                    criteriaBuilder.like(
-                            criteriaBuilder.lower(root.get("supplierName")), "%" + filter.toLowerCase() + "%"
-                    )
-            );
+            Join<Object, Object> supplierJoin = root.join("supplier");
+            return cb.like(cb.lower(supplierJoin.get("supplierName")), "%" + filter.toLowerCase() + "%");
         };
     }
 
