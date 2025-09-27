@@ -123,8 +123,11 @@ public class ProductService {
     //Get list product
     //Note: get thủ công cho supplier
     // Check xem findALl xem co lay them nhung thang ENtity ko lien quan ko
-    public Page<GetProductsRes> getProducts(Pageable pageable){
-        return productRepository.findAll(pageable).map(productMapper::toGetProductsResponses);
+    public Page<GetProductsRes> getProducts(String categoryName, String supplierName, Double minPrice, Double maxPrice, Pageable pageable){
+
+        Specification<Product> specification = ProductSpecification.filterProduct(categoryName, supplierName, minPrice, maxPrice);
+
+        return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
     }
 
     //Get 1 product
