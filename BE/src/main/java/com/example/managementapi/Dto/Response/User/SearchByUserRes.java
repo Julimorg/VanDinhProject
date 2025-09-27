@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -16,15 +17,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class SearchByUserRes {
     private String id;
-    private String firstName;
-    private String lastName;
     private String userName;
     private String email;
-    private String phone;
-    private String userDob;
-    private String userAddress;
     private String userImg;
-
+    private String status;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 

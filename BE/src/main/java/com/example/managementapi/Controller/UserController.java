@@ -1,14 +1,14 @@
 package com.example.managementapi.Controller;
 
 import com.example.managementapi.Dto.ApiResponse;
-import com.example.managementapi.Dto.Request.User.CreateStaffReq;
+import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
 import com.example.managementapi.Dto.Response.User.*;
 import com.example.managementapi.Service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,32 +18,32 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
 
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/v1/users")
 public class UserController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/get-user")
-    ApiResponse<List<GetUserRes>> getUser(){
-        log.warn(String.valueOf(HttpStatus.OK));
-        return ApiResponse.<List<GetUserRes>>builder()
+    ApiResponse<Page<GetUserRes>> getUser(
+            @RequestParam(required = false) String status,
+            @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
+    ){
+        return ApiResponse.<Page<GetUserRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.getUser())
+                .data(userService.getUser(status, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
 
     @GetMapping("/search-user")
-    public Page<SearchByAdminRes> searchUserByAdmin(
+    public ApiResponse<Page<SearchByAdminRes>> searchUserByAdmin(
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "status" , required = false) String status,
             //? Đây là những Page default nếu không truyền trên url
@@ -52,7 +52,13 @@ public class UserController {
             //?          size = 10
             //?          sort = createAt, asc
             @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.ASC) Pageable pageable){
-                return userService.searchUserByAdmin(keyword, status, pageable);
+
+        return ApiResponse.<Page<SearchByAdminRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userService.searchUserByAdmin(keyword, status, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     @GetMapping("/search")
@@ -67,13 +73,34 @@ public class UserController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
-    @PostMapping(value = "/create-staff", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<CreateStaffRes> createStaff( @Valid @ModelAttribute CreateStaffReq request){
-        return ApiResponse.<CreateStaffRes>builder()
+    @GetMapping("/get-profile/{userId}")
+    public ApiResponse<GetUserProfileDetailByAdminRes> getUserProfileByAdmin(@PathVariable String userId){
+        return ApiResponse.<GetUserProfileDetailByAdminRes>
+                builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.createStaff(request))
+                .data(userService.getUserProfileByAdmin(userId))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/view-profile/{userId}")
+    public ApiResponse<GetProfileDetailRes> getProfileDetail(@PathVariable String userId){
+        return ApiResponse.<GetProfileDetailRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userService.getProfileDetail(userId))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+
+    @PostMapping(value = "/create-staff", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<CreateUserRes> createStaff(@Valid @ModelAttribute CreateUserReq request){
+        return ApiResponse.<CreateUserRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userService.createUser(request))
                 .timestamp(LocalDateTime.now())
 
                 .build();

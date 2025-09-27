@@ -1,5 +1,5 @@
 package com.example.managementapi.Service;
-import com.example.managementapi.Dto.Request.User.CreateStaffReq;
+import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
@@ -8,6 +8,7 @@ import com.example.managementapi.Entity.Role;
 import com.example.managementapi.Entity.User;
 import com.example.managementapi.Enum.ErrorCode;
 import com.example.managementapi.Enum.Status;
+import com.example.managementapi.Enum.UserRole;
 import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.UserMapper;
 import com.example.managementapi.Repository.RoleRepository;
@@ -27,8 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -43,13 +44,15 @@ public class UserService {
     private final RoleRepository roleRepository;
 
     private final PasswordEncoder passwordEncoder;
+
     private final CloudinaryService cloudinaryService;
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public List<GetUserRes> getUser(){
-        return userRepository.findAll().stream()
-                .map(user -> userMapper.toGetUser(user)).toList();
+    public Page<GetUserRes> getUser(String status, Pageable pageable){
+        Specification<User> spec = UserByAdminSpecification.statusFilter(status);
+        return userRepository.findAll(spec, pageable)
+                .map(user -> userMapper.toGetUser(user));
 
     }
 
@@ -67,8 +70,33 @@ public class UserService {
         return userPage.map(user -> userMapper.toUserSearchResByUser(user));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN')")
+    public GetUserProfileDetailByAdminRes getUserProfileByAdmin(String userId){
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        return userMapper.toGetUserProfileDetailByAdminRes(user);
+
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
+    public GetProfileDetailRes getProfileDetail(String userId){
+
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        return userMapper.toGetProfileDetailRes(user);
+
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public CreateStaffRes createStaff(CreateStaffReq req){
+    public CreateUserRes createUser(CreateUserReq req){
+
+        if(userRepository.existsByUserName(req.getUserName()))
+            throw  new AppException((ErrorCode.USER_EXISTED));
+
+        if(userRepository.existsByUserName(req.getEmail()))
+            throw  new AppException((ErrorCode.EMAIl_EXISTED));
 
         MultipartFile image = req.getUserImg();
         String imgUrl = null;
@@ -90,26 +118,23 @@ public class UserService {
 
         user.setPassword(passwordEncoder.encode(req.getPassword()));
 
-        Role staffRole = roleRepository.findByName("STAFF").orElseGet(() -> {
-            Role newRole = Role.builder()
-                    .name("STAFF")
-                    .description("Default Staff role")
-                    .build();
-            return roleRepository.save(newRole);
-        });
-        user.setStatus(Status.ACTIVE);
+
+        Role userRole = roleRepository.findByName(req.getRoles())
+                .orElseThrow(() -> new RuntimeException("Role USER not found"));
 
         Set<Role> roles = new HashSet<>();
-        roles.add(staffRole);
+
+        roles.add(userRole);
 
         user.setRoles(roles);
+
+        user.setStatus(Status.ACTIVE);
 
         return userMapper.toCreateStaffRes(userRepository.save(user));
 
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
-//    @PostAuthorize("returnObject.userName == authentication.name")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public UpdateUserRes updateProfileById(String userId, UpdateUseReq request){
         MultipartFile image = request.getUserImg();
         String imgUrl = null;
@@ -132,6 +157,13 @@ public class UserService {
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public UpdateUserByAdminRes updateUserByAdmin(String userId, UpdateUserByAdminReq request){
+
+        if(userRepository.existsByUserName(request.getUserName()))
+            throw  new AppException((ErrorCode.USER_EXISTED));
+
+        if(userRepository.existsByUserName(request.getEmail()))
+            throw  new AppException((ErrorCode.EMAIl_EXISTED));
+
         MultipartFile image = request.getUserImg();
         String imgUrl = null;
 
@@ -152,7 +184,7 @@ public class UserService {
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteUser(String userId) {
         userRepository.deleteById(userId);
     }

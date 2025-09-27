@@ -18,7 +18,6 @@ public class CreateRoleRes {
     private String name;
     private String description;
 
-
     List<GetPermissionRes> permissions;
 
     private LocalDateTime createAt;

@@ -14,5 +14,6 @@ public class UpdateColorReq {
     private String colorName;
     private String colorCode;
     private String colorDescription;
+    private String supplierId;
     private MultipartFile colorImg;
 }

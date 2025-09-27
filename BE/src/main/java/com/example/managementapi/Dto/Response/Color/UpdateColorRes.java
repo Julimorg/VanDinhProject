@@ -17,8 +17,7 @@ public class UpdateColorRes {
     private String colorCode;
     private String colorDescription;
     private String colorImg;
-
-
+    private SupplierInColorDetailRes supplier;
     private LocalDateTime updateAt;
 
 }
