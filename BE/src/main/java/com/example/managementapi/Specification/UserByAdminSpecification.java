@@ -43,18 +43,19 @@ public class UserByAdminSpecification {
     }
 
     //? Filter User với Status
-    public static Specification<User> statusFilter(String status){
+    public static Specification<User> statusFilter(String userStatus){
         return(root, query, criteriaBuilder) -> {
-            if (status == null || status.isEmpty()){
+            if (userStatus == null || userStatus.isEmpty()){
                 return criteriaBuilder.conjunction();
             }
             return criteriaBuilder.or(
                     criteriaBuilder
                             .like(criteriaBuilder
-                            .lower(root.get("isActive")), "%" + status.toLowerCase() + "%")
+                            .lower(root.get("status")), "%" + userStatus.toLowerCase() + "%")
             );
         };
     }
+
 
     public static Specification<User> searchUserByAdmin(String keyword, String status){
         return (root, query, cb) -> {

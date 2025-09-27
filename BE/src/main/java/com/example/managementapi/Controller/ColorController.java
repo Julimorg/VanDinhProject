@@ -38,7 +38,7 @@ public class ColorController {
 
         return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
+                .message("Successfully!")
                 .data(colorService.searchColor(keyword, filter, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -52,7 +52,7 @@ public class ColorController {
     ){
         return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
+                .message("Successfully!")
                 .data(colorService.getColor(supplierName, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -62,7 +62,7 @@ public class ColorController {
     public ApiResponse<GetColorDetailRes> getColorById(@PathVariable String colorId){
         return ApiResponse.<GetColorDetailRes>builder()
                 .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
+                .message("Successfully")
                 .data(colorService.getColorDetail(colorId))
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -74,30 +74,18 @@ public class ColorController {
 
         return ApiResponse.<CreateColorRes>builder()
                 .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
+                .message("Create Color Successfully!")
                 .data(colorService.createColor(request))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
 
     @PatchMapping(value = "/edit-color/{colorId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<UpdateColorRes> updateColor(
-            @PathVariable String colorId,
-            @RequestPart(value = "colorName") String colorName,
-            @RequestPart(value = "colorCode") String colorCode,
-            @RequestPart(value = "colorDescription") String colorDescription,
-            @RequestPart(value = "colorImg") MultipartFile colorImg
-    ) {
-        UpdateColorReq request = UpdateColorReq.builder()
-                .colorCode(colorCode)
-                .colorName(colorName)
-                .colorDescription(colorDescription)
-                .colorImg(colorImg)
-                .build();
+    public ApiResponse<UpdateColorRes> updateColor(@PathVariable String colorId, @ModelAttribute UpdateColorReq request) {
 
         return ApiResponse.<UpdateColorRes>builder()
                 .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
+                .message("Update Color Successfully!")
                 .data(colorService.updateColor(colorId, request))
                 .timestamp(LocalDateTime.now())
                 .build();
@@ -109,7 +97,7 @@ public class ColorController {
         colorService.deleteColor(colorId);
         return ApiResponse.<String>builder()
                 .status_code(HttpStatus.OK.value())
-                .message("Delete Color Approved!")
+                .message("Delete Color Successfully!")
                 .timestamp(LocalDateTime.now())
                 .build();
     }

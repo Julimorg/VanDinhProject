@@ -1,4 +1,4 @@
-package com.example.managementapi.Dto.Response.Permission;
+package com.example.managementapi.Dto.Response.User;
 
 import com.example.managementapi.Entity.Role;
 import lombok.AllArgsConstructor;
@@ -6,17 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class GetPermissionRes {
+public class RoleInGetUserRes {
     private String name;
     private String description;
-
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
 }

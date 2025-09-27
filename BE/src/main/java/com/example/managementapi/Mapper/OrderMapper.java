@@ -5,6 +5,8 @@ import com.example.managementapi.Dto.Request.Order.CreateOrderRequest;
 import com.example.managementapi.Dto.Request.Order.UpdateOrderByAdminRequest;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.Product.ProductForCartItem;
+import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailByAdminRes;
+import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailRes;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.OrderItem;
 import com.example.managementapi.Entity.Product;
@@ -15,9 +17,16 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
 public interface OrderMapper {
 
+
     GetOrderUserRes toGetOrderResponse(Order order);
     CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
     ProductForCartItem toProductForCartItem(Product product);
+
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    OrderInGetUserDetailByAdminRes toOrderInGetUserDetailByAdminRes(Order order);
+
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    OrderInGetUserDetailRes toOrderInGetUserDetailRes(Order order);
 
 
     @Mapping(source = "orderId", target = "orderId")

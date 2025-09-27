@@ -22,6 +22,7 @@ public enum ErrorCode {
     EMAIL_INVALID( "Invalid Email Format", HttpStatus.BAD_REQUEST),
     PHONE_INVALID("Invalid Phone Number", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED ("User Not Existed", HttpStatus.BAD_REQUEST),
+    EMAIl_EXISTED("Email Existed", HttpStatus.BAD_REQUEST),
 
     //* ======================= PRODUCT CATCH ERROR 1200 =======================
 

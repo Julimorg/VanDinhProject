@@ -1,11 +1,9 @@
 package com.example.managementapi.Dto.Response.User;
 
-import com.example.managementapi.Dto.Response.Role.RoleRes;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,7 +14,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateStaffRes {
+public class GetProfileDetailRes {
     private String id;
     private String firstName;
     private String lastName;
@@ -29,7 +27,8 @@ public class CreateStaffRes {
 
     private String status;
 
-    private Set<RoleRes> roles;
+    private List<OrderInGetUserDetailRes> orders;
 
     private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 }

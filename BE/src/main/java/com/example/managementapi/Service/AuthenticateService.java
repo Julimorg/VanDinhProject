@@ -11,6 +11,7 @@ import com.example.managementapi.Entity.User;
 import com.example.managementapi.Enum.ErrorCode;
 import com.example.managementapi.Enum.Status;
 import com.example.managementapi.Enum.TokenType;
+import com.example.managementapi.Enum.UserRole;
 import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.UserMapper;
 import com.example.managementapi.Repository.InvalidatedTokenRepository;
@@ -105,22 +106,12 @@ public class AuthenticateService {
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Role userRole = roleRepository.findByName("USER").orElseGet(() -> {
-            Role newRole = Role.builder()
-                    .name("USER")
-                    .description("Default user role")
-                    .build();
-            Role savedRole = roleRepository.save(newRole);
-            log.info("Created role: {}", savedRole);
-            return savedRole;
-        });
-
         user.setStatus(Status.ACTIVE);
 
-        Set<Role> roles = new HashSet<>();
-        roles.add(userRole);
+        Role userRole = roleRepository.findByName(String.valueOf(UserRole.USER))
+                .orElseThrow(() -> new RuntimeException("Role USER not found"));
 
-        user.setRoles(roles);
+        user.setRoles(Set.of(userRole));
 
         return userMapper.toSignUpUserRes(userRepository.save(user));
     }
