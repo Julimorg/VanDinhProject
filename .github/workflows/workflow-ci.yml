@@ -3,7 +3,7 @@ name: CI/CD All Projects
 on:
   workflow_dispatch:   # Cho phép chạy thủ công từ tab Actions
   push:                # Chạy khi có commit vào main
-    branches: [ "main" ]
+    branches: [ "main" , "Fong" , "bao" ]
   pull_request:        # Hoặc khi có PR vào main
     branches: [ "main" ]
 
