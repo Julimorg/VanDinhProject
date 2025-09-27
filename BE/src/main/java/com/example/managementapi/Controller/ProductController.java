@@ -38,13 +38,18 @@ public class ProductController {
     }
 
     @GetMapping("/get-products")
-    ApiResponse<Page<GetProductsRes>> getProducts(@PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable){
+    ApiResponse<Page<GetProductsRes>> getProducts(
+            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(value = "categoryName", required = false) String categoryName,
+            @RequestParam(value = "supplierName", required = false) String supplierName,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice){
 
         return ApiResponse.<Page<GetProductsRes>>builder()
 
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(productService.getProducts(pageable))
+                .data(productService.getProducts(categoryName, supplierName, minPrice, maxPrice, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
