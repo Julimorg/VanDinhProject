@@ -1,0 +1,41 @@
+name: CI/CD All Projects
+
+on:
+  workflow_dispatch:   # Cho phép chạy thủ công từ tab Actions
+  push:                # Chạy khi có commit vào main
+    branches: [ "main" ]
+  pull_request:        # Hoặc khi có PR vào main
+    branches: [ "main" ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Backend
+        working-directory: ./BE
+        run: mvn clean install -DskipTests
+
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Admin
+        working-directory: ./ADMIN
+        run: npm ci && npm run build
+
+  user:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build User
+        working-directory: ./USER
+        run: npm ci && npm run build
+
+  # mobile:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Build Mobile
+  #       working-directory: ./mobile
+  #       run: flutter pub get && flutter test
