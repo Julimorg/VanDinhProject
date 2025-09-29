@@ -1,6 +1,7 @@
 package com.example.managementapi.Configuration;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -21,18 +22,24 @@ public class VNPAYConfig {
     ! VÌ ĐÂY LÀ NHỮNG METHOD - ATTRIBUTES ĐÃ ĐƯỢC CONFIG DEFAULT SẴN
     ! */
 
-    @NonFinal
-    @Getter
+//    @Setter
+//    @Value("${vnp.secretkey}")
+    public static String vnp_HashSecret;
+
     @Value("${vnp.secretkey}")
-    private static String SECRET_KEY;
+    public void secretKey(String secretKey) {
+        VNPAYConfig.vnp_HashSecret = secretKey;
+    }
 
     @NonFinal
     @Getter
+    @Setter
     @Value("${vnp.tmncode}")
     private static String TMN_CODE;
 
     @NonFinal
     @Getter
+    @Setter
     @Value("${spring.vnp.version}")
     private static String VERSION;
 
@@ -43,8 +50,9 @@ public class VNPAYConfig {
 
     public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     public static String vnp_Returnurl = "http://localhost:8080/api/v1/vn-pay/vnpay-return";
-    public static String vnp_TmnCode = "OA83P8FJ";
-    public static String vnp_HashSecret = "YIZ2A00IFOEXME2O5RI75LP1GR0T4SX0";
+    public static String vnp_TmnCode = TMN_CODE;
+//    public static String vnp_HashSecret = SECRET_KEY;
+
     public static String vnp_Version = "2.1.0";
     public static String vnp_Command = "pay";
     public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";

@@ -62,12 +62,14 @@ public class OrderService {
 
     private final String processingDeadline = "24 giờ";
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Page<GetAllOrdersRes> getAllOrders(Pageable pageable){
-        return orderRepository.findAll(pageable)
-                .map(user -> orderMapper.toGetAllOrdersRes(user));
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public Page<GetAllOrdersRes> getAllOrders(String status, Pageable pageable){
+        Specification<Order> spec = OrderSpecification.filterByOrderStatus(status);
+        return orderRepository.findAll(spec, pageable)
+                .map(order -> orderMapper.toGetAllOrdersRes(order));
     }
 
+    //** Method này làm hơi dư thừa
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
     public Page<GetUserOrdersRes> getUserOrders(String userId, Pageable pageable){
 
@@ -79,11 +81,13 @@ public class OrderService {
         return ordersPage.map(orders -> orderMapper.toGetUserOrdersRes(orders));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public GetUserOrdersDetailRes getUserOrderDetails(String userId, String orderId){
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Order order =  orderRepository.findById(orderId)
+
+        orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         return orderMapper.toGetUserOrdersDetailRes(
@@ -92,7 +96,7 @@ public class OrderService {
     }
 
     @Transactional
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public CreateOrderFromCartRes createOrderFromCart(String userId, String cartId){
 
         User user = userRepository.findById(userId)
@@ -122,6 +126,7 @@ public class OrderService {
                 .orderStatus(OrderStatus.Pending)
                 .createBy(user.getUserName())
                 .orderAmount(cart.getTotalPrice())
+                .createAt(LocalDateTime.now())
                 .build();
 
         List<OrderItem> orderItems = cart.getCartItems().stream()
@@ -147,42 +152,7 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        CreateOrderFromCartRes createOrderFromCartResponse = CreateOrderFromCartRes.builder()
-                .orderId(order.getOrderId())
-                .orderCode(order.getOrderCode())
-                .userId(userId)
-                .status(order.getOrderStatus())
-                .amount(order.getOrderAmount())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .userAddress(user.getUserAddress())
-                .orderItems(order.getOrderItems().stream()
-                        .map(or -> CreateOrderItemRes.builder()
-                                .orderItemId(or.getOrderItemId())
-                                .orderId(or.getOrder().getOrderId())
-                                .quantity(or.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(or.getProduct().getProductId())
-                                        .productName(or.getProduct().getProductName())
-                                        .productImage(or.getProduct().getProductImage())
-                                        .productVolume(or.getProduct().getProductVolume())
-                                        .productUnit(or.getProduct().getProductUnit())
-                                        .productCode(or.getProduct().getProductCode())
-                                        .productQuantity(or.getQuantity())
-                                        .discount(or.getProduct().getDiscount())
-                                        .productPrice(or.getProduct().getProductPrice())
-                                        .colorName(or.getProduct().getColor().getColorCode())
-                                        .categoryName(or.getProduct().getCategory().getCategoryName())
-                                        .build())
-                                .createAt(or.getCreateAt())
-                                .build())
-                        .toList())
-                .paymentMethod(payment.getPaymentMethod())
-                .paymentStatus(payment.getPaymentStatus())
-                .createAt(order.getCreateAt())
-                .build();
-
-        return createOrderFromCartResponse;
+        return orderMapper.toCreateOrderFromCartRes(order);
 
     }
 
@@ -255,21 +225,20 @@ public class OrderService {
                 .orderItems(userOrder.getOrderItems().stream()
                         .map(or -> CreateOrderItemRes.builder()
                                 .orderItemId(or.getOrderItemId())
-                                .orderId(or.getOrder().getOrderId())
                                 .quantity(or.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(or.getProduct().getProductId())
-                                        .productName(or.getProduct().getProductName())
-                                        .productImage(or.getProduct().getProductImage())
-                                        .productVolume(or.getProduct().getProductVolume())
-                                        .productUnit(or.getProduct().getProductUnit())
-                                        .productCode(or.getProduct().getProductCode())
-                                        .productQuantity(or.getQuantity())
-                                        .discount(or.getProduct().getDiscount())
-                                        .productPrice(or.getProduct().getProductPrice())
-                                        .colorName(or.getProduct().getColor().getColorCode())
-                                        .categoryName(or.getProduct().getCategory().getCategoryName())
-                                        .build())
+//                                .product(ProductForCartItem.builder()
+//                                        .productId(or.getProduct().getProductId())
+//                                        .productName(or.getProduct().getProductName())
+//                                        .productImage(or.getProduct().getProductImage())
+//                                        .productVolume(or.getProduct().getProductVolume())
+//                                        .productUnit(or.getProduct().getProductUnit())
+//                                        .productCode(or.getProduct().getProductCode())
+//                                        .productQuantity(or.getQuantity())
+//                                        .discount(or.getProduct().getDiscount())
+//                                        .productPrice(or.getProduct().getProductPrice())
+//                                        .colorName(or.getProduct().getColor().getColorCode())
+//                                        .categoryName(or.getProduct().getCategory().getCategoryName())
+//                                        .build())
                                 .createAt(or.getCreateAt())
                                 .build())
                         .toList())
@@ -321,21 +290,20 @@ public class OrderService {
                 .orderItems(orderItemsList.stream()
                         .map(item -> CreateOrderItemRes.builder()
                                 .orderItemId(item.getOrderItemId())
-                                .orderId(item.getOrder().getOrderId())
                                 .quantity(item.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(item.getProduct().getProductId())
-                                        .productName(item.getProduct().getProductName())
-                                        .productImage(item.getProduct().getProductImage())
-                                        .productVolume(item.getProduct().getProductVolume())
-                                        .productUnit(item.getProduct().getProductUnit())
-                                        .productCode(item.getProduct().getProductCode())
-                                        .productQuantity(item.getProduct().getProductQuantity())
-                                        .discount(item.getProduct().getDiscount())
-                                        .productPrice(item.getProduct().getProductPrice())
-                                        .colorName(item.getProduct().getColor().getColorName())
-                                        .categoryName(item.getProduct().getCategory().getCategoryName())
-                                        .build())
+//                                .product(ProductForCartItem.builder()
+//                                        .productId(item.getProduct().getProductId())
+//                                        .productName(item.getProduct().getProductName())
+//                                        .productImage(item.getProduct().getProductImage())
+//                                        .productVolume(item.getProduct().getProductVolume())
+//                                        .productUnit(item.getProduct().getProductUnit())
+//                                        .productCode(item.getProduct().getProductCode())
+//                                        .productQuantity(item.getProduct().getProductQuantity())
+//                                        .discount(item.getProduct().getDiscount())
+//                                        .productPrice(item.getProduct().getProductPrice())
+//                                        .colorName(item.getProduct().getColor().getColorName())
+//                                        .categoryName(item.getProduct().getCategory().getCategoryName())
+//                                        .build())
                                 .createAt(item.getCreateAt())
                                 .build())
                         .toList())

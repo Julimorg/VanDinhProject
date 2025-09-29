@@ -37,12 +37,13 @@ public class OrderController {
 
     @GetMapping("/user-order")
     public ApiResponse<Page<GetAllOrdersRes>> getAllOrders(
-            @PageableDefault(size = 10, sort = "userId"
+            @RequestParam(required = false) String status,
+            @PageableDefault(size = 10, sort = "createAt"
                     , direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<GetAllOrdersRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(orderService.getAllOrders(pageable))
+                .data(orderService.getAllOrders(status, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -60,7 +61,7 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/user-order-detail/{userId}/{orderId}")
+    @GetMapping("/order-detail/{userId}/{orderId}")
     public ApiResponse<GetUserOrdersDetailRes> getUserOrders(
             @PathVariable String userId,
             @PathVariable String orderId) {

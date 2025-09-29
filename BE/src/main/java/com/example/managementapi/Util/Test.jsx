@@ -1,3 +1,0 @@
-function Hello(){
-    return <>Hello</>;
-}
