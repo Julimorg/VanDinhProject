@@ -2,9 +2,8 @@ services:
   - type: web
     name: vandinh-api
     rootDir: backend
-    plan: free   # hoặc starter, tùy chọn
-    buildCommand: ./mvnw clean install -DskipTests
-    startCommand: java -jar target/*.jar
+    plan: free
+    runtime: docker
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
