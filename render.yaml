@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: vandinh-api
+    env: java
+    rootDir: backend
+    plan: free   # hoặc starter, tuỳ bạn chọn
+    buildCommand: ./mvnw clean install -DskipTests
+    startCommand: java -jar target/*.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        sync: false   # bạn sẽ set trong dashboard Render
