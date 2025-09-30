@@ -1,7 +1,7 @@
 services:
   - type: web
     name: vandinh-api
-    rootDir: backend
+    rootDir: BE
     plan: free
     runtime: docker
     envVars:
