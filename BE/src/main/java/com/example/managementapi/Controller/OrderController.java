@@ -7,7 +7,6 @@ import com.example.managementapi.Dto.Request.Order.UpdateOrderByAdminRequest;
 import com.example.managementapi.Dto.Request.Order.UpdateOrderReq;
 import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemRequest;
 import com.example.managementapi.Dto.Response.Order.*;
-import com.example.managementapi.Dto.Response.Product.GetProductsRes;
 import com.example.managementapi.Service.OrderItemService;
 import com.example.managementapi.Service.OrderService;
 import jakarta.mail.MessagingException;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -84,16 +82,16 @@ public class OrderController {
                 .build();
     }
 
-    @PatchMapping("/update-order/{userId}/{orderId}")
-    public ApiResponse<GetOrderUserRes> updateOrderFromUSer(@PathVariable String userId,
-                                                            @PathVariable String orderId,
-                                                            @Valid @RequestBody UpdateOrderReq request,
-                                                            HttpServletRequest servletRequest)
+    @PatchMapping("/confirm-order/{userId}/{orderId}")
+    public ApiResponse<UpdateOrderByUserRes> confirmOrderByUser(@PathVariable String userId,
+                                                                @PathVariable String orderId,
+                                                                @Valid @RequestBody UpdateOrderReq request,
+                                                                HttpServletRequest servletRequest)
             throws UnsupportedEncodingException {
-        return ApiResponse.<GetOrderUserRes>builder()
+        return ApiResponse.<UpdateOrderByUserRes>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Update Order Approved!")
-                .data(orderService.updateOrderFromUser(userId, orderId, request, servletRequest))
+                .data(orderService.confirmOrderByUser(userId, orderId, request, servletRequest))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -102,12 +100,10 @@ public class OrderController {
     public ApiResponse<String> approveOrder(@PathVariable String userId,
                                               @PathVariable String orderId,
                                               @Valid @RequestBody ApproveOrderReq request) throws MessagingException {
-        orderService.approveOrder(userId, orderId, request);
         return ApiResponse.<String>builder()
                 .status_code(HttpStatus.OK.value())
-                .message("Approve Order Approved!")
+                .message(orderService.approveOrder(userId, orderId, request))
                 .timestamp(LocalDateTime.now())
-
                 .build();
     }
 

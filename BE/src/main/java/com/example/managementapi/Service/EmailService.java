@@ -2,8 +2,7 @@ package com.example.managementapi.Service;
 
 
 import com.example.managementapi.Dto.Email.MailBody;
-import com.example.managementapi.Dto.Response.Order.ApproveOrderUserRes;
-import com.example.managementapi.Dto.Response.Order.GetOrderUserRes;
+import com.example.managementapi.Dto.Response.Order.UpdateOrderByUserRes;
 import com.example.managementapi.Entity.OrderItem;
 import com.example.managementapi.Entity.Product;
 import jakarta.mail.MessagingException;
@@ -67,7 +66,7 @@ public class EmailService {
 
     @Async
     public void sendOrderNotificationToAdmin(String adminEmail,
-                                             GetOrderUserRes order,
+                                             UpdateOrderByUserRes order,
                                              String storeName,
                                              String orderManagementUrl,
                                              String adminName,
@@ -97,7 +96,7 @@ public class EmailService {
     }
 
     @Async
-    public void populateContext(Context context, GetOrderUserRes orderResponse) {
+    public void populateContext(Context context, UpdateOrderByUserRes orderResponse) {
         context.setVariable("orderCode", orderResponse.getOrderCode());
         context.setVariable("createAt", orderResponse.getCreateAt().toString());
         context.setVariable("status", orderResponse.getStatus().toString());
@@ -117,7 +116,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendOrderApprovedEmail(GetOrderUserRes orderResponse) throws MessagingException {
+    public void sendOrderApprovedEmail(UpdateOrderByUserRes orderResponse) throws MessagingException {
         Context context = new Context();
         populateContext(context, orderResponse);
 
@@ -134,7 +133,7 @@ public class EmailService {
     }
 
     @Async
-    public void sendOrderCanceledEmail(GetOrderUserRes orderResponse) throws MessagingException {
+    public void sendOrderCanceledEmail(UpdateOrderByUserRes orderResponse) throws MessagingException {
         Context context = new Context();
         populateContext(context, orderResponse);
 

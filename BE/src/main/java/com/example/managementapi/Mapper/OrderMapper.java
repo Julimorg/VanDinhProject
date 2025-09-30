@@ -10,7 +10,6 @@ import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailRes;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.OrderItem;
 import com.example.managementapi.Entity.Product;
-import com.example.managementapi.Enum.PaymentMethodStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -71,8 +70,27 @@ public interface OrderMapper {
     @Mapping(source = "orderItems", target = "orderItems")
     CreateOrderFromCartRes toCreateOrderFromCartRes(Order order);
 
-    GetOrderUserRes toGetOrderResponse(Order order);
     CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
+
+    //** ===============================   PATCH RESPONSE   ===========================
+
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderId", target = "orderId")
+    @Mapping(source = "orderCode", target = "orderCode")
+    @Mapping(source = "orderAmount", target = "amount")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "shipAddress", target = "shipAddress")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
+    @Mapping(source = "orderItems", target = "orderItems")
+    @Mapping(source = "createAt", target = "createAt")
+    @Mapping(source = "updateAt", target = "updateAt")
+    @Mapping(source = "completeAt", target = "completeAt")
+    UpdateOrderByUserRes toGetOrderResponse(Order order);
+
     ProductForCartItem toProductForCartItem(Product product);
 
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")

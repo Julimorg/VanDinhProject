@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetOrderUserRes {
+public class UpdateOrderByUserRes {
     private String orderId;
 
     private String orderCode;

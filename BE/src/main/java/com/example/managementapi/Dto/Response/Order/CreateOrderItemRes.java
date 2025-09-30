@@ -21,8 +21,6 @@ public class CreateOrderItemRes {
 
     private int quantity;
 
-//    private ProductForCartItem product;
-
     private String productName;
 
     private List<String> productImage;
