@@ -3,7 +3,9 @@ package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemByAdminRequest;
 import com.example.managementapi.Dto.Response.Order.CreateOrderItemRes;
+import com.example.managementapi.Dto.Response.Order.SearchOrderItemResponse;
 import com.example.managementapi.Dto.Response.Order.UpdateOrderItemByAdminResponse;
+import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,6 +15,20 @@ import java.util.List;
 
 @Mapper(componentModel = "spring", uses = {ProductMapper.class})
 public interface OrderItemMapper {
+
+    //** ===============================   GET RESPONSE   ===========================
+    @Mapping(source = "product.productName", target = "productName")
+    @Mapping(source = "product.productImage", target = "productImage")
+    @Mapping(source = "product.productVolume", target = "productVolume")
+    @Mapping(source = "product.productUnit", target = "productUnit")
+    @Mapping(source = "product.productCode", target = "productCode")
+    @Mapping(source = "product.productQuantity", target = "productQuantity")
+    @Mapping(source = "product.productPrice", target = "productPrice")
+    @Mapping(source = "product.color.colorName", target = "colorName")
+    @Mapping(source = "product.category.categoryName", target = "categoryName")
+    SearchOrderItemResponse toSearchOrderItemResponse(OrderItem orderItemn);
+    //** ===============================   POST RESPONSE   ===========================
+
 
     @Mapping(source = "product.productName", target = "productName")
     @Mapping(source = "product.productImage", target = "productImage")

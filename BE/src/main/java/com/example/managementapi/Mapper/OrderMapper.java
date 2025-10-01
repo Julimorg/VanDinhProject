@@ -20,6 +20,18 @@ public interface OrderMapper {
 
     //** ===============================   GET RESPONSE   ===========================
 
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderAmount", target = "amount")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
+    @Mapping(source = "payment.paymentId", target = "paymentId")
+    @Mapping(source = "orderItems", target = "orderItems")
+    SearchOrdersResponse toSearchOrdersResponse(Order orders);
+
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "orderCode", target = "orderCode")
     @Mapping(source = "orderStatus", target = "status")
@@ -85,7 +97,7 @@ public interface OrderMapper {
     @Mapping(source = "shipAddress", target = "shipAddress")
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
-    @Mapping(source = "orderItems", target = "orderItems")
+    @Mapping(source = "orderItems", target = "items")
     @Mapping(source = "createAt", target = "createAt")
     @Mapping(source = "updateAt", target = "updateAt")
     @Mapping(source = "completeAt", target = "completeAt")
@@ -107,17 +119,6 @@ public interface OrderMapper {
     //Get list
     GetOrdersResponse toGetOrdersResponse(Order orders);
 
-    //Search
-    @Mapping(source = "orderStatus", target = "status")
-    @Mapping(source = "orderAmount", target = "amount")
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.phone", target = "phone")
-    @Mapping(source = "user.userAddress", target = "userAddress")
-    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
-    @Mapping(source = "payment.paymentId", target = "paymentId")
-    SearchOrdersResponse toSearchOrdersResponse(Order orders);
 
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "orderAmount", ignore = true)

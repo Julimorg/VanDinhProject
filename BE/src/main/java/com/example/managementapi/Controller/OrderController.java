@@ -32,6 +32,19 @@ public class OrderController {
     private final OrderService orderService;
 
     private final OrderItemService orderItemService;
+    @GetMapping("/search-order")
+    public ApiResponse<Page<SearchOrdersResponse>> searchOrdersByAdmin(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "orderStatus", required = false) String orderStatus,
+            @PageableDefault(size = 10, sort = "orderAmount", direction = Sort.Direction.DESC) Pageable pageable){
+
+        return ApiResponse.<Page<SearchOrdersResponse>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(orderService.searchOrdersByAdmin(keyword, orderStatus, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @GetMapping("/user-order")
     public ApiResponse<Page<GetAllOrdersRes>> getAllOrders(
@@ -158,18 +171,5 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/search-order")
-    public ApiResponse<Page<SearchOrdersResponse>> searchOrdersByAdmin(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "orderStatus", required = false) String orderStatus,
-            @PageableDefault(size = 10, sort = "orderAmount", direction = Sort.Direction.DESC) Pageable pageable){
-
-        return ApiResponse.<Page<SearchOrdersResponse>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(orderService.searchOrdersByAdmin(keyword, orderStatus, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
 
 }

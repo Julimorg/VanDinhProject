@@ -6,7 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +19,24 @@ public class SearchOrderItemResponse {
 
     private int quantity;
 
-    private ProductForCartItem product;
+    private String productName;
+
+    private List<String> productImage;
+
+    private String productVolume;
+
+    private String productUnit;
+
+    private String productCode;
+
+    private int productQuantity;
+
+    private BigDecimal productPrice;
+
+    private String colorName;
+
+    private String categoryName;
+
 
     private LocalDateTime createAt;
 }

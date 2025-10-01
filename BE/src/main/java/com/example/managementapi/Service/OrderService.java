@@ -61,6 +61,16 @@ public class OrderService {
 
     private final String processingDeadline = "24 giờ";
 
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public Page<SearchOrdersResponse> searchOrdersByAdmin(String keyword, String orderStatus, Pageable pageable){
+        Specification<Order> specification = OrderSpecification.searchOrder(keyword, orderStatus);
+        Page<Order> orders = orderRepository.findAll(specification, pageable);
+
+        return orders.map(order -> orderMapper.toSearchOrdersResponse(order));
+    }
+
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
     public Page<GetAllOrdersRes> getAllOrders(String status, Pageable pageable){
         Specification<Order> spec = OrderSpecification.filterByOrderStatus(status);
@@ -400,10 +410,5 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
-    public Page<SearchOrdersResponse> searchOrdersByAdmin(String keyword, String orderStatus, Pageable pageable){
-        Specification<Order> specification = OrderSpecification.searchOrder(keyword, orderStatus);
-        Page<Order> orders = orderRepository.findAll(specification, pageable);
 
-        return orders.map(order -> orderMapper.toSearchOrdersResponse(order));
-    }
 }
