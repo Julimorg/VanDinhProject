@@ -5,6 +5,8 @@ import com.example.managementapi.Dto.Request.Order.CreateOrderRequest;
 import com.example.managementapi.Dto.Request.Order.UpdateOrderByAdminRequest;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.Product.ProductForCartItem;
+import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailByAdminRes;
+import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailRes;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.OrderItem;
 import com.example.managementapi.Entity.Product;
@@ -15,12 +17,21 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring", uses = {OrderItemMapper.class})
 public interface OrderMapper {
 
-    GetOrderUserRes toGetOrderResponse(Order order);
-    CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
-    ProductForCartItem toProductForCartItem(Product product);
 
+    //** ===============================   GET RESPONSE   ===========================
 
-    @Mapping(source = "orderId", target = "orderId")
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderAmount", target = "amount")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
+    @Mapping(source = "payment.paymentId", target = "paymentId")
+    @Mapping(source = "orderItems", target = "orderItems")
+    SearchOrdersResponse toSearchOrdersResponse(Order orders);
+
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "orderCode", target = "orderCode")
     @Mapping(source = "orderStatus", target = "status")
@@ -32,8 +43,6 @@ public interface OrderMapper {
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     GetAllOrdersRes toGetAllOrdersRes(Order order);
 
-
-    @Mapping(source = "orderId", target = "orderId")
     @Mapping(source = "user.id", target = "userId")
     @Mapping(source = "orderCode", target = "orderCode")
     @Mapping(source = "orderStatus", target = "status")
@@ -57,6 +66,52 @@ public interface OrderMapper {
     @Mapping(source = "orderItems", target = "items")
     GetUserOrdersDetailRes toGetUserOrdersDetailRes(Order order);
 
+    //** ===============================   POST RESPONSE   ===========================
+
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "orderCode", target = "orderCode")
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderAmount", target = "amount")
+    @Mapping(source = "user.userName", target = "userName")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "createBy", target = "createBy")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
+    @Mapping(source = "orderItems", target = "orderItems")
+    CreateOrderFromCartRes toCreateOrderFromCartRes(Order order);
+
+    CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
+
+    //** ===============================   PATCH RESPONSE   ===========================
+
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderId", target = "orderId")
+    @Mapping(source = "orderCode", target = "orderCode")
+    @Mapping(source = "orderAmount", target = "amount")
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "shipAddress", target = "shipAddress")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
+    @Mapping(source = "orderItems", target = "items")
+    @Mapping(source = "createAt", target = "createAt")
+    @Mapping(source = "updateAt", target = "updateAt")
+    @Mapping(source = "completeAt", target = "completeAt")
+    UpdateOrderByUserRes toGetOrderResponse(Order order);
+
+    ProductForCartItem toProductForCartItem(Product product);
+
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    OrderInGetUserDetailByAdminRes toOrderInGetUserDetailByAdminRes(Order order);
+
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    OrderInGetUserDetailRes toOrderInGetUserDetailRes(Order order);
+
+
 
     Order toOrder(CreateOrderRequest request);
     CreateOrderResponse toCreateOrderResponse(Order order);
@@ -64,17 +119,6 @@ public interface OrderMapper {
     //Get list
     GetOrdersResponse toGetOrdersResponse(Order orders);
 
-    //Search
-    @Mapping(source = "orderStatus", target = "status")
-    @Mapping(source = "orderAmount", target = "amount")
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.phone", target = "phone")
-    @Mapping(source = "user.userAddress", target = "userAddress")
-    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-    @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
-    @Mapping(source = "payment.paymentId", target = "paymentId")
-    SearchOrdersResponse toSearchOrdersResponse(Order orders);
 
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "orderAmount", ignore = true)

@@ -7,7 +7,6 @@ import com.example.managementapi.Dto.Request.Order.UpdateOrderByAdminRequest;
 import com.example.managementapi.Dto.Request.Order.UpdateOrderReq;
 import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemRequest;
 import com.example.managementapi.Dto.Response.Order.*;
-import com.example.managementapi.Dto.Response.Product.GetProductsRes;
 import com.example.managementapi.Service.OrderItemService;
 import com.example.managementapi.Service.OrderService;
 import jakarta.mail.MessagingException;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -34,15 +32,29 @@ public class OrderController {
     private final OrderService orderService;
 
     private final OrderItemService orderItemService;
+    @GetMapping("/search-order")
+    public ApiResponse<Page<SearchOrdersResponse>> searchOrdersByAdmin(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "orderStatus", required = false) String orderStatus,
+            @PageableDefault(size = 10, sort = "orderAmount", direction = Sort.Direction.DESC) Pageable pageable){
+
+        return ApiResponse.<Page<SearchOrdersResponse>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(orderService.searchOrdersByAdmin(keyword, orderStatus, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @GetMapping("/user-order")
     public ApiResponse<Page<GetAllOrdersRes>> getAllOrders(
-            @PageableDefault(size = 10, sort = "userId"
+            @RequestParam(required = false) String status,
+            @PageableDefault(size = 10, sort = "createAt"
                     , direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<GetAllOrdersRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(orderService.getAllOrders(pageable))
+                .data(orderService.getAllOrders(status, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -60,7 +72,7 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/user-order-detail/{userId}/{orderId}")
+    @GetMapping("/order-detail/{userId}/{orderId}")
     public ApiResponse<GetUserOrdersDetailRes> getUserOrders(
             @PathVariable String userId,
             @PathVariable String orderId) {
@@ -83,16 +95,16 @@ public class OrderController {
                 .build();
     }
 
-    @PatchMapping("/update-order/{userId}/{orderId}")
-    public ApiResponse<GetOrderUserRes> updateOrderFromUSer(@PathVariable String userId,
-                                                            @PathVariable String orderId,
-                                                            @Valid @RequestBody UpdateOrderReq request,
-                                                            HttpServletRequest servletRequest)
+    @PatchMapping("/confirm-order/{userId}/{orderId}")
+    public ApiResponse<UpdateOrderByUserRes> confirmOrderByUser(@PathVariable String userId,
+                                                                @PathVariable String orderId,
+                                                                @Valid @RequestBody UpdateOrderReq request,
+                                                                HttpServletRequest servletRequest)
             throws UnsupportedEncodingException {
-        return ApiResponse.<GetOrderUserRes>builder()
+        return ApiResponse.<UpdateOrderByUserRes>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Update Order Approved!")
-                .data(orderService.updateOrderFromUser(userId, orderId, request, servletRequest))
+                .data(orderService.confirmOrderByUser(userId, orderId, request, servletRequest))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -101,12 +113,10 @@ public class OrderController {
     public ApiResponse<String> approveOrder(@PathVariable String userId,
                                               @PathVariable String orderId,
                                               @Valid @RequestBody ApproveOrderReq request) throws MessagingException {
-        orderService.approveOrder(userId, orderId, request);
         return ApiResponse.<String>builder()
                 .status_code(HttpStatus.OK.value())
-                .message("Approve Order Approved!")
+                .message(orderService.approveOrder(userId, orderId, request))
                 .timestamp(LocalDateTime.now())
-
                 .build();
     }
 
@@ -161,18 +171,5 @@ public class OrderController {
                 .build();
     }
 
-    @GetMapping("/search-order")
-    public ApiResponse<Page<SearchOrdersResponse>> searchOrdersByAdmin(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "orderStatus", required = false) String orderStatus,
-            @PageableDefault(size = 10, sort = "orderAmount", direction = Sort.Direction.DESC) Pageable pageable){
-
-        return ApiResponse.<Page<SearchOrdersResponse>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(orderService.searchOrdersByAdmin(keyword, orderStatus, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
 
 }

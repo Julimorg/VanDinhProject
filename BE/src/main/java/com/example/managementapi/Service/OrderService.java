@@ -4,7 +4,6 @@ package com.example.managementapi.Service;
 import com.example.managementapi.Component.GenerateRandomCode;
 import com.example.managementapi.Dto.Request.Order.*;
 import com.example.managementapi.Dto.Response.Order.*;
-import com.example.managementapi.Dto.Response.Product.ProductForCartItem;
 import com.example.managementapi.Entity.*;
 import com.example.managementapi.Enum.OrderStatus;
 import com.example.managementapi.Enum.PaymentMethod;
@@ -62,12 +61,24 @@ public class OrderService {
 
     private final String processingDeadline = "24 giờ";
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public Page<GetAllOrdersRes> getAllOrders(Pageable pageable){
-        return orderRepository.findAll(pageable)
-                .map(user -> orderMapper.toGetAllOrdersRes(user));
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public Page<SearchOrdersResponse> searchOrdersByAdmin(String keyword, String orderStatus, Pageable pageable){
+        Specification<Order> specification = OrderSpecification.searchOrder(keyword, orderStatus);
+        Page<Order> orders = orderRepository.findAll(specification, pageable);
+
+        return orders.map(order -> orderMapper.toSearchOrdersResponse(order));
     }
 
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public Page<GetAllOrdersRes> getAllOrders(String status, Pageable pageable){
+        Specification<Order> spec = OrderSpecification.filterByOrderStatus(status);
+        return orderRepository.findAll(spec, pageable)
+                .map(order -> orderMapper.toGetAllOrdersRes(order));
+    }
+
+    //** Method này làm hơi dư thừa
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
     public Page<GetUserOrdersRes> getUserOrders(String userId, Pageable pageable){
 
@@ -79,11 +90,13 @@ public class OrderService {
         return ordersPage.map(orders -> orderMapper.toGetUserOrdersRes(orders));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public GetUserOrdersDetailRes getUserOrderDetails(String userId, String orderId){
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        Order order =  orderRepository.findById(orderId)
+
+        orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         return orderMapper.toGetUserOrdersDetailRes(
@@ -92,7 +105,7 @@ public class OrderService {
     }
 
     @Transactional
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public CreateOrderFromCartRes createOrderFromCart(String userId, String cartId){
 
         User user = userRepository.findById(userId)
@@ -122,6 +135,7 @@ public class OrderService {
                 .orderStatus(OrderStatus.Pending)
                 .createBy(user.getUserName())
                 .orderAmount(cart.getTotalPrice())
+                .createAt(LocalDateTime.now())
                 .build();
 
         List<OrderItem> orderItems = cart.getCartItems().stream()
@@ -147,51 +161,16 @@ public class OrderService {
 
         orderRepository.save(order);
 
-        CreateOrderFromCartRes createOrderFromCartResponse = CreateOrderFromCartRes.builder()
-                .orderId(order.getOrderId())
-                .orderCode(order.getOrderCode())
-                .userId(userId)
-                .status(order.getOrderStatus())
-                .amount(order.getOrderAmount())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .userAddress(user.getUserAddress())
-                .orderItems(order.getOrderItems().stream()
-                        .map(or -> CreateOrderItemRes.builder()
-                                .orderItemId(or.getOrderItemId())
-                                .orderId(or.getOrder().getOrderId())
-                                .quantity(or.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(or.getProduct().getProductId())
-                                        .productName(or.getProduct().getProductName())
-                                        .productImage(or.getProduct().getProductImage())
-                                        .productVolume(or.getProduct().getProductVolume())
-                                        .productUnit(or.getProduct().getProductUnit())
-                                        .productCode(or.getProduct().getProductCode())
-                                        .productQuantity(or.getQuantity())
-                                        .discount(or.getProduct().getDiscount())
-                                        .productPrice(or.getProduct().getProductPrice())
-                                        .colorName(or.getProduct().getColor().getColorCode())
-                                        .categoryName(or.getProduct().getCategory().getCategoryName())
-                                        .build())
-                                .createAt(or.getCreateAt())
-                                .build())
-                        .toList())
-                .paymentMethod(payment.getPaymentMethod())
-                .paymentStatus(payment.getPaymentStatus())
-                .createAt(order.getCreateAt())
-                .build();
-
-        return createOrderFromCartResponse;
+        return orderMapper.toCreateOrderFromCartRes(order);
 
     }
 
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
-    public GetOrderUserRes updateOrderFromUser(String userId,
-                                               String orderId,
-                                               UpdateOrderReq request,
-                                               HttpServletRequest httpRequest) throws UnsupportedEncodingException {
+    public UpdateOrderByUserRes confirmOrderByUser(String userId,
+                                                   String orderId,
+                                                   UpdateOrderReq request,
+                                                   HttpServletRequest httpRequest) throws UnsupportedEncodingException {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -206,6 +185,7 @@ public class OrderService {
         Payment payment = userOrder.getPayment();
 
         String paymentUrl = null;
+
         if (request.getPaymentMethod() == PaymentMethod.CASH)
         {
 
@@ -241,61 +221,24 @@ public class OrderService {
             orderRepository.save(userOrder);
 
         }
-
-        GetOrderUserRes updateOrderFromUser = GetOrderUserRes.builder()
-                .orderId(userOrder.getOrderId())
-                .orderCode(userOrder.getOrderCode())
-                .userId(userId)
-                .status(userOrder.getOrderStatus())
-                .amount(userOrder.getOrderAmount())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .userAddress(user.getUserAddress())
-                .shipAddress(userOrder.getShipAddress())
-                .orderItems(userOrder.getOrderItems().stream()
-                        .map(or -> CreateOrderItemRes.builder()
-                                .orderItemId(or.getOrderItemId())
-                                .orderId(or.getOrder().getOrderId())
-                                .quantity(or.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(or.getProduct().getProductId())
-                                        .productName(or.getProduct().getProductName())
-                                        .productImage(or.getProduct().getProductImage())
-                                        .productVolume(or.getProduct().getProductVolume())
-                                        .productUnit(or.getProduct().getProductUnit())
-                                        .productCode(or.getProduct().getProductCode())
-                                        .productQuantity(or.getQuantity())
-                                        .discount(or.getProduct().getDiscount())
-                                        .productPrice(or.getProduct().getProductPrice())
-                                        .colorName(or.getProduct().getColor().getColorCode())
-                                        .categoryName(or.getProduct().getCategory().getCategoryName())
-                                        .build())
-                                .createAt(or.getCreateAt())
-                                .build())
-                        .toList())
-                .paymentMethod(payment.getPaymentMethod())
-                .paymentStatus(payment.getPaymentStatus())
-                .paymentUrl(paymentUrl)
-                .createAt(userOrder.getCreateAt())
-                .updateAt(userOrder.getUpdateAt())
-                .build();
+        UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(userOrder);
 
         emailService.sendOrderNotificationToAdmin(adminEmail,
-                updateOrderFromUser,
+                orderResponse,
                 storeName,
                 orderManagementUrl,
                 adminName,
                 processingDeadline);
 
 
-        return updateOrderFromUser;
+        return orderResponse;
 
     }
 
 
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public void approveOrder(String userId, String orderId, ApproveOrderReq request) throws MessagingException {
+    public String approveOrder(String userId, String orderId, ApproveOrderReq request) throws MessagingException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -307,45 +250,7 @@ public class OrderService {
 
         Cart cart = user.getCart();
 
-
-        GetOrderUserRes orderResponse = GetOrderUserRes.builder()
-                .orderId(order.getOrderId())
-                .orderCode(order.getOrderCode())
-                .status(order.getOrderStatus())
-                .amount(order.getOrderAmount())
-                .userId(user.getId())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .userAddress(user.getUserAddress())
-                .shipAddress(order.getShipAddress())
-                .orderItems(orderItemsList.stream()
-                        .map(item -> CreateOrderItemRes.builder()
-                                .orderItemId(item.getOrderItemId())
-                                .orderId(item.getOrder().getOrderId())
-                                .quantity(item.getQuantity())
-                                .product(ProductForCartItem.builder()
-                                        .productId(item.getProduct().getProductId())
-                                        .productName(item.getProduct().getProductName())
-                                        .productImage(item.getProduct().getProductImage())
-                                        .productVolume(item.getProduct().getProductVolume())
-                                        .productUnit(item.getProduct().getProductUnit())
-                                        .productCode(item.getProduct().getProductCode())
-                                        .productQuantity(item.getProduct().getProductQuantity())
-                                        .discount(item.getProduct().getDiscount())
-                                        .productPrice(item.getProduct().getProductPrice())
-                                        .colorName(item.getProduct().getColor().getColorName())
-                                        .categoryName(item.getProduct().getCategory().getCategoryName())
-                                        .build())
-                                .createAt(item.getCreateAt())
-                                .build())
-                        .toList())
-                .paymentMethod(order.getPayment().getPaymentMethod())
-                .paymentStatus(order.getPayment().getPaymentStatus())
-                .createAt(order.getCreateAt())
-                .updateAt(order.getUpdateAt())
-                .completeAt(order.getCompleteAt())
-                .build();
-
+        UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(order);
 
         if(request.getOrderStatus() == OrderStatus.Approved){
 
@@ -380,6 +285,8 @@ public class OrderService {
 
             emailService.sendOrderApprovedEmail(orderResponse);
 
+            return "Approved Order Successfully!";
+
         } else if (request.getOrderStatus() == OrderStatus.Canceled) {
 
             order.setOrderStatus(OrderStatus.Canceled);
@@ -399,10 +306,13 @@ public class OrderService {
             order.setCompleteAt(LocalDateTime.now());
 
             emailService.sendOrderCanceledEmail(orderResponse);
+
+            return "Canceled Order Successfully!";
         } else {
             throw new RuntimeException("Unsupported order status: " + request.getOrderStatus());
         }
     }
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateOrderResponse CreateOrderByAdmin(String userId, CreateOrderRequest request) throws MessagingException {
@@ -465,7 +375,7 @@ public class OrderService {
         CreateOrderResponse response = orderMapper.toCreateOrderResponse(savedOrder);
         response.setFirstName(savedOrder.getUser().getFirstName());
 
-        GetOrderUserRes orderResponse = orderMapper.toGetOrderResponse(savedOrder);
+        UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(savedOrder);
 
         emailService.sendOrderCreatedByAdminEmail(
                 user.getEmail(),
@@ -500,10 +410,5 @@ public class OrderService {
         orderRepository.deleteById(id);
     }
 
-    public Page<SearchOrdersResponse> searchOrdersByAdmin(String keyword, String orderStatus, Pageable pageable){
-        Specification<Order> specification = OrderSpecification.searchOrder(keyword, orderStatus);
-        Page<Order> orders = orderRepository.findAll(specification, pageable);
 
-        return orders.map(order -> orderMapper.toSearchOrdersResponse(order));
-    }
 }

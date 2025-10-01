@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -90,6 +91,22 @@
             border-radius: 5px;
             margin-top: 10px;
         }
+        .product-item {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .product-item img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            margin-right: 15px;
+            border-radius: 5px;
+        }
+        .product-details {
+            flex: 1;
+        }
         @media only screen and (max-width: 600px) {
             .container {
                 margin: 0;
@@ -109,7 +126,10 @@
     <div class="content">
         <p class="greeting">Kính gửi Quý khách,</p>
 
-        <p>Chúng tôi xin vui mừng thông báo rằng đơn hàng của quý khách đã được <strong>phê duyệt</strong> và sẽ được giao đến địa chỉ: <strong th:text="${shipAddress}">123 Đường ABC, Quận 1, TP. HCM</strong>. Dưới đây là thông tin chi tiết về đơn hàng:</p>
+        <p>Chúng tôi xin vui mừng thông báo rằng đơn hàng của quý khách đã được
+            <strong>phê duyệt</strong> và sẽ được giao đến địa chỉ:
+            <strong th:text="${shipAddress}">123 Đường ABC, Quận 1, TP. HCM</strong>.
+            Dưới đây là thông tin chi tiết về đơn hàng:</p>
 
         <div class="order-info">
             <h3>Thông tin đơn hàng</h3>
@@ -125,7 +145,7 @@
                 <tr>
                     <th>Tình trạng hiện tại:</th>
                     <td>
-                        <div class="status APPROVED" th:text="'Đã phê duyệt'">Đã phê duyệt</div>
+                        <div class="status APPROVED" th:text="${status}">Đã phê duyệt</div>
                     </td>
                 </tr>
                 <tr>
@@ -134,7 +154,7 @@
                 </tr>
                 <tr>
                     <th>Phương thức thanh toán:</th>
-                    <td th:text="${paymentMethod.toString()}">COD</td>
+                    <td th:text="${paymentMethod}">COD</td>
                 </tr>
                 <tr>
                     <th>Trạng thái thanh toán:</th>
@@ -144,20 +164,27 @@
         </div>
 
         <h3>Chi tiết đơn hàng</h3>
-        <div th:if="${orderItems != null}" th:each="item : ${orderItems}">
-            <p>
-                <strong th:text="${item.product.productName}">Sản phẩm</strong>
-                - Số lượng: <span th:text="${item.quantity}">1</span>
-                - Giá: <span th:text="${item.product.productPrice} + ' VNĐ'">100.000 VNĐ</span>
-                <span th:if="${item.product.discount > 0}">
-                    - Giảm giá: <span th:text="${item.product.discount} + '%'">0%</span>
-                </span>
-            </p>
+        <div th:if="${orderItems != null}" th:each="item : ${orderItems}" class="product-item">
+            <img th:if="${item.productImage != null and !item.productImage.isEmpty()}"
+                 th:src="${item.productImage[0]}" alt="Ảnh sản phẩm"/>
+            <div class="product-details">
+                <p>
+                    <strong th:text="${item.productName}">Tên sản phẩm</strong><br>
+                    Số lượng: <span th:text="${item.quantity}">1</span><br>
+                    Giá: <span th:text="${item.productPrice} + ' VNĐ'">100.000 VNĐ</span><br>
+                    <span th:if="${item.colorName != null}">
+                        Màu sắc: <span th:text="${item.colorName}">Đỏ</span><br>
+                    </span>
+                    <span th:if="${item.categoryName != null}">
+                        Danh mục: <span th:text="${item.categoryName}">Áo thun</span><br>
+                    </span>
+                </p>
+            </div>
         </div>
         <p th:if="${orderItems == null}">Chi tiết đơn hàng sẽ được hiển thị ở đây.</p>
 
         <div class="order-info">
-            <h3>Thông tin khách hàng44 & giao hàng</h3>
+            <h3>Thông tin khách hàng & giao hàng</h3>
             <table class="details-table">
                 <tr>
                     <th>Email:</th>
@@ -182,7 +209,10 @@
             </table>
         </div>
 
-        <p>Nếu quý khách có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email <a th:href="'mailto:support@company.com'" th:text="'support@company.com'">support@company.com</a> hoặc số điện thoại <span th:text="'0123 456 789'">0123 456 789</span>.</p>
+        <p>Nếu quý khách có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email
+            <a th:href="'mailto:support@company.com'" th:text="'support@company.com'">support@company.com</a>
+            hoặc số điện thoại <span th:text="'0123 456 789'">0123 456 789</span>.
+        </p>
 
         <a th:href="'#'" class="btn" th:if="${orderId != null}">Theo dõi đơn hàng</a>
     </div>
@@ -194,3 +224,4 @@
 </div>
 </body>
 </html>
+

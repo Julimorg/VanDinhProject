@@ -1,5 +1,6 @@
 package com.example.managementapi.Entity;
 
+import com.example.managementapi.Enum.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

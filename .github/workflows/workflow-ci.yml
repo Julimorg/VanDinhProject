@@ -1,0 +1,74 @@
+name: CI/CD All Projects
+
+on:
+  workflow_dispatch:   # Cho phép chạy thủ công từ tab Actions
+  push:                # Chạy khi có commit vào main
+    branches: [ "main" , "Fong" , "bao" ]
+  pull_request:        # Hoặc khi có PR vào main
+    branches: [ "main" ]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: maven
+
+      - name: Build Backend
+        working-directory: ./BE   # đổi thành ./be nếu thư mục viết thường
+        run: mvn clean install -DskipTests
+
+  # admin:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #         cache-dependency-path: ./admin/package-lock.json
+
+  #     - name: Build Admin
+  #       working-directory: ./admin
+  #       run: npm ci && npm run build
+
+  # user:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #         cache-dependency-path: ./user/package-lock.json
+
+  #     - name: Build User
+  #       working-directory: ./user
+  #       run: npm ci && npm run build
+
+  # mobile:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: '3.24.0'   # chỉnh version Flutter của bạn ở đây
+  #         channel: 'stable'
+
+  #     - name: Build Mobile
+  #       working-directory: ./mobile
+  #       run: |
+  #         flutter pub get
+  #         flutter test

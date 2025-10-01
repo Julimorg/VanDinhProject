@@ -30,12 +30,13 @@ public class UpdateUserByAdminReq {
     private String phone;
 
     private String status;
+
     private Set<Role> roles;
 
     private MultipartFile userImg;
 
-
     private LocalDate userDob;
+
     private String userAddress;
 
 }

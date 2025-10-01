@@ -23,7 +23,7 @@ public class UpdateUserByAdminRes {
     private String phone;
     private LocalDate userDob;
     private String userAddress;
-    private Set<RoleRes> roles;
+    private Set<RoleInGetUserRes> roles;
     private String status;
 
     private String userImg;

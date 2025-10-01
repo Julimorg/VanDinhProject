@@ -24,6 +24,8 @@ public class CreateOrderFromCartRes {
 
     private String userId;
 
+    private String userName;
+
     private String email;
 
     private String userAddress;
@@ -41,6 +43,8 @@ public class CreateOrderFromCartRes {
     private PaymentMethod paymentMethod;
 
     private PaymentMethodStatus paymentStatus;
+
+    private String createBy;
 
     private LocalDateTime createAt;
 

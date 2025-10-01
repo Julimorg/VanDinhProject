@@ -72,28 +72,34 @@
         <h3>Thông tin đơn hàng</h3>
         <p><strong>Mã đơn hàng:</strong> <span th:text="${order.orderCode}">[Mã đơn hàng]</span></p>
         <p><strong>Trạng thái:</strong> <span th:text="${order.status}">[Trạng thái]</span></p>
-        <p><strong>Ngày đặt hàng:</strong> <span th:text="${order.createAt}">[Ngày đặt hàng]</span></p>
+        <p><strong>Ngày đặt hàng:</strong> <span th:text="${#temporals.format(order.createAt, 'dd/MM/yyyy HH:mm')}">[Ngày đặt hàng]</span></p>
         <p><strong>ID khách hàng:</strong> <span th:text="${order.userId}">[ID khách hàng]</span></p>
         <p><strong>Email khách hàng:</strong> <span th:text="${order.email}">[Email khách hàng]</span></p>
         <p><strong>Số điện thoại:</strong> <span th:text="${order.phone}">[Số điện thoại]</span></p>
         <p><strong>Địa chỉ giao hàng:</strong> <span th:text="${order.shipAddress}">[Địa chỉ giao hàng]</span></p>
-        <p><strong>Tổng tiền:</strong> <span th:text="${order.amount} + ' VNĐ'">[Tổng tiền]</span></p>
+        <p><strong>Tổng tiền:</strong>
+            <span th:text="${#numbers.formatDecimal(order.amount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Tổng tiền]</span>
+        </p>
         <p><strong>Phương thức thanh toán:</strong> <span th:text="${order.paymentMethod}">[Phương thức thanh toán]</span></p>
         <p><strong>Trạng thái thanh toán:</strong> <span th:text="${order.paymentStatus}">[Trạng thái thanh toán]</span></p>
 
         <table class="order-details">
+            <thead>
             <tr>
                 <th>Sản phẩm</th>
                 <th>Số lượng</th>
                 <th>Đơn giá</th>
                 <th>Thành tiền</th>
             </tr>
+            </thead>
+            <tbody>
             <tr th:each="item : ${order.orderItems}">
-                <td th:text="${item.product.productName}">[Tên sản phẩm]</td>
-                <td th:text="${item.product.productQuantity}">[Số lượng]</td>
-                <td th:text="${item.product.productPrice} + ' VNĐ'">[Đơn giá]</td>
-                <td th:text="${item.product.productQuantity * item.product.productPrice} + ' VNĐ'">[Thành tiền]</td>
+                <td th:text="${item.productName}">[Tên sản phẩm]</td>
+                <td th:text="${item.quantity}">[Số lượng]</td>
+                <td th:text="${#numbers.formatDecimal(item.productPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Đơn giá]</td>
+                <td th:text="${#numbers.formatDecimal(item.quantity * item.productPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Thành tiền]</td>
             </tr>
+            </tbody>
         </table>
 
         <a th:href="${orderManagementUrl}" class="button">Xem và Xử Lý Đơn Hàng</a>

@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetOrderUserRes {
+public class UpdateOrderByUserRes {
     private String orderId;
 
     private String orderCode;
@@ -36,7 +36,7 @@ public class GetOrderUserRes {
 
     private String shipAddress;
 
-    private List<CreateOrderItemRes> orderItems;
+    private List<CreateOrderItemRes> items;
 
     private PaymentMethod paymentMethod;
 

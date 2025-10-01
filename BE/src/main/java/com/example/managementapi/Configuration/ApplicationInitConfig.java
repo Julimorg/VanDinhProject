@@ -4,6 +4,7 @@ package com.example.managementapi.Configuration;
 import com.example.managementapi.Entity.Role;
 import com.example.managementapi.Entity.User;
 import com.example.managementapi.Enum.Status;
+import com.example.managementapi.Enum.UserRole;
 import com.example.managementapi.Repository.RoleRepository;
 import com.example.managementapi.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,17 +32,35 @@ public class ApplicationInitConfig {
             if (userRepository.findByUserName("admin").isEmpty()) {
                 log.info("Admin does not exist, creating admin user");
 
-                //? Check xem DB có role ADMIN chưa
+                //? Check xem DB có role chưa
                 //? Có thì lấy từ DB Ra
                 //? Ko thì tự động tạo
-                Role adminRole = roleRepository.findByName("ADMIN")
+
+                roleRepository.findByName(String.valueOf(UserRole.USER))
                         .orElseGet(() -> {
                             Role newRole = Role.builder()
-                                    .name("ADMIN")
+                                    .name(String.valueOf(UserRole.USER))
+                                    .description("Default Role role")
+                                    .build();
+                            return roleRepository.save(newRole);
+                        });
+
+                roleRepository.findByName(String.valueOf(UserRole.STAFF))
+                        .orElseGet(() -> {
+                    Role newRole = Role.builder()
+                            .name(String.valueOf(UserRole.STAFF))
+                            .description("Default Staff role")
+                            .build();
+                    return roleRepository.save(newRole);
+                });
+
+                Role adminRole = roleRepository.findByName(String.valueOf(UserRole.ADMIN))
+                        .orElseGet(() -> {
+                            Role newRole = Role.builder()
+                                    .name(String.valueOf(UserRole.ADMIN))
                                     .description("Administrator role")
                                     .build();
                             Role savedRole = roleRepository.save(newRole);
-                            log.info("Created role: {}", savedRole);
                             return savedRole;
                         });
 

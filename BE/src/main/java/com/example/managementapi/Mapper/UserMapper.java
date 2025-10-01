@@ -1,7 +1,7 @@
 package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.Auth.SignUpReq;
-import com.example.managementapi.Dto.Request.User.CreateStaffReq;
+import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Response.User.*;
@@ -11,7 +11,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {OrderMapper.class})
 public interface UserMapper {
 
     //* =========================== GET MAPPER ===========================
@@ -23,14 +23,18 @@ public interface UserMapper {
 
     SearchByUserRes toUserSearchResByUser(User user);
 
+    GetUserProfileDetailByAdminRes toGetUserProfileDetailByAdminRes(User user);
+
+    GetProfileDetailRes toGetProfileDetailRes(User user);
+
     //* =========================== POST MAPPER ===========================
 
     @Mapping(target = "userImg", ignore = true)
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "roles", ignore = true)
-    User toCreateStaff(CreateStaffReq request);
+    User toCreateStaff(CreateUserReq request);
 
-    CreateStaffRes toCreateStaffRes(User user);
+    CreateUserRes toCreateStaffRes(User user);
 
     SignUpUserRes toSignUpUserRes(User user);
 
