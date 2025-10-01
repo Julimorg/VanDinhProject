@@ -214,6 +214,7 @@ public class OrderService {
 
             paymentUrl = vnPayService.createOrder(httpRequest, orderId);
 
+            log.warn("PAYMENT URL: " + paymentUrl);
             payment.setPaymentStatus(PaymentMethodStatus.Paid);
 
             paymentRepository.save(payment);
@@ -222,6 +223,8 @@ public class OrderService {
 
         }
         UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(userOrder);
+
+        orderResponse.setPaymentUrl(paymentUrl);
 
         emailService.sendOrderNotificationToAdmin(adminEmail,
                 orderResponse,

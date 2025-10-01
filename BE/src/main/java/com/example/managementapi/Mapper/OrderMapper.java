@@ -97,7 +97,7 @@ public interface OrderMapper {
     @Mapping(source = "shipAddress", target = "shipAddress")
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     @Mapping(source = "payment.paymentStatus", target = "paymentStatus")
-    @Mapping(source = "orderItems", target = "items")
+    @Mapping(source = "orderItems", target = "orderItems")
     @Mapping(source = "createAt", target = "createAt")
     @Mapping(source = "updateAt", target = "updateAt")
     @Mapping(source = "completeAt", target = "completeAt")

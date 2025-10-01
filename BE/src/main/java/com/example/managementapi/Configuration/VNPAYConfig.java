@@ -1,8 +1,5 @@
 package com.example.managementapi.Configuration;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -22,40 +19,50 @@ public class VNPAYConfig {
     ! VÌ ĐÂY LÀ NHỮNG METHOD - ATTRIBUTES ĐÃ ĐƯỢC CONFIG DEFAULT SẴN
     ! */
 
-//    @Setter
-//    @Value("${vnp.secretkey}")
-    public static String vnp_HashSecret;
 
     @Value("${vnp.secretkey}")
     public void secretKey(String secretKey) {
         VNPAYConfig.vnp_HashSecret = secretKey;
     }
 
-    @NonFinal
-    @Getter
-    @Setter
     @Value("${vnp.tmncode}")
-    private static String TMN_CODE;
+    public void tmnCode(String tmnCode) {
+        VNPAYConfig.vnp_TmnCode = tmnCode;
+    }
 
-    @NonFinal
-    @Getter
-    @Setter
-    @Value("${spring.vnp.version}")
-    private static String VERSION;
+    @Value("${vnp.urlDevTest}")
+    public void urlDevTest(String urlDevTest) {
+        VNPAYConfig.vnp_PayUrl = urlDevTest;
+    }
 
-    @NonFinal
-    @Getter
-    @Value("${spring.vnp.command}")
-    private static String COMMAND;
+    @Value("${vnp.returnUrl}")
+    public void returnUrl(String returnUrl) {
+        VNPAYConfig.vnp_ReturnUrl = returnUrl;
+    }
 
-    public static String vnp_PayUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    public static String vnp_Returnurl = "http://localhost:8080/api/v1/vn-pay/vnpay-return";
-    public static String vnp_TmnCode = TMN_CODE;
-//    public static String vnp_HashSecret = SECRET_KEY;
+    @Value("${vnp.version}")
+    public void version(String version) {
+        VNPAYConfig.vnp_Version = version;
+    }
 
-    public static String vnp_Version = "2.1.0";
-    public static String vnp_Command = "pay";
-    public static String vnp_apiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+    @Value("${vnp.command}")
+    public void command(String command) {
+        VNPAYConfig.vnp_Command = command;
+    }
+
+    @Value("${vnp.apiUrl}")
+    public void apiUrl(String apiUrl) {
+        VNPAYConfig.vnp_apiUrl = apiUrl;
+    }
+
+
+    public static String vnp_PayUrl;
+    public static String vnp_ReturnUrl;
+    public static String vnp_TmnCode ;
+    public static String vnp_HashSecret;
+    public static String vnp_Version;
+    public static String vnp_Command;
+    public static String vnp_apiUrl;
 
     //? Sử dụng thuật toán Md5 để mã hóa message
     public static String md5(String message) {
@@ -98,12 +105,12 @@ public class VNPAYConfig {
     //? Method Quan trọng dùng để tạo Signature ( SecureHash ) khi gọi sang VnPay
 
     /*
-    * Quy Trình của Method
-    * Lấy tất cả key trong fields (map chứa các tham số gửi VNPay).
-    * Sort (sắp xếp theo alphabet) danh sách key.
-    * Ghép lại thành 1 chuỗi dạng key1=value1&key2=value2....
-    * Dùng hmacSHA512 để tạo chữ ký bảo mật với vnp_HashSecret.
-    * */
+     * Quy Trình của Method
+     * Lấy tất cả key trong fields (map chứa các tham số gửi VNPay).
+     * Sort (sắp xếp theo alphabet) danh sách key.
+     * Ghép lại thành 1 chuỗi dạng key1=value1&key2=value2....
+     * Dùng hmacSHA512 để tạo chữ ký bảo mật với vnp_HashSecret.
+     * */
 
     public static String hashAllFields(Map fields) {
         List fieldNames = new ArrayList(fields.keySet());

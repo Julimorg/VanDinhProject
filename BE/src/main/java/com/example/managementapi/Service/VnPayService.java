@@ -2,11 +2,9 @@ package com.example.managementapi.Service;
 
 
 import com.example.managementapi.Configuration.VNPAYConfig;
-import com.example.managementapi.Dto.Request.Order.UpdateOrderReq;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.Payment;
 import com.example.managementapi.Repository.OrderRepository;
-import com.example.managementapi.Repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +54,7 @@ public class VnPayService {
         vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang " + orderId);
         vnp_Params.put("vnp_OrderType", "other");
-        vnp_Params.put("vnp_ReturnUrl", VNPAYConfig.vnp_Returnurl);
+        vnp_Params.put("vnp_ReturnUrl", VNPAYConfig.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
 //        String bank_code = req.getParameter("bankcode");

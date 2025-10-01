@@ -107,7 +107,7 @@ public class EmailService {
         context.setVariable("phone", orderResponse.getPhone());
         context.setVariable("userAddress", orderResponse.getUserAddress());
         context.setVariable("shipAddress", orderResponse.getShipAddress());
-        context.setVariable("items", orderResponse.getItems());
+        context.setVariable("items", orderResponse.getOrderItems());
         context.setVariable("completeAt", orderResponse.getCompleteAt() != null ? orderResponse.getCompleteAt().toString() : null);
         context.setVariable("company_name", "Công Ty ABC");
         context.setVariable("support_email", "support@abc.com");

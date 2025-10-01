@@ -36,7 +36,7 @@ public class UpdateOrderByUserRes {
 
     private String shipAddress;
 
-    private List<CreateOrderItemRes> items;
+    private List<CreateOrderItemRes> orderItems;
 
     private PaymentMethod paymentMethod;
 
