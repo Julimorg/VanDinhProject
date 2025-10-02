@@ -17,7 +17,7 @@ export const docApi = {
 
   //* ======================================================== Auth  ======================================================== */
   Login: async (body: LoginRequest): Promise<LoginResponse> => {
-        const url = `/log-in`
+        const url = `/auth/log-in`
         const res = await axiosClient.post(url, body)
         return res.data
     },
