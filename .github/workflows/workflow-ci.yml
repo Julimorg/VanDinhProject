@@ -21,24 +21,24 @@ jobs:
           cache: maven
 
       - name: Build Backend
-        working-directory: ./BE   # đổi thành ./be nếu thư mục viết thường
+        working-directory: ./BE  
         run: mvn clean install -DskipTests
 
-  # admin:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-  #         cache-dependency-path: ./admin/package-lock.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./admin/package-lock.json
 
-  #     - name: Build Admin
-  #       working-directory: ./admin
-  #       run: npm ci && npm run build
+      - name: Build Admin
+        working-directory: ./ADMIN
+        run: npm ci && npm run build
 
   # user:
   #   runs-on: ubuntu-latest
