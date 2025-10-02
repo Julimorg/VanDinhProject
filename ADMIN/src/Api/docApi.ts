@@ -1,4 +1,4 @@
-import type { Login, LoginResponseTokenData } from '@/Interface/auth';
+
 import axiosClient from './axiosClient';
 import type { TServiceItem } from '@/Interface/TServiceItems';
 import {  OrderPayload, OrderResponse } from '@/Interface/SendOder';
@@ -10,14 +10,18 @@ import { SearchResponse } from '@/Interface/TSearchTicket';
 import { TicketDetailResponse } from '@/Interface/TTicketDetail';
 import { ChangePass, ChangePassResponse } from '@/Interface/TChangePass';
 import { OrderSuccessResponse } from '@/Interface/TCash';
+import { LoginRequest, LoginResponse } from '@/Interface/Auth_Interface/ILogin';
 
 
 export const docApi = {
-  Login: async (body: Login): Promise<LoginResponseTokenData> => {
-        const url = `/account/log-in`
+
+  //* ======================================================== Auth  ======================================================== */
+  Login: async (body: LoginRequest): Promise<LoginResponse> => {
+        const url = `/log-in`
         const res = await axiosClient.post(url, body)
         return res.data
     },
+
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
   const url = `/account/change-password`;

@@ -1,6 +1,4 @@
 import { Routes, Route, Outlet } from 'react-router-dom';
-import Login from '@/Auth/Login';
-import Logout from '@/Auth/LogOut';
 import Dashboard from '@/Pages/Dashborad';
 import FindTicket from '@/Pages/FindTicket/FindTicketPage';
 import Shift from '@/Pages/Shift/ShiftPage';
@@ -10,8 +8,9 @@ import Navbar from '@/Components/Header';
 import DetailTicketPage from '@/Pages/DetailTicket/DetailTicketPage';
 import PayInfo from '@/Pages/Ticket/Payment/PayInfo';
 import Invoice from '@/Pages/Ticket/Invoice/Invoice';
-// import { TestSignalR } from '@/Pages/testSignalR/testSignalR';
 import PosInfo from '@/Pages/PosDeviceIno/PosDeviceInfo';
+import Login from '@/Pages/Login/LoginPage';
+import Logout from '@/Pages/LogOut';
 
 const DefaultRouter = () => {
   const LayoutWithNavbar = () => (
@@ -28,7 +27,6 @@ const DefaultRouter = () => {
       <Route path="/" element={<Login />} />
       <Route path="/logout" element={<Logout />} />
       <Route path="/invoice" element={<Invoice />} />
-      {/* -------------------------------------------------------------------------------------- */}
       <Route element={<LayoutWithNavbar />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/ticket" element={<Ticket />} />

@@ -7,9 +7,8 @@ interface AuthState {
   refreshToken: string | null;
   userName: string | null;
   id: string | null;
-  setTokens: (accessToken: string | null, refreshToken: string | null, userName: string | null) => void;
+  setTokens: (accessToken: string | null, refreshToken: string | null, userName: string | null, id: string | null) => void;
   clearTokens: () => void;
-  setLanguageId: (id: string|null) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -19,11 +18,10 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       userName: null,
       id: null,
-      setTokens: (accessToken, refreshToken, userName) =>
-        set({ accessToken, refreshToken, userName }),
+      setTokens: (accessToken, refreshToken, userName, id) =>
+        set({ accessToken, refreshToken, userName, id }),
       clearTokens: () =>
         set({ accessToken: null, refreshToken: null, userName: null, id: null }),
-      setLanguageId: (id) => set({ id }),
     }),
     {
       name: 'auth-storage',

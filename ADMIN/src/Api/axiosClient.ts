@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '@/Store/auth';
 
 const axiosClient = axios.create({
-  baseURL: 'https://zen-api.stlsolution.com/api/v1',
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -22,7 +22,7 @@ axiosClient.interceptors.request.use(
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    const res = error.response;
+    // const res = error.response;
 
     
     if (
