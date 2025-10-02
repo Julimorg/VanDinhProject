@@ -12,6 +12,9 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -21,8 +24,11 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.filter.CorsFilter;
+
 
 import javax.crypto.spec.SecretKeySpec;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -44,6 +50,24 @@ public class SecurityConfiguration {
     protected String SIGNER_KEY;
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowCredentials(true);
+        corsConfiguration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:3000"
+                // Thêm production origins nếu cần, ví dụ: "https://your-domain.com"
+        ));
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedMethod("*");
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", corsConfiguration);
+
+        return source;
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
     }
@@ -51,6 +75,8 @@ public class SecurityConfiguration {
     //? Config filter chain của Spring Security
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity, UserStatusFilter userStatusFilter) throws Exception {
+
+        httpSecurity.cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         //** Config ra các endpoint nào cần secure và endpoint nào không cần secure
         //? Config ra những enpoint ko cần secure với httpSecurity.authorizeHttpRequests()
@@ -75,14 +101,15 @@ public class SecurityConfiguration {
         );
 
         httpSecurity.addFilterAfter(userStatusFilter, BearerTokenAuthenticationFilter.class);
-
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 
 
         return httpSecurity.build();
     }
 
-    @Bean
+
+
+        @Bean
     public JwtDecoder jwtDecoder(){
 
         SecretKeySpec secretKeySpec = new SecretKeySpec(SIGNER_KEY.getBytes(), "HS512");

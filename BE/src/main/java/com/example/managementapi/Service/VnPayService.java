@@ -24,6 +24,7 @@ public class VnPayService {
 
     private final OrderRepository orderRepository;
 
+    private final VNPAYConfig vnPayConfig;
 
     public String createOrder(HttpServletRequest request, String orderId) throws UnsupportedEncodingException {
 
