@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -61,7 +62,11 @@ public class ProductService {
         for(MultipartFile image : images){
             if(image != null && !image.isEmpty()){
                 FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
-                String fileName = FileUpLoadUtil.getFileName(request.getProductName());
+
+                //String fileName = FileUpLoadUtil.getFileName(request.getProductName());
+                //Ở đây đang tạo file với tên trùng với nhau nên sau khi tạo product nếu upload 2 image trở lên
+                //thì 2+ image đó có tên trùng nhau và kết quả là 2+ image đó nhìn y chang
+                String fileName = FileUpLoadUtil.getFileName(request.getProductName() + "_"+ UUID.randomUUID());
                 CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
                 imgUrls.add(cloudinaryRes.getUrl());
             }
