@@ -3,5 +3,6 @@ SERVICE: 'service',
 LANGUAGE:'language',
 INVOICE:'invoice',
 ONSHIFT:'onshift',
-OFFSHIFT:'offshift'
+OFFSHIFT:'offshift',
+GET_USERS:'get all users',
 }

@@ -15,6 +15,8 @@ import { IApiResponse } from '@/Interface/IApiResponse';
 import { ILogOutRequest } from '@/Interface/Auth/ILogOutRequest';
 import { IResfreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
 import { useAuthStore } from '@/Store/IAuth';
+import { IApiResponsePagination } from '@/Interface/IApiResponsePagination';
+import { IUsersResponse } from '@/Interface/Users/IGetUsers';
 
 
 export const docApi = {
@@ -65,6 +67,32 @@ export const docApi = {
       throw error;
     }
   },
+
+  //* ======================================================== USERS  ======================================================== */
+
+  GetAllUsers: async (
+    params: {
+      status?: string;
+      page?: number;
+      size?: number;
+      sort?: string;
+      search?: string;
+    } = {}
+  ): Promise<IApiResponse<IApiResponsePagination<IUsersResponse>>> => {
+    const { status, page = 1, size = 5, sort = 'createAt,desc', search } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(status && status !== 'all' && { status }),
+      ...(search && { search }), 
+    });
+
+    const url = `/users/get-user?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {

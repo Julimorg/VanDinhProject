@@ -4,6 +4,7 @@ import Login from '@/Pages/Login/LoginPage';
 import Logout from '@/Pages/LogOut';
 import MainLayout from '@/Pages/MainLayout/MainLayout';
 import DetailTicketPage from '@/Pages/DetailTicket/DetailTicketPage';
+import UserManagement from '@/Pages/UsersManagement/UsersManagement';
 
 const Router = () => {
   return (
@@ -15,7 +16,7 @@ const Router = () => {
           <Route index element={<Navigate to="/dashboard" replace />} />
           
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="users" element={<DetailTicketPage />} />
+          <Route path="users" element={<UserManagement />} />
           {/* <Route path="orders" element={<OrdersPage />} /> */}
           {/* <Route path="products" element={<ProductsPage />} /> */}
           

@@ -89,6 +89,8 @@ public class AuthenticateService {
                 .id(user.getId())
                 .userName(user.getUserName())
                 .accessToken(accessToken)
+                .email(user.getEmail())
+                .userImg(user.getUserImg())
                 .refreshToken(refreshToken)
                 .authenticated(true)
                 .build();
