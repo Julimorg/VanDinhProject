@@ -8,9 +8,15 @@ import {
   ShoppingOutlined,
   SettingOutlined,
   LeftOutlined,
-  RightOutlined
+  RightOutlined,
+  ProductOutlined,
+  ShopOutlined,
+  BgColorsOutlined,
+  KeyOutlined,
+  DotChartOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
+import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
 
 const { Sider } = Layout;
 
@@ -61,6 +67,30 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile, dr
       icon: <ShoppingOutlined />,
       label: 'Quản Lý Sản Phẩm',
       path: '/products'
+    },
+    {
+      key: 'supplier',
+      icon: <ShopOutlined />,
+      label: 'Quản Lý Nhà Cung Cấp',
+      path: '/suppliers'
+    },
+    {
+      key: 'color',
+      icon: <BgColorsOutlined />,
+      label: 'Quản lý mã màu',
+      path: '/colors'
+    },
+    {
+      key: 'category',
+      icon: <KeyOutlined />,
+      label: 'Quản lý Vật Dụng',
+      path: '/category'
+    },
+    {
+      key: 'analytics',
+      icon: <DotChartOutlined />,
+      label: 'Quản lý Chi Tiêu',
+      path: '/analytics'
     },
     {
       key: 'settings',

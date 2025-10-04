@@ -3,8 +3,14 @@ import Dashboard from '@/Pages/Dashborad/DashBoardPage';
 import Login from '@/Pages/Login/LoginPage';
 import Logout from '@/Pages/LogOut';
 import MainLayout from '@/Pages/MainLayout/MainLayout';
-import DetailTicketPage from '@/Pages/DetailTicket/DetailTicketPage';
 import UserManagement from '@/Pages/UsersManagement/UsersManagement';
+import SupplierManagementPage from '@/Pages/SupplierManagement/SupplierManagementPage';
+import ColorManagement from '@/Pages/ColorManagement/ColorManagementPage';
+import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
+import OrderInfo from '@/Pages/Ticket/Payment/Component/OrderInfo';
+import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
+import ProductList from '@/Pages/ProductManagement/ProductManagePage';
+import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
 
 const Router = () => {
   return (
@@ -17,8 +23,13 @@ const Router = () => {
           
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="users" element={<UserManagement />} />
-          {/* <Route path="orders" element={<OrdersPage />} /> */}
-          {/* <Route path="products" element={<ProductsPage />} /> */}
+          <Route path="products" element={<ProductList />} />
+          <Route path="suppliers" element={<SupplierManagementPage />} />
+          <Route path="colors" element={<ColorManagement />} />
+          <Route path="category" element={<CategoryList />} />
+          <Route path="orders" element={<OrderManagementPage />} />
+          <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
+
           
           {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
           <Route path="settings/payment" element={<SettingsPaymentPage />} />
