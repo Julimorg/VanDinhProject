@@ -1,5 +1,5 @@
 // ShiftPage.tsx
-import Navbar from '@/Components/Header';
+import Navbar from '@/Pages/Dashborad/Header/Header';
 import TextBigTitle from '@/Components/TextBigTitle/TextBigTitle';
 import type React from 'react';
 import DataAfterShift from './Component/DataAfterShift';
@@ -8,12 +8,12 @@ import ButtonTextOnly from '@/Components/ButtonTextOnly/ButtonTextOnly';
 import ModalBox from '@/Components/ModalBox/ModalBox';
 import { useState } from 'react';
 import { useShiftStore } from '@/Hook/LocalUseContext/CrashierShift/ShiftProvider';
-import { useAuthStore } from '@/Store/auth';
+import { useAuthStore } from '@/Store/IAuth';
 import { useOnShift } from './Hook/useOnShift';
 import { useOffShift } from './Hook/useOffShift';
 import type { OnShift, OffShift } from '@/Interface/TShift';
 import { toast } from 'react-toastify';
-import { formatToVietnamTime, getFormattedTime } from '@/Utils';
+import { formatToVietnamTime, getFormattedTime } from '@/Utils/ulti';
 import Loading from '@/Components/Loading';
 import { isAxiosError } from 'axios';
 

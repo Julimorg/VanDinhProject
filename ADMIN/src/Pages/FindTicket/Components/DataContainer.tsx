@@ -4,7 +4,7 @@ import { EyeOutlined } from '@ant-design/icons';
 import type { TableProps } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ResSearchTicker } from '@/Interface/TSearchTicket';
-import { formatToVietnamTime } from '@/Utils';
+import { formatToVietnamTime } from '@/Utils/ulti';
 
 interface DataType {
   key: string;

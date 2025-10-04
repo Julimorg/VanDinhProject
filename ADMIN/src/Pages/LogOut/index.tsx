@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/Store/auth';
+import { useAuthStore } from '@/Store/IAuth';
 import Loading from '@/Components/Loading';
 
 const Logout: React.FC = () => {

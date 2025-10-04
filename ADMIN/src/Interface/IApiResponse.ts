@@ -1,4 +1,4 @@
-export type IResponse<T> = {
+export type IApiResponse<T> = {
     status_code?: number,
     message?: string,
     data: T,

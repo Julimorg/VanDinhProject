@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
 
+
+export const cutStringOnThirdChar = (name: string) => {
+    const cutString = name.substring(0,2);
+    const upperString = cutString.toLocaleUpperCase();
+    return upperString.toString();
+}
+
 export const useCurrentTime = () => {
   const [time, setTime] = useState(moment().tz('Asia/Ho_Chi_Minh').format('YYYY/MM/DD - HH:mm:ss'));
 

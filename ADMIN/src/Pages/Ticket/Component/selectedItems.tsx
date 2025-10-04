@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ButtonText from '@/Components/ButtonText-H';
 import { Icons } from '@/Components/Icons';
-import { formatCurrency } from '@/Utils';
+import { formatCurrency } from '@/Utils/ulti';
 
 type ActionType = 'increase' | 'decrease' | 'remove' | 'set';
 

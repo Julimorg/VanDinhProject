@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ProductCard from '@/Components/ProductCard';
 import ButtonText from '@/Components/ButtonText-H';
-import { useCurrentTime } from '../../Utils/index';
+import { useCurrentTime } from '../../Utils/ulti';
 import ComboCard from '@/Components/ComboCard';
 import { useService } from './Hook/useGetService';
 import { TServiceItem } from '@/Interface/TServiceItems';
@@ -14,8 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import { useSendOrder } from './Hook/useSendOder';
 import { getBookingPayload } from '@/Pages/Ticket/Payment/GetPayload';
 import { useOrderResponseStore } from '@/Store/OderResponseStore';
-import { formatCurrency } from '@/Utils';
-import { useAuthStore } from '@/Store/auth';
+import { formatCurrency } from '@/Utils/ulti';
+import { useAuthStore } from '@/Store/IAuth';
 import { useShiftStore } from '@/Hook/LocalUseContext/CrashierShift/ShiftProvider';
 
 const CurrentTime: React.FC = () => {

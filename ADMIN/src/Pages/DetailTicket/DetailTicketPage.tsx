@@ -1,10 +1,10 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Card, Descriptions, Space, Typography } from 'antd';
-import { formatCurrency, formatToVietnamTime } from '@/Utils';
+import { formatCurrency, formatToVietnamTime } from '@/Utils/ulti';
 import { TicketDetailResponseData } from '@/Interface/TTicketDetail';
 import { useGetTicketDetail } from './Hook/useGetTicketDetail';
-import { useAuthStore } from '@/Store/auth';
+import { useAuthStore } from '@/Store/IAuth';
 import Loading from '@/Components/Loading';
 
 const { Title, Text } = Typography;

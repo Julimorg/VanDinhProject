@@ -10,17 +10,61 @@ import { SearchResponse } from '@/Interface/TSearchTicket';
 import { TicketDetailResponse } from '@/Interface/TTicketDetail';
 import { ChangePass, ChangePassResponse } from '@/Interface/TChangePass';
 import { OrderSuccessResponse } from '@/Interface/TCash';
-import { LoginRequest, LoginResponse } from '@/Interface/Auth_Interface/ILogin';
+import { ILoginRequest, ILoginResponse} from '@/Interface/Auth/ILogin';
+import { IApiResponse } from '@/Interface/IApiResponse';
+import { ILogOutRequest } from '@/Interface/Auth/ILogOutRequest';
+import { IResfreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
+import { useAuthStore } from '@/Store/IAuth';
 
 
 export const docApi = {
 
   //* ======================================================== Auth  ======================================================== */
-  Login: async (body: LoginRequest): Promise<LoginResponse> => {
-        const url = `/auth/log-in`
+  Login: async (body: ILoginRequest): Promise<IApiResponse<ILoginResponse>> => {
+        const url = `auth/log-in`
         const res = await axiosClient.post(url, body)
         return res.data
     },
+    
+    LogOut: async (body: ILogOutRequest): Promise<void> => {
+    const url = 'auth/log-out';
+    const res = await axiosClient.post(url, body);
+    return res.data;
+  },
+
+  RefreshToken: async (): Promise<IApiResponse<IResfreshTokenResponse>> => {
+    const url = 'auth/refresh-token';
+    const refreshToken = useAuthStore.getState().refreshToken;
+
+    if (!refreshToken) {
+      console.error('Không có refresh token trong store');
+      throw new Error('Không có refresh token');
+    }
+
+    console.log('Gửi yêu cầu refresh token:', { url, refreshToken });
+
+    try {
+      console.log('Bat dau refresh token nha');
+      const res = await axiosClient.get<IApiResponse<IResfreshTokenResponse>>(url, {
+        headers: {
+          Authorization: `Bearer ${refreshToken}`,
+        },
+      });
+
+      console.log('Nhận response refresh token:', res.data);
+      if (!res.data.data.accessToken) {
+        throw new Error('Response refresh token không hợp lệ');
+      }
+      return res.data;
+    } catch (error) {
+      console.error('Lỗi khi gọi API refresh token:', {
+        // message: error.message,
+        // response: error.response?.data,
+        // status: error.response?.status,
+      });
+      throw error;
+    }
+  },
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {

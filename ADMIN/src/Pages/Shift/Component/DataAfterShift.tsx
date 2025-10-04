@@ -1,6 +1,6 @@
 import { Table } from 'antd';
 import type { TableProps } from 'antd';
-import { formatCurrency, formatToVietnamTime } from '@/Utils';
+import { formatCurrency, formatToVietnamTime } from '@/Utils/ulti';
 import type { Transaction } from '@/Interface/TShift';
 import React from 'react';
 

@@ -1,15 +1,7 @@
-// store/useAuthStore.ts
+
+import { AuthState } from '@/Interface/Auth/ILogin';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
-interface AuthState {
-  accessToken: string | null;
-  refreshToken: string | null;
-  userName: string | null;
-  id: string | null;
-  setTokens: (accessToken: string | null, refreshToken: string | null, userName: string | null, id: string | null) => void;
-  clearTokens: () => void;
-}
 
 export const useAuthStore = create<AuthState>()(
   persist(
