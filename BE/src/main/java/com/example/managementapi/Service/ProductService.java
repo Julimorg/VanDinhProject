@@ -59,6 +59,7 @@ public class ProductService {
         MultipartFile[] images = request.getProductImage();
         List<String> imgUrls = new ArrayList<>();
 
+        int count = 1;
         for(MultipartFile image : images){
             if(image != null && !image.isEmpty()){
                 FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
@@ -66,9 +67,10 @@ public class ProductService {
                 //String fileName = FileUpLoadUtil.getFileName(request.getProductName());
                 //Ở đây đang tạo file với tên trùng với nhau nên sau khi tạo product nếu upload 2 image trở lên
                 //thì 2+ image đó có tên trùng nhau và kết quả là 2+ image đó nhìn y chang
-                String fileName = FileUpLoadUtil.getFileName(request.getProductName() + "_"+ UUID.randomUUID());
+                String fileName = FileUpLoadUtil.getFileName(request.getProductName() + "_"+ count);
                 CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
                 imgUrls.add(cloudinaryRes.getUrl());
+                count++;
             }
             else {
                 log.info("No image provided for product: {}", request.getProductName());
