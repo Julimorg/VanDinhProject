@@ -11,23 +11,35 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: (body: ILoginRequest) => docApi.Login(body),
     onSuccess: (response: IApiResponse<ILoginResponse>) => {
-      console.log('onSuccess response:', response); // Debug: Kiểm tra response có data không
-      const accessToken = response.data.accessToken;
-      const refreshToken = response.data.refreshToken; // Sửa: refreshToken từ response.data.refreshToken, không copy accessToken
-      const userId = response.data.id;
-      const userName = response.data.userName;
-      // const email = response.data.email || null;
-      // const userImg = response.data.userImg || null;
+      const { data } = response;
+      const accessToken = data.accessToken;
+      const refreshToken = data.refreshToken;
+      const userName = data.userName;
+      const email = data.email ?? null; 
+      const userImg = data.userImg ?? null; 
+      const id = data.id;
+      const authenticated = data.authenticated;
 
-      if (accessToken && refreshToken && userName && userId) {
-        setTokens(accessToken, refreshToken, userName, userId);
-        console.log('Tokens set successfully, check localStorage');
+      if (accessToken && refreshToken && userName && id && authenticated) {
+   
+        setTokens(accessToken, refreshToken, userName, email, userImg, id);
+        // console.log('Tokens set successfully, check localStorage');
       } else {
-        console.error('Missing token/user data in response:', response.data);
+    
+        // console.error('Missing required data in response:', {
+        //   hasAccessToken: !!accessToken,
+        //   hasRefreshToken: !!refreshToken,
+        //   hasUserName: !!userName,
+        //   hasId: !!id,
+        //   hasAuthenticated: authenticated,
+        //   email: email,
+        //   userImg: userImg,
+        //   fullData: data
+        // });
       }
     },
-    onError: (error) => {
-      console.error('Login mutation error:', error); // Debug lỗi mutation
-    },
+    // onError: (error) => {
+    //   console.error('Login mutation error:', error);
+    // },
   });
 };

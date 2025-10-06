@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
 
 const axiosClient = axios.create({
-  baseURL: "https://vandinh-api.onrender.com/api/v1/",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,16 +23,27 @@ let refreshTokenPromise: Promise<string | null> | null = null;
 axiosClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().accessToken;
-    if (token && config.headers && config.url !== '/auth/refresh-token') {
+
+    //? Những enpoint không cần gán Token vào Header
+    const publicEndpoints = [
+      '/auth/log-in',
+      '/auth/sign-up',
+      // '/auth/refresh-token',
+      '/auth/forgot-password',
+      '/reset-pass', // nếu có
+    ];
+
+    const isPublic = publicEndpoints.some((path) =>
+      config.url?.includes(path)
+    );
+
+    if (token && !isPublic && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // console.log('Request config:', { url: config.url, headers: config.headers });
+
     return config;
   },
-  (error) => {
-    // console.error('Request error:', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 //? Config resposne từ server
