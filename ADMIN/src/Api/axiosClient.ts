@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: "https://vandinh-api.onrender.com/api/v1/",
   headers: {
     'Content-Type': 'application/json',
   },
@@ -74,10 +74,10 @@ axiosClient.interceptors.response.use(
               useAuthStore.getState().setTokens(
                 accessToken,
                 refreshToken,
-                useAuthStore.getState().email,
+                useAuthStore.getState().email ?? null,
                 useAuthStore.getState().id,
                 useAuthStore.getState().userName,
-                useAuthStore.getState().userImg
+                useAuthStore.getState().userImg ?? null
               );
               axiosClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
               return accessToken;
