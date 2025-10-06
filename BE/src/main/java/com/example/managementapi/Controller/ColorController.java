@@ -48,12 +48,13 @@ public class ColorController {
     @GetMapping("/get-color")
     public ApiResponse<Page<GetColorRes>> getColor(
             @RequestParam(required = false) String supplierName,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Successfully!")
-                .data(colorService.getColor(supplierName, pageable))
+                .data(colorService.getColor(keyword, supplierName, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

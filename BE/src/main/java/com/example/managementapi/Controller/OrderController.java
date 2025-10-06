@@ -48,13 +48,14 @@ public class OrderController {
 
     @GetMapping("/user-order")
     public ApiResponse<Page<GetAllOrdersRes>> getAllOrders(
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @PageableDefault(size = 10, sort = "createAt"
                     , direction = Sort.Direction.DESC) Pageable pageable) {
         return ApiResponse.<Page<GetAllOrdersRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(orderService.getAllOrders(status, pageable))
+                .data(orderService.getAllOrders(keyword,status, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
