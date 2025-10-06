@@ -49,8 +49,8 @@ public class UserService {
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public Page<GetUserRes> getUser(String status, Pageable pageable){
-        Specification<User> spec = UserByAdminSpecification.statusFilter(status);
+    public Page<GetUserRes> getUser(String status, String keyword, Pageable pageable){
+        Specification<User> spec = UserByAdminSpecification.searchUserByAdmin(keyword, status);
         return userRepository.findAll(spec, pageable)
                 .map(user -> userMapper.toGetUser(user));
 

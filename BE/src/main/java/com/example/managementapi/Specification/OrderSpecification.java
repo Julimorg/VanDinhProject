@@ -35,7 +35,8 @@ public class OrderSpecification {
     }
 
     public static Specification<Order> searchOrder(String keyword, String orderStatus){
-        return Specification.allOf(filterByOrderStatus(orderStatus),
-                hasKeyword(keyword));
+        return Specification.allOf(
+                hasKeyword(keyword),
+                filterByOrderStatus(orderStatus));
     }
 }

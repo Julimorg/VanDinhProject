@@ -31,12 +31,13 @@ public class UserController {
     @GetMapping("/get-user")
     ApiResponse<Page<GetUserRes>> getUser(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetUserRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.getUser(status, pageable))
+                .data(userService.getUser(status, keyword, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

@@ -72,8 +72,8 @@ public class OrderService {
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
-    public Page<GetAllOrdersRes> getAllOrders(String status, Pageable pageable){
-        Specification<Order> spec = OrderSpecification.filterByOrderStatus(status);
+    public Page<GetAllOrdersRes> getAllOrders( String keyword, String status, Pageable pageable){
+        Specification<Order> spec = OrderSpecification.searchOrder(keyword,status);
         return orderRepository.findAll(spec, pageable)
                 .map(order -> orderMapper.toGetAllOrdersRes(order));
     }

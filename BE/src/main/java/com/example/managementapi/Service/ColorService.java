@@ -47,8 +47,8 @@ public class ColorService {
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
-    public Page<GetColorRes> getColor(String supplierName,Pageable pageable){
-        Specification<Color> spec = ColorSpecification.filterBySupplier(supplierName);
+    public Page<GetColorRes> getColor(String keyword, String supplierName,Pageable pageable){
+        Specification<Color> spec = ColorSpecification.searchByCriteria(keyword, supplierName);
         return colorRepository
                 .findAll(spec, pageable)
                 .map(color -> colorMapper.toGetColorRes(color));
