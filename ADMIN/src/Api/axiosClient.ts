@@ -54,10 +54,10 @@ axiosClient.interceptors.response.use(
     const originalRequest = error.config;
 
     //? Bỏ qua interceptor cho yêu cầu refresh token
-    if (originalRequest.url === '/auth/refresh-token') {
-      // console.log('Bỏ qua interceptor cho yêu cầu refresh token');
-      return Promise.reject(error);
-    }
+    // if (originalRequest.url === '/auth/refresh-token') {
+    //   console.log('Bỏ qua interceptor cho yêu cầu refresh token');
+    //   return Promise.reject(error);
+    // }
 
     //? Xử lý lỗi 401 hoặc 410
     if (
@@ -68,19 +68,19 @@ axiosClient.interceptors.response.use(
 
       try {
         if (!refreshTokenPromise) {
-          // console.log('Bắt đầu refresh token...');
+          console.log('Bắt đầu refresh token...');
           const refreshToken = useAuthStore.getState().refreshToken;
 
           if (!refreshToken) {
-            // console.error('Không có refresh token để gửi yêu cầu');
-            // throw new Error('Không có refresh token');
+            console.error('Không có refresh token để gửi yêu cầu');
+            throw new Error('Không có refresh token');
           }
 
           refreshTokenPromise = docApi
             .RefreshToken()
             .then((res) => {
               const { accessToken } = res.data;
-              // console.log('Refresh token thành công, access_token mới:', access_token);
+              console.log('Refresh token thành công, access_token mới:', accessToken);
 
               useAuthStore.getState().setTokens(
                 accessToken,
@@ -100,32 +100,32 @@ axiosClient.interceptors.response.use(
                 status: refreshError.response?.status,
               });
               useAuthStore.getState().clearTokens();
-              window.location.href = '/login';
+              // window.location.href = '/login';
               return null;
             })
             .finally(() => {
-              // console.log('Reset refreshTokenPromise');
+              console.log('Reset refreshTokenPromise');
               refreshTokenPromise = null;
             });
         }
 
         const newAccessToken = await refreshTokenPromise;
         if (!newAccessToken) {
-          // throw new Error('Không thể lấy access token mới');
+          throw new Error('Không thể lấy access token mới');
         }
 
-        // console.log('Retry request gốc với access_token mới:', newAccessToken, originalRequest.url);
+        console.log('Retry request gốc với access_token mới:', newAccessToken, originalRequest.url);
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosClient(originalRequest);
       } catch (err) {
-        // console.error('Lỗi khi xử lý refresh token:', err);
+        console.error('Lỗi khi xử lý refresh token:', err);
         return Promise.reject(err);
       }
     }
 
     const errorMessage =
       error.response?.data?.message || error.message || 'Đã có lỗi xảy ra';
-    // console.error('Response error:', { message: errorMessage, status: error.response?.status });
+    console.error('Response error:', { message: errorMessage, status: error.response?.status });
     toast.error(errorMessage);
     return Promise.reject(error);
   }

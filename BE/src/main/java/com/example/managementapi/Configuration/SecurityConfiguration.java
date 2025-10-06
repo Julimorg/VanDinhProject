@@ -108,7 +108,6 @@ public class SecurityConfiguration {
     }
 
 
-
         @Bean
     public JwtDecoder jwtDecoder(){
 
