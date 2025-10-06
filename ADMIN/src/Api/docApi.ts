@@ -12,30 +12,31 @@ import { ChangePass, ChangePassResponse } from '@/Interface/TChangePass';
 import { OrderSuccessResponse } from '@/Interface/TCash';
 import { ILoginRequest, ILoginResponse} from '@/Interface/Auth/ILogin';
 import { IApiResponse } from '@/Interface/IApiResponse';
-import { ILogOutRequest } from '@/Interface/Auth/ILogOutRequest';
-import { IResfreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
+import { IRefreshTokenReqest, IRefreshTokenResponse, IResfreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
 import { useAuthStore } from '@/Store/IAuth';
 import { IApiResponsePagination } from '@/Interface/IApiResponsePagination';
 import { IUsersResponse } from '@/Interface/Users/IGetUsers';
+import { ILogOutRequest } from '@/Interface/Auth/ILogOut';
 
 
 export const docApi = {
 
   //* ======================================================== Auth  ======================================================== */
+  
   Login: async (body: ILoginRequest): Promise<IApiResponse<ILoginResponse>> => {
         const url = `/auth/log-in`
         const res = await axiosClient.post(url, body)
         return res.data
     },
     
-    LogOut: async (body: ILogOutRequest): Promise<void> => {
+  LogOut: async (body: ILogOutRequest): Promise<IApiResponse<void>> => {
     const url = '/auth/log-out';
     const res = await axiosClient.post(url, body);
     return res.data;
   },  
 
-  RefreshToken: async (): Promise<IApiResponse<IResfreshTokenResponse>> => {
-    const url = 'auth/refresh-token';
+  RefreshToken: async (): Promise<IApiResponse<IRefreshTokenResponse>> => {
+    const url = '/auth/refresh-token';
     const refreshToken = useAuthStore.getState().refreshToken;
 
     if (!refreshToken) {
@@ -47,7 +48,7 @@ export const docApi = {
 
     try {
       console.log('Bat dau refresh token nha');
-      const res = await axiosClient.get<IApiResponse<IResfreshTokenResponse>>(url, {
+      const res = await axiosClient.post<IApiResponse<IRefreshTokenResponse>>(url, {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },

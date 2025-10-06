@@ -7,8 +7,8 @@ export interface ILoginRequest {
 export interface ILoginResponse {
   id: string,
   userName: string,
-  email?: string;
-  userImg?: string;
+  email?: string | null;
+  userImg?: string | null;
   accessToken: string,
   refreshToken: string,
   authenticated: boolean,

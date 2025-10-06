@@ -1,3 +1,5 @@
-export type IResfreshTokenResponse = {
+
+
+export type IRefreshTokenResponse = {
     accessToken: string | null;
 }
