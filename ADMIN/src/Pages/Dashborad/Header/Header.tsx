@@ -9,6 +9,7 @@ import {
 } from '@ant-design/icons';
 import { useAuthStore } from '@/Store/IAuth';
 import { cutStringOnThirdChar } from '@/Utils/ulti';
+import { useNavigate } from 'react-router-dom';
 
 const { Header: AntHeader } = Layout;
 
@@ -18,6 +19,9 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
+
+  const navigate = useNavigate(); 
+  
   const { userName, email, userImg } = useAuthStore();
 
   const [searchValue, setSearchValue] = useState('');
@@ -27,7 +31,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
   };
 
   const handleViewProfile = () => {
-    console.log('View profile clicked');
+    navigate('/profile');
   };
 
   const userMenuItems: MenuProps['items'] = [

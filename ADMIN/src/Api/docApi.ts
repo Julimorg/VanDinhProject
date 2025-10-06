@@ -23,16 +23,16 @@ export const docApi = {
 
   //* ======================================================== Auth  ======================================================== */
   Login: async (body: ILoginRequest): Promise<IApiResponse<ILoginResponse>> => {
-        const url = `auth/log-in`
+        const url = `/auth/log-in`
         const res = await axiosClient.post(url, body)
         return res.data
     },
     
     LogOut: async (body: ILogOutRequest): Promise<void> => {
-    const url = 'auth/log-out';
+    const url = '/auth/log-out';
     const res = await axiosClient.post(url, body);
     return res.data;
-  },
+  },  
 
   RefreshToken: async (): Promise<IApiResponse<IResfreshTokenResponse>> => {
     const url = 'auth/refresh-token';

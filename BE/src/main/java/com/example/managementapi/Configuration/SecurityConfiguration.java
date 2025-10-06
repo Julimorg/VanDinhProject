@@ -37,12 +37,12 @@ import java.util.List;
 public class SecurityConfiguration {
 
     private final String[] PUBLIC_POST_ENDPOINTS = {
-            "api/v1/auth/**",
-            "api/v1/reset-pass/**"
+            "/api/v1/auth/**",
+            "/api/v1/reset-pass/**"
     };
     private final String[] PUBLIC_SWAGGER = {"/swagger-ui/**","/v3/api-docs/**", "/webjars/**"};
     private final String[] PUBLIC_VNPAY = {
-            "api/v1/vn-pay/**"
+            "/api/v1/vn-pay/**"
     };
 
     @NonFinal
@@ -55,8 +55,8 @@ public class SecurityConfiguration {
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
-                "http://localhost:3000"
-                // Thêm production origins nếu cần, ví dụ: "https://your-domain.com"
+                "http://localhost:3000",
+                "https://van-dinh-project.vercel.app"
         ));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");

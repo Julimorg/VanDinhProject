@@ -11,6 +11,7 @@ import OrderInfo from '@/Pages/Ticket/Payment/Component/OrderInfo';
 import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
 import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
+import MyProfile from '@/Pages/MyProfile/MyProfilePage';
 
 const Router = () => {
   return (
@@ -29,6 +30,7 @@ const Router = () => {
           <Route path="category" element={<CategoryList />} />
           <Route path="orders" element={<OrderManagementPage />} />
           <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
+          <Route path="profile" element={<MyProfile />} />
 
           
           {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
