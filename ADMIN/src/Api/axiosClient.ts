@@ -16,7 +16,7 @@ axiosClient.defaults.timeout = 1000 * 60 * 10;
 //? Tạo 1 promise cho việc gọi api refresh_token
 //? Tại sao? -> Mục đích là tạo 1 promise này để khi nhận yêu cầu refreshToken đầu tiên
 //? hold lại việc gọi API refresh_token cho tới khi xong xuôi thì mới retry lại những api bị lỗi trước đó
-//? thay vì cứ để gọi lại refresh_token leein tục tới mỗi request lỗi
+//? thay vì cứ để gọi lại refresh_token liên tục tới mỗi request lỗi
 let refreshTokenPromise: Promise<string | null> | null = null;
 
 //? Config request xuống server
@@ -28,7 +28,7 @@ axiosClient.interceptors.request.use(
     const publicEndpoints = [
       '/auth/log-in',
       '/auth/sign-up',
-      // '/auth/refresh-token',
+      '/auth/refresh-token',
       '/auth/forgot-password',
       '/reset-pass', // nếu có
     ];
@@ -82,14 +82,15 @@ axiosClient.interceptors.response.use(
               const { accessToken } = res.data;
               console.log('Refresh token thành công, access_token mới:', accessToken);
 
+              const { refreshToken: currentRefreshToken, userName, email, userImg, id } = useAuthStore.getState();
               useAuthStore.getState().setTokens(
-                accessToken,
-                refreshToken,
-                useAuthStore.getState().email ?? null,
-                useAuthStore.getState().id,
-                useAuthStore.getState().userName,
-                useAuthStore.getState().userImg ?? null
-              );
+                accessToken,                      
+                currentRefreshToken,            
+                userName,                       
+                email ?? null,                         
+                userImg ?? null,                       
+                id                              
+                );
               axiosClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
               return accessToken;
             })
