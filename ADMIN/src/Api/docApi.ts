@@ -17,6 +17,7 @@ import { useAuthStore } from '@/Store/IAuth';
 import { IApiResponsePagination } from '@/Interface/IApiResponsePagination';
 import { IUsersResponse } from '@/Interface/Users/IGetUsers';
 import { ILogOutRequest } from '@/Interface/Auth/ILogOut';
+import { IGetMyProfileResponse } from '@/Interface/Users/IGetMyProfile';
 
 
 export const docApi = {
@@ -48,7 +49,7 @@ export const docApi = {
 
     try {
       console.log('Bat dau refresh token nha');
-      const res = await axiosClient.post<IApiResponse<IRefreshTokenResponse>>(url, {
+      const res = await axiosClient.get<IApiResponse<IRefreshTokenResponse>>(url, {
         headers: {
           Authorization: `Bearer ${refreshToken}`,
         },
@@ -93,6 +94,11 @@ export const docApi = {
     return res.data;
   },
 
+  GetMyProfile: async(userId: string): Promise<IApiResponse<IGetMyProfileResponse>> => {
+    const url = `/users/view-profile/${userId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {

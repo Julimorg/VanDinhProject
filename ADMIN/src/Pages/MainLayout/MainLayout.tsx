@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Sidebar from '../Dashborad/SideBar/SideBar';
-import Header from '../Dashborad/Header/Header';
+import Sidebar from '../Dashboard/SideBar/SideBar';
+import Header from '../Dashboard/Header/Header';
 
 
 

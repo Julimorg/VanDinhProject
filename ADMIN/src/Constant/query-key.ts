@@ -5,4 +5,5 @@ INVOICE:'invoice',
 ONSHIFT:'onshift',
 OFFSHIFT:'offshift',
 GET_USERS:'get all users',
+GET_MY_PROFILE:' get my profile'
 }
