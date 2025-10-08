@@ -18,6 +18,7 @@ import { IApiResponsePagination } from '@/Interface/IApiResponsePagination';
 import { IUsersResponse } from '@/Interface/Users/IGetUsers';
 import { ILogOutRequest } from '@/Interface/Auth/ILogOut';
 import { IGetMyProfileResponse } from '@/Interface/Users/IGetMyProfile';
+import { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from '../Interface/Users/IUpdateMyProfile';
 
 
 export const docApi = {
@@ -99,6 +100,37 @@ export const docApi = {
     const res = await axiosClient.get(url);
     return res.data;
   },
+
+  UpdateMyProfile: async (
+      body: IUdpateMyProfileRequest,
+      userId: string
+    ): Promise<IApiResponse<IUpdateMyProfileResponse>> => {
+      const url = `/users/update-profile/${userId}`;
+      const formData = new FormData();
+      
+      if (body.firstName !== undefined) formData.append('firstName', body.firstName);
+      if (body.lastName !== undefined) formData.append('lastName', body.lastName);
+      if (body.userName !== undefined) formData.append('userName', body.userName);
+      if (body.email !== undefined) formData.append('email', body.email);
+      if (body.phone !== undefined) formData.append('phone', body.phone);
+      if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
+      if (body.userImg instanceof File) formData.append('userImg', body.userImg);
+      if (body.userAddress) formData.append('userAddress', body.userAddress);
+  
+      for (const pair of formData.entries()) {
+    console.log(pair[0] + ': ' + pair[1]); 
+  }
+
+
+      const res = await axiosClient.patch(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data; charset=utf-8',
+        },
+      });      
+
+      console.log('API Response:', res.data);
+      return res.data;
+    },
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
