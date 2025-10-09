@@ -1,5 +1,4 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from '@/Pages/Dashborad/DashBoardPage';
 import Login from '@/Pages/Login/LoginPage';
 import Logout from '@/Pages/LogOut';
 import MainLayout from '@/Pages/MainLayout/MainLayout';
@@ -7,10 +6,11 @@ import UserManagement from '@/Pages/UsersManagement/UsersManagement';
 import SupplierManagementPage from '@/Pages/SupplierManagement/SupplierManagementPage';
 import ColorManagement from '@/Pages/ColorManagement/ColorManagementPage';
 import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
-import OrderInfo from '@/Pages/Ticket/Payment/Component/OrderInfo';
 import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
 import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
+import MyProfile from '@/Pages/MyProfile/MyProfilePage';
+import DashboardPage from '@/Pages/Dashboard/DashBoardPage';
 
 const Router = () => {
   return (
@@ -21,7 +21,7 @@ const Router = () => {
       <Route path="/" element={<MainLayout />}>
           <Route index element={<Navigate to="/dashboard" replace />} />
           
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="dashboard" element={<DashboardPage />} />
           <Route path="users" element={<UserManagement />} />
           <Route path="products" element={<ProductList />} />
           <Route path="suppliers" element={<SupplierManagementPage />} />
@@ -29,6 +29,7 @@ const Router = () => {
           <Route path="category" element={<CategoryList />} />
           <Route path="orders" element={<OrderManagementPage />} />
           <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
+          <Route path="profile" element={<MyProfile />} />
 
           
           {/* <Route path="settings/general" element={<SettingsGeneralPage />} />

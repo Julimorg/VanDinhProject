@@ -47,8 +47,9 @@ public class SupplierService {
     private ColorRepository colorRepository;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
-    public Page<GetSupplierRes> getSuppliers(Pageable pageable){
-        return supplierRepository.findAll(pageable)
+    public Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable){
+        Specification<Supplier> spec = SupplierSpecification.searchByCriteria(keyword);
+        return supplierRepository.findAll(spec,pageable)
                 .map(supplier -> supplierMapper.toGetSuppliers(supplier));
     }
 

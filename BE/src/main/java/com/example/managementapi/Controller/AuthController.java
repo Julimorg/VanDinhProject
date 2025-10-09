@@ -61,10 +61,10 @@ public class AuthController {
     }
 
 
-    @PostMapping("/refresh-token")
-    ApiResponse<RefreshRes> refreshToken(@RequestBody RefreshReq request)
+    @GetMapping("/refresh-token")
+    ApiResponse<RefreshRes> refreshToken(@RequestHeader("Authorization")  String authToken)
             throws ParseException, JOSEException {
-        var result = authenticationService.refreshToken(request);
+        var result = authenticationService.refreshToken(authToken);
 
         return ApiResponse.<RefreshRes>builder()
                 .status_code(HttpStatus.OK.value())

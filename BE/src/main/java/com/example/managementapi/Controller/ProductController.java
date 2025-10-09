@@ -26,6 +26,22 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+//    @GetMapping("/search-product")
+//    public ApiResponse<Page<GetProductsRes>> searchProducts(
+//            @RequestParam(value = "keyword", required = false) String keyword,
+//            @RequestParam(value = "categoryName", required = false) String categoryName,
+//            @RequestParam(value = "supplierName", required = false) String supplierName,
+//            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable){
+//
+//        return ApiResponse.<Page<GetProductsRes>>builder()
+//
+//                .status_code(HttpStatus.OK.value())
+//                .message(HttpStatus.OK.getReasonPhrase())
+//                .data(productService.searchProducts(keyword, categoryName, supplierName, pageable))
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
+
     @PostMapping(value = "/create-product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<CreateProductRes> createProduct(@ModelAttribute CreateProductReq request){
         return ApiResponse.<CreateProductRes>builder()
@@ -40,6 +56,7 @@ public class ProductController {
     @GetMapping("/get-products")
     ApiResponse<Page<GetProductsRes>> getProducts(
             @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable,
+            @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryName", required = false) String categoryName,
             @RequestParam(value = "supplierName", required = false) String supplierName,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
@@ -49,7 +66,7 @@ public class ProductController {
 
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(productService.getProducts(categoryName, supplierName, minPrice, maxPrice, pageable))
+                .data(productService.getProducts(keyword, categoryName, supplierName, minPrice, maxPrice, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -107,19 +124,5 @@ public class ProductController {
                 .build();
     }
 
-    @GetMapping("/search-product")
-    public ApiResponse<Page<GetProductsRes>> searchProducts(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "categoryName", required = false) String categoryName,
-            @RequestParam(value = "supplierName", required = false) String supplierName,
-            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable){
 
-        return ApiResponse.<Page<GetProductsRes>>builder()
-
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(productService.searchProducts(keyword, categoryName, supplierName, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
 }

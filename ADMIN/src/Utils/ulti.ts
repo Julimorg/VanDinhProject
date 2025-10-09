@@ -47,11 +47,14 @@ export const getFormattedTime = (): string => {
   });
 };
 
-// Format thời gian ISO sang giờ Việt Nam (UTC+7)
+//? Format thời gian ISO sang giờ Việt Nam (UTC+7)
 export const formatToVietnamTime = (isoString: string | null | undefined): string => {
   if (!isoString) return 'Chưa có';
   try {
-    return moment(isoString).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY - HH:mm:ss');
+    
+    const utcTime = moment.utc(isoString);  
+    const vnTime = utcTime.tz('Asia/Ho_Chi_Minh');
+    return vnTime.format('DD/MM/YYYY - HH:mm:ss');
   } catch (error) {
     console.error('Lỗi khi format thời gian:', error);
     return 'Lỗi thời gian';

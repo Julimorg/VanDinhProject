@@ -50,6 +50,14 @@ public class ProductService {
     @Autowired
     private final CloudinaryService cloudinaryService;
 
+//    public Page<GetProductsRes> searchProducts(String keyword, String categoryName, String supplierName, Pageable pageable){
+//        Specification<Product> specification = ProductSpecification.searchProduct(keyword, categoryName, supplierName);
+//        Page<Product> products = productRepository.findAll(specification, pageable);
+//
+//        return products.map(product -> productMapper.toGetProductsResponses(product));
+//    }
+
+
     //Tạo product
     public CreateProductRes createProduct(CreateProductReq request){
         if(productRepository.existsByProductName(request.getProductName())){
@@ -131,9 +139,19 @@ public class ProductService {
     //Get list product
     //Note: get thủ công cho supplier
     // Check xem findALl xem co lay them nhung thang ENtity ko lien quan ko
-    public Page<GetProductsRes> getProducts(String categoryName, String supplierName, Double minPrice, Double maxPrice, Pageable pageable){
+    public Page<GetProductsRes> getProducts(String categoryName,
+                                            String keyword,
+                                            String supplierName,
+                                            Double minPrice,
+                                            Double maxPrice,
+                                            Pageable pageable){
 
-        Specification<Product> specification = ProductSpecification.filterProduct(categoryName, supplierName, minPrice, maxPrice);
+        Specification<Product> specification = ProductSpecification.searchFilterForProduct(
+                keyword,
+                categoryName,
+                supplierName,
+                minPrice,
+                maxPrice);
 
         return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
     }
@@ -211,13 +229,6 @@ public class ProductService {
 
     public void deleteProduct(String id){
         productRepository.deleteById(id);
-    }
-
-    public Page<GetProductsRes> searchProducts(String keyword, String categoryName, String supplierName, Pageable pageable){
-        Specification<Product> specification = ProductSpecification.searchProduct(keyword, categoryName, supplierName);
-        Page<Product> products = productRepository.findAll(specification, pageable);
-
-        return products.map(product -> productMapper.toGetProductsResponses(product));
     }
 
 

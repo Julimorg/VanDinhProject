@@ -64,10 +64,27 @@ public class ProductSpecification {
                                    filterByPrice(minPrice, maxPrice));
     }
 
-    public static Specification<Product> searchProduct(String keyword, String categoryName, String supplierName){
-        return Specification.allOf(filterByCategory(categoryName),
-                                   filterBySupplier(supplierName),
-                                   hasKeyword(keyword));
+    public static Specification<Product> searchProduct(String keyword,
+                                                       String categoryName,
+                                                       String supplierName,
+                                                       Double minPrice,
+                                                       Double maxPrice){
+        return Specification.allOf(hasKeyword(keyword),
+                filterProduct(categoryName, supplierName, minPrice, maxPrice));
 
+
+    }
+
+    public static Specification<Product> searchFilterForProduct(String keyword,
+                                                  String categoryName,
+                                                  String supplierName,
+                                                  Double minPrice,
+                                                  Double maxPrice){
+        return(root, query, criteriaBuilder) -> {
+            query.distinct(true);
+            return Specification.allOf(
+                    searchProduct(keyword, categoryName,supplierName, minPrice, maxPrice)
+            ).toPredicate(root, query, criteriaBuilder);
+        };
     }
 }

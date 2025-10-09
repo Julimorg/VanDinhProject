@@ -33,12 +33,13 @@ public class SupplierController {
 
     @GetMapping("/get-suppliers")
     public ApiResponse<Page<GetSupplierRes>> getSupplier(
+            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "supplierName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetSupplierRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(supplierService.getSuppliers(pageable))
+                .data(supplierService.getSuppliers(keyword, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

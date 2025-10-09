@@ -23,7 +23,7 @@ export const useUsers = (
   params: UsersQueryParams = {},
   options?: UseUsersOptions
 ) => {
-  const { status, page = 1, size = 5, sort = "createAt,desc", search } = params;
+  const { status, page = 0, size = 5, sort = "createAt,desc", search } = params;
 
   return useQuery({
     ...options,

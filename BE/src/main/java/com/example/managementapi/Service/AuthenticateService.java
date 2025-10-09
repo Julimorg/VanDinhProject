@@ -30,6 +30,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.text.ParseException;
 import java.time.Instant;
@@ -134,9 +135,17 @@ public class AuthenticateService {
             log.error("Token already expired");
         }
     }
-    public RefreshRes refreshToken(RefreshReq request )
+    public RefreshRes refreshToken (String authHeader)
             throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getRefreshToken(), true);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid Token");
+        }
+
+        String refreshToken = authHeader.substring(7);
+
+        var signedJWT = verifyToken(refreshToken, true);
+
 
         var jit = signedJWT.getJWTClaimsSet().getJWTID();
 
