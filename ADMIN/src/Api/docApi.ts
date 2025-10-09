@@ -19,6 +19,7 @@ import { IUsersResponse } from '@/Interface/Users/IGetUsers';
 import { ILogOutRequest } from '@/Interface/Auth/ILogOut';
 import { IGetMyProfileResponse } from '@/Interface/Users/IGetMyProfile';
 import { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from '../Interface/Users/IUpdateMyProfile';
+import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICreateUser';
 
 
 export const docApi = {
@@ -119,7 +120,7 @@ export const docApi = {
   
       for (const pair of formData.entries()) {
     console.log(pair[0] + ': ' + pair[1]); 
-  }
+      }
 
 
       const res = await axiosClient.patch(url, formData, {
@@ -131,6 +132,34 @@ export const docApi = {
       console.log('API Response:', res.data);
       return res.data;
     },
+
+  CreateUser: async(body: ICreateUserRequest): Promise<IApiResponse<ICreateUserResponse>> => {
+    const url = `/users/create-staff`;
+    const formData = new FormData();
+
+    if (body.firstName !== undefined) formData.append('firstName', body.firstName);
+    if (body.lastName !== undefined) formData.append('lastName', body.lastName);
+    if (body.userName !== undefined) formData.append('userName', body.userName);
+    if (body.email !== undefined) formData.append('email', body.email);
+    if (body.phone !== undefined) formData.append('phone', body.phone);
+    if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
+    if (body.password !== undefined) formData.append('password', body.password);
+    if (body.userImg instanceof File) formData.append('userImg', body.userImg);
+    if (body.userAddress) formData.append('userAddress', body.userAddress);
+    if (body.roles !== undefined && body.roles.length > 0) {
+      body.roles.forEach((role) => {
+        formData.append('roles', role);
+      });
+    }
+
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
