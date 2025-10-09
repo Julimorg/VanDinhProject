@@ -22,7 +22,7 @@ public class ProductSpecification {
             if(supplierName == null || supplierName.isEmpty()){
                 return criteriaBuilder.conjunction();
             }
-            return criteriaBuilder.equal(criteriaBuilder.lower(root.get("suppliers").get("supplierName")), supplierName.toLowerCase());
+            return criteriaBuilder.equal(criteriaBuilder.lower(root.get("supplier").get("supplierName")), supplierName.toLowerCase());
         };
     }
 

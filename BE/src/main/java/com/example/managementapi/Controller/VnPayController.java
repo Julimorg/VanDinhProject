@@ -25,18 +25,52 @@ public class VnPayController {
         return switch (result) {
             case 1 -> ApiResponse.<String>builder()
                     .status_code(HttpStatus.OK.value())
-                    .message("Payment Successfully!")
+                    .message("Payment successfully!")
                     .timestamp(LocalDateTime.now())
                     .build();
-            case 0 -> ApiResponse.<String>builder()
+            case 2 -> ApiResponse.<String>builder()
                     .status_code(HttpStatus.OK.value())
-                    .message("Payment failed!")
+                    .message("Transaction not yet completed")
                     .timestamp(LocalDateTime.now())
                     .build();
-            default -> ApiResponse.<String>
-                            builder()
+            case 3 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Transaction failed")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case 4 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Transaction reversed")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case 5 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("VNPAY is processing refund")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case 6 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Refund request sent to bank")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case 7 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Transaction suspected as fraud")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case 8 -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Refund denied")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            case -1 -> ApiResponse.<String>builder()
                     .status_code(HttpStatus.OK.value())
                     .message("Wrong signature! Fake!")
+                    .timestamp(LocalDateTime.now())
+                    .build();
+            default -> ApiResponse.<String>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Unknown transaction status")
                     .timestamp(LocalDateTime.now())
                     .build();
         };
