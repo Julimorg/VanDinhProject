@@ -135,6 +135,7 @@ public class OrderService {
                 .orderStatus(OrderStatus.Pending)
                 .createBy(user.getUserName())
                 .orderAmount(cart.getTotalPrice())
+                .total_quantity(cart.getTotalQuantity())
                 .createAt(LocalDateTime.now())
                 .build();
 
@@ -216,6 +217,13 @@ public class OrderService {
 
             log.warn("PAYMENT URL: " + paymentUrl);
             payment.setPaymentStatus(PaymentMethodStatus.Paid);
+
+            for (OrderItem orderItem : userOrder.getOrderItems()) {
+                Product product = orderItem.getProduct();
+                int reduceQuantity = product.getProductQuantity() - orderItem.getQuantity();
+                product.setProductQuantity(reduceQuantity);
+                productRepository.save(product);
+            }
 
             paymentRepository.save(payment);
 
@@ -367,7 +375,7 @@ public class OrderService {
         order.setUser(user);
 
         Payment payment = new Payment();
-        payment.setPaymentMethod(PaymentMethod.CASH);
+        payment.setPaymentMethod(PaymentMethod.VN_PAY);
 
         order.setTotal_quantity(totalQuantity);
         order.setOrderItems(orderItems);
