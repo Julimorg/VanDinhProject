@@ -144,21 +144,21 @@ public class AuthenticateService {
 
         String refreshToken = authHeader.substring(7);
 
-        var signedJWT = verifyToken(refreshToken, true);
+        var signedJWT = verifyToken(refreshToken, false);
 
 
-        var jit = signedJWT.getJWTClaimsSet().getJWTID();
-
-        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jit)
-                .expiryDate(expiryTime)
-                .build();
-
-        invalidatedTokenRepository.save(invalidatedToken);
-
+//        var jit = signedJWT.getJWTClaimsSet().getJWTID();
+//
+//        var expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+//
+//
+//        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+//                .id(jit)
+//                .expiryDate(expiryTime)
+//                .build();
+//
+//        invalidatedTokenRepository.save(invalidatedToken);
+//
         var username = signedJWT.getJWTClaimsSet().getSubject();
 
         var user = userRepository.findByUserName(username).orElseThrow(() ->
@@ -257,16 +257,26 @@ public class AuthenticateService {
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        Date expiryTime = (isRefresh)
-                ? new Date(signedJWT.getJWTClaimsSet()
-                .getExpirationTime()
-                .toInstant()
-                .plus(REFRESH_DURATION, ChronoUnit.SECONDS)
-                .toEpochMilli())
-                : signedJWT.getJWTClaimsSet().getExpirationTime();
+        if (!signedJWT.verify(verifier)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
+
+//        Date expiryTime = (isRefresh)
+//                ? new Date(signedJWT.getJWTClaimsSet()
+//                .getExpirationTime()
+//                .toInstant()
+//                .plus(REFRESH_DURATION, ChronoUnit.SECONDS)
+//                .toEpochMilli())
+//                : signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date now = new Date();
 
         var verified = signedJWT.verify(verifier);
 
+        if (now.after(expiryTime)) {
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
         if(!verified && expiryTime.after(new Date()))
             throw  new AppException(ErrorCode.UNAUTHENTICATED);
 
