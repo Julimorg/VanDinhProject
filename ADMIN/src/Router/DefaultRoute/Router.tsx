@@ -11,6 +11,7 @@ import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
 import MyProfile from '@/Pages/MyProfile/MyProfilePage';
 import DashboardPage from '@/Pages/Dashboard/DashBoardPage';
+import UserDetailView from '@/Pages/UsersManagement/Components/UserDetail';
 
 const Router = () => {
   return (
@@ -19,10 +20,13 @@ const Router = () => {
       <Route path="/logout" element={<Logout />} />
 
       <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
+          {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
           
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<UserManagement />} />
+          <Route path="users" element={<UserManagement />}>
+            <Route path="user-detail/:id" element={<UserDetailView />} />
+
+          </Route>
           <Route path="products" element={<ProductList />} />
           <Route path="suppliers" element={<SupplierManagementPage />} />
           <Route path="colors" element={<ColorManagement />} />
@@ -37,8 +41,7 @@ const Router = () => {
           <Route path="settings/shipping" element={<SettingsShippingPage />} />
           <Route path="settings/notifications" element={<SettingsNotificationsPage />} /> */}
           
-          {/* 404 fallback */}
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
         </Route>
     </Routes>
   );

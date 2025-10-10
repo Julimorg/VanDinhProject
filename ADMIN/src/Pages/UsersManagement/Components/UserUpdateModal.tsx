@@ -64,8 +64,7 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, type, user }) 
             <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
           </Select>
         </Form.Item>
-        {/* Thêm các field khác như avatar upload, roles select, etc. nếu cần */}
-        {/* Ví dụ cho roles (giả sử multi-select) */}
+  
         <Form.Item name="roles" label="Vai trò">
           <Select mode="multiple">
             <Select.Option value="USER">Người dùng</Select.Option>

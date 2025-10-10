@@ -20,6 +20,7 @@ import { ILogOutRequest } from '@/Interface/Auth/ILogOut';
 import { IGetMyProfileResponse } from '@/Interface/Users/IGetMyProfile';
 import { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from '../Interface/Users/IUpdateMyProfile';
 import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICreateUser';
+import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 
 
 export const docApi = {
@@ -63,9 +64,9 @@ export const docApi = {
       return res.data;
     } catch (error) {
       console.error('Lỗi khi gọi API refresh token:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
+        // message: error.message,
+        // response: error.response?.data,
+        // status: error.response?.status,
       });
       throw error;
     }
@@ -98,6 +99,12 @@ export const docApi = {
 
   GetMyProfile: async(userId: string): Promise<IApiResponse<IGetMyProfileResponse>> => {
     const url = `/users/view-profile/${userId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  GetUserDetail: async(userId: string): Promise<IApiResponse<IGetUserDetailResponse>> => {
+    const url = `/users/get-profile/${userId}`;
     const res = await axiosClient.get(url);
     return res.data;
   },
