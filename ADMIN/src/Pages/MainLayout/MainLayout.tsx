@@ -47,7 +47,7 @@ const MainLayout = () => {
         />
         
         <Content className="m-6 min-h-[calc(100vh-112px)]">
-          {/* Outlet sẽ render component con dựa trên route */}
+       
           <Outlet />
         </Content>
       </Layout>

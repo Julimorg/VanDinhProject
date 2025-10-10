@@ -31,7 +31,6 @@ public class UpdateUseReq {
 
     private MultipartFile userImg;
 
-
     private LocalDate userDob;
     private String userAddress;
 
