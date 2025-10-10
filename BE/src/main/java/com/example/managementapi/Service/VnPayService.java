@@ -6,6 +6,7 @@ import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.Payment;
 import com.example.managementapi.Repository.OrderRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -172,15 +173,46 @@ public class VnPayService {
             fields.remove("vnp_SecureHash");
         }
         String signValue = VNPAYConfig.hashAllFields(fields);
-        if (signValue.equals(vnp_SecureHash)) {
-            if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
-                return 1;
-            } else {
-                return 0;
-            }
-        } else {
+
+        String transactionStatus = request.getParameter("vnp_TransactionStatus");
+        String responseCode = request.getParameter("vnp_ResponseCode");
+        System.out.println("TranSaction Status:" +transactionStatus);
+        System.out.println("Response Code:" +responseCode);
+
+        if(!signValue.equals(vnp_SecureHash)){
             return -1;
         }
+
+        switch (transactionStatus){
+            case "00":
+                return 1;
+            case "01":
+                return 2;
+            case "02":
+                return 3;
+            case "04":
+                return 4;
+            case "05":
+                return 5;
+            case "06":
+                return 6;
+            case "07":
+                return 7;
+            case "09":
+                return 8;
+            default:
+                return 0;
+        }
+
+//        if (signValue.equals(vnp_SecureHash)) {
+//            if ("00".equals(request.getParameter("vnp_TransactionStatus"))) {
+//                return 1;
+//            } else {
+//                return 0;
+//            }
+//        } else {
+//            return -1;
+//        }
     }
 }
 
