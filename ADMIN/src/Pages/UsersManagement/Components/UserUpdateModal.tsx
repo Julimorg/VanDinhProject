@@ -1,71 +1,164 @@
-// File: UserModal.tsx (component mới, tách riêng)
+
 import React from 'react';
-import { Modal, Form, Input, Select, DatePicker, Button, Space, Avatar, Tag, Spin } from 'antd';
-import type { IUsersResponse, UserRoles } from '@/Interface/Users/IGetUsers';
-import dayjs from 'dayjs'; // Giả sử dùng dayjs cho DatePicker, import nếu cần
+import { Modal, Form, Input, Select, DatePicker, message, Upload } from 'antd';
+import type { IUsersResponse } from '@/Interface/Users/IGetUsers';
+import { UploadOutlined } from '@ant-design/icons';
+import { useUpdateUser } from '../Hook/useUpdateUser';
+import { IUpdateUserRequest } from '@/Interface/Users/IUpdateUser';
 
 interface UserModalProps {
   visible: boolean;
   onCancel: () => void;
-  type: 'create' | 'update' | null;
   user?: IUsersResponse | null;
 }
 
-const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, type, user }) => {
+const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
   const [form] = Form.useForm();
 
+
+  const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id || '', {
+    onSuccess: () => {
+      message.success('Cập nhật người dùng thành công!');
+      onCancel();
+    },
+    onError: (error) => {
+      message.error('Cập nhật thất bại: ' + (error as Error).message);
+    },
+  });
+
+  //? Prefill form với dữ liệu user khi modal mở
   React.useEffect(() => {
-    if (visible && type === 'update' && user) {
-      form.setFieldsValue({
+    if (visible && user) {
+      const initialValues = {
         userName: user.userName,
         email: user.email,
         status: user.status,
-        // Thêm các field khác nếu cần
-      });
-    } else if (visible && type === 'create') {
+        roles: user.roles || [],
+    
+        userImg: user.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: user.userImg }] : [],
+      };
+      form.setFieldsValue(initialValues);
+    }
+  }, [visible, user, form]);
+
+  //? Reset form khi modal đóng
+  React.useEffect(() => {
+    if (!visible) {
       form.resetFields();
     }
-  }, [visible, type, user, form]);
+  }, [visible, form]);
 
   const handleOk = () => {
     form.submit();
   };
 
   const onFinish = (values: any) => {
-    console.log('Form values:', values); // Xử lý submit (gọi API tạo/cập nhật)
-    // Ví dụ: if (type === 'create') { createUser(values); } else { updateUser(user?.id, values); }
-    onCancel();
+  
+    if (values.userDob) {
+      values.userDob = values.userDob.format('YYYY-MM-DD');
+    }
+  
+    if (values.userImg && values.userImg.length > 0) {
+
+      const newFile = values.userImg.find((file: any) => file.originFileObj);
+      if (newFile) {
+        values.userImg = newFile.originFileObj; 
+      } else {
+       
+        values.userImg = undefined;
+      }
+    } else {
+      delete values.userImg; 
+    }
+
+    // console.log('Form values:', values); 
+
+    // console.log('user.id:', user?.id); 
+    if (!user?.id) {
+      message.error('Không tìm thấy ID user để cập nhật!');
+      return;
+    }
+    // console.log('Calling updateUser...');
+    updateUser(values as IUpdateUserRequest);
   };
 
-  const title = type === 'create' ? 'Thêm mới người dùng' : type === 'update' ? 'Chỉnh sửa thông tin' : 'Xem chi tiết';
+  //? getValueFromEvent để xử lý onChange của Upload trả về object, chuyển thành array
+  const normFile = (e: any) => {
+    if (Array.isArray(e)) {
+      return e;
+    }
+    return e?.fileList;
+  };
 
-  // Để xem chi tiết, có thể set form disabled, nhưng tạm thời dùng cùng form (bạn có thể thêm prop isView để disable)
+  const isLoading = isUpdating;
 
   return (
     <Modal
-      title={title}
-      visible={visible}
+      title="Chỉnh sửa thông tin"
+      open={visible}
       onOk={handleOk}
       onCancel={onCancel}
-      okText={type === 'create' ? 'Tạo mới' : 'Cập nhật'}
+      okText="Cập nhật"
       cancelText="Hủy"
       width={600}
+      okButtonProps={{ loading: isLoading }}
+      bodyStyle={{ maxHeight: '70vh', overflow: 'auto' }}
     >
       <Form form={form} onFinish={onFinish} layout="vertical">
-        <Form.Item name="userName" label="Tên người dùng" rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}>
+        <Form.Item name="firstName" label="Họ">
+          <Input placeholder="Nhập họ" />
+        </Form.Item>
+        <Form.Item name="lastName" label="Tên">
+          <Input placeholder="Nhập tên" />
+        </Form.Item>
+        <Form.Item name="userName" label="Tên người dùng">
           <Input placeholder="Nhập tên người dùng" />
         </Form.Item>
-        <Form.Item name="email" label="Email" rules={[{ required: true, type: 'email', message: 'Email không hợp lệ!' }]}>
+        <Form.Item
+          name="userImg"
+          label="Ảnh đại diện"
+          valuePropName="fileList"
+          getValueFromEvent={normFile}
+        >
+          <Upload
+            name="userImg"
+            listType="picture-card"
+            beforeUpload={(file: any) => {
+              //? Validate size (ví dụ: max 2MB)
+              const isLt5M = file.size / 1024 / 1024 < 2;
+              if (!isLt5M) {
+                message.error('Ảnh không được vượt quá 5MB!');
+              }
+              return false; 
+            }}
+            maxCount={1}
+            accept="image/*"
+          >
+            <div>
+              <UploadOutlined />
+              <div>Chọn ảnh (tùy chọn)</div>
+            </div>
+          </Upload>
+        </Form.Item>
+        <Form.Item name="email" label="Email" rules={[{ type: 'email', message: 'Email không hợp lệ!' }]}>
           <Input placeholder="Nhập email" />
         </Form.Item>
-        <Form.Item name="status" label="Trạng thái" rules={[{ required: true }]}>
+        <Form.Item name="phone" label="Số điện thoại">
+          <Input placeholder="Nhập số điện thoại" />
+        </Form.Item>
+        <Form.Item name="userDob" label="Ngày sinh">
+          <DatePicker format="YYYY-MM-DD" style={{ width: '100%' }} />
+        </Form.Item>
+        <Form.Item name="userAddress" label="Địa chỉ">
+          <Input.TextArea placeholder="Nhập địa chỉ" rows={3} />
+        </Form.Item>
+        <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}>
           <Select>
             <Select.Option value="ACTIVE">Hoạt động</Select.Option>
             <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
           </Select>
         </Form.Item>
-  
-        <Form.Item name="roles" label="Vai trò">
+        <Form.Item name="roles" label="Vai trò" rules={[{ required: true, type: 'array', min: 1, message: 'Vui lòng chọn ít nhất một vai trò!' }]}>
           <Select mode="multiple">
             <Select.Option value="USER">Người dùng</Select.Option>
             <Select.Option value="STAFF">Nhân viên</Select.Option>

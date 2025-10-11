@@ -1,12 +1,15 @@
+
 import React, { useState, useMemo } from 'react';
 import { Table, Button, Select, Space, Avatar, Tag, Spin } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, EyeOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { FilterOutlined, EyeOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useUsers } from './Hook/useGetUsers';
+import { useDeleteUser } from './Hook/useDeleteUser'; 
 import { IUsersResponse, UserRoles } from '@/Interface/Users/IGetUsers';
 import UserUpdateModal from './Components/UserUpdateModal'; 
 import UserCreateModal from './Components/CreateUserModal';
+import DeleteUserModal from './Components/DeleteUserModal';
 
 const UserManagementView: React.FC = () => {
   const navigate = useNavigate();
@@ -21,11 +24,14 @@ const UserManagementView: React.FC = () => {
     totalPages: 1,
   });
 
-
   const [createModalVisible, setCreateModalVisible] = useState<boolean>(false);
 
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<IUsersResponse | null>(null);
+
+
+  const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
+  const [userToDelete, setUserToDelete] = useState<IUsersResponse | null>(null);
 
   const { data, isLoading, error } = useUsers({
     status: statusFilter,
@@ -33,6 +39,18 @@ const UserManagementView: React.FC = () => {
     size: pageInfo.size,
   });
 
+  const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({
+  
+    onSuccess: () => {
+      setDeleteModalVisible(false);
+      setUserToDelete(null);
+    },
+    // onError đã có sẵn trong hook, chỉ cần đóng modal nếu cần (nhưng giữ mở để user thấy error message)
+    onError: (error: Error) => {
+      // Không đóng modal tự động trên error, để user đọc message lỗi từ hook
+      console.error('Lỗi xóa user:', error);
+    },
+  });
 
   const users = useMemo(() => data?.data?.content || [], [data]);
 
@@ -45,7 +63,6 @@ const UserManagementView: React.FC = () => {
       ),
     [users, roleFilter]
   );
-
 
   const handleCreateUser = () => {
     setCreateModalVisible(true);
@@ -60,6 +77,25 @@ const UserManagementView: React.FC = () => {
     navigate(`user-detail/${user.id}`); 
   };
 
+  // Mở modal xác nhận xóa
+  const handleOpenDeleteModal = (user: IUsersResponse) => {
+    setUserToDelete(user);
+    setDeleteModalVisible(true);
+  };
+
+  // Xử lý xác nhận xóa (gọi API, modal sẽ loading và chờ response)
+  const handleConfirmDelete = () => {
+    if (userToDelete) {
+      deleteUser(userToDelete.id);
+      // Không đóng modal ở đây, chờ onSuccess/onError từ hook
+    }
+  };
+
+  // Đóng modal xóa (chỉ đóng thủ công nếu user hủy)
+  const handleCancelDelete = () => {
+    setDeleteModalVisible(false);
+    setUserToDelete(null);
+  };
 
   const columns: ColumnsType<IUsersResponse> = [
     {
@@ -142,14 +178,19 @@ const UserManagementView: React.FC = () => {
           >
             Chỉnh sửa
           </Button>
-          <Button type="link" danger>
+          <Button 
+            type="link" 
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleOpenDeleteModal(record)}
+            title="Xóa"
+          >
             Xóa
           </Button>
         </Space>
       ),
     },
   ];
-
 
   const isDetailView = location.pathname.startsWith('/users/user-detail');
 
@@ -240,6 +281,15 @@ const UserManagementView: React.FC = () => {
             visible={updateModalVisible}
             onCancel={() => setUpdateModalVisible(false)}
             user={selectedUser}
+          />
+
+          {/* Modal xác nhận xóa */}
+          <DeleteUserModal
+            visible={deleteModalVisible}
+            onCancel={handleCancelDelete}
+            user={userToDelete}
+            onConfirm={handleConfirmDelete}
+            loading={isDeleting}
           />
         </>
       )}
