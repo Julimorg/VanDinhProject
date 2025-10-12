@@ -218,13 +218,6 @@ public class OrderService {
             log.warn("PAYMENT URL: " + paymentUrl);
             payment.setPaymentStatus(PaymentMethodStatus.Paid);
 
-            for (OrderItem orderItem : userOrder.getOrderItems()) {
-                Product product = orderItem.getProduct();
-                int reduceQuantity = product.getProductQuantity() - orderItem.getQuantity();
-                product.setProductQuantity(reduceQuantity);
-                productRepository.save(product);
-            }
-
             paymentRepository.save(payment);
 
             orderRepository.save(userOrder);
