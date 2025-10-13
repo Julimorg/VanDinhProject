@@ -13,6 +13,7 @@ import { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from '../Interface/
 import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICreateUser';
 import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpdateUser';
+import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
 
 
 export const docApi = {
@@ -191,6 +192,29 @@ export const docApi = {
       },
     });
 
+    return res.data;
+  },
+
+  //* ======================================================== Supplier  ======================================================== */
+
+  GetAllSupplier : async(
+    params: {
+      keyword?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = 'createAt, desc'} = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }), 
+    });
+
+    const url = `/supplier/get-suppliers?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
     return res.data;
   },
 

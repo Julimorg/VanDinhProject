@@ -1,106 +1,51 @@
 import React, { useState } from 'react';
-import { Table, Pagination, Input, Button, Space, Typography, Card } from 'antd';
+import { Table, Pagination, Input, Button, Space, Typography, Card, Spin } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { SearchOutlined, DownOutlined, CalendarOutlined } from '@ant-design/icons';
+import { SearchOutlined, DownOutlined } from '@ant-design/icons';
+import { useGetAllSupplier } from './Hook/useGetSupplier';
+import { useDebounce } from '@/Hook/useDebounce';
 
 const { Title, Text } = Typography;
 
-// Interface cho Supplier dựa trên API response
-interface Supplier {
-  supplierId: string;
-  supplierName: string;
-  supplierAddress: string;
-  supplierPhone: string;
-  supplierEmail: string;
-  supplierImg: string;
-  createAt: string;
-  updateAt: string;
-}
-
-// Props cho component
-interface SupplierListProps {
-  data: Supplier[]; // Mảng content từ API
-  pagination: {
-    size: number;
-    number: number; // Trang hiện tại (bắt đầu từ 0 hoặc 1 tùy API)
-    totalElements: number;
-    totalPages: number;
-  };
-  onPageChange?: (page: number, pageSize: number) => void; // Callback cho pagination
-  onSearch?: (searchTerm: string) => void; // Callback cho search
-}
-
-// Mock data - Tăng lên 15 items để demo pagination (size=10, totalPages=2)
-const mockData: Supplier[] = [
-  {
-    supplierId: "9d50a6fd-c8f1-4107-ba48-4ba2a43c9cba",
-    supplierName: "Bạch Tuyết",
-    supplierAddress: "tp Hcm",
-    supplierPhone: "1243124112",
-    supplierEmail: "bachtuyet@gmail.com",
-    supplierImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1755956467/imgScreenshot%202025-07-24%20123345.png.png",
-    createAt: "2025-08-23T20:49:12.42264",
-    updateAt: "2025-08-23T20:49:12.42264"
-  },
-  {
-    supplierId: "abc123",
-    supplierName: "Công ty ABC",
-    supplierAddress: "Hà Nội",
-    supplierPhone: "0987654321",
-    supplierEmail: "abc@gmail.com",
-    supplierImg: "https://example.com/img1.png",
-    createAt: "2025-08-22T10:00:00.00000",
-    updateAt: "2025-08-22T10:00:00.00000"
-  },
-  {
-    supplierId: "def456",
-    supplierName: "Doanh nghiệp DEF",
-    supplierAddress: "Đà Nẵng",
-    supplierPhone: "0123456789",
-    supplierEmail: "def@gmail.com",
-    supplierImg: "https://example.com/img2.png",
-    createAt: "2025-08-21T15:30:00.00000",
-    updateAt: "2025-08-21T15:30:00.00000"
-  },
-  // Thêm thêm 12 items giả để tổng 15
-  ...Array.from({ length: 12 }, (_, index) => ({
-    supplierId: `mock-${index + 1}`,
-    supplierName: `Nhà cung cấp Mock ${index + 1}`,
-    supplierAddress: `Địa chỉ ${index + 1}`,
-    supplierPhone: `0${index}0000000`,
-    supplierEmail: `mock${index + 1}@gmail.com`,
-    supplierImg: "https://example.com/img-mock.png",
-    createAt: `2025-08-${20 - index}T10:00:00.00000`,
-    updateAt: `2025-08-${20 - index}T10:00:00.00000`
-  }))
-];
-
-const mockPagination = {
-  size: 10, // 10 items/trang
-  number: 0, // Trang đầu (0-based)
-  totalElements: 15, // Tổng 15 items
-  totalPages: 2 // 2 trang
-};
-
-const SupplierManagementPage: React.FC<SupplierListProps> = ({ 
-  data = mockData, 
-  pagination = mockPagination,
-  onPageChange,
-  onSearch 
-}) => {
+const SupplierManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(0); 
+  const [pageSize, setPageSize] = useState<number>(10);
 
-  // Columns cho Table với sorter (client-side cho demo)
-  // Lưu ý: Để responsive thực sự, thêm CSS media queries riêng (ẩn columns trên mobile)
-  const columns: ColumnsType<Supplier> = [
+  const debouncedKeyword = useDebounce(searchTerm, 300);
+
+
+  const { data, isLoading, error } = useGetAllSupplier(
+    { 
+      keyword: debouncedKeyword || undefined, 
+      page: currentPage, // 0-based cho API
+      size: pageSize,
+      sort: 'createAt,desc'
+    },
+    {
+      onError: (err) => {
+        console.error('Lỗi fetch suppliers:', err);
+      },
+    }
+  );
+
+  const suppliers = data?.data?.content || [];
+  const pagination = data?.data?.page || {
+    size: pageSize,
+    number: currentPage,
+    totalElements: 0,
+    totalPages: 0,
+  };
+
+  // Columns (giữ nguyên, dùng any cho đơn giản)
+  const columns: ColumnsType<any> = [
     {
       title: 'ID',
       dataIndex: 'supplierId',
       key: 'supplierId',
       width: 120,
       ellipsis: true,
-      // Ẩn trên mobile qua CSS: .ant-table-column-supplierId { @media (max-width: 640px) { display: none; } }
-      sorter: (a: Supplier, b: Supplier) => a.supplierId.localeCompare(b.supplierId),
+      sorter: (a: any, b: any) => a.supplierId.localeCompare(b.supplierId),
       showSorterTooltip: false,
     },
     {
@@ -113,8 +58,8 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       dataIndex: 'supplierName',
       key: 'supplierName',
       width: 150,
-      render: (text) => <Text strong>{text}</Text>,
-      sorter: (a: Supplier, b: Supplier) => a.supplierName.localeCompare(b.supplierName),
+      render: (text: string) => <Text strong>{text}</Text>,
+      sorter: (a: any, b: any) => a.supplierName.localeCompare(b.supplierName),
       showSorterTooltip: false,
     },
     {
@@ -127,8 +72,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       dataIndex: 'supplierAddress',
       key: 'supplierAddress',
       width: 120,
-      // Ẩn trên tablet/mobile qua CSS
-      sorter: (a: Supplier, b: Supplier) => a.supplierAddress.localeCompare(b.supplierAddress),
+      sorter: (a: any, b: any) => a.supplierAddress.localeCompare(b.supplierAddress),
       showSorterTooltip: false,
     },
     {
@@ -141,8 +85,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       dataIndex: 'supplierPhone',
       key: 'supplierPhone',
       width: 120,
-      // Ẩn trên tablet/mobile qua CSS
-      sorter: (a: Supplier, b: Supplier) => a.supplierPhone.localeCompare(b.supplierPhone),
+      sorter: (a: any, b: any) => a.supplierPhone.localeCompare(b.supplierPhone),
       showSorterTooltip: false,
     },
     {
@@ -156,8 +99,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       key: 'supplierEmail',
       width: 180,
       ellipsis: true,
-      // Ẩn trên tablet/mobile qua CSS
-      sorter: (a: Supplier, b: Supplier) => a.supplierEmail.localeCompare(b.supplierEmail),
+      sorter: (a: any, b: any) => a.supplierEmail.localeCompare(b.supplierEmail),
       showSorterTooltip: false,
     },
     {
@@ -166,7 +108,6 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       key: 'supplierImg',
       width: 80,
       render: (img: string) => <img src={img} alt="Supplier" className="w-10 h-10 rounded object-cover" />,
-      // Ẩn trên mobile qua CSS
     },
     {
       title: (
@@ -179,7 +120,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       key: 'createAt',
       width: 140,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
-      sorter: (a: Supplier, b: Supplier) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime(),
+      sorter: (a: any, b: any) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime(),
       showSorterTooltip: false,
     },
     {
@@ -193,7 +134,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       key: 'updateAt',
       width: 140,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
-      sorter: (a: Supplier, b: Supplier) => new Date(a.updateAt).getTime() - new Date(b.updateAt).getTime(),
+      sorter: (a: any, b: any) => new Date(a.updateAt).getTime() - new Date(b.updateAt).getTime(),
       showSorterTooltip: false,
     },
     {
@@ -201,7 +142,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       key: 'actions',
       width: 100,
       fixed: 'right',
-      render: (_, record) => (
+      render: (_, record: any) => (
         <Space size="small" wrap className="flex flex-col sm:flex-row">
           <Button type="link" size="small" className="p-0">Sửa</Button>
           <Button type="link" danger size="small" className="p-0">Xóa</Button>
@@ -210,32 +151,26 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
     },
   ];
 
-  // Handle search với debounce đơn giản (client-side)
+  // Handle search: Update state ngay, nhưng API dùng debounced
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    onSearch?.(value);
+    setCurrentPage(0); // Reset về page 0 khi search
   };
 
-  // Handle pagination - Chuyển page sang 0-based nếu API yêu cầu
-  const handlePageChange = (page: number, pageSize: number) => {
-    // Giả sử API dùng 0-based, trừ 1
-    onPageChange?.(page - 1, pageSize);
+  // Handle pagination: Chuyển 1-based từ UI sang 0-based cho API
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setCurrentPage(page - 1); // Chuyển về 0-based
+    if (pageSize) setPageSize(pageSize);
   };
 
-  // Filtered data (demo: filter theo tên)
-  const filteredData = data.filter((item) =>
-    item.supplierName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.supplierEmail.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Table props với sorter
-  const tableProps: Partial<TableProps<Supplier>> = {
+  // Table props (giữ nguyên)
+  const tableProps: Partial<TableProps<any>> = {
     onChange: (pagination, filters, sorter) => {
-      console.log('Sorter:', sorter); // Có thể gửi lên parent nếu cần server-side sort
+      console.log('Sorter:', sorter);
     },
   };
 
-  // Locale cho Pagination (tiếng Việt)
+  // Locale cho Pagination (giữ nguyên)
   const paginationLocale = {
     items_per_page: 'mục / trang',
     jump_to: 'Đi đến',
@@ -249,9 +184,17 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
     next_3: '3 trang sau',
   };
 
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <Text type="danger">Lỗi tải dữ liệu nhà cung cấp: {error.message}</Text>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
-      {/* Header */}
+      {/* Header (giữ nguyên) */}
       <div className="mb-6 sm:mb-8">
         <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-lg sm:text-xl">
           Quản lý Nhà cung cấp
@@ -261,7 +204,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
         </Text>
       </div>
 
-      {/* Search Section - Thiết kế đẹp hơn với Card */}
+      {/* Search Section */}
       <Card 
         className="mb-6 shadow-sm border-0 bg-white rounded-xl"
         bodyStyle={{ padding: '16px' }}
@@ -269,7 +212,7 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Tìm kiếm theo tên nhà cung cấp hoặc email..."
+              placeholder="Tìm kiếm theo tên nhà cung cấp hoặc email... (hỗ trợ có dấu)"
               prefix={<SearchOutlined className="text-gray-400" />}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
@@ -280,39 +223,42 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
             />
           </div>
           <Text type="secondary" className="text-sm self-center hidden sm:block">
-            Nhấn Enter để tìm kiếm
+             Tìm Kiếm
           </Text>
         </div>
       </Card>
 
-      {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={false} // Tắt pagination của table, dùng component riêng
-          scroll={{ x: 768 }} // Responsive: scroll ngang trên mobile/tablet
-          rowKey="supplierId"
-          className="border-none"
-          locale={{ emptyText: <div className="text-center py-8"><Text>Không có dữ liệu</Text></div> }}
-          {...tableProps}
-          size="middle"
-        />
-      </div>
+      {/* Table với Spin loading */}
+      <Spin spinning={isLoading}>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <Table
+            columns={columns}
+            dataSource={suppliers}
+            pagination={false}
+            scroll={{ x: 768 }}
+            rowKey="supplierId"
+            className="border-none"
+            locale={{ emptyText: <div className="text-center py-8"><Text>Không có dữ liệu</Text></div> }}
+            {...tableProps}
+            size="middle"
+          />
+        </div>
+      </Spin>
 
-      {/* Pagination - Cải thiện UI/UX: Responsive, locale tiếng Việt, center tốt hơn trên mobile */}
+      {/* Pagination: Hiển thị current = currentPage + 1 (1-based cho UI) */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex justify-center">
         <Pagination
-          current={pagination.number + 1} // 1-based cho UI
+          current={currentPage + 1} // Hiển thị 1-based cho UI
           total={pagination.totalElements}
-          pageSize={pagination.size}
-          showSizeChanger={window.innerWidth >= 768} // Chỉ showSizeChanger trên desktop/tablet
-          showQuickJumper={window.innerWidth >= 1024} // Chỉ quick jumper trên large screen
+          pageSize={pageSize}
+          showSizeChanger={window.innerWidth >= 768}
+          showQuickJumper={window.innerWidth >= 1024}
           showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} nhà cung cấp`}
           onChange={handlePageChange}
+          onShowSizeChange={handlePageChange}
           locale={paginationLocale}
-          className="w-auto" // Không full width, tự adjust
-          size={window.innerWidth < 768 ? 'small' : 'default'} // Size nhỏ trên mobile
+          className="w-auto"
+          size={window.innerWidth < 768 ? 'small' : 'default'}
         />
       </div>
     </div>
