@@ -1,0 +1,23 @@
+package com.example.managementapi.Specification;
+
+import com.example.managementapi.Entity.Category;
+import com.example.managementapi.Entity.Product;
+import org.springframework.data.jpa.domain.Specification;
+
+public class CategorySpecification {
+    public static Specification<Category> hasKeyword(String keyword){
+        return (root, query, criteriaBuilder) -> {
+            if(keyword == null || keyword.isEmpty()){
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(root.get("categoryName")), "%" + keyword.toLowerCase() + "%"));
+        };
+    }
+
+    public static Specification<Category> searchCategory(String categoryName){
+        return(root, query, criteriaBuilder) -> {
+            query.distinct(true);
+            return Specification.allOf(hasKeyword(categoryName)).toPredicate(root, query, criteriaBuilder);
+        };
+    }
+}

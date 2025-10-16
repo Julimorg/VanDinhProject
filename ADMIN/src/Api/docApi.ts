@@ -14,6 +14,8 @@ import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICrea
 import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpdateUser';
 import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
+import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories';
+import { ICreateCategoryRequest, ICreateCategoryResponse } from '@/Interface/Category/ICreateCategory';
 
 
 export const docApi = {
@@ -218,6 +220,43 @@ export const docApi = {
     return res.data;
   },
 
+  //* ======================================================== Supplier  ======================================================== */
+  GetAllCategory : async(
+    params:{
+      page?: number,
+      size?: number,
+      sort?: string
+      keyword?: string} = {}
+    ): Promise<IApiResponse<IApiResponsePagination<IGetAllCategoryResponse>>> => {
+    const {keyword, page = 1, size = 5, sort = 'createAt, desc'} = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+    })
+
+    const url = `/categories/get-categories?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  CreateCategory: async(body: ICreateCategoryRequest,): Promise<IApiResponse<ICreateCategoryResponse>> => {
+    const url = `/categories/create-category`;
+    const formData = new FormData();
+
+    if (body.categoryName !== undefined) formData.append('categoryName', body.categoryName);
+    if (body.categoryDescription !== undefined) formData.append('categoryDescription', body.categoryDescription);
+    if (body.categoryImage instanceof File) formData.append('categoryImage', body.categoryImage);
+  
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
 
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
@@ -225,5 +264,6 @@ export const docApi = {
   const res = await axiosClient.post(url, body);
   return res.data;
 },
+
 
 }
