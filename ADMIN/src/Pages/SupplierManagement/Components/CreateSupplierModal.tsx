@@ -1,10 +1,10 @@
-import React from 'react'; // Xóa useState, không cần nữa
+import React from 'react'; 
 import { Modal, Form, Input, Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useCreateSupplier } from '../Hook/useCreateSupplier';
 import { ICreateSupplierRequest } from '@/Interface/Supplier/ICreateSupplier';
-import { useUploadImgFile } from '@/Hook/useUploadImgFIle';
 import { toast } from 'react-toastify';
+import { useUploadImgFile } from '@/Hook/useUploadImgFile';
 
 
 interface CreateSupplierModalProps {
