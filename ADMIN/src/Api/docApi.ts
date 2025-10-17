@@ -223,6 +223,12 @@ export const docApi = {
     return res.data;
   },
 
+  DeleteSupplier: async(supplierId: string): Promise<IApiResponse<void>> => {
+    const url =  `/supplier/delete-supplier/${supplierId}`
+    const res = await axiosClient.delete(url);
+    return res.data;
+  },
+
   CreateSupplier: async(body: ICreateSupplierRequest): Promise<IApiResponse<ICreateSupplierResponse>> => {
     const url = `/supplier/create-supplier`
     const formData = buildFormData(body);

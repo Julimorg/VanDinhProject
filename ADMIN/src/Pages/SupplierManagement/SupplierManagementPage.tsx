@@ -1,40 +1,40 @@
+
 import React, { useState } from 'react';
 import { Table, Pagination, Input, Button, Space, Typography, Card, Spin } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { SearchOutlined, DownOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'; 
+import { SearchOutlined, DownOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useGetAllSupplier } from './Hook/useGetSupplier';
 import { useDebounce } from '@/Hook/useDebounce';
 import AddSupplierModal from './Components/CreateSupplierModal';
 import EditSupplierModal from './Components/EditSupplierModal';
-
+import DeleteSupplierModal from './Components/DeleteSupplierModal';
 
 const { Title, Text } = Typography;
 
 const SupplierManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [currentPage, setCurrentPage] = useState<number>(0); 
+  const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false); 
-  const [selectedSupplier, setSelectedSupplier] = useState<any>(null); 
+  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState<boolean>(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
+  const [selectedSupplierToDelete, setSelectedSupplierToDelete] = useState<any>(null);
 
   const debouncedKeyword = useDebounce(searchTerm, 300);
 
-  const { data, isLoading, error, refetch } = useGetAllSupplier( 
-    { 
-      keyword: debouncedKeyword || undefined, 
+  const { data, isLoading, error, refetch } = useGetAllSupplier(
+    {
+      keyword: debouncedKeyword || undefined,
       page: currentPage,
       size: pageSize,
       sort: 'createAt,desc'
     },
-    {
-      onError: (err) => {
-        console.error('Lỗi fetch suppliers:', err);
-      },
-    }
   );
 
-  const suppliers = data?.data?.content || [];
+  //? Cast explicit để tránh never[] union, dùng ?? cho nullish
+  const suppliers: any[] = (data?.data?.content ?? []) as any[];
+
   const pagination = data?.data?.page || {
     size: pageSize,
     number: currentPage,
@@ -144,24 +144,25 @@ const SupplierManagementPage: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 150, 
+      width: 150,
       fixed: 'right',
       render: (_, record: any) => (
         <Space size="small" wrap className="flex flex-col sm:flex-row">
-          <Button 
-            type="link" 
-            size="small" 
-            icon={<EditOutlined />} 
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
             className="p-0"
           >
             Sửa
           </Button>
-          <Button 
-            type="link" 
-            danger 
-            size="small" 
-            icon={<DeleteOutlined />} 
+          <Button
+            type="link"
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record)}
             className="p-0"
           >
             Xóa
@@ -173,7 +174,7 @@ const SupplierManagementPage: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(0); 
+    setCurrentPage(0);
   };
 
   //? Handle pagination: Chuyển 1-based từ UI sang 0-based cho API
@@ -182,10 +183,8 @@ const SupplierManagementPage: React.FC = () => {
     if (pageSize) setPageSize(pageSize);
   };
 
-
   const handleOpenModal = () => setIsModalVisible(true);
   const handleCloseModal = () => setIsModalVisible(false);
-
 
   const handleEdit = (supplier: any) => {
     setSelectedSupplier(supplier);
@@ -196,8 +195,19 @@ const SupplierManagementPage: React.FC = () => {
     setSelectedSupplier(null);
   };
 
+  // Thêm function handleDelete
+  const handleDelete = (supplier: any) => {
+    setSelectedSupplierToDelete(supplier);
+    setIsDeleteModalVisible(true);
+  };
 
-  //? Handle success cho edit/add 
+  // Thêm function handleCloseDeleteModal
+  const handleCloseDeleteModal = () => {
+    setIsDeleteModalVisible(false);
+    setSelectedSupplierToDelete(null);
+  };
+
+  //? Handle success cho edit/add/delete
   const handleSuccess = () => {
     refetch?.();
   };
@@ -209,7 +219,7 @@ const SupplierManagementPage: React.FC = () => {
     },
   };
 
-  //? Locale cho Pagination 
+  //? Locale cho Pagination
   const paginationLocale = {
     items_per_page: 'mục / trang',
     jump_to: 'Đi đến',
@@ -226,14 +236,15 @@ const SupplierManagementPage: React.FC = () => {
   if (error) {
     return (
       <div className="text-center py-8">
-        <Text type="danger">Lỗi tải dữ liệu nhà cung cấp: {error.message}</Text>
+        <Text type="danger">
+          Lỗi tải dữ liệu nhà cung cấp: {error instanceof Error ? error.message : String(error) || 'Lỗi không xác định'}
+        </Text>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
-      {/* Header - Thêm button Thêm nhà cung cấp (giữ nguyên) */}
       <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-lg sm:text-xl">
@@ -243,9 +254,9 @@ const SupplierManagementPage: React.FC = () => {
             Tổng số: {pagination.totalElements} nhà cung cấp
           </Text>
         </div>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
           onClick={handleOpenModal}
           size="large"
           className="w-full sm:w-auto"
@@ -254,8 +265,8 @@ const SupplierManagementPage: React.FC = () => {
         </Button>
       </div>
 
-      {/* Search Section (giữ nguyên) */}
-      <Card 
+
+      <Card
         className="mb-6 shadow-sm border-0 bg-white rounded-xl"
         bodyStyle={{ padding: '16px' }}
       >
@@ -273,7 +284,7 @@ const SupplierManagementPage: React.FC = () => {
             />
           </div>
           <Text type="secondary" className="text-sm self-center hidden sm:block">
-             Tìm Kiếm
+            Tìm Kiếm
           </Text>
         </div>
       </Card>
@@ -283,7 +294,7 @@ const SupplierManagementPage: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           <Table
             columns={columns}
-            dataSource={suppliers}
+            dataSource={suppliers} 
             pagination={false}
             scroll={{ x: 768 }}
             rowKey="supplierId"
@@ -298,7 +309,7 @@ const SupplierManagementPage: React.FC = () => {
       {/* Pagination (giữ nguyên) */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex justify-center">
         <Pagination
-          current={currentPage + 1} // Hiển thị 1-based cho UI
+          current={currentPage + 1} 
           total={pagination.totalElements}
           pageSize={pageSize}
           showSizeChanger={window.innerWidth >= 768}
@@ -313,9 +324,9 @@ const SupplierManagementPage: React.FC = () => {
       </div>
 
       {/* Modal add (cập nhật onSuccess với refetch) */}
-      <AddSupplierModal 
-        visible={isModalVisible} 
-        onCancel={handleCloseModal} 
+      <AddSupplierModal
+        visible={isModalVisible}
+        onCancel={handleCloseModal}
         onSuccess={() => {
           handleCloseModal();
           handleSuccess();
@@ -323,16 +334,26 @@ const SupplierManagementPage: React.FC = () => {
       />
 
       {/* Modal edit */}
-      <EditSupplierModal 
-        visible={isEditModalVisible} 
-        onCancel={handleCloseEditModal} 
+      <EditSupplierModal
+        visible={isEditModalVisible}
+        onCancel={handleCloseEditModal}
         supplier={selectedSupplier}
         onSuccess={() => {
           handleCloseEditModal();
-          handleSuccess(); 
+          handleSuccess();
         }}
       />
 
+      {/* Thêm Modal delete */}
+      <DeleteSupplierModal
+        visible={isDeleteModalVisible}
+        onCancel={handleCloseDeleteModal}
+        supplier={selectedSupplierToDelete}
+        onSuccess={() => {
+          handleCloseDeleteModal();
+          handleSuccess();
+        }}
+      />
     </div>
   );
 };

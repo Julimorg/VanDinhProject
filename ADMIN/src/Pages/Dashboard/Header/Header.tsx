@@ -26,13 +26,12 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
 
   const navigate = useNavigate(); 
   
-  const { userName, email, userImg, accessToken, clearTokens} = useAuthStore();
+  const { userName, email, userImg, accessToken: token, clearTokens} = useAuthStore();
 
   const [searchValue, setSearchValue] = useState('');
-
-  const { mutate: logOut, isPending, error } = useLogOut({
+  const [dropdownOpen, setDropdownOpen] = useState(false); 
+  const { mutate: logOut, isPending } = useLogOut({
     onSuccess: (response: IApiResponse<void>) => {
-
       console.log('Logout message:', response.message);
       
       if (response.message) {
@@ -40,21 +39,25 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
       }
     
       clearTokens();
+      setDropdownOpen(false); 
       navigate('/login');
     },
     onError: (err) => {
       console.error('Logout lỗi:', err);
       toast.error('Đăng xuất thất bại, vui lòng thử lại.');
+      setDropdownOpen(false);
     },
   });
 
   const handleLogout = () => {
-    if (accessToken) {
-      logOut({ accessToken }); 
+    if (token) {
+      logOut({ token }); 
+    
     }
   };
 
   const handleViewProfile = () => {
+    setDropdownOpen(false); 
     navigate('/profile');
   };
 
@@ -108,7 +111,18 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
 
         <NotificationDropdown isMobile={isMobile} />
 
-        <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow trigger={['click']}>
+        <Dropdown 
+          menu={{ items: userMenuItems }} 
+          placement="bottomRight" 
+          arrow 
+          trigger={['click']}
+          open={dropdownOpen} 
+          onOpenChange={(open) => {
+            if (!isPending) { 
+              setDropdownOpen(open);
+            }
+          }}
+        >
           <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg px-2 py-1 transition-colors">
             <div className="hidden sm:block text-right">
               <p className="text-sm font-semibold text-gray-800 m-0">{userName}</p>

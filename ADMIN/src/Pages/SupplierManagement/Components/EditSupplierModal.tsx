@@ -1,8 +1,18 @@
 import React from 'react';
-import { Modal, Form, Input, Upload, Button, message } from 'antd';
+import { Modal, Form, Input, Upload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd/es/upload';
+import type { UploadProps } from 'antd/es/upload';  
 import { useUpdateSupplier } from '../Hook/useUpdateSupplier';
+import { useUploadImgFile } from '@/Hook/useUploadImgFile'; 
+import { toast } from 'react-toastify';
+import { IUpdateSupplierRequest } from '@/Interface/Supplier/IUpdateSupplier';
+
+type FormValues = {
+  supplierName: string;
+  supplierAddress: string;
+  supplierPhone: string;
+  supplierEmail: string;
+};
 
 interface EditSupplierModalProps {
   visible: boolean;
@@ -12,49 +22,54 @@ interface EditSupplierModalProps {
 }
 
 const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel, supplier, onSuccess }) => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<FormValues>();  // Type form
   const supplierId = supplier?.supplierId; 
+
+  const { uploadProps, getCurrentFile, reset } = useUploadImgFile({
+    allowedTypes: ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'],
+    maxCount: 1,
+    listType: 'picture',
+  });
 
   const { mutate: updateSupplier, isPending } = useUpdateSupplier(supplierId, {
     onSuccess: () => {
-      message.success('Cập nhật nhà cung cấp thành công!');
+      toast.success('Cập nhật nhà cung cấp thành công!');
       form.resetFields();
+      reset(); 
       onSuccess();
     },
     onError: (error) => {
-      message.error(`Lỗi cập nhật nhà cung cấp: ${error.message}`);
+      toast.error(`Lỗi cập nhật nhà cung cấp: ${error.message}`);
     },
   });
 
   React.useEffect(() => {
     if (visible && supplier) {
       form.setFieldsValue({
-        supplierId: supplier.supplierId,
         supplierName: supplier.supplierName,
         supplierAddress: supplier.supplierAddress,
         supplierPhone: supplier.supplierPhone,
         supplierEmail: supplier.supplierEmail,
-        supplierImg: supplier.supplierImg,
+    
       });
     }
   }, [visible, supplier, form]);
 
+  const handleSubmit = (values: FormValues) => {  
+    if (!supplier) return;
 
-  const uploadProps: UploadProps = {
-    beforeUpload: (file) => {
-      const url = URL.createObjectURL(file);
-      form.setFieldsValue({ supplierImg: url });
-      return false;
-    },
-    maxCount: 1,
-    listType: 'picture',
-    showUploadList: false,
-  };
 
-  const handleSubmit = (values: any) => {
-    if (supplier) {
-      updateSupplier(values);
-    }
+    const newFile = getCurrentFile();
+
+    const body: IUpdateSupplierRequest = { 
+      supplierName: values.supplierName,
+      supplierAddress: values.supplierAddress,
+      supplierPhone: values.supplierPhone,
+      supplierEmail: values.supplierEmail,
+      ...(newFile && { supplierImg: newFile }),  
+    };
+
+    updateSupplier(body);
   };
 
   return (
@@ -66,7 +81,7 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel
       width={600}
       destroyOnClose
     >
-      <Form
+      <Form<FormValues> 
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
@@ -93,14 +108,18 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel
           <Input placeholder="Nhập email" />
         </Form.Item>
 
-        <Form.Item name="supplierImg" label="Ảnh nhà cung cấp" valuePropName="fileList" getValueFromEvent={(e) => {
-          if (Array.isArray(e)) return e;
-          return e?.fileList;
-        }}>
-          <Upload {...uploadProps}>
+        <Form.Item label="Ảnh nhà cung cấp">
+          {/* Upload component từ hook */}
+          <Upload<UploadProps> {...uploadProps}>  
             <Button icon={<UploadOutlined />}>Chọn ảnh mới</Button>
           </Upload>
-          {supplier?.supplierImg && <img src={supplier.supplierImg} alt="Current" className="mt-2 w-20 h-20 rounded object-cover" />}
+          {/* Fix: Optional chaining cho fileList */}
+          {(uploadProps.fileList?.length === 0 || !uploadProps.fileList) && supplier?.supplierImg && (
+            <div className="mt-2">
+              <img src={supplier.supplierImg} alt="Current" className="w-20 h-20 rounded object-cover" />
+              <p className="text-sm text-gray-500">Ảnh hiện tại</p>
+            </div>
+          )}
         </Form.Item>
 
         <Form.Item className="mb-0 flex justify-end gap-2">

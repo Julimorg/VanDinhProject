@@ -12,6 +12,6 @@ export type ICreateSupplierResponse = {
     supplierAddress: string,
     supplierPhone: string,
     supplierEmail: string,
-    supplierImg: File,
+    supplierImg: string,
     createAt: string,
 }

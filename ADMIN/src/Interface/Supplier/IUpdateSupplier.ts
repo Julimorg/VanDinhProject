@@ -3,7 +3,7 @@ export type IUpdateSupplierRequest = {
     supplierAddress: string,
     supplierPhone: string,
     supplierEmail: string,
-    supplierImg: File
+    supplierImg?: File
 }
 
 export type IUpdateSupplierResponse = {
@@ -12,6 +12,6 @@ export type IUpdateSupplierResponse = {
     supplierAddress: string,
     supplierPhone: string,
     supplierEmail: string,
-    supplierImg: File,
-    createAt: string,
+    supplierImg: string,
+    updateAt: string,
 }
