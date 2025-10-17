@@ -14,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -48,12 +50,14 @@ public class CategoryController {
     }
 
     @GetMapping("/get-categories")
-    ApiResponse<Page<GetCategoriesRes>> getCategories(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size){
-        Pageable pageable = PageRequest.of(page, size);
+    ApiResponse<Page<GetCategoriesRes>> getCategories(
+            @PageableDefault(size = 10, sort = "categoryName", direction = Sort.Direction.ASC) Pageable pageable,
+            @RequestParam(required = false) String keyword){
+
         return ApiResponse.<Page<GetCategoriesRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(categoryService.getCategories(pageable))
+                .data(categoryService.getCategories(pageable, keyword))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
