@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Table, Pagination, Input, Button, Space, Typography, Card, Spin } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { SearchOutlined, DownOutlined } from '@ant-design/icons';
+import { SearchOutlined, DownOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'; 
 import { useGetAllSupplier } from './Hook/useGetSupplier';
 import { useDebounce } from '@/Hook/useDebounce';
+import AddSupplierModal from './Components/CreateSupplierModal';
+import EditSupplierModal from './Components/EditSupplierModal';
+
 
 const { Title, Text } = Typography;
 
@@ -11,14 +14,16 @@ const SupplierManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(0); 
   const [pageSize, setPageSize] = useState<number>(10);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false); 
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null); 
 
   const debouncedKeyword = useDebounce(searchTerm, 300);
 
-
-  const { data, isLoading, error } = useGetAllSupplier(
+  const { data, isLoading, error, refetch } = useGetAllSupplier( 
     { 
       keyword: debouncedKeyword || undefined, 
-      page: currentPage, // 0-based cho API
+      page: currentPage,
       size: pageSize,
       sort: 'createAt,desc'
     },
@@ -37,7 +42,6 @@ const SupplierManagementPage: React.FC = () => {
     totalPages: 0,
   };
 
-  // Columns (giữ nguyên, dùng any cho đơn giản)
   const columns: ColumnsType<any> = [
     {
       title: 'ID',
@@ -140,37 +144,72 @@ const SupplierManagementPage: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 100,
+      width: 150, 
       fixed: 'right',
       render: (_, record: any) => (
         <Space size="small" wrap className="flex flex-col sm:flex-row">
-          <Button type="link" size="small" className="p-0">Sửa</Button>
-          <Button type="link" danger size="small" className="p-0">Xóa</Button>
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEdit(record)}
+            className="p-0"
+          >
+            Sửa
+          </Button>
+          <Button 
+            type="link" 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />} 
+            className="p-0"
+          >
+            Xóa
+          </Button>
         </Space>
       ),
     },
   ];
 
-  // Handle search: Update state ngay, nhưng API dùng debounced
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    setCurrentPage(0); // Reset về page 0 khi search
+    setCurrentPage(0); 
   };
 
-  // Handle pagination: Chuyển 1-based từ UI sang 0-based cho API
+  //? Handle pagination: Chuyển 1-based từ UI sang 0-based cho API
   const handlePageChange = (page: number, pageSize?: number) => {
     setCurrentPage(page - 1); // Chuyển về 0-based
     if (pageSize) setPageSize(pageSize);
   };
 
-  // Table props (giữ nguyên)
+
+  const handleOpenModal = () => setIsModalVisible(true);
+  const handleCloseModal = () => setIsModalVisible(false);
+
+
+  const handleEdit = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setIsEditModalVisible(true);
+  };
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedSupplier(null);
+  };
+
+
+  //? Handle success cho edit/add 
+  const handleSuccess = () => {
+    refetch?.();
+  };
+
+  //? Table props
   const tableProps: Partial<TableProps<any>> = {
     onChange: (pagination, filters, sorter) => {
       console.log('Sorter:', sorter);
     },
   };
 
-  // Locale cho Pagination (giữ nguyên)
+  //? Locale cho Pagination 
   const paginationLocale = {
     items_per_page: 'mục / trang',
     jump_to: 'Đi đến',
@@ -194,17 +233,28 @@ const SupplierManagementPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
-      {/* Header (giữ nguyên) */}
-      <div className="mb-6 sm:mb-8">
-        <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-lg sm:text-xl">
-          Quản lý Nhà cung cấp
-        </Title>
-        <Text type="secondary" className="block text-sm text-center sm:text-left">
-          Tổng số: {pagination.totalElements} nhà cung cấp
-        </Text>
+      {/* Header - Thêm button Thêm nhà cung cấp (giữ nguyên) */}
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-lg sm:text-xl">
+            Quản lý Nhà cung cấp
+          </Title>
+          <Text type="secondary" className="block text-sm text-center sm:text-left">
+            Tổng số: {pagination.totalElements} nhà cung cấp
+          </Text>
+        </div>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />} 
+          onClick={handleOpenModal}
+          size="large"
+          className="w-full sm:w-auto"
+        >
+          Thêm nhà cung cấp
+        </Button>
       </div>
 
-      {/* Search Section */}
+      {/* Search Section (giữ nguyên) */}
       <Card 
         className="mb-6 shadow-sm border-0 bg-white rounded-xl"
         bodyStyle={{ padding: '16px' }}
@@ -228,7 +278,7 @@ const SupplierManagementPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Table với Spin loading */}
+      {/* Table với Spin loading (cập nhật columns) */}
       <Spin spinning={isLoading}>
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           <Table
@@ -245,7 +295,7 @@ const SupplierManagementPage: React.FC = () => {
         </div>
       </Spin>
 
-      {/* Pagination: Hiển thị current = currentPage + 1 (1-based cho UI) */}
+      {/* Pagination (giữ nguyên) */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex justify-center">
         <Pagination
           current={currentPage + 1} // Hiển thị 1-based cho UI
@@ -261,6 +311,28 @@ const SupplierManagementPage: React.FC = () => {
           size={window.innerWidth < 768 ? 'small' : 'default'}
         />
       </div>
+
+      {/* Modal add (cập nhật onSuccess với refetch) */}
+      <AddSupplierModal 
+        visible={isModalVisible} 
+        onCancel={handleCloseModal} 
+        onSuccess={() => {
+          handleCloseModal();
+          handleSuccess();
+        }}
+      />
+
+      {/* Modal edit */}
+      <EditSupplierModal 
+        visible={isEditModalVisible} 
+        onCancel={handleCloseEditModal} 
+        supplier={selectedSupplier}
+        onSuccess={() => {
+          handleCloseEditModal();
+          handleSuccess(); 
+        }}
+      />
+
     </div>
   );
 };

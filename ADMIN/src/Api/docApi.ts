@@ -14,8 +14,8 @@ import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICrea
 import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpdateUser';
 import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
-import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories';
-import { ICreateCategoryRequest, ICreateCategoryResponse } from '@/Interface/Category/ICreateCategory';
+import { buildFormData } from '@/Utils/ulti';
+import { ICreateSupplierRequest, ICreateSupplierResponse } from '@/Interface/Supplier/ICreateSupplier';
 
 
 export const docApi = {
@@ -220,7 +220,19 @@ export const docApi = {
     return res.data;
   },
 
-  //* ======================================================== Supplier  ======================================================== */
+  CreateSupplier: async(body: ICreateSupplierRequest): Promise<IApiResponse<ICreateSupplierResponse>> => {
+    const url = `/supplier/create-supplier`
+    const formData = buildFormData(body);
+    const res = await axiosClient.post(url, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data; charset=utf-8',
+    },
+  });
+
+    return res.data;
+  },
+
+//* ======================================================== Supplier  ======================================================== */
   GetAllCategory : async(
     params:{
       page?: number,
@@ -248,7 +260,7 @@ export const docApi = {
     if (body.categoryName !== undefined) formData.append('categoryName', body.categoryName);
     if (body.categoryDescription !== undefined) formData.append('categoryDescription', body.categoryDescription);
     if (body.categoryImage instanceof File) formData.append('categoryImage', body.categoryImage);
-  
+
     const res = await axiosClient.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data; charset=utf-8',
@@ -264,6 +276,5 @@ export const docApi = {
   const res = await axiosClient.post(url, body);
   return res.data;
 },
-
 
 }
