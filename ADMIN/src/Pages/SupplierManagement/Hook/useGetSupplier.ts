@@ -1,4 +1,4 @@
-// File: Hook/useGetAllSupplier.ts (cập nhật để sync page 1-based với API)
+
 import { docApi } from "@/Api/docApi";
 import { QueryKeys } from "@/Constant/query-key";
 import { IApiResponse } from "@/Interface/IApiResponse";
