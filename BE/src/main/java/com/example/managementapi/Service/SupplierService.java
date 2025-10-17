@@ -108,18 +108,18 @@ public class SupplierService {
             imgUrl = cloudinaryRes.getUrl();
         }
 
-        if (request.getColorId() != null && !request.getColorId().isEmpty()) {
-            log.error("IN 1");
-            List<Color> colors = colorRepository.findAllById(request.getColorId());
-            if (colors.size() != request.getColorId().size()) {
-                throw new AppException(ErrorCode.COLOR_NOT_EXISTED);
-            }
-            supplier.setColors(colors);
-        } else {
-            log.error("IN 2");
-            supplier.setColors(null);
-        }
-        log.info("Colors set to supplier: {}", supplier.getColors());
+//        if (request.getColorId() != null && !request.getColorId().isEmpty()) {
+//            log.error("IN 1");
+//            List<Color> colors = colorRepository.findAllById(request.getColorId());
+//            if (colors.size() != request.getColorId().size()) {
+//                throw new AppException(ErrorCode.COLOR_NOT_EXISTED);
+//            }
+//            supplier.setColors(colors);
+//        } else {
+//            log.error("IN 2");
+//            supplier.setColors(null);
+//        }
+//        log.info("Colors set to supplier: {}", supplier.getColors());
 
         supplierMapper.toUpdateSupplierReq(supplier, request);
 

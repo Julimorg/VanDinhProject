@@ -9,9 +9,7 @@ import com.example.managementapi.Dto.Response.Supplier.GetSupplierRes;
 import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
 import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Supplier;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 import java.util.List;
 
@@ -24,6 +22,7 @@ public interface SupplierMapper {
 
     CreateSupplierRes toCreateSupplierRes(Supplier supplier);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "supplierImg", ignore = true)
     @Mapping(target = "colors", ignore = true)
     void toUpdateSupplierReq(@MappingTarget Supplier supplier, UpdateSupplierReq request);

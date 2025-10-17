@@ -16,6 +16,9 @@ import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpda
 import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
 import { buildFormData } from '@/Utils/ulti';
 import { ICreateSupplierRequest, ICreateSupplierResponse } from '@/Interface/Supplier/ICreateSupplier';
+import { ICreateCategoryRequest, ICreateCategoryResponse } from '@/Interface/Category/ICreateCategory';
+import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories';
+import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Supplier/IUpdateSupplier';
 
 
 export const docApi = {
@@ -232,7 +235,19 @@ export const docApi = {
     return res.data;
   },
 
-//* ======================================================== Supplier  ======================================================== */
+  UpdateSupplier: async(supplierId: string ,body: IUpdateSupplierRequest): Promise<IApiResponse<IUpdateSupplierResponse>> => {
+    const url = `/supplier/update-supplier/${supplierId}`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.patch(url, formData , {
+       headers: {
+      'Content-Type': 'multipart/form-data; charset=utf-8',
+    },
+    });
+
+    return res.data;
+  },
+
+//* ======================================================== Category  ======================================================== */
   GetAllCategory : async(
     params:{
       page?: number,

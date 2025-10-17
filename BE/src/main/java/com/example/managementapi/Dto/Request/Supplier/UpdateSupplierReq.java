@@ -19,6 +19,4 @@ public class UpdateSupplierReq {
     private String supplierPhone;
     private String supplierEmail;
     private MultipartFile supplierImg;
-
-    private List<String> colorId;
 }

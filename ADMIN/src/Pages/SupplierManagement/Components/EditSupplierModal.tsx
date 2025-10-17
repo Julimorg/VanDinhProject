@@ -2,29 +2,30 @@ import React from 'react';
 import { Modal, Form, Input, Upload, Button, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd/es/upload';
-
+import { useUpdateSupplier } from '../Hook/useUpdateSupplier';
 
 interface EditSupplierModalProps {
   visible: boolean;
   onCancel: () => void;
-  supplier: any; // Dữ liệu supplier để edit
+  supplier: any; 
   onSuccess: () => void;
 }
 
 const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel, supplier, onSuccess }) => {
   const [form] = Form.useForm();
-//   const { mutate: updateSupplier, isLoading } = useUpdateSupplier({
-//     onSuccess: () => {
-//       message.success('Cập nhật nhà cung cấp thành công!');
-//       form.resetFields();
-//       onSuccess();
-//     },
-//     onError: (error) => {
-//       message.error(`Lỗi cập nhật nhà cung cấp: ${error.message}`);
-//     },
-//   });
+  const supplierId = supplier?.supplierId; 
 
-  // Load dữ liệu vào form khi modal mở
+  const { mutate: updateSupplier, isPending } = useUpdateSupplier(supplierId, {
+    onSuccess: () => {
+      message.success('Cập nhật nhà cung cấp thành công!');
+      form.resetFields();
+      onSuccess();
+    },
+    onError: (error) => {
+      message.error(`Lỗi cập nhật nhà cung cấp: ${error.message}`);
+    },
+  });
+
   React.useEffect(() => {
     if (visible && supplier) {
       form.setFieldsValue({
@@ -38,7 +39,7 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel
     }
   }, [visible, supplier, form]);
 
-  // Props cho Upload (tương tự add)
+
   const uploadProps: UploadProps = {
     beforeUpload: (file) => {
       const url = URL.createObjectURL(file);
@@ -52,7 +53,7 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel
 
   const handleSubmit = (values: any) => {
     if (supplier) {
-      updateSupplier({ id: supplier.supplierId, ...values });
+      updateSupplier(values);
     }
   };
 
@@ -103,8 +104,8 @@ const EditSupplierModal: React.FC<EditSupplierModalProps> = ({ visible, onCancel
         </Form.Item>
 
         <Form.Item className="mb-0 flex justify-end gap-2">
-          {/* <Button onClick={onCancel} disabled={isLoading}>Hủy</Button>
-          <Button type="primary" htmlType="submit" loading={isLoading}>Cập nhật</Button> */}
+          <Button onClick={onCancel} disabled={isPending}>Hủy</Button>
+          <Button type="primary" htmlType="submit" loading={isPending}>Cập nhật</Button>
         </Form.Item>
       </Form>
     </Modal>
