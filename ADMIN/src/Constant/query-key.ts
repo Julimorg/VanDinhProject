@@ -9,6 +9,6 @@ GET_MY_PROFILE:' get my profile',
 UPDATE_USER: 'Update User',
 DELETE_USER: 'Delete User',
 GET_SUPPLIER: 'Get all suppliers',
-CREATE_SUPPLIER: 'Create Suppliers'
+CREATE_SUPPLIER: 'Create Suppliers',
 GET_CATEGORY: 'Get all categories',
 }
