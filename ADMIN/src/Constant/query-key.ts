@@ -8,4 +8,6 @@ GET_USERS:'get all users',
 GET_MY_PROFILE:' get my profile',
 UPDATE_USER: 'Update User',
 DELETE_USER: 'Delete User',
+GET_SUPPLIER: 'Get all suppliers',
+CREATE_SUPPLIER: 'Create Suppliers'
 }

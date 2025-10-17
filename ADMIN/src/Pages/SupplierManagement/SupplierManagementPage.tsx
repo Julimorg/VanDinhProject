@@ -1,122 +1,110 @@
 import React, { useState } from 'react';
-import { Table, Pagination, Input, Button, Space, Typography } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import { SearchOutlined, CalendarOutlined, SortAscendingOutlined } from '@ant-design/icons';
+import { Table, Pagination, Input, Button, Space, Typography, Card, Spin } from 'antd';
+import type { ColumnsType, TableProps } from 'antd/es/table';
+import { SearchOutlined, DownOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons'; 
+import { useGetAllSupplier } from './Hook/useGetSupplier';
+import { useDebounce } from '@/Hook/useDebounce';
+import AddSupplierModal from './Components/CreateSupplierModal';
+import EditSupplierModal from './Components/EditSupplierModal';
+
 
 const { Title, Text } = Typography;
 
-// Interface cho Supplier dựa trên API response
-interface Supplier {
-  supplierId: string;
-  supplierName: string;
-  supplierAddress: string;
-  supplierPhone: string;
-  supplierEmail: string;
-  supplierImg: string;
-  createAt: string;
-  updateAt: string;
-}
-
-// Props cho component
-interface SupplierListProps {
-  data: Supplier[]; // Mảng content từ API
-  pagination: {
-    size: number;
-    number: number; // Trang hiện tại (bắt đầu từ 0 hoặc 1 tùy API)
-    totalElements: number;
-    totalPages: number;
-  };
-  onPageChange?: (page: number, pageSize: number) => void; // Callback cho pagination
-  onSearch?: (searchTerm: string) => void; // Callback cho search
-  onFilter?: (filterType: string) => void; // Callback cho filter
-}
-
-// Mock data dựa trên API mẫu của bạn (thay bằng fetch thực tế)
-const mockData: Supplier[] = [
-  {
-    supplierId: "9d50a6fd-c8f1-4107-ba48-4ba2a43c9cba",
-    supplierName: "Bạch Tuyết",
-    supplierAddress: "tp Hcm",
-    supplierPhone: "1243124112",
-    supplierEmail: "bachtuyet@gmail.com",
-    supplierImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1755956467/imgScreenshot%202025-07-24%20123345.png.png",
-    createAt: "2025-08-23T20:49:12.42264",
-    updateAt: "2025-08-23T20:49:12.42264"
-  },
-  // Thêm 2 item nữa để demo totalElements=3
-  {
-    supplierId: "abc123",
-    supplierName: "Công ty ABC",
-    supplierAddress: "Hà Nội",
-    supplierPhone: "0987654321",
-    supplierEmail: "abc@gmail.com",
-    supplierImg: "https://example.com/img1.png",
-    createAt: "2025-08-22T10:00:00.00000",
-    updateAt: "2025-08-22T10:00:00.00000"
-  },
-  {
-    supplierId: "def456",
-    supplierName: "Doanh nghiệp DEF",
-    supplierAddress: "Đà Nẵng",
-    supplierPhone: "0123456789",
-    supplierEmail: "def@gmail.com",
-    supplierImg: "https://example.com/img2.png",
-    createAt: "2025-08-21T15:30:00.00000",
-    updateAt: "2025-08-21T15:30:00.00000"
-  }
-];
-
-const mockPagination = {
-  size: 1,
-  number: 2, // Trang 3 (nếu bắt đầu từ 0)
-  totalElements: 3,
-  totalPages: 3
-};
-
-const SupplierManagementPage: React.FC<SupplierListProps> = ({ 
-  data = mockData, 
-  pagination = mockPagination,
-  onPageChange,
-  onSearch,
-  onFilter 
-}) => {
+const SupplierManagementPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [currentFilter, setCurrentFilter] = useState<string>('all'); // 'all', 'newest', 'oldest'
+  const [currentPage, setCurrentPage] = useState<number>(0); 
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+  const [isEditModalVisible, setIsEditModalVisible] = useState<boolean>(false); 
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null); 
 
-  // Columns cho Table (responsive: ẩn một số cột trên mobile qua CSS)
-  const columns: ColumnsType<Supplier> = [
+  const debouncedKeyword = useDebounce(searchTerm, 300);
+
+  const { data, isLoading, error, refetch } = useGetAllSupplier( 
+    { 
+      keyword: debouncedKeyword || undefined, 
+      page: currentPage,
+      size: pageSize,
+      sort: 'createAt,desc'
+    },
+    {
+      onError: (err) => {
+        console.error('Lỗi fetch suppliers:', err);
+      },
+    }
+  );
+
+  const suppliers = data?.data?.content || [];
+  const pagination = data?.data?.page || {
+    size: pageSize,
+    number: currentPage,
+    totalElements: 0,
+    totalPages: 0,
+  };
+
+  const columns: ColumnsType<any> = [
     {
       title: 'ID',
       dataIndex: 'supplierId',
       key: 'supplierId',
       width: 120,
       ellipsis: true,
+      sorter: (a: any, b: any) => a.supplierId.localeCompare(b.supplierId),
+      showSorterTooltip: false,
     },
     {
-      title: 'Tên nhà cung cấp',
+      title: (
+        <span className="flex items-center">
+          Tên nhà cung cấp
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'supplierName',
       key: 'supplierName',
       width: 150,
-      render: (text) => <Text strong>{text}</Text>,
+      render: (text: string) => <Text strong>{text}</Text>,
+      sorter: (a: any, b: any) => a.supplierName.localeCompare(b.supplierName),
+      showSorterTooltip: false,
     },
     {
-      title: 'Địa chỉ',
+      title: (
+        <span className="flex items-center">
+          Địa chỉ
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'supplierAddress',
       key: 'supplierAddress',
       width: 120,
+      sorter: (a: any, b: any) => a.supplierAddress.localeCompare(b.supplierAddress),
+      showSorterTooltip: false,
     },
     {
-      title: 'Điện thoại',
+      title: (
+        <span className="flex items-center">
+          Điện thoại
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'supplierPhone',
       key: 'supplierPhone',
       width: 120,
+      sorter: (a: any, b: any) => a.supplierPhone.localeCompare(b.supplierPhone),
+      showSorterTooltip: false,
     },
     {
-      title: 'Email',
+      title: (
+        <span className="flex items-center">
+          Email
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'supplierEmail',
       key: 'supplierEmail',
       width: 180,
       ellipsis: true,
+      sorter: (a: any, b: any) => a.supplierEmail.localeCompare(b.supplierEmail),
+      showSorterTooltip: false,
     },
     {
       title: 'Ảnh',
@@ -126,136 +114,225 @@ const SupplierManagementPage: React.FC<SupplierListProps> = ({
       render: (img: string) => <img src={img} alt="Supplier" className="w-10 h-10 rounded object-cover" />,
     },
     {
-      title: 'Tạo tại',
+      title: (
+        <span className="flex items-center">
+          Tạo tại
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'createAt',
       key: 'createAt',
       width: 140,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      sorter: (a: any, b: any) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime(),
+      showSorterTooltip: false,
     },
     {
-      title: 'Cập nhật tại',
+      title: (
+        <span className="flex items-center">
+          Cập nhật tại
+          <DownOutlined className="ml-1 text-xs text-gray-400" />
+        </span>
+      ),
       dataIndex: 'updateAt',
       key: 'updateAt',
       width: 140,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
+      sorter: (a: any, b: any) => new Date(a.updateAt).getTime() - new Date(b.updateAt).getTime(),
+      showSorterTooltip: false,
     },
     {
       title: 'Hành động',
       key: 'actions',
-      width: 100,
-      render: (_, record) => (
-        <Space size="small">
-          <Button type="link" size="small">Sửa</Button>
-          <Button type="link" danger size="small">Xóa</Button>
+      width: 150, 
+      fixed: 'right',
+      render: (_, record: any) => (
+        <Space size="small" wrap className="flex flex-col sm:flex-row">
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />} 
+            onClick={() => handleEdit(record)}
+            className="p-0"
+          >
+            Sửa
+          </Button>
+          <Button 
+            type="link" 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />} 
+            className="p-0"
+          >
+            Xóa
+          </Button>
         </Space>
       ),
     },
   ];
 
-  // Handle search
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    onSearch?.(value);
+    setCurrentPage(0); 
   };
 
-  // Handle filter
-  const handleFilter = (type: string) => {
-    setCurrentFilter(type);
-    onFilter?.(type);
+  //? Handle pagination: Chuyển 1-based từ UI sang 0-based cho API
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setCurrentPage(page - 1); // Chuyển về 0-based
+    if (pageSize) setPageSize(pageSize);
   };
 
-  // Handle pagination
-  const handlePageChange = (page: number, pageSize: number) => {
-    onPageChange?.(page, pageSize);
+
+  const handleOpenModal = () => setIsModalVisible(true);
+  const handleCloseModal = () => setIsModalVisible(false);
+
+
+  const handleEdit = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setIsEditModalVisible(true);
+  };
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setSelectedSupplier(null);
   };
 
-  // Filtered data (demo: filter theo tên)
-  const filteredData = data.filter((item) =>
-    item.supplierName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
+  //? Handle success cho edit/add 
+  const handleSuccess = () => {
+    refetch?.();
+  };
+
+  //? Table props
+  const tableProps: Partial<TableProps<any>> = {
+    onChange: (pagination, filters, sorter) => {
+      console.log('Sorter:', sorter);
+    },
+  };
+
+  //? Locale cho Pagination 
+  const paginationLocale = {
+    items_per_page: 'mục / trang',
+    jump_to: 'Đi đến',
+    jump_to_confirm: 'xác nhận',
+    page_size: 'số trang',
+    prev_page: 'Trang trước',
+    next_page: 'Trang sau',
+    prev_5: '5 trang trước',
+    next_5: '5 trang sau',
+    prev_3: '3 trang trước',
+    next_3: '3 trang sau',
+  };
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <Text type="danger">Lỗi tải dữ liệu nhà cung cấp: {error.message}</Text>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      {/* Header */}
-      <div className="mb-8">
-        <Title level={2} className="text-center sm:text-left text-gray-900 mb-2">
-          Quản lý Nhà cung cấp
-        </Title>
-        <Text type="secondary" className="block text-sm">
-          Tổng số: {pagination.totalElements} nhà cung cấp
-        </Text>
+    <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
+      {/* Header - Thêm button Thêm nhà cung cấp (giữ nguyên) */}
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-lg sm:text-xl">
+            Quản lý Nhà cung cấp
+          </Title>
+          <Text type="secondary" className="block text-sm text-center sm:text-left">
+            Tổng số: {pagination.totalElements} nhà cung cấp
+          </Text>
+        </div>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />} 
+          onClick={handleOpenModal}
+          size="large"
+          className="w-full sm:w-auto"
+        >
+          Thêm nhà cung cấp
+        </Button>
       </div>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <Space className="w-full justify-between flex-wrap gap-4">
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
+      {/* Search Section (giữ nguyên) */}
+      <Card 
+        className="mb-6 shadow-sm border-0 bg-white rounded-xl"
+        bodyStyle={{ padding: '16px' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
             <Input
-              placeholder="Tìm kiếm theo tên nhà cung cấp..."
-              prefix={<SearchOutlined />}
+              placeholder="Tìm kiếm theo tên nhà cung cấp hoặc email... (hỗ trợ có dấu)"
+              prefix={<SearchOutlined className="text-gray-400" />}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="max-w-md"
+              className="rounded-lg border-gray-300 focus:border-blue-500"
+              size="large"
               allowClear
+              style={{ minWidth: '250px' }}
             />
           </div>
+          <Text type="secondary" className="text-sm self-center hidden sm:block">
+             Tìm Kiếm
+          </Text>
+        </div>
+      </Card>
 
-          {/* Filter Buttons */}
-          <Space>
-            <Button 
-              icon={<SortAscendingOutlined />} 
-              onClick={() => handleFilter('all')}
-              type={currentFilter === 'all' ? 'primary' : 'default'}
-            >
-              Tất cả
-            </Button>
-            <Button 
-              icon={<CalendarOutlined />} 
-              onClick={() => handleFilter('newest')}
-              type={currentFilter === 'newest' ? 'primary' : 'default'}
-            >
-              Mới nhất
-            </Button>
-            <Button 
-              icon={<CalendarOutlined />} 
-              onClick={() => handleFilter('oldest')}
-              type={currentFilter === 'oldest' ? 'primary' : 'default'}
-            >
-              Cũ nhất
-            </Button>
-          </Space>
-        </Space>
-      </div>
+      {/* Table với Spin loading (cập nhật columns) */}
+      <Spin spinning={isLoading}>
+        <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
+          <Table
+            columns={columns}
+            dataSource={suppliers}
+            pagination={false}
+            scroll={{ x: 768 }}
+            rowKey="supplierId"
+            className="border-none"
+            locale={{ emptyText: <div className="text-center py-8"><Text>Không có dữ liệu</Text></div> }}
+            {...tableProps}
+            size="middle"
+          />
+        </div>
+      </Spin>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <Table
-          columns={columns}
-          dataSource={filteredData}
-          pagination={false} // Tắt pagination của table, dùng component riêng
-          scroll={{ x: 768 }} // Responsive: scroll ngang trên mobile/tablet
-          rowKey="supplierId"
-          className="border-none"
-          locale={{ emptyText: 'Không có dữ liệu' }}
+      {/* Pagination (giữ nguyên) */}
+      <div className="bg-white rounded-xl shadow-sm p-4 flex justify-center">
+        <Pagination
+          current={currentPage + 1} // Hiển thị 1-based cho UI
+          total={pagination.totalElements}
+          pageSize={pageSize}
+          showSizeChanger={window.innerWidth >= 768}
+          showQuickJumper={window.innerWidth >= 1024}
+          showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} nhà cung cấp`}
+          onChange={handlePageChange}
+          onShowSizeChange={handlePageChange}
+          locale={paginationLocale}
+          className="w-auto"
+          size={window.innerWidth < 768 ? 'small' : 'default'}
         />
       </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="bg-white rounded-lg shadow-sm p-4 mt-6 flex justify-center">
-          <Pagination
-            current={pagination.number + 1} // Chuyển sang 1-based nếu cần
-            total={pagination.totalElements}
-            pageSize={pagination.size}
-            showSizeChanger
-            showQuickJumper
-            showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} nhà cung cấp`}
-            onChange={handlePageChange}
-            onShowSizeChange={handlePageChange}
-          />
-        </div>
-      )}
+      {/* Modal add (cập nhật onSuccess với refetch) */}
+      <AddSupplierModal 
+        visible={isModalVisible} 
+        onCancel={handleCloseModal} 
+        onSuccess={() => {
+          handleCloseModal();
+          handleSuccess();
+        }}
+      />
+
+      {/* Modal edit */}
+      <EditSupplierModal 
+        visible={isEditModalVisible} 
+        onCancel={handleCloseEditModal} 
+        supplier={selectedSupplier}
+        onSuccess={() => {
+          handleCloseEditModal();
+          handleSuccess(); 
+        }}
+      />
+
     </div>
   );
 };

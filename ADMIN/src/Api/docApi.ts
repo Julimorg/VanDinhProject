@@ -13,6 +13,9 @@ import { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from '../Interface/
 import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICreateUser';
 import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpdateUser';
+import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
+import { buildFormData } from '@/Utils/ulti';
+import { ICreateSupplierRequest, ICreateSupplierResponse } from '@/Interface/Supplier/ICreateSupplier';
 
 
 export const docApi = {
@@ -190,6 +193,41 @@ export const docApi = {
         'Content-Type': 'multipart/form-data; charset=utf-8',
       },
     });
+
+    return res.data;
+  },
+
+  //* ======================================================== Supplier  ======================================================== */
+
+  GetAllSupplier : async(
+    params: {
+      keyword?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = 'createAt, desc'} = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }), 
+    });
+
+    const url = `/supplier/get-suppliers?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  CreateSupplier: async(body: ICreateSupplierRequest): Promise<IApiResponse<ICreateSupplierResponse>> => {
+    const url = `/supplier/create-supplier`
+    const formData = buildFormData(body);
+    const res = await axiosClient.post(url, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data; charset=utf-8',
+    },
+  });
 
     return res.data;
   },

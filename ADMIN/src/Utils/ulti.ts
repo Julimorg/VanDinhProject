@@ -2,6 +2,14 @@ import { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
 
 
+
+export const removeDiacritics = (str: string): string => {
+  return str.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') 
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D') 
+    .toLowerCase();
+};
+
 export const cutStringOnThirdChar = (name: string) => {
     const cutString = name.substring(0,2);
     const upperString = cutString.toLocaleUpperCase();
@@ -58,5 +66,23 @@ export const formatToVietnamTime = (isoString: string | null | undefined): strin
   } catch (error) {
     console.error('Lỗi khi format thời gian:', error);
     return 'Lỗi thời gian';
-  }
+  } 
+};
+
+//? Build Form Data
+export const buildFormData = (data: Record<string, any>): FormData => {
+  const formData = new FormData();
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;  
+    if (Array.isArray(value)) {
+      value.forEach((item) => formData.append(key, item));  
+    } else if (value instanceof File) {
+      formData.append(key, value);  // Handle file
+    } else if (typeof value === 'object' && value.toString) {
+      formData.append(key, value.toString());  
+    } else {
+      formData.append(key, value.toString());
+    }
+  });
+  return formData;
 };
