@@ -1,6 +1,5 @@
 
 import axiosClient from './axiosClient';
-import { ChangePass, ChangePassResponse } from '@/Interface/TChangePass';
 import { ILoginRequest, ILoginResponse} from '@/Interface/Auth/ILogin';
 import { IApiResponse } from '@/Interface/IApiResponse';
 import { IRefreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
@@ -19,6 +18,7 @@ import { ICreateSupplierRequest, ICreateSupplierResponse } from '@/Interface/Sup
 import { ICreateCategoryRequest, ICreateCategoryResponse } from '@/Interface/Category/ICreateCategory';
 import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories';
 import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Supplier/IUpdateSupplier';
+import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 
 
 export const docApi = {
@@ -291,11 +291,37 @@ export const docApi = {
     return res.data;
   },
 
-  /*--------------------------------------Change Password---------------------------------------------------------------- */
- ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
-  const url = `/account/change-password`;
-  const res = await axiosClient.post(url, body);
-  return res.data;
-},
+  //* ======================================================== Product  ======================================================== */
+
+  GetAllProducts: async(
+    params: {
+      keyword?: string,
+      categoryName?: string,
+      supplierName?: string,
+      minPrice?: number,
+      maxPrice?: number,
+      page?: number,
+      size?: number,
+      sort?: string 
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
+    
+    const  { keyword, categoryName, supplierName, minPrice, maxPrice, page = 1, size = 5, sort = 'createAt,desc'} = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      minPrice: minPrice.toString() ,
+      maxPrice: maxPrice.toString(),
+      sort,
+      ...(keyword && {keyword}),
+      ...(categoryName && {categoryName}),
+      ...(supplierName && {supplierName}),
+      
+    })
+    const url = `/products/get-products?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  }
+
 
 }

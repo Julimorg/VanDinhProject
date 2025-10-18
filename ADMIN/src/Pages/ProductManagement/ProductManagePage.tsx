@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { Table, Pagination, Input, Button, Space, Typography, Image, Tag, Carousel } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Table, Pagination, Input, Button, Space, Typography, Image, Tag, Carousel, Select } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { SearchOutlined, CalendarOutlined, SortAscendingOutlined } from '@ant-design/icons';
-
+import { SearchOutlined, CalendarOutlined, SortAscendingOutlined, PlusOutlined, FilterOutlined } from '@ant-design/icons';
 const { Title, Text } = Typography;
 
 // Interface cho Product dựa trên API response
@@ -35,7 +34,8 @@ interface ProductListProps {
   };
   onPageChange?: (page: number, pageSize: number) => void; // Callback cho pagination
   onSearch?: (searchTerm: string) => void; // Callback cho search
-  onFilter?: (filterType: string) => void; // Callback cho filter
+  onFilter?: (filters: { category?: string; supplier?: string; sort?: string }) => void; // Callback cho filter nâng cao
+  onAddProduct?: () => void; // Callback cho thêm sản phẩm
 }
 
 // Mock data dựa trên API mẫu của bạn
@@ -248,17 +248,36 @@ const mockPagination = {
   totalPages: 2
 };
 
-const ProductList: React.FC<ProductListProps> = ({ 
-  data = mockData, 
+const ProductList: React.FC<ProductListProps> = ({
+  data = mockData,
   pagination = mockPagination,
   onPageChange,
   onSearch,
-  onFilter 
+  onFilter,
+  onAddProduct
 }) => {
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [currentFilter, setCurrentFilter] = useState<string>('all'); // 'all', 'newest', 'oldest'
+  const [currentSort, setCurrentSort] = useState<string>('all'); // 'all', 'newest', 'oldest'
+  const [categoryFilter, setCategoryFilter] = useState<string | undefined>(undefined);
+  const [supplierFilter, setSupplierFilter] = useState<string | undefined>(undefined);
 
-  // Columns cho Table
+  // Tính toán unique categories và suppliers từ data
+  const uniqueCategories = useMemo(() => {
+    const categories = data
+      .map((item) => item.categoryName)
+      .filter((cat): cat is string => cat !== null && cat !== undefined)
+      .filter((cat, index, self) => self.indexOf(cat) === index);
+    return ['Tất cả', ...categories];
+  }, [data]);
+
+  const uniqueSuppliers = useMemo(() => {
+    const suppliers = data
+      .map((item) => item.supplierName)
+      .filter((sup, index, self) => self.indexOf(sup) === index);
+    return ['Tất cả', ...suppliers];
+  }, [data]);
+
+  // Columns cho Table (giữ nguyên)
   const columns: ColumnsType<Product> = [
     {
       title: 'ID',
@@ -387,10 +406,27 @@ const ProductList: React.FC<ProductListProps> = ({
     onSearch?.(value);
   };
 
-  // Handle filter
-  const handleFilter = (type: string) => {
-    setCurrentFilter(type);
-    onFilter?.(type);
+  // Handle sort
+  const handleSort = (type: string) => {
+    setCurrentSort(type);
+    onFilter?.({ sort: type });
+  };
+
+  // Handle category filter
+  const handleCategoryFilter = (value: string) => {
+    setCategoryFilter(value === 'Tất cả' ? undefined : value);
+    onFilter?.({ category: value === 'Tất cả' ? undefined : value });
+  };
+
+  // Handle supplier filter
+  const handleSupplierFilter = (value: string) => {
+    setSupplierFilter(value === 'Tất cả' ? undefined : value);
+    onFilter?.({ supplier: value === 'Tất cả' ? undefined : value });
+  };
+
+  // Handle add product
+  const handleAddProduct = () => {
+    onAddProduct?.();
   };
 
   // Handle pagination
@@ -398,70 +434,127 @@ const ProductList: React.FC<ProductListProps> = ({
     onPageChange?.(page, pageSize);
   };
 
-  // Filtered data (demo: filter theo tên và mô tả)
-  const filteredData = data.filter((item) =>
-    item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.productDescription.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtered data (demo: filter theo search, category, supplier)
+  const filteredData = useMemo(() => {
+    return data.filter((item) => {
+      const matchesSearch =
+        item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.productDescription.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = !categoryFilter || item.categoryName === categoryFilter;
+      const matchesSupplier = !supplierFilter || item.supplierName === supplierFilter;
+      return matchesSearch && matchesCategory && matchesSupplier;
+    });
+  }, [data, searchTerm, categoryFilter, supplierFilter]);
 
-  // Sort data dựa trên filter (demo frontend sort)
-  let sortedData = [...filteredData];
-  if (currentFilter === 'newest') {
-    sortedData.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime());
-  } else if (currentFilter === 'oldest') {
-    sortedData.sort((a, b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime());
-  }
+  // Sort data dựa trên sort (demo frontend sort)
+  const sortedData = useMemo(() => {
+    let dataCopy = [...filteredData];
+    if (currentSort === 'newest') {
+      dataCopy.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime());
+    } else if (currentSort === 'oldest') {
+      dataCopy.sort((a, b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime());
+    }
+    return dataCopy;
+  }, [filteredData, currentSort]);
 
   return (
-    <div className="min-h-screen bg-white py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
       {/* Title */}
-      <Title level={2} className="text-center mb-6">
+      <Title level={2} className="text-center mb-4 sm:mb-6">
         Quản lý Sản phẩm
       </Title>
 
-      {/* Filter Section */}
-      <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <Space className="w-full justify-between flex-wrap gap-4">
-          {/* Search */}
-          <div className="flex-1 min-w-[200px]">
+      {/* Filter Section - Responsive với flex-wrap */}
+      <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+          {/* Search - Rộng rãi hơn, full width trên mobile */}
+          <div className="w-full lg:w-auto lg:flex-1">
             <Input
-              placeholder="Tìm kiếm theo tên hoặc mô tả..."
+              placeholder="Tìm kiếm theo tên sản phẩm, mô tả hoặc mã..."
               prefix={<SearchOutlined />}
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
-              className="max-w-md"
+              className="min-w-[250px] lg:min-w-[300px] w-full"
+              size="large"
               allowClear
+              style={{ borderRadius: '8px', borderColor: '#d9d9d9' }}
             />
           </div>
 
-          {/* Filter Buttons */}
-          <Space>
-            <Button 
-              icon={<SortAscendingOutlined />} 
-              onClick={() => handleFilter('all')}
-              type={currentFilter === 'all' ? 'primary' : 'default'}
+          {/* Actions & Filters - Stack trên mobile, row trên desktop */}
+          <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-row items-start sm:items-center gap-2 sm:gap-3 lg:gap-4">
+            {/* Button Thêm sản phẩm */}
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              onClick={handleAddProduct}
+              className="w-full sm:w-auto min-w-[120px]"
             >
-              Tất cả
+              Thêm sản phẩm
             </Button>
-            <Button 
-              icon={<CalendarOutlined />} 
-              onClick={() => handleFilter('newest')}
-              type={currentFilter === 'newest' ? 'primary' : 'default'}
-            >
-              Mới nhất
-            </Button>
-            <Button 
-              icon={<CalendarOutlined />} 
-              onClick={() => handleFilter('oldest')}
-              type={currentFilter === 'oldest' ? 'primary' : 'default'}
-            >
-              Cũ nhất
-            </Button>
-          </Space>
-        </Space>
+
+            {/* Filter Category */}
+            <Select
+              placeholder="Lọc theo danh mục"
+              value={categoryFilter || 'Tất cả'}
+              onChange={handleCategoryFilter}
+              options={uniqueCategories.map(cat => ({ value: cat, label: cat }))}
+              className="w-full sm:w-[150px] lg:w-[160px]"
+              size="large"
+              suffixIcon={<FilterOutlined />}
+              allowClear={false}
+              showSearch
+            />
+
+            {/* Filter Supplier */}
+            <Select
+              placeholder="Lọc theo nhà cung cấp"
+              value={supplierFilter || 'Tất cả'}
+              onChange={handleSupplierFilter}
+              options={uniqueSuppliers.map(sup => ({ value: sup, label: sup }))}
+              className="w-full sm:w-[160px] lg:w-[170px]"
+              size="large"
+              suffixIcon={<FilterOutlined />}
+              allowClear={false}
+              showSearch
+            />
+
+            {/* Sort Buttons - Group nhỏ gọn */}
+            <Space size="middle" className="flex-wrap">
+              <Button
+                icon={<SortAscendingOutlined />}
+                onClick={() => handleSort('all')}
+                type={currentSort === 'all' ? 'primary' : 'default'}
+                size="large"
+                className="min-w-[60px]"
+              >
+                Tất cả
+              </Button>
+              <Button
+                icon={<CalendarOutlined />}
+                onClick={() => handleSort('newest')}
+                type={currentSort === 'newest' ? 'primary' : 'default'}
+                size="large"
+                className="min-w-[70px]"
+              >
+                Mới nhất
+              </Button>
+              <Button
+                icon={<CalendarOutlined />}
+                onClick={() => handleSort('oldest')}
+                type={currentSort === 'oldest' ? 'primary' : 'default'}
+                size="large"
+                className="min-w-[70px]"
+              >
+                Cũ nhất
+              </Button>
+            </Space>
+          </div>
+        </div>
       </div>
 
-      {/* Table */}
+      {/* Table - Responsive scroll */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
         <Table
           columns={columns}
@@ -470,13 +563,14 @@ const ProductList: React.FC<ProductListProps> = ({
           scroll={{ x: 1400 }} // Responsive: scroll ngang trên mobile/tablet (nhiều cột)
           rowKey="productId"
           className="border-none"
-          locale={{ emptyText: 'Không có dữ liệu' }}
+          locale={{ emptyText: 'Không có dữ liệu phù hợp' }}
+          size="middle" // Size nhỏ hơn trên mobile nếu cần, nhưng giữ middle cho nhất quán
         />
       </div>
 
-      {/* Pagination */}
+      {/* Pagination - Center và responsive */}
       {pagination.totalPages > 1 && (
-        <div className="bg-white rounded-lg shadow-sm p-4 mt-6 flex justify-center">
+        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mt-4 sm:mt-6 flex justify-center">
           <Pagination
             current={pagination.number + 1}
             total={pagination.totalElements}
@@ -486,6 +580,8 @@ const ProductList: React.FC<ProductListProps> = ({
             showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} sản phẩm`}
             onChange={handlePageChange}
             onShowSizeChange={handlePageChange}
+            size="small" // Nhỏ hơn trên mobile
+            className="lg:min-w-[400px]"
           />
         </div>
       )}
