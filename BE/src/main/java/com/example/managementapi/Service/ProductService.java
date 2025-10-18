@@ -145,7 +145,7 @@ public class ProductService {
                                             Double minPrice,
                                             Double maxPrice,
                                             Pageable pageable) {
-        Specification<Product> specification = ProductSpecification.searchProduct(
+        Specification<Product> specification = ProductSpecification.searchFilterForProduct(
                 keyword,
                 categoryName,
                 supplierName,
