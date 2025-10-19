@@ -12,6 +12,8 @@ import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage
 import MyProfile from '@/Pages/MyProfile/MyProfilePage';
 import DashboardPage from '@/Pages/Dashboard/DashBoardPage';
 import UserDetailView from '@/Pages/UsersManagement/Components/UserDetail';
+import CategoryDetail from '@/Pages/CategoryManagement/Components/CategoryDetai';
+import CategoryManagementPage from '@/Pages/CategoryManagement/CategoryManagementPage';
 
 const Router = () => {
   return (
@@ -20,28 +22,30 @@ const Router = () => {
       <Route path="/logout" element={<Logout />} />
 
       <Route path="/" element={<MainLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<UserManagement />}>
-            <Route path="user-detail/:id" element={<UserDetailView />} />
-          </Route>
-          <Route path="products" element={<ProductList />} />
-          <Route path="suppliers" element={<SupplierManagementPage />} />
-          <Route path="colors" element={<ColorManagement />} />
-          <Route path="category" element={<CategoryList />} />
-          <Route path="orders" element={<OrderManagementPage />} />
-          <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
-          <Route path="profile" element={<MyProfile />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
 
-          
-          {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="users" element={<UserManagement />}>
+          <Route path="user-detail/:id" element={<UserDetailView />} />
+        </Route>
+        <Route path="products" element={<ProductList />} />
+        <Route path="suppliers" element={<SupplierManagementPage />} />
+        <Route path="colors" element={<ColorManagement />} />
+        <Route path="category" element={<CategoryManagementPage />}>
+          <Route path=":categoryId" element={<CategoryDetail />} />
+        </Route>
+        <Route path="orders" element={<OrderManagementPage />} />
+        <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
+        <Route path="profile" element={<MyProfile />} />
+
+
+        {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
           <Route path="settings/payment" element={<SettingsPaymentPage />} />
           <Route path="settings/shipping" element={<SettingsShippingPage />} />
           <Route path="settings/notifications" element={<SettingsNotificationsPage />} /> */}
-          
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Route>
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
     </Routes>
   );
 };
