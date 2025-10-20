@@ -291,6 +291,8 @@ export const docApi = {
     return res.data;
   },
 
+  //* ======================================================== Products  ======================================================== *
+
   /*--------------------------------------Change Password---------------------------------------------------------------- */
  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
   const url = `/account/change-password`;
