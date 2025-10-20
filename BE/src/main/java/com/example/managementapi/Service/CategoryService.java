@@ -97,8 +97,9 @@ public class CategoryService {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetCategoriesRes> getCategories(Pageable pageable, String keyword){
-        Specification<Category> specification = CategorySpecification.searchCategory(keyword);
-        return categoryRepository.findAll(pageable).map(categoryMapper::toGetCategoriesRes);
+        Specification<Category> specification = CategorySpecification.hasKeyword(keyword);
+        return categoryRepository.findAll(specification, pageable)
+                .map(categoryMapper::toGetCategoriesRes);
 
     }
 

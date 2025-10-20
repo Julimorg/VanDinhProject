@@ -14,10 +14,4 @@ public class CategorySpecification {
         };
     }
 
-    public static Specification<Category> searchCategory(String categoryName){
-        return(root, query, criteriaBuilder) -> {
-            query.distinct(true);
-            return Specification.allOf(hasKeyword(categoryName)).toPredicate(root, query, criteriaBuilder);
-        };
-    }
 }
