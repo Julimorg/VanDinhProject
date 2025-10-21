@@ -27,4 +27,6 @@ public class GetProductsRes {
     private String supplierName;
     private String colorName;
     private String categoryName;
+    private String createAt;
+    private String updateAt;
 }
