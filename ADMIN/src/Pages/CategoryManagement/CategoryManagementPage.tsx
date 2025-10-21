@@ -55,7 +55,7 @@ const CategoryManagementPage: React.FC = () => {
     }
   }, [error]);
 
-  
+
 
   const categories = data?.data?.content || [];
   const pagination = data?.data?.page || page;

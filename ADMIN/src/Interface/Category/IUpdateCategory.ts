@@ -1,9 +1,9 @@
 export type IUpdateCategoryRequest = {
     categoryName: string,
     categoryDescription: string,
-    categoryImage: File,
-
+    categoryImage?: File | string,
 }
+
 
 export type IUpdateCategoryResponse = {
     categoryName: string,
