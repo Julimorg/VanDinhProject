@@ -55,7 +55,7 @@ const CategoryManagementPage: React.FC = () => {
     }
   }, [error]);
 
-  
+
 
   const categories = data?.data?.content || [];
   const pagination = data?.data?.page || page;
@@ -221,7 +221,7 @@ const CategoryManagementPage: React.FC = () => {
           <Title level={2} className="text-center mb-6 text-blue-600">
             Quản lý Danh mục
           </Title>
-          <button onClick={handleLogout}>Đăng xuất</button>;
+          
           {/* Thanh công cụ responsive */}
 
           <div className="mb-6">

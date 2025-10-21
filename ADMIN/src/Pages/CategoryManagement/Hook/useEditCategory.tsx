@@ -15,11 +15,8 @@ type UseUpdateCategoryOptions = Omit<
 >;
 
 export const useUpdateCategory = (categoryId: string, options?: UseUpdateCategoryOptions) => {
-    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (body: IUpdateCategoryRequest) => docApi.UpdateCategory(body, categoryId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_CATEGORY] });
-        }
+        ...options,
     })
 }
