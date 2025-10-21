@@ -17,18 +17,14 @@ import java.util.List;
 public class GetProductsRes {
     private String productId;
     private String productName;
-    private String productDescription;
     private List<String> productImage;
     private String productVolume;
     private String productUnit;
     private String productCode;
     private int productQuantity;
-    private double discount;
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private BigDecimal productPrice;
     private String supplierName;
     private String colorName;
     private String categoryName;
-    private LocalDateTime createAt;
-    private LocalDateTime updateAt;
 }
