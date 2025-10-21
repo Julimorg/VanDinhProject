@@ -14,6 +14,8 @@ import DashboardPage from '@/Pages/Dashboard/DashBoardPage';
 import UserDetailView from '@/Pages/UsersManagement/Components/UserDetail';
 import CategoryDetail from '@/Pages/CategoryManagement/Components/CategoryDetai';
 import CategoryManagementPage from '@/Pages/CategoryManagement/CategoryManagementPage';
+import CreateProductPage from '@/Pages/ProductManagement/CreateProductPage';
+import ProductDetailPage from '@/Pages/ProductManagement/ProductDetailPage';
 
 const Router = () => {
   return (
@@ -28,7 +30,12 @@ const Router = () => {
         <Route path="users" element={<UserManagement />}>
           <Route path="user-detail/:id" element={<UserDetailView />} />
         </Route>
-        <Route path="products" element={<ProductList />} />
+        <Route path="products" element={<ProductList />}>
+          <Route index element={<ProductList />} /> 
+          <Route path="create" element={<CreateProductPage />} />
+          <Route path="product-detail" element={<ProductDetailPage />} />
+        </Route>
+    
         <Route path="suppliers" element={<SupplierManagementPage />} />
         <Route path="colors" element={<ColorManagement />} />
         <Route path="category" element={<CategoryManagementPage />}>
@@ -37,12 +44,6 @@ const Router = () => {
         <Route path="orders" element={<OrderManagementPage />} />
         <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
         <Route path="profile" element={<MyProfile />} />
-
-
-        {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
-          <Route path="settings/payment" element={<SettingsPaymentPage />} />
-          <Route path="settings/shipping" element={<SettingsShippingPage />} />
-          <Route path="settings/notifications" element={<SettingsNotificationsPage />} /> */}
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Route>

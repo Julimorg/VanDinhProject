@@ -1,6 +1,5 @@
 
 import axiosClient from './axiosClient';
-import { ChangePass, ChangePassResponse } from '@/Interface/TChangePass';
 import { ILoginRequest, ILoginResponse } from '@/Interface/Auth/ILogin';
 import { IApiResponse } from '@/Interface/IApiResponse';
 import { IRefreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
@@ -21,6 +20,7 @@ import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories'
 import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Supplier/IUpdateSupplier';
 import { IGetCategoryDetailResponse } from '@/Interface/Category/IGetCategoryDetail';
 import { IUpdateCategoryRequest, IUpdateCategoryResponse } from '@/Interface/Category/IUpdateCategory';
+import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 
 
 export const docApi = {
@@ -318,11 +318,47 @@ export const docApi = {
     return res.data;
   },
 
-  /*--------------------------------------Change Password---------------------------------------------------------------- */
-  ChangePass: async (body: ChangePass): Promise<ChangePassResponse> => {
-    const url = `/account/change-password`;
-    const res = await axiosClient.post(url, body);
+  //* ======================================================== Product  ======================================================== */
+
+  GetAllProducts: async(
+    params: {
+      keyword?: string,
+      categoryName?: string,
+      supplierName?: string,
+      minPrice?: number,
+      maxPrice?: number,
+      page?: number,
+      size?: number,
+      sort?: string 
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
+    
+    const  { 
+      keyword, 
+      categoryName, 
+      supplierName, 
+      minPrice, 
+      maxPrice, 
+      page = 1, 
+      size = 5, 
+      sort = 'createAt,desc' 
+    } = params;
+
+    const queryParams = new URLSearchParams({
+    page: page.toString(),
+    size: size.toString(),
+    sort,
+    ...(keyword && { keyword }),
+    ...(categoryName && { categoryName }),
+    ...(supplierName && { supplierName }),
+    ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+    ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
+      
+    })
+    const url = `/products/get-products?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
     return res.data;
-  },
+  }
+
 
 }
