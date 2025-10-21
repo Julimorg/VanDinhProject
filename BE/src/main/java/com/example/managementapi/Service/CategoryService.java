@@ -77,19 +77,17 @@ public class CategoryService {
         String imageUrl = null;
 
         Category category = categoryRepository.findById(id).orElseThrow(() -> new RuntimeException("Category not found"));
-
         if(image != null && !image.isEmpty()) {
             FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
             String fileName = FileUpLoadUtil.getFileName(request.getCategoryName());
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
             imageUrl = cloudinaryRes.getUrl();
-        }else {
-            log.info("No image provided for product: {}", request.getCategoryName());
-            throw new RuntimeException("Image is empty!");
+            //Đề vào trong hàm if này để tránh image null nếu update không chọn image khác
+            category.setCategoryImage(imageUrl);
         }
 
         categoryMapper.updateCategory(category, request);
-        category.setCategoryImage(imageUrl);
+
         category = categoryRepository.save(category);
 
         return categoryMapper.toUpdateCategoryRes(category);
