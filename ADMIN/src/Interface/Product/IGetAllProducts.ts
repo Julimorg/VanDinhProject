@@ -1,16 +1,12 @@
 export type IGetAllProductResponse = {
     productId: string,
     productName: string,
-    productDescription: string,
     productImage: string[],
     productVolume: string,
     productUnit: string,
     productQuantity: number,
-    discount: number,
     productPrice: number,
     supplierName: string,
-    color: string,
+    colorName: string,
     categoryName: string,
-    createAt: string,
-    updateAt: string,
 }

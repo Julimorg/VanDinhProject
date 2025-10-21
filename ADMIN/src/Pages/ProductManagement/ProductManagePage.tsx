@@ -144,8 +144,8 @@ const ProductList: React.FC<ProductListProps> = ({ onAddProduct }) => {
     },
     {
       title: 'Màu sắc',
-      dataIndex: 'color',
-      key: 'color',
+      dataIndex: 'colorName',
+      key: 'colorName',
       width: 80,
     },
     {
