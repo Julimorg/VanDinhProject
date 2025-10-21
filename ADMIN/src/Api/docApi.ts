@@ -1,6 +1,6 @@
 
 import axiosClient from './axiosClient';
-import { ILoginRequest, ILoginResponse} from '@/Interface/Auth/ILogin';
+import { ILoginRequest, ILoginResponse } from '@/Interface/Auth/ILogin';
 import { IApiResponse } from '@/Interface/IApiResponse';
 import { IRefreshTokenResponse } from '@/Interface/Auth/IRefreshToken';
 import { useAuthStore } from '@/Store/IAuth';
@@ -18,29 +18,31 @@ import { ICreateSupplierRequest, ICreateSupplierResponse } from '@/Interface/Sup
 import { ICreateCategoryRequest, ICreateCategoryResponse } from '@/Interface/Category/ICreateCategory';
 import { IGetAllCategoryResponse } from '@/Interface/Category/IGetAllCategories';
 import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Supplier/IUpdateSupplier';
+import { IGetCategoryDetailResponse } from '@/Interface/Category/IGetCategoryDetail';
+import { IUpdateCategoryRequest, IUpdateCategoryResponse } from '@/Interface/Category/IUpdateCategory';
 import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 
 
 export const docApi = {
 
   //* ======================================================== Auth  ======================================================== */
-  
+
   Login: async (body: ILoginRequest): Promise<IApiResponse<ILoginResponse>> => {
-        const url = `/auth/log-in`
-        const res = await axiosClient.post(url, body)
-        return res.data
-    },
-    
+    const url = `/auth/log-in`
+    const res = await axiosClient.post(url, body)
+    return res.data
+  },
+
   LogOut: async (body: ILogOutRequest): Promise<IApiResponse<void>> => {
     const url = '/auth/log-out';
     const res = await axiosClient.post(url, body);
     return res.data;
-  },  
+  },
 
   RefreshToken: async (): Promise<IApiResponse<IRefreshTokenResponse>> => {
     const url = '/auth/refresh-token';
     const refreshToken = useAuthStore.getState().refreshToken;
-    
+
     if (!refreshToken) {
       console.error('Không có refresh token trong store');
       throw new Error('Không có refresh token');
@@ -87,7 +89,7 @@ export const docApi = {
       size: size.toString(),
       sort,
       ...(status && status !== 'all' && { status }),
-      ...(search && { search }), 
+      ...(search && { search }),
     });
 
     const url = `/users/get-user?${queryParams.toString()}`;
@@ -95,56 +97,56 @@ export const docApi = {
     return res.data;
   },
 
-  GetMyProfile: async(userId: string): Promise<IApiResponse<IGetMyProfileResponse>> => {
+  GetMyProfile: async (userId: string): Promise<IApiResponse<IGetMyProfileResponse>> => {
     const url = `/users/view-profile/${userId}`;
     const res = await axiosClient.get(url);
     return res.data;
   },
 
-  GetUserDetail: async(userId: string): Promise<IApiResponse<IGetUserDetailResponse>> => {
+  GetUserDetail: async (userId: string): Promise<IApiResponse<IGetUserDetailResponse>> => {
     const url = `/users/get-profile/${userId}`;
     const res = await axiosClient.get(url);
     return res.data;
   },
 
-  DeleteUser: async(userId: string): Promise<IApiResponse<void>> => {
-    const url =  `/users/delete-user/${userId}`
+  DeleteUser: async (userId: string): Promise<IApiResponse<void>> => {
+    const url = `/users/delete-user/${userId}`
     const res = await axiosClient.delete(url);
     return res.data;
   },
-   
+
   UpdateMyProfile: async (
-      body: IUdpateMyProfileRequest,
-      userId: string
-    ): Promise<IApiResponse<IUpdateMyProfileResponse>> => {
-      const url = `/users/update-profile/${userId}`;
-      const formData = new FormData();
-      
-      if (body.firstName !== undefined) formData.append('firstName', body.firstName);
-      if (body.lastName !== undefined) formData.append('lastName', body.lastName);
-      if (body.userName !== undefined) formData.append('userName', body.userName);
-      if (body.email !== undefined) formData.append('email', body.email);
-      if (body.phone !== undefined) formData.append('phone', body.phone);
-      if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
-      if (body.userImg instanceof File) formData.append('userImg', body.userImg);
-      if (body.userAddress) formData.append('userAddress', body.userAddress);
-  
-      for (const pair of formData.entries()) {
-    console.log(pair[0] + ': ' + pair[1]); 
-      }
+    body: IUdpateMyProfileRequest,
+    userId: string
+  ): Promise<IApiResponse<IUpdateMyProfileResponse>> => {
+    const url = `/users/update-profile/${userId}`;
+    const formData = new FormData();
+
+    if (body.firstName !== undefined) formData.append('firstName', body.firstName);
+    if (body.lastName !== undefined) formData.append('lastName', body.lastName);
+    if (body.userName !== undefined) formData.append('userName', body.userName);
+    if (body.email !== undefined) formData.append('email', body.email);
+    if (body.phone !== undefined) formData.append('phone', body.phone);
+    if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
+    if (body.userImg instanceof File) formData.append('userImg', body.userImg);
+    if (body.userAddress) formData.append('userAddress', body.userAddress);
+
+    for (const pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
 
 
-      const res = await axiosClient.patch(url, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data; charset=utf-8',
-        },
-      });      
+    const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
 
-      console.log('API Response:', res.data);
-      return res.data;
-    },
+    console.log('API Response:', res.data);
+    return res.data;
+  },
 
-  CreateUser: async(body: ICreateUserRequest,): Promise<IApiResponse<ICreateUserResponse>> => {
+  CreateUser: async (body: ICreateUserRequest,): Promise<IApiResponse<ICreateUserResponse>> => {
     const url = `/users/create-staff`;
     const formData = new FormData();
 
@@ -172,7 +174,7 @@ export const docApi = {
     return res.data;
   },
 
-  UpdateUser: async(body: IUpdateUserRequest, userId: string): Promise<IApiResponse<IUpdateUserResponse>> => {
+  UpdateUser: async (body: IUpdateUserRequest, userId: string): Promise<IApiResponse<IUpdateUserResponse>> => {
     const url = `/users/update-user/${userId}`;
     const formData = new FormData();
 
@@ -202,20 +204,20 @@ export const docApi = {
 
   //* ======================================================== Supplier  ======================================================== */
 
-  GetAllSupplier : async(
+  GetAllSupplier: async (
     params: {
       keyword?: string,
       page?: number,
       size?: number,
       sort?: string,
     } = {}
-  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
-    const { keyword, page = 1, size = 5, sort = 'createAt, desc'} = params;
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
       sort,
-      ...(keyword && { keyword }), 
+      ...(keyword && { keyword }),
     });
 
     const url = `/supplier/get-suppliers?${queryParams.toString()}`;
@@ -223,45 +225,46 @@ export const docApi = {
     return res.data;
   },
 
-  DeleteSupplier: async(supplierId: string): Promise<IApiResponse<void>> => {
-    const url =  `/supplier/delete-supplier/${supplierId}`
+  DeleteSupplier: async (supplierId: string): Promise<IApiResponse<void>> => {
+    const url = `/supplier/delete-supplier/${supplierId}`
     const res = await axiosClient.delete(url);
     return res.data;
   },
 
-  CreateSupplier: async(body: ICreateSupplierRequest): Promise<IApiResponse<ICreateSupplierResponse>> => {
+  CreateSupplier: async (body: ICreateSupplierRequest): Promise<IApiResponse<ICreateSupplierResponse>> => {
     const url = `/supplier/create-supplier`
     const formData = buildFormData(body);
     const res = await axiosClient.post(url, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data; charset=utf-8',
-    },
-  });
-
-    return res.data;
-  },
-
-  UpdateSupplier: async(supplierId: string ,body: IUpdateSupplierRequest): Promise<IApiResponse<IUpdateSupplierResponse>> => {
-    const url = `/supplier/update-supplier/${supplierId}`;
-    const formData = buildFormData(body);
-    const res = await axiosClient.patch(url, formData , {
-       headers: {
-      'Content-Type': 'multipart/form-data; charset=utf-8',
-    },
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
     });
 
     return res.data;
   },
 
-//* ======================================================== Category  ======================================================== */
-  GetAllCategory : async(
-    params:{
+  UpdateSupplier: async (supplierId: string, body: IUpdateSupplierRequest): Promise<IApiResponse<IUpdateSupplierResponse>> => {
+    const url = `/supplier/update-supplier/${supplierId}`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
+
+  //* ======================================================== Category  ======================================================== */
+  GetAllCategory: async (
+    params: {
       page?: number,
       size?: number,
       sort?: string
-      keyword?: string} = {}
-    ): Promise<IApiResponse<IApiResponsePagination<IGetAllCategoryResponse>>> => {
-    const {keyword, page = 1, size = 5, sort = 'createAt, desc'} = params;
+      keyword?: string
+    } = {}
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllCategoryResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -274,7 +277,7 @@ export const docApi = {
     return res.data;
   },
 
-  CreateCategory: async(body: ICreateCategoryRequest,): Promise<IApiResponse<ICreateCategoryResponse>> => {
+  CreateCategory: async (body: ICreateCategoryRequest,): Promise<IApiResponse<ICreateCategoryResponse>> => {
     const url = `/categories/create-category`;
     const formData = new FormData();
 
@@ -288,6 +291,30 @@ export const docApi = {
       },
     });
 
+    return res.data;
+  },
+
+  GetCategoryDetail: async (categoryId: string): Promise<IApiResponse<IGetCategoryDetailResponse>> => {
+    const url = `/categories/detail-category/${categoryId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  UpdateCategory: async (body: IUpdateCategoryRequest, categoryId: string): Promise<IApiResponse<IUpdateCategoryResponse>> => {
+    const url = `/categories/update/${categoryId}`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
+
+  DeleteCategory: async (categoryId: string): Promise<IApiResponse<void>> => {
+    const url = `/categories/delete/${categoryId}`
+    const res = await axiosClient.delete(url);
     return res.data;
   },
 
@@ -306,16 +333,26 @@ export const docApi = {
     } = {}
   ) : Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
     
-    const  { keyword, categoryName, supplierName, minPrice, maxPrice, page = 1, size = 5, sort = 'createAt,desc'} = params;
+    const  { 
+      keyword, 
+      categoryName, 
+      supplierName, 
+      minPrice, 
+      maxPrice, 
+      page = 1, 
+      size = 5, 
+      sort = 'createAt,desc' 
+    } = params;
+
     const queryParams = new URLSearchParams({
-      page: page.toString(),
-      size: size.toString(),
-      minPrice: minPrice.toString() ,
-      maxPrice: maxPrice.toString(),
-      sort,
-      ...(keyword && {keyword}),
-      ...(categoryName && {categoryName}),
-      ...(supplierName && {supplierName}),
+    page: page.toString(),
+    size: size.toString(),
+    sort,
+    ...(keyword && { keyword }),
+    ...(categoryName && { categoryName }),
+    ...(supplierName && { supplierName }),
+    ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+    ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
       
     })
     const url = `/products/get-products?${queryParams.toString()}`;
