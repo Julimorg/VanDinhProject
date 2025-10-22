@@ -9,7 +9,6 @@ import {
   Upload,
   message,
   InputNumber,
-  Select,
   Typography,
   Space,
   Alert,
@@ -22,10 +21,11 @@ import {
 import { useNavigate } from 'react-router-dom'; // Thêm import useNavigate
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 import type { RcFile } from 'antd/es/upload/interface';
+import SupplierSelector from './Components/SupplierSelector'; // Import component mới
+import CategorySelector from './Components/CategorySelector'; // Import component mới
 
 const { Title } = Typography;
 const { TextArea } = Input;
-const { Option } = Select;
 
 // Interface cho form data
 interface ProductFormData {
@@ -148,7 +148,7 @@ const CreateProductPage: React.FC<CreateProductProps> = ({
           size="large"
           disabled={loading}
         >
-          {/* Row 1: Tên và Mô tả */}
+          {/* Row 1: Tên và Mã sản phẩm */}
           <Row gutter={16}>
             <Col xs={24} lg={12}>
               <Form.Item
@@ -231,13 +231,7 @@ const CreateProductPage: React.FC<CreateProductProps> = ({
             </Col>
             <Col xs={24} sm={8}>
               <Form.Item name="color" label="Màu sắc">
-                <Select placeholder="Chọn màu sắc" allowClear>
-                  {colors.map((color) => (
-                    <Option key={color} value={color}>
-                      {color}
-                    </Option>
-                  ))}
-                </Select>
+                <Input placeholder="Nhập màu sắc (ví dụ: đỏ, xanh)" />
               </Form.Item>
             </Col>
           </Row>
@@ -287,34 +281,16 @@ const CreateProductPage: React.FC<CreateProductProps> = ({
             </Col>
           </Row>
 
-          {/* Row 6: Nhà cung cấp và Danh mục */}
+          {/* Row 6: Nhà cung cấp và Danh mục - Sử dụng hai component riêng */}
           <Row gutter={16}>
-            <Col xs={24} lg={12}>
-              <Form.Item name="supplierId" label="Nhà cung cấp ID">
-                <Select placeholder="Chọn nhà cung cấp" allowClear>
-                  {suppliers.map((supplier) => (
-                    <Option key={supplier} value={supplier}>
-                      {supplier}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} lg={12}>
-              <Form.Item 
-                name="categoryId" 
-                label="Danh mục ID *"
-                rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-              >
-                <Select placeholder="Chọn danh mục" allowClear>
-                  {categories.map((category) => (
-                    <Option key={category} value={category}>
-                      {category}
-                    </Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </Col>
+            <SupplierSelector 
+              form={form}
+              suppliers={suppliers}
+            />
+            <CategorySelector 
+              form={form}
+              categories={categories}
+            />
           </Row>
 
           {/* Buttons */}

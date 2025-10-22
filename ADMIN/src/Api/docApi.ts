@@ -22,6 +22,8 @@ import { IGetCategoryDetailResponse } from '@/Interface/Category/IGetCategoryDet
 import { IUpdateCategoryRequest, IUpdateCategoryResponse } from '@/Interface/Category/IUpdateCategory';
 import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { IGetProductDetailResponse } from '@/Interface/Product/IGetProductsDetail';
+import { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplierSelection';
+import { IGetCategorySelectionResponse } from '@/Interface/Category/IGetCategorySelection';
 
 
 export const docApi = {
@@ -205,6 +207,12 @@ export const docApi = {
 
   //* ======================================================== Supplier  ======================================================== */
 
+  GetSupplierSelection: async(): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
+      const url = `/supplier/select-suppliers`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
   GetAllSupplier: async (
     params: {
       keyword?: string,
@@ -257,6 +265,13 @@ export const docApi = {
   },
 
   //* ======================================================== Category  ======================================================== */
+
+  GetCategorySelection: async(): Promise<IApiResponse<IGetCategorySelectionResponse>> => {
+      const url = `/categories/select-categories`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
   GetAllCategory: async (
     params: {
       page?: number,
