@@ -21,6 +21,7 @@ import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Sup
 import { IGetCategoryDetailResponse } from '@/Interface/Category/IGetCategoryDetail';
 import { IUpdateCategoryRequest, IUpdateCategoryResponse } from '@/Interface/Category/IUpdateCategory';
 import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
+import { IGetProductDetailResponse } from '@/Interface/Product/IGetProductsDetail';
 
 
 export const docApi = {
@@ -356,6 +357,12 @@ export const docApi = {
       
     })
     const url = `/products/get-products?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  GetProducDetail: async (productId: string): Promise<IApiResponse<IGetProductDetailResponse>> => {
+    const url = `/products/detail-product/${productId}`;
     const res = await axiosClient.get(url);
     return res.data;
   }

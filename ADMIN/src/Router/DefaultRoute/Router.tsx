@@ -5,7 +5,6 @@ import MainLayout from '@/Pages/MainLayout/MainLayout';
 import UserManagement from '@/Pages/UsersManagement/UsersManagement';
 import SupplierManagementPage from '@/Pages/SupplierManagement/SupplierManagementPage';
 import ColorManagement from '@/Pages/ColorManagement/ColorManagementPage';
-import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
 import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
 import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
@@ -33,7 +32,7 @@ const Router = () => {
         <Route path="products" element={<ProductList />}>
           <Route index element={<ProductList />} /> 
           <Route path="create" element={<CreateProductPage />} />
-          <Route path="product-detail" element={<ProductDetailPage />} />
+          <Route path="product-detail/:productId" element={<ProductDetailPage />} />
         </Route>
     
         <Route path="suppliers" element={<SupplierManagementPage />} />

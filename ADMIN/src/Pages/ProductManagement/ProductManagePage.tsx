@@ -21,14 +21,15 @@ import {
   SortAscendingOutlined,
   PlusOutlined,
   FilterOutlined,
-  EyeOutlined, 
+  EyeOutlined,
+  EditOutlined, // Thêm icon cho nút Sửa
+  DeleteOutlined, // Thêm icon cho nút Xóa
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetAllProducts } from './Hook/useGetAllProducts';
 import { formatCurrency } from '@/Utils/ulti';
 const { Title, Text } = Typography;
-
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
@@ -189,20 +190,37 @@ const ProductList: React.FC = () => {
       title: 'Hành động',
       key: 'actions',
       width: 150, 
-      render: () => (
+
+      render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
           <Button 
             type="link" 
             size="small" 
             icon={<EyeOutlined />}
-            onClick={() => navigate(`/products/product-detail`)} 
+            onClick={() => navigate(`/products/product-detail/${record.productId}`)} 
           >
-            Xem chi tiết
+            Xem 
           </Button>
-          <Button type="link" size="small">
+         
+          <Button 
+            type="link" 
+            size="small" 
+            icon={<EditOutlined />}
+            onClick={() => navigate(`/products/edit/${record.productId}`)}
+          >
             Sửa
           </Button>
-          <Button type="link" danger size="small">
+
+          <Button 
+            type="link" 
+            danger 
+            size="small" 
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              // TODO: Implement confirm delete (ví dụ dùng Modal)
+              console.log('Xóa sản phẩm:', record.productId);
+            }}
+          >
             Xóa
           </Button>
         </Space>
@@ -231,7 +249,6 @@ const ProductList: React.FC = () => {
     setFilters((prev) => ({ ...prev, supplierName: supplier, page: 0 }));
   };
 
-
   const handleAddProduct = () => {
     navigate('/products/create');
   };
@@ -240,7 +257,6 @@ const ProductList: React.FC = () => {
     setFilters((prev) => ({ ...prev, page: currentPage - 1, size: pageSize }));
   };
 
-  
   if (!isChildRoute && error) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -257,10 +273,8 @@ const ProductList: React.FC = () => {
     );
   }
 
-  
   return (
     <div className="min-h-screen bg-white py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
-
       {!isChildRoute ? (
         <>
           <Title level={2} className="text-center mb-4 sm:mb-6">
@@ -358,7 +372,7 @@ const ProductList: React.FC = () => {
                 columns={columns}
                 dataSource={products}
                 pagination={false}
-                scroll={{ x: 1500 }} // Tăng scroll x để chứa thêm nút
+                scroll={{ x: 1500 }}
                 rowKey="productId"
                 className="border-none"
                 locale={{ emptyText: 'Không có dữ liệu phù hợp' }}
@@ -386,7 +400,6 @@ const ProductList: React.FC = () => {
           )}
         </>
       ) : (
-        
         <Outlet />
       )}
     </div>
