@@ -136,7 +136,7 @@ public class ProductService {
 //        product.setQuantity(request.getQuantity());
     }
 
-    //Get list product
+    //Get list productc
     //Note: get thủ công cho supplier
     // Check xem findALl xem co lay them nhung thang ENtity ko lien quan ko
     public Page<GetProductsRes> getProducts(String keyword,

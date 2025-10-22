@@ -3,10 +3,7 @@ package com.example.managementapi.Controller;
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Supplier.CreateSupplierReq;
 import com.example.managementapi.Dto.Request.Supplier.UpdateSupplierReq;
-import com.example.managementapi.Dto.Response.Supplier.CreateSupplierRes;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierDetailRes;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierRes;
-import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
+import com.example.managementapi.Dto.Response.Supplier.*;
 import com.example.managementapi.Service.SupplierService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +27,17 @@ public class SupplierController {
     @Autowired
     private SupplierService supplierService;
 
+
+    @GetMapping("/select-suppliers")
+    public ApiResponse<List<GetSupplierSelectionRes>> getSupplierSelection(){
+        return ApiResponse.<List<GetSupplierSelectionRes>>
+                builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(supplierService.getSupplierSelection())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @GetMapping("/get-suppliers")
     public ApiResponse<Page<GetSupplierRes>> getSupplier(

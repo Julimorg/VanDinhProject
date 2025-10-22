@@ -2,12 +2,8 @@ package com.example.managementapi.Service;
 
 import com.example.managementapi.Dto.Request.Category.CreateCategoryReq;
 import com.example.managementapi.Dto.Request.Category.UpdateCategoryReq;
-import com.example.managementapi.Dto.Response.Category.CreateCategoryRes;
-import com.example.managementapi.Dto.Response.Category.GetCategoriesRes;
-import com.example.managementapi.Dto.Response.Category.GetDetailCategoryRes;
-import com.example.managementapi.Dto.Response.Category.UpdateCategoryRes;
+import com.example.managementapi.Dto.Response.Category.*;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
-import com.example.managementapi.Dto.Response.Product.UpdateProductRes;
 import com.example.managementapi.Entity.Category;
 import com.example.managementapi.Enum.ErrorCode;
 import com.example.managementapi.Exception.AppException;
@@ -23,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -32,14 +27,13 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class CategoryService {
-    @Autowired
-    private CategoryRepository categoryRepository;
 
-    @Autowired
-    private CategoryMapper categoryMapper;
+    private final CategoryRepository categoryRepository;
 
-    @Autowired
+    private final CategoryMapper categoryMapper;
+
     private final CloudinaryService cloudinaryService;
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateCategoryRes createCategory(CreateCategoryReq request){
@@ -91,6 +85,11 @@ public class CategoryService {
         category = categoryRepository.save(category);
 
         return categoryMapper.toUpdateCategoryRes(category);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetCategoriesSelectionRes> getCategoriesSelection(){
+        return categoryRepository.findAll().stream().map(categoryMapper::toGetCategoriesSelectionRes).toList();
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
