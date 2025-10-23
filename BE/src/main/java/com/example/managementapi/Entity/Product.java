@@ -35,9 +35,7 @@ public class Product {
     private String productUnit;
     private String productCode;
 
-    //Nếu test postman thì sẽ nhận thông báo Unknown Error, mặc dù trong service đã dùng custom error
-    //Springboot sẽ bỏ qua thằng Exception custom và chỉ dùng của thằng @Max
-    //@Max(10000000)
+
     private int productQuantity;
 
     private double discount;
