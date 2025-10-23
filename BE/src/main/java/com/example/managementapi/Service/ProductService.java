@@ -35,19 +35,17 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class ProductService {
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private SupplierRepository supplierRepository;
-    @Autowired
-    private ColorRepository colorRepository;
-    @Autowired
-    private CategoryRepository categoryRepository;
 
-    @Autowired
-    private ProductMapper productMapper;
+    private final ProductRepository productRepository;
 
-    @Autowired
+    private final SupplierRepository supplierRepository;
+
+    private final ColorRepository colorRepository;
+
+    private final CategoryRepository categoryRepository;
+
+    private final ProductMapper productMapper;
+
     private final CloudinaryService cloudinaryService;
 
 //    public Page<GetProductsRes> searchProducts(String keyword, String categoryName, String supplierName, Pageable pageable){
@@ -136,22 +134,22 @@ public class ProductService {
 //        product.setQuantity(request.getQuantity());
     }
 
-    //Get list product
+    //Get list productc
     //Note: get thủ công cho supplier
     // Check xem findALl xem co lay them nhung thang ENtity ko lien quan ko
-    public Page<GetProductsRes> getProducts(String categoryName,
-                                            String keyword,
+    public Page<GetProductsRes> getProducts(String keyword,
+                                            String categoryName,
                                             String supplierName,
                                             Double minPrice,
                                             Double maxPrice,
-                                            Pageable pageable){
-
+                                            Pageable pageable) {
         Specification<Product> specification = ProductSpecification.searchFilterForProduct(
                 keyword,
                 categoryName,
                 supplierName,
                 minPrice,
-                maxPrice);
+                maxPrice
+        );
 
         return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
     }

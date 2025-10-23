@@ -11,4 +11,8 @@ DELETE_USER: 'Delete User',
 GET_SUPPLIER: 'Get all suppliers',
 CREATE_SUPPLIER: 'Create Suppliers',
 GET_CATEGORY: 'Get all categories',
+GET_ALL_PRODUCT: 'Get All Products',
+GET_PRODUCT_DETAIL: 'Get product detail',
+GET_SUPPLIER_SELECTION: 'Get Supplier Selection',
+GET_CATEGORY_SELECTION: 'Get Category Selection'
 }

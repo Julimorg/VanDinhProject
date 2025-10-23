@@ -3,10 +3,7 @@ package com.example.managementapi.Mapper;
 import com.example.managementapi.Dto.Request.Category.CreateCategoryReq;
 import com.example.managementapi.Dto.Request.Category.UpdateCategoryReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
-import com.example.managementapi.Dto.Response.Category.CreateCategoryRes;
-import com.example.managementapi.Dto.Response.Category.GetCategoriesRes;
-import com.example.managementapi.Dto.Response.Category.GetDetailCategoryRes;
-import com.example.managementapi.Dto.Response.Category.UpdateCategoryRes;
+import com.example.managementapi.Dto.Response.Category.*;
 import com.example.managementapi.Dto.Response.Product.UpdateProductRes;
 import com.example.managementapi.Entity.Category;
 import com.example.managementapi.Entity.Product;
@@ -25,6 +22,9 @@ public interface CategoryMapper {
     UpdateCategoryRes toUpdateCategoryRes(Category category);
 
     GetCategoriesRes toGetCategoriesRes(Category categories);
+
+    GetCategoriesSelectionRes toGetCategoriesSelectionRes(Category categories);
+
 
     GetDetailCategoryRes toGetDetailCategoryRes(Category category);
 }

@@ -1,18 +1,20 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from '@/Pages/Login/LoginPage';
 import Logout from '@/Pages/LogOut';
 import MainLayout from '@/Pages/MainLayout/MainLayout';
 import UserManagement from '@/Pages/UsersManagement/UsersManagement';
 import SupplierManagementPage from '@/Pages/SupplierManagement/SupplierManagementPage';
 import ColorManagement from '@/Pages/ColorManagement/ColorManagementPage';
-import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
 import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
 import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
 import MyProfile from '@/Pages/MyProfile/MyProfilePage';
 import DashboardPage from '@/Pages/Dashboard/DashBoardPage';
 import UserDetailView from '@/Pages/UsersManagement/Components/UserDetail';
-import ProductDetail from '@/Pages/ProductManagement/ProductDetail';
+import CategoryDetail from '@/Pages/CategoryManagement/Components/CategoryDetai';
+import CategoryManagementPage from '@/Pages/CategoryManagement/CategoryManagementPage';
+import CreateProductPage from '@/Pages/ProductManagement/CreateProductPage';
+import ProductDetailPage from '@/Pages/ProductManagement/ProductDetailPage';
 
 const Router = () => {
   return (
@@ -21,30 +23,29 @@ const Router = () => {
       <Route path="/logout" element={<Logout />} />
 
       <Route path="/" element={<MainLayout />}>
-          {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
-          
-          <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="users" element={<UserManagement />}>
-            <Route path="user-detail/:id" element={<UserDetailView />} />
-          </Route>
-          <Route path="products" element={<ProductList />}>
-            <Route path="product-detail" element={<ProductDetail />} />
-          </Route>
-          <Route path="suppliers" element={<SupplierManagementPage />} />
-          <Route path="colors" element={<ColorManagement />} />
-          <Route path="category" element={<CategoryList />} />
-          <Route path="orders" element={<OrderManagementPage />} />
-          <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
-          <Route path="profile" element={<MyProfile />} />
+        <Route index element={<Navigate to="/dashboard" replace />} />
 
-          
-          {/* <Route path="settings/general" element={<SettingsGeneralPage />} />
-          <Route path="settings/payment" element={<SettingsPaymentPage />} />
-          <Route path="settings/shipping" element={<SettingsShippingPage />} />
-          <Route path="settings/notifications" element={<SettingsNotificationsPage />} /> */}
-          
-          {/* <Route path="*" element={<Navigate to="/dashboard" replace />} /> */}
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="users" element={<UserManagement />}>
+          <Route path="user-detail/:id" element={<UserDetailView />} />
         </Route>
+        <Route path="products" element={<ProductList />}>
+          <Route index element={<ProductList />} /> 
+          <Route path="create" element={<CreateProductPage />} />
+          <Route path="product-detail/:productId" element={<ProductDetailPage />} />
+        </Route>
+    
+        <Route path="suppliers" element={<SupplierManagementPage />} />
+        <Route path="colors" element={<ColorManagement />} />
+        <Route path="category" element={<CategoryManagementPage />}>
+          <Route path=":categoryId" element={<CategoryDetail />} />
+        </Route>
+        <Route path="orders" element={<OrderManagementPage />} />
+        <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
+        <Route path="profile" element={<MyProfile />} />
+
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Route>
     </Routes>
   );
 };

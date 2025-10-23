@@ -4,10 +4,7 @@ import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Category.CreateCategoryReq;
 import com.example.managementapi.Dto.Request.Category.UpdateCategoryReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
-import com.example.managementapi.Dto.Response.Category.CreateCategoryRes;
-import com.example.managementapi.Dto.Response.Category.GetCategoriesRes;
-import com.example.managementapi.Dto.Response.Category.GetDetailCategoryRes;
-import com.example.managementapi.Dto.Response.Category.UpdateCategoryRes;
+import com.example.managementapi.Dto.Response.Category.*;
 import com.example.managementapi.Entity.Category;
 import com.example.managementapi.Service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +42,16 @@ public class CategoryController {
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
                 .data(categoryService.updateCategory(categoryId, request))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/select-categories")
+    ApiResponse<List<GetCategoriesSelectionRes>> getCategoriesSelection(){
+        return ApiResponse.<List<GetCategoriesSelectionRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(categoryService.getCategoriesSelection())
                 .timestamp(LocalDateTime.now())
                 .build();
     }

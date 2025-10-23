@@ -5,10 +5,7 @@ import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Supplier.CreateSupplierReq;
 import com.example.managementapi.Dto.Request.Supplier.UpdateSupplierReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
-import com.example.managementapi.Dto.Response.Supplier.CreateSupplierRes;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierDetailRes;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierRes;
-import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
+import com.example.managementapi.Dto.Response.Supplier.*;
 import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Supplier;
 import com.example.managementapi.Enum.ErrorCode;
@@ -35,16 +32,20 @@ import java.util.List;
 @Slf4j
 public class SupplierService {
 
-    @Autowired
     private final SupplierRepository supplierRepository;
 
-    @Autowired
     private final SupplierMapper supplierMapper;
 
-    @Autowired
     private final CloudinaryService cloudinaryService;
-    @Autowired
-    private ColorRepository colorRepository;
+
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetSupplierSelectionRes> getSupplierSelection(){
+        return supplierRepository.findAll()
+                .stream()
+                .map(supplier -> supplierMapper.toGetSuppliersSelection(supplier))
+                .toList();
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable){

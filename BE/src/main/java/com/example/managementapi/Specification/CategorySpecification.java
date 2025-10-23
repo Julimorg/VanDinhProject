@@ -1,7 +1,6 @@
 package com.example.managementapi.Specification;
 
 import com.example.managementapi.Entity.Category;
-import com.example.managementapi.Entity.Product;
 import org.springframework.data.jpa.domain.Specification;
 
 public class CategorySpecification {
@@ -14,10 +13,4 @@ public class CategorySpecification {
         };
     }
 
-    public static Specification<Category> searchCategory(String categoryName){
-        return(root, query, criteriaBuilder) -> {
-            query.distinct(true);
-            return Specification.allOf(hasKeyword(categoryName)).toPredicate(root, query, criteriaBuilder);
-        };
-    }
 }
