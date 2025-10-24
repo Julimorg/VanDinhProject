@@ -34,8 +34,9 @@ export const useCurrentTime = () => {
 export const formatCurrency = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
 
-//tach chuoi
-export const parseCurrency = (value: string): number => {
+//? tach chuoi
+export const parseCurrency = (value: string | undefined): number => {
+  if (!value) return 0;
   return parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
 };
 

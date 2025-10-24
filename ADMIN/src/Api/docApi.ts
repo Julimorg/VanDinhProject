@@ -24,6 +24,8 @@ import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { IGetProductDetailResponse } from '@/Interface/Product/IGetProductsDetail';
 import { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplierSelection';
 import { IGetCategorySelectionResponse } from '@/Interface/Category/IGetCategorySelection';
+import { IGetColorSelectionResponse } from '@/Interface/Color/IGetColorSelection';
+import { ICreateProductRequest, ICreateProductResponse } from '@/Interface/Product/ICreateProduct';
 
 
 export const docApi = {
@@ -334,6 +336,14 @@ export const docApi = {
     return res.data;
   },
 
+  //* ======================================================== Color  ======================================================== */
+
+  GetColorSelection: async(supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> =>{ 
+    const url = `/color/color-selector/${supplierId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   //* ======================================================== Product  ======================================================== */
 
   GetAllProducts: async(
@@ -380,7 +390,21 @@ export const docApi = {
     const url = `/products/detail-product/${productId}`;
     const res = await axiosClient.get(url);
     return res.data;
-  }
+  },
+
+  CreateProduct: async(body: ICreateProductRequest): Promise<IApiResponse<ICreateProductResponse>> =>{
+    const url = `/products/create-product`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  } 
+
+
 
 
 }

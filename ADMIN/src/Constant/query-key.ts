@@ -14,5 +14,6 @@ GET_CATEGORY: 'Get all categories',
 GET_ALL_PRODUCT: 'Get All Products',
 GET_PRODUCT_DETAIL: 'Get product detail',
 GET_SUPPLIER_SELECTION: 'Get Supplier Selection',
-GET_CATEGORY_SELECTION: 'Get Category Selection'
+GET_CATEGORY_SELECTION: 'Get Category Selection',
+GET_COLOR_SELECTION: 'Get Color Selection',
 }

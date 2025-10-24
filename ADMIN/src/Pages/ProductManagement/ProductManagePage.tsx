@@ -22,8 +22,8 @@ import {
   PlusOutlined,
   FilterOutlined,
   EyeOutlined,
-  EditOutlined, // Thêm icon cho nút Sửa
-  DeleteOutlined, // Thêm icon cho nút Xóa
+  EditOutlined,
+  DeleteOutlined, 
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
@@ -43,7 +43,7 @@ const ProductList: React.FC = () => {
     categoryName: undefined as string | undefined,
     supplierName: undefined as string | undefined,
     page: 0,
-    size: 10,
+    size: 5,
     sort: 'createAt,desc',
   });
 
@@ -57,10 +57,10 @@ const ProductList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllProducts(
     {
       ...filters,
-      keyword: debouncedKeyword, // Chỉ refetch khi debounce xong
+      keyword: debouncedKeyword, 
     },
     {
-      enabled: !isChildRoute, // Disable query khi ở child route (không fetch data)
+      enabled: !isChildRoute,
     }
   );
 
@@ -189,32 +189,32 @@ const ProductList: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 150, 
+      width: 150,
 
       render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
-          <Button 
-            type="link" 
-            size="small" 
+          <Button
+            type="link"
+            size="small"
             icon={<EyeOutlined />}
-            onClick={() => navigate(`/products/product-detail/${record.productId}`)} 
+            onClick={() => navigate(`/products/product-detail/${record.productId}`)}
           >
-            Xem 
+            Xem
           </Button>
-         
-          <Button 
-            type="link" 
-            size="small" 
+
+          <Button
+            type="link"
+            size="small"
             icon={<EditOutlined />}
             onClick={() => navigate(`/products/edit/${record.productId}`)}
           >
             Sửa
           </Button>
 
-          <Button 
-            type="link" 
-            danger 
-            size="small" 
+          <Button
+            type="link"
+            danger
+            size="small"
             icon={<DeleteOutlined />}
             onClick={() => {
               // TODO: Implement confirm delete (ví dụ dùng Modal)
@@ -395,6 +395,7 @@ const ProductList: React.FC = () => {
                 onShowSizeChange={handlePageChange}
                 size="small"
                 className="lg:min-w-[400px]"
+                disabled={pagination.totalPages <= 1} 
               />
             </div>
           )}
