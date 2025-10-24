@@ -1,11 +1,26 @@
-// EditProductModal.tsx - File component riêng cho Modal Edit
-import React from 'react';
-import { Modal, Form, Input, InputNumber, Select } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
+import React, { useState, useEffect } from 'react';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Upload,
+  Button,
+  message,
+  Row,
+  Col,
+  Typography,
+} from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload';
+import type { RcFile } from 'antd/es/upload/interface';
+import { UploadOutlined } from '@ant-design/icons';
+import SupplierSelector from './SupplierSelector';
+import CategorySelector from './CategorySelector';
+import { useUpdateProduct } from '../Hook/useUpdateProduct';
+import { IUpdateProductRequest } from '@/Interface/Product/IUpdateProduct';
+import { toast } from 'react-toastify';
 
-const { Option } = Select;
 
-// Interface giống Product
 interface Product {
   productId: string;
   productName: string;
@@ -16,171 +31,296 @@ interface Product {
   productCode: string;
   productQuantity: number;
   discount: number;
-  productPrice: string;
+  productPrice: number;
   supplierName: string;
+  supplierId?: string;
   colorName: string;
+  colorId?: string;
   categoryName: string;
+  categoryId?: string;
   createAt: string;
   updateAt: string;
 }
 
+const { Title } = Typography;
+const { TextArea } = Input;
+
+// Interface cho form values
+interface EditProductForm {
+  productName: string;
+  productDescription: string;
+  productVolume: string;
+  productUnit: string;
+  productCode: string;
+  productQuantity: number;
+  discount: number; // % để input
+  productPrice: number;
+  supplierId: string;
+  colorId: string;
+  categoryId: string;
+}
+
+// Props cho EditProductModal
 interface EditProductModalProps {
   visible: boolean;
-  product: Product;
+  product?: Product;
   onCancel: () => void;
   onSave: (updatedProduct: Product) => void;
 }
 
-const EditProductModal: React.FC<EditProductModalProps> = ({ visible, product, onCancel, onSave }) => {
-  const [form] = Form.useForm<Product>();
+const EditProductModal: React.FC<EditProductModalProps> = ({
+  visible,
+  product,
+  onCancel,
+  onSave,
+}) => {
+  const [form] = Form.useForm<EditProductForm>();
+  const [fileList, setFileList] = useState<any[]>([]);
 
-  React.useEffect(() => {
+
+  const updateProductMutation = useUpdateProduct(
+    product?.productId || '',
+    {
+      onSuccess: (response) => {
+        toast.success('Cập nhật sản phẩm thành công!');
+        // Chuyển response data thành Product để gọi onSave (map productImage nếu cần, nhưng cast tạm)
+        const updatedProduct = response.data as unknown as Product;
+        onSave(updatedProduct);
+      },
+      onError: (error: Error) => {
+        toast.error(`Lỗi cập nhật sản phẩm: ${error.message}`);
+      },
+    }
+  );
+
+  const loading = updateProductMutation.isPending;
+
+  // Khởi tạo form với data từ product
+  useEffect(() => {
     if (visible && product) {
-      form.setFieldsValue(product);
+      form.setFieldsValue({
+        productName: product.productName,
+        productDescription: product.productDescription,
+        productVolume: product.productVolume,
+        productUnit: product.productUnit,
+        productCode: product.productCode,
+        productQuantity: product.productQuantity,
+        discount: product.discount * 100, // Hiển thị %
+        productPrice: product.productPrice,
+        supplierId: product.supplierId || '',
+        colorId: product.colorId || '',
+        categoryId: product.categoryId || '',
+      });
+
+      // Preview images hiện tại
+      const currentImages = (product.productImage || []).map((url: string, index: number) => ({
+        uid: `-${index}`,
+        name: `image-${index + 1}.png`,
+        status: 'done' as const,
+        url,
+      }));
+      setFileList(currentImages);
+    } else if (!visible) {
+      form.resetFields();
+      setFileList([]);
     }
   }, [visible, product, form]);
 
-  const handleOk = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const updatedProduct: Product = { ...product, ...values, updateAt: new Date().toISOString() };
-        onSave(updatedProduct);
-        form.resetFields();
+  // Xử lý upload change (kiểm tra size <= 2MB)
+  const handleUploadChange = ({ fileList: newFileList }: UploadChangeParam) => {
+    const filteredList = newFileList
+      .map((file) => {
+        if (file.originFileObj && (file.originFileObj as RcFile).size! > 2 * 1024 * 1024) {
+          message.error('File phải nhỏ hơn hoặc bằng 2MB!');
+          return null;
+        }
+        return file;
       })
-      .catch((info) => {
-        console.log('Validate Failed:', info);
-      });
+      .filter(Boolean) as any[];
+
+    setFileList(filteredList);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+
+      //? Xử lý images: Chỉ lấy files mới (originFileObj) cho upload
+      const newFiles: File[] = fileList
+        .filter((file) => file.originFileObj)
+        .map((file) => file.originFileObj as File);
+
+      const body: IUpdateProductRequest = {
+        productName: values.productName,
+        productDescription: values.productDescription,
+        productImage: newFiles, 
+        productVolume: values.productVolume,
+        productUnit: values.productUnit,
+        productCode: values.productCode,
+        productQuantity: values.productQuantity,
+        discount: values.discount / 100, 
+        productPrice: values.productPrice,
+        supplierId: values.supplierId,
+        colorId: values.colorId,
+        categoryId: values.categoryId,
+      };
+      await updateProductMutation.mutateAsync(body);
+    } catch (error) {
+
+      toast.error(`Lỗi cập nhật - ${error}`);
+    }
+  };
+
+  const handleCancel = () => {
+    form.resetFields();
+    setFileList([]);
+    onCancel();
   };
 
   return (
     <Modal
-      title="Chỉnh Sửa Sản Phẩm"
+      title={
+        <Title level={4} className="m-0 text-gray-900">
+          Chỉnh Sửa Sản Phẩm
+        </Title>
+      }
       open={visible}
-      onOk={handleOk}
-      onCancel={onCancel}
+      onCancel={handleCancel}
+      footer={[
+        <Button key="cancel" onClick={handleCancel} disabled={loading}>
+          Hủy
+        </Button>,
+        <Button
+          key="save"
+          type="primary"
+          onClick={handleSubmit}
+          loading={loading}
+          disabled={loading}
+        >
+          Lưu Thay Đổi
+        </Button>,
+      ]}
       width={800}
-      okText="Lưu Thay Đổi"
-      cancelText="Hủy"
-      style={{ top: 20 }} // Điều chỉnh vị trí modal nếu cần
+      centered
+      destroyOnClose
       bodyStyle={{ 
-        maxHeight: '70vh', // Giới hạn chiều cao modal
-        overflowY: 'auto' // Thêm scroll vertical cho body modal
+        maxHeight: '70vh',
+        overflow: 'auto', 
+        padding: '24px', 
       }}
     >
       <Form
         form={form}
         layout="vertical"
-        initialValues={product}
-        style={{ padding: '16px 0' }} // Thêm padding cho form
+        initialValues={{}}
+        className="space-y-4"
       >
-        <Form.Item
-          name="productName"
-          label="Tên Sản Phẩm"
-          rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
-        >
-          <Input placeholder="Nhập tên sản phẩm" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              name="productName"
+              label="Tên Sản Phẩm"
+              rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
+            >
+              <Input placeholder="Nhập tên sản phẩm" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productDescription"
-          label="Mô Tả"
-          rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
-        >
-          <TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item
+              name="productDescription"
+              label="Mô Tả Sản Phẩm"
+              rules={[{ required: true, message: 'Vui lòng nhập mô tả!' }]}
+            >
+              <TextArea rows={4} placeholder="Nhập mô tả chi tiết sản phẩm" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productVolume"
-          label="Dung Lượng"
-          rules={[{ required: true, message: 'Vui lòng nhập dung lượng!' }]}
-        >
-          <Input placeholder="Ví dụ: 330ml" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={24}>
+            <Form.Item label="Hình Ảnh Sản Phẩm (≤ 2MB/file)">
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                onChange={handleUploadChange}
+                beforeUpload={() => false} 
+                maxCount={10}
+                accept="image/*"
+              >
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+                </div>
+              </Upload>
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productUnit"
-          label="Đơn Vị"
-          rules={[{ required: true, message: 'Vui lòng nhập đơn vị!' }]}
-        >
-          <Input placeholder="Ví dụ: Lon" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="productVolume" label="Dung Lượng">
+              <Input placeholder="Ví dụ: 330ml" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="productUnit" label="Đơn Vị">
+              <Input placeholder="Ví dụ: Lon" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productCode"
-          label="Mã Code"
-          rules={[{ required: true, message: 'Vui lòng nhập mã code!' }]}
-        >
-          <Input placeholder="Nhập mã code" />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="productCode" label="Mã Code">
+              <Input placeholder="Nhập mã code" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="productQuantity" label="Số Lượng">
+              <InputNumber min={0} placeholder="0" style={{ width: '100%' }} />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productQuantity"
-          label="Số Lượng"
-          rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
-        >
-          <InputNumber min={0} placeholder="Nhập số lượng" style={{ width: '100%' }} />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="discount" label="Giảm Giá (%)">
+              <InputNumber
+                min={0}
+                max={100}
+                step={0.1}
+                placeholder="0"
+                style={{ width: '100%' }}
+                formatter={(value) => `${value}%`}
+                // parser={(value) => value!.replace('%', '')}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              name="productPrice"
+              label="Giá Sản Phẩm (VND)"
+              rules={[{ required: true, message: 'Vui lòng nhập giá!' }]}
+            >
+              <InputNumber
+                min={0}
+                placeholder="0"
+                style={{ width: '100%' }}
+                formatter={(value) => `${value?.toLocaleString('vi-VN')}`}
+                // parser={(value) => parseInt(value!.replace(/\D/g, '')) || 0}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        <Form.Item
-          name="productPrice"
-          label="Giá Sản Phẩm"
-          rules={[{ required: true, message: 'Vui lòng nhập giá!' }]}
-        >
-          <InputNumber 
-            min={0} 
-            precision={2} 
-            formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value!.replace(/\$\s?|(,*)/g, '')}
-            placeholder="Nhập giá (VND)"
-            style={{ width: '100%' }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="discount"
-          label="Giảm Giá (%)"
-          rules={[{ required: true, message: 'Vui lòng nhập giảm giá!' }]}
-        >
-          <InputNumber 
-            min={0} 
-            max={100} 
-            step={0.1}
-            placeholder="Nhập % giảm (0-100)"
-            style={{ width: '100%' }}
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="supplierName"
-          label="Nhà Cung Cấp"
-          rules={[{ required: true, message: 'Vui lòng nhập nhà cung cấp!' }]}
-        >
-          <Input placeholder="Nhập tên nhà cung cấp" />
-        </Form.Item>
-
-        <Form.Item
-          name="colorName"
-          label="Màu Sắc"
-          rules={[{ required: true, message: 'Vui lòng nhập màu sắc!' }]}
-        >
-          <Input placeholder="Nhập tên màu" />
-        </Form.Item>
-
-        <Form.Item
-          name="categoryName"
-          label="Danh Mục"
-          rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-        >
-          <Select placeholder="Chọn danh mục">
-            <Option value="Sách">Sách</Option>
-            <Option value="Điện Tử">Điện Tử</Option>
-            <Option value="Thực Phẩm">Thực Phẩm</Option>
-            {/* Thêm options khác nếu cần */}
-          </Select>
-        </Form.Item>
-
-        {/* Lưu ý: productImage, createAt, updateAt không edit ở đây để đơn giản */}
+        {/* Row cho Supplier, Color, Category với selectors - Giống CreateProduct */}
+        <Row gutter={16}>
+            <SupplierSelector form={form} />   
+            <CategorySelector form={form} />
+        </Row>
       </Form>
     </Modal>
   );

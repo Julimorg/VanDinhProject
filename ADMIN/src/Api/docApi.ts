@@ -26,6 +26,7 @@ import { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplier
 import { IGetCategorySelectionResponse } from '@/Interface/Category/IGetCategorySelection';
 import { IGetColorSelectionResponse } from '@/Interface/Color/IGetColorSelection';
 import { ICreateProductRequest, ICreateProductResponse } from '@/Interface/Product/ICreateProduct';
+import { IUpdateProductRequest, IUpdateProductResponse } from '@/Interface/Product/IUpdateProduct';
 
 
 export const docApi = {
@@ -402,9 +403,25 @@ export const docApi = {
     });
 
     return res.data;
-  } 
+  },
 
+  DeleteProduct: async(productId: string): Promise<IApiResponse<void>> =>{
+    const url = `/products/delete/${productId}`;
+    const res = await axiosClient.delete(url);
+    return res.data;
+  },
 
+  UpdateProduct: async(productId: string, body: IUpdateProductRequest): Promise<IApiResponse<IUpdateProductResponse>> => {
+    const url = `/products/update/${productId}`;
+    const formData = buildFormData(body);
+     const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  }
 
 
 }

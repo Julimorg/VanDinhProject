@@ -22,13 +22,13 @@ import {
   PlusOutlined,
   FilterOutlined,
   EyeOutlined,
-  EditOutlined,
-  DeleteOutlined, 
+  DeleteOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetAllProducts } from './Hook/useGetAllProducts';
 import { formatCurrency } from '@/Utils/ulti';
+import ConfirmDeleteModal from './Components/DeleteProductModal';
 const { Title, Text } = Typography;
 
 const ProductList: React.FC = () => {
@@ -47,6 +47,10 @@ const ProductList: React.FC = () => {
     sort: 'createAt,desc',
   });
 
+  //? State cho modal xóa
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<IGetAllProductResponse | null>(null);
+
   //? Debounce cho search
   const debouncedKeyword = useDebounce(filters.keyword, 300);
 
@@ -57,7 +61,7 @@ const ProductList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllProducts(
     {
       ...filters,
-      keyword: debouncedKeyword, 
+      keyword: debouncedKeyword,
     },
     {
       enabled: !isChildRoute,
@@ -190,7 +194,6 @@ const ProductList: React.FC = () => {
       title: 'Hành động',
       key: 'actions',
       width: 150,
-
       render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
           <Button
@@ -201,24 +204,14 @@ const ProductList: React.FC = () => {
           >
             Xem
           </Button>
-
-          <Button
-            type="link"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => navigate(`/products/edit/${record.productId}`)}
-          >
-            Sửa
-          </Button>
-
           <Button
             type="link"
             danger
             size="small"
             icon={<DeleteOutlined />}
             onClick={() => {
-              // TODO: Implement confirm delete (ví dụ dùng Modal)
-              console.log('Xóa sản phẩm:', record.productId);
+              setProductToDelete(record);
+              setDeleteModalVisible(true);
             }}
           >
             Xóa
@@ -255,6 +248,11 @@ const ProductList: React.FC = () => {
 
   const handlePageChange = (currentPage: number, pageSize: number) => {
     setFilters((prev) => ({ ...prev, page: currentPage - 1, size: pageSize }));
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setProductToDelete(null);
   };
 
   if (!isChildRoute && error) {
@@ -395,7 +393,7 @@ const ProductList: React.FC = () => {
                 onShowSizeChange={handlePageChange}
                 size="small"
                 className="lg:min-w-[400px]"
-                disabled={pagination.totalPages <= 1} 
+                disabled={pagination.totalPages <= 1}
               />
             </div>
           )}
@@ -403,6 +401,15 @@ const ProductList: React.FC = () => {
       ) : (
         <Outlet />
       )}
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmDeleteModal
+        visible={deleteModalVisible}
+        onCancel={handleDeleteCancel}
+        productId={productToDelete?.productId || ''}
+        productName={productToDelete?.productName || ''}
+        onSuccess={refetch}
+      />
     </div>
   );
 };

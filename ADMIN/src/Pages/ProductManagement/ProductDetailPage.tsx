@@ -21,10 +21,12 @@ import {
   UserOutlined,
   FolderOutlined,
   CalendarOutlined,
+  EditOutlined, // Thêm icon cho nút chỉnh sửa
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import { formatCurrency } from '@/Utils/ulti';
+import { formatCurrency, formatToVietnamTime } from '@/Utils/ulti';
 import { useGetProductDetail } from './Hook/useGetProductDetail';
+import EditProductModal from './Components/EditProductModal'; // Import modal
 
 const { Title, Text } = Typography;
 
@@ -32,8 +34,9 @@ const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { productId } = useParams<{ productId: string }>();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false); // State cho modal edit
 
-  const { data, isLoading, error } = useGetProductDetail(productId);
+  const { data, isLoading, error, refetch } = useGetProductDetail(productId); // Thêm refetch từ hook
 
   if (isLoading) {
     return (
@@ -64,14 +67,18 @@ const ProductDetailPage: React.FC = () => {
     navigate(-1);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleEdit = () => {
+    setIsModalVisible(true); // Mở modal
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleSave = async () => { // Type any tạm, bạn có thể dùng interface Product
+    setIsModalVisible(false);
+    await refetch(); // Refetch data sau khi save để cập nhật UI
+    // TODO: Nếu cần update local state, thêm logic ở đây
   };
 
   const parsedPrice = typeof product.productPrice === 'string'
@@ -168,7 +175,7 @@ const ProductDetailPage: React.FC = () => {
                     )}
                   </div>
                   <Tag icon={<BarcodeOutlined />} color="blue" className="text-sm">
-                    Mã: {product.productCode || product.productCode || 'N/A'}
+                    Mã: {product.productCode || 'N/A'}
                   </Tag>
                 </div>
               </div>
@@ -230,20 +237,41 @@ const ProductDetailPage: React.FC = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="Tạo Tại">
                     <Text type="secondary" className="text-sm">
-                      {formatDate(product.createAt)}
+                      {formatToVietnamTime(product.createAt)}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Cập Nhật Tại">
                     <Text type="secondary" className="text-sm">
-                      {formatDate(product.updateAt)}
+                      {formatToVietnamTime(product.updateAt)}
                     </Text>
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
+
+              {/* Nút Chỉnh sửa - Đặt ở cuối section info, dễ thao tác */}
+              <div className="flex justify-end pt-4 border-t border-gray-200">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={handleEdit}
+                  size="large"
+                  className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto"
+                >
+                  Chỉnh sửa sản phẩm
+                </Button>
+              </div>
             </div>
           </Col>
         </Row>
       </Card>
+
+      {/* Modal chỉnh sửa */}
+      <EditProductModal
+        visible={isModalVisible}
+        product={product}
+        onCancel={handleModalClose}
+        onSave={handleSave}
+      />
     </div>
   );
 };
