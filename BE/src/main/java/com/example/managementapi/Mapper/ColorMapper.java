@@ -37,6 +37,6 @@ public interface ColorMapper {
     @Mapping(source = "colorCode", target = "colorCode")
     GetColorRes toSearchColor(Color color);
 
-
+    GetColorWithSupplierRes toGetColorWithSupplier(Color color);
 
 }

@@ -4,10 +4,7 @@ package com.example.managementapi.Controller;
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Color.CreateColorReq;
 import com.example.managementapi.Dto.Request.Color.UpdateColorReq;
-import com.example.managementapi.Dto.Response.Color.CreateColorRes;
-import com.example.managementapi.Dto.Response.Color.GetColorDetailRes;
-import com.example.managementapi.Dto.Response.Color.GetColorRes;
-import com.example.managementapi.Dto.Response.Color.UpdateColorRes;
+import com.example.managementapi.Dto.Response.Color.*;
 import com.example.managementapi.Service.ColorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +37,16 @@ public class ColorController {
                 .status_code(HttpStatus.OK.value())
                 .message("Successfully!")
                 .data(colorService.searchColor(keyword, filter, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/color-selector/{supplierId}")
+    public ApiResponse<List<GetColorWithSupplierRes>> getColorWithSupplier(@PathVariable String supplierId){
+        return ApiResponse.<List<GetColorWithSupplierRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Successfully!")
+                .data(colorService.getColorWithSupplier(supplierId ))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
