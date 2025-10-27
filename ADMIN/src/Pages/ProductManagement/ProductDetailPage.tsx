@@ -5,7 +5,8 @@ import {
   Col,
   Descriptions,
   Image,
-
+  Spin,
+  Alert,
   Typography,
   Space,
   Tag,
@@ -14,62 +15,75 @@ import {
 import {
   ArrowLeftOutlined,
   BarcodeOutlined,
-  DropboxOutlined, 
+  DropboxOutlined,
   DatabaseOutlined,
   TagOutlined,
   UserOutlined,
   FolderOutlined,
   CalendarOutlined,
+  EditOutlined, // Thêm icon cho nút chỉnh sửa
 } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
-import { formatCurrency } from '@/Utils/ulti';
+import { useNavigate, useParams } from 'react-router-dom';
+import { formatCurrency, formatToVietnamTime } from '@/Utils/ulti';
+import { useGetProductDetail } from './Hook/useGetProductDetail';
+import EditProductModal from './Components/EditProductModal'; // Import modal
 
 const { Title, Text } = Typography;
 
-
-const defaultProduct = {
-  productId: "783a5d3d-3d80-452e-bbe4-c61447cc300d",
-  productName: "Coca Cola V8",
-  productDescription: "Nước ngọt có gas",
-  productImage: [
-    "https://res.cloudinary.com/dabbl1kwh/image/upload/v1759667885/imgCoca_Cola_V8_1_2025-10-05.png",
-    "https://res.cloudinary.com/dabbl1kwh/image/upload/v1759667886/imgCoca_Cola_V8_2_2025-10-05.png",
-    "https://res.cloudinary.com/dabbl1kwh/image/upload/v1759667887/imgCoca_Cola_V8_3_2025-10-05.jpg",
-    "https://res.cloudinary.com/dabbl1kwh/image/upload/v1759667889/imgCoca_Cola_V8_4_2025-10-05.png"
-  ],
-  productVolume: "330ml",
-  productUnit: "Lon",
-  productCode: "Lon",
-  productQuantity: 23,
-  discount: 0.1,
-  productPrice: "132000.00",
-  supplierName: "Bạch Tuyết",
-  colorName: "black",
-  categoryName: "Sách",
-  createAt: "2025-10-05T19:38:10.105831",
-  updateAt: "2025-10-05T19:38:10.105831"
-};
-
 const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
-  const product = defaultProduct;
+  const { productId } = useParams<{ productId: string }>();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false); // State cho modal edit
+
+  const { data, isLoading, error, refetch } = useGetProductDetail(productId); // Thêm refetch từ hook
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8 flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error || !data?.data) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <Alert
+            message={error ? "Lỗi tải chi tiết sản phẩm" : "Sản phẩm không tồn tại"}
+            description={error ? "Không thể tải thông tin sản phẩm. Vui lòng thử lại sau." : "Không tìm thấy thông tin sản phẩm."}
+            type={error ? "error" : "warning"}
+            showIcon
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const product = data.data;
 
   const handleBack = () => {
     navigate(-1);
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+  const handleEdit = () => {
+    setIsModalVisible(true); // Mở modal
   };
 
-  const parsedPrice = parseFloat(product.productPrice || '0');
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleSave = async () => { // Type any tạm, bạn có thể dùng interface Product
+    setIsModalVisible(false);
+    await refetch(); // Refetch data sau khi save để cập nhật UI
+    // TODO: Nếu cần update local state, thêm logic ở đây
+  };
+
+  const parsedPrice = typeof product.productPrice === 'string'
+    ? parseFloat(product.productPrice)
+    : product.productPrice || 0;
   const discountPrice = parsedPrice * (1 - (product.discount || 0));
 
   const handleThumbnailClick = (index: number) => {
@@ -111,14 +125,14 @@ const ProductDetailPage: React.FC = () => {
                 />
               </div>
               {/* Thumbnails */}
-              {product.productImage.length > 1 && (
+              {product.productImage && product.productImage.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto pb-2">
                   {product.productImage.map((img, idx) => (
                     <div
                       key={idx}
                       className={`flex-shrink-0 cursor-pointer p-1 rounded-lg border-2 transition-all ${
-                        activeImageIndex === idx 
-                          ? 'border-blue-500 shadow-md' 
+                        activeImageIndex === idx
+                          ? 'border-blue-500 shadow-md'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                       onClick={() => handleThumbnailClick(idx)}
@@ -161,14 +175,14 @@ const ProductDetailPage: React.FC = () => {
                     )}
                   </div>
                   <Tag icon={<BarcodeOutlined />} color="blue" className="text-sm">
-                    Mã: {product.productCode}
+                    Mã: {product.productCode || 'N/A'}
                   </Tag>
                 </div>
               </div>
 
               {/* Mô tả */}
-              <Card 
-                className="!shadow-sm !border-gray-200" 
+              <Card
+                className="!shadow-sm !border-gray-200"
                 bodyStyle={{ padding: '16px' }}
               >
                 <Text className="text-gray-700 leading-relaxed">
@@ -177,10 +191,10 @@ const ProductDetailPage: React.FC = () => {
               </Card>
 
               {/* Specs gọn gàng với Descriptions */}
-              <Descriptions 
-                title="Thông Số Kỹ Thuật" 
-                bordered 
-                size="small" 
+              <Descriptions
+                title="Thông Số Kỹ Thuật"
+                bordered
+                size="small"
                 column={{ xs: 1, sm: 2, lg: 3 }}
                 className="!shadow-sm !border-gray-200"
               >
@@ -205,13 +219,13 @@ const ProductDetailPage: React.FC = () => {
               </Descriptions>
 
               {/* Hệ thống info */}
-              <Card 
+              <Card
                 title={
                   <Space>
                     <CalendarOutlined />
                     <span>Thông Tin Hệ Thống</span>
                   </Space>
-                } 
+                }
                 className="!shadow-sm !border-gray-200"
                 bodyStyle={{ padding: '16px' }}
               >
@@ -223,20 +237,41 @@ const ProductDetailPage: React.FC = () => {
                   </Descriptions.Item>
                   <Descriptions.Item label="Tạo Tại">
                     <Text type="secondary" className="text-sm">
-                      {formatDate(product.createAt)}
+                      {formatToVietnamTime(product.createAt)}
                     </Text>
                   </Descriptions.Item>
                   <Descriptions.Item label="Cập Nhật Tại">
                     <Text type="secondary" className="text-sm">
-                      {formatDate(product.updateAt)}
+                      {formatToVietnamTime(product.updateAt)}
                     </Text>
                   </Descriptions.Item>
                 </Descriptions>
               </Card>
+
+              {/* Nút Chỉnh sửa - Đặt ở cuối section info, dễ thao tác */}
+              <div className="flex justify-end pt-4 border-t border-gray-200">
+                <Button
+                  type="primary"
+                  icon={<EditOutlined />}
+                  onClick={handleEdit}
+                  size="large"
+                  className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto"
+                >
+                  Chỉnh sửa sản phẩm
+                </Button>
+              </div>
             </div>
           </Col>
         </Row>
       </Card>
+
+      {/* Modal chỉnh sửa */}
+      <EditProductModal
+        visible={isModalVisible}
+        product={product}
+        onCancel={handleModalClose}
+        onSave={handleSave}
+      />
     </div>
   );
 };

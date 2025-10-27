@@ -1,11 +1,11 @@
-
-import React, { useState, useMemo } from 'react';
-import { Table, Button, Select, Space, Avatar, Tag, Spin } from 'antd';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Table, Button, Select, Space, Avatar, Tag, Spin, Input, Row, Col } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, EyeOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { FilterOutlined, EyeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useUsers } from './Hook/useGetUsers';
 import { useDeleteUser } from './Hook/useDeleteUser'; 
+import { useDebounce } from '@/Hook/useDebounce'; 
 import { IUsersResponse, UserRoles } from '@/Interface/Users/IGetUsers';
 import UserUpdateModal from './Components/UserUpdateModal'; 
 import UserCreateModal from './Components/CreateUserModal';
@@ -17,6 +17,7 @@ const UserManagementView: React.FC = () => {
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [pageInfo, setPageInfo] = useState({
     size: 5,
     number: 0,
@@ -29,37 +30,41 @@ const UserManagementView: React.FC = () => {
   const [updateModalVisible, setUpdateModalVisible] = useState<boolean>(false);
   const [selectedUser, setSelectedUser] = useState<IUsersResponse | null>(null);
 
-
   const [deleteModalVisible, setDeleteModalVisible] = useState<boolean>(false);
   const [userToDelete, setUserToDelete] = useState<IUsersResponse | null>(null);
+
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  //? Reset page to first page when status or search changes
+  useEffect(() => {
+    setPageInfo(prev => ({ ...prev, number: 0 }));
+  }, [statusFilter, debouncedSearch]);
 
   const { data, isLoading, error } = useUsers({
     status: statusFilter,
     page: pageInfo.number,
     size: pageInfo.size,
+    search: debouncedSearch,
   });
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({
-  
     onSuccess: () => {
       setDeleteModalVisible(false);
       setUserToDelete(null);
     },
-    // onError đã có sẵn trong hook, chỉ cần đóng modal nếu cần (nhưng giữ mở để user thấy error message)
     onError: (error: Error) => {
-      // Không đóng modal tự động trên error, để user đọc message lỗi từ hook
       console.error('Lỗi xóa user:', error);
     },
   });
 
-  const users = useMemo(() => data?.data?.content || [], [data]);
+  const users: IUsersResponse[] = useMemo(() => (data?.data?.content || []) as IUsersResponse[], [data]);
 
   const pagination = useMemo(() => data?.data?.page || pageInfo, [data, pageInfo]);
 
-  const filteredUsers = useMemo(
+  const filteredUsers: IUsersResponse[] = useMemo(
     () =>
-      users.filter(user =>
-        roleFilter === 'all' ? true : user.roles.some(role => role.name === roleFilter)
+      users.filter((user: IUsersResponse) =>
+        roleFilter === 'all' ? true : user.roles.some((role: UserRoles) => role.name === roleFilter)
       ),
     [users, roleFilter]
   );
@@ -77,21 +82,17 @@ const UserManagementView: React.FC = () => {
     navigate(`user-detail/${user.id}`); 
   };
 
-  // Mở modal xác nhận xóa
   const handleOpenDeleteModal = (user: IUsersResponse) => {
     setUserToDelete(user);
     setDeleteModalVisible(true);
   };
 
-  // Xử lý xác nhận xóa (gọi API, modal sẽ loading và chờ response)
   const handleConfirmDelete = () => {
     if (userToDelete) {
       deleteUser(userToDelete.id);
-      // Không đóng modal ở đây, chờ onSuccess/onError từ hook
     }
   };
 
-  // Đóng modal xóa (chỉ đóng thủ công nếu user hủy)
   const handleCancelDelete = () => {
     setDeleteModalVisible(false);
     setUserToDelete(null);
@@ -202,46 +203,67 @@ const UserManagementView: React.FC = () => {
         <>
           <h1 className="text-2xl font-bold mb-6 text-gray-800">Quản lý người dùng</h1>
 
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-4 rounded-lg shadow">
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <Select
-                placeholder="Lọc theo trạng thái"
-                value={statusFilter}
-                onChange={(value: string) => setStatusFilter(value)}
-                className="w-full sm:w-40"
-              >
-                <Select.Option value="all">Tất cả trạng thái</Select.Option>
-                <Select.Option value="ACTIVE">Hoạt động</Select.Option>
-                <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
-              </Select>
-              <Select
-                placeholder="Lọc theo vai trò"
-                value={roleFilter}
-                onChange={(value: string) => setRoleFilter(value)}
-                className="w-full sm:w-40"
-              >
-                <Select.Option value="all">Tất cả vai trò</Select.Option>
-                <Select.Option value="USER">Người dùng</Select.Option>
-                <Select.Option value="STAFF">Nhân viên</Select.Option>
-                <Select.Option value="ADMIN">Quản trị viên</Select.Option>
-              </Select>
-            </div>
-            <Space>
-              <Button
-                type="primary"
-                icon={<FilterOutlined />}
-                onClick={() => window.location.reload()}
-              >
-                Lọc
-              </Button>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={handleCreateUser}
-              >
-                Thêm mới
-              </Button>
-            </Space>
+          <div className="mb-6 bg-white p-4 rounded-lg shadow">
+            <Row gutter={[16, 16]} align="middle">
+              <Col xs={24} sm={12} lg={8}>
+                <Input
+                  prefix={<SearchOutlined className="text-gray-400" />}
+                  placeholder="Tìm kiếm theo tên hoặc email"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  allowClear
+                  className="w-full"
+                  size="large"
+                />
+              </Col>
+              <Col xs={24} sm={6} lg={4}>
+                <Select
+                  placeholder="Lọc theo trạng thái"
+                  value={statusFilter}
+                  onChange={(value: string) => setStatusFilter(value)}
+                  className="w-full"
+                  size="large"
+                >
+                  <Select.Option value="all">Tất cả trạng thái</Select.Option>
+                  <Select.Option value="ACTIVE">Hoạt động</Select.Option>
+                  <Select.Option value="INACTIVE">Không hoạt động</Select.Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={6} lg={4}>
+                <Select
+                  placeholder="Lọc theo vai trò"
+                  value={roleFilter}
+                  onChange={(value: string) => setRoleFilter(value)}
+                  className="w-full"
+                  size="large"
+                >
+                  <Select.Option value="all">Tất cả vai trò</Select.Option>
+                  <Select.Option value="USER">Người dùng</Select.Option>
+                  <Select.Option value="STAFF">Nhân viên</Select.Option>
+                  <Select.Option value="ADMIN">Quản trị viên</Select.Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={24} lg={8} className="text-right">
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<FilterOutlined />}
+                    onClick={() => window.location.reload()}
+                    size="large"
+                  >
+                    Áp dụng lọc
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleCreateUser}
+                    size="large"
+                  >
+                    Thêm mới
+                  </Button>
+                </Space>
+              </Col>
+            </Row>
           </div>
 
           {error && (
@@ -283,7 +305,6 @@ const UserManagementView: React.FC = () => {
             user={selectedUser}
           />
 
-          {/* Modal xác nhận xóa */}
           <DeleteUserModal
             visible={deleteModalVisible}
             onCancel={handleCancelDelete}

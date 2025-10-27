@@ -1,7 +1,6 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { docApi } from "@/Api/docApi";
-import { QueryKeys } from "@/Constant/query-key";
 import { IApiResponse } from "@/Interface/IApiResponse";
 import { IUpdateCategoryRequest, IUpdateCategoryResponse } from "@/Interface/Category/IUpdateCategory";
 

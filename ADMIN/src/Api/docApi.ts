@@ -21,6 +21,14 @@ import { IUpdateSupplierRequest, IUpdateSupplierResponse } from '@/Interface/Sup
 import { IGetCategoryDetailResponse } from '@/Interface/Category/IGetCategoryDetail';
 import { IUpdateCategoryRequest, IUpdateCategoryResponse } from '@/Interface/Category/IUpdateCategory';
 import { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
+import { IGetProductDetailResponse } from '@/Interface/Product/IGetProductsDetail';
+import { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplierSelection';
+import { IGetCategorySelectionResponse } from '@/Interface/Category/IGetCategorySelection';
+import { IGetColorSelectionResponse } from '@/Interface/Color/IGetColorSelection';
+import { ICreateProductRequest, ICreateProductResponse } from '@/Interface/Product/ICreateProduct';
+import { IUpdateProductRequest, IUpdateProductResponse } from '@/Interface/Product/IUpdateProduct';
+import { IGetAllColor } from '@/Interface/Color/IGetAllColor';
+import { ICreateColorRequest, ICreateColorResponse } from '@/Interface/Color/ICreateColor';
 
 
 export const docApi = {
@@ -204,6 +212,12 @@ export const docApi = {
 
   //* ======================================================== Supplier  ======================================================== */
 
+  GetSupplierSelection: async(): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
+      const url = `/supplier/select-suppliers`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
   GetAllSupplier: async (
     params: {
       keyword?: string,
@@ -256,6 +270,13 @@ export const docApi = {
   },
 
   //* ======================================================== Category  ======================================================== */
+
+  GetCategorySelection: async(): Promise<IApiResponse<IGetCategorySelectionResponse>> => {
+      const url = `/categories/select-categories`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
   GetAllCategory: async (
     params: {
       page?: number,
@@ -318,6 +339,57 @@ export const docApi = {
     return res.data;
   },
 
+  //* ======================================================== Color  ======================================================== */
+
+  GetAllColor: async(
+    params: {
+      supplierName?: string,
+      keyword?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
+     
+      const   {
+        supplierName,
+        keyword,
+        page = 1,
+        size = 5,
+        sort = 'createAt, desc'
+      } = params;
+
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort,
+        ...( keyword && { keyword } ),
+        ...(supplierName && { supplierName })
+      })
+
+      const url = `/color/get-color?${queryParams.toString()}`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
+  CreateColor: async(body: ICreateColorRequest): Promise<IApiResponse<ICreateColorResponse>> => {
+     const url = `/color/create-color`;
+     const formData = buildFormData(body);
+     const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
+
+  GetColorSelection: async(supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> =>{ 
+    const url = `/color/color-selector/${supplierId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   //* ======================================================== Product  ======================================================== */
 
   GetAllProducts: async(
@@ -357,6 +429,42 @@ export const docApi = {
     })
     const url = `/products/get-products?${queryParams.toString()}`;
     const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  GetProducDetail: async (productId: string): Promise<IApiResponse<IGetProductDetailResponse>> => {
+    const url = `/products/detail-product/${productId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  CreateProduct: async(body: ICreateProductRequest): Promise<IApiResponse<ICreateProductResponse>> =>{
+    const url = `/products/create-product`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
+
+  DeleteProduct: async(productId: string): Promise<IApiResponse<void>> =>{
+    const url = `/products/delete/${productId}`;
+    const res = await axiosClient.delete(url);
+    return res.data;
+  },
+
+  UpdateProduct: async(productId: string, body: IUpdateProductRequest): Promise<IApiResponse<IUpdateProductResponse>> => {
+    const url = `/products/update/${productId}`;
+    const formData = buildFormData(body);
+     const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
     return res.data;
   }
 

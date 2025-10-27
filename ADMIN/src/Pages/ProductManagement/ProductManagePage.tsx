@@ -21,14 +21,15 @@ import {
   SortAscendingOutlined,
   PlusOutlined,
   FilterOutlined,
-  EyeOutlined, 
+  EyeOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetAllProducts } from './Hook/useGetAllProducts';
 import { formatCurrency } from '@/Utils/ulti';
+import ConfirmDeleteModal from './Components/DeleteProductModal';
 const { Title, Text } = Typography;
-
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
@@ -42,9 +43,13 @@ const ProductList: React.FC = () => {
     categoryName: undefined as string | undefined,
     supplierName: undefined as string | undefined,
     page: 0,
-    size: 10,
+    size: 5,
     sort: 'createAt,desc',
   });
+
+  //? State cho modal xóa
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState<IGetAllProductResponse | null>(null);
 
   //? Debounce cho search
   const debouncedKeyword = useDebounce(filters.keyword, 300);
@@ -56,10 +61,10 @@ const ProductList: React.FC = () => {
   const { data, isLoading, error, refetch } = useGetAllProducts(
     {
       ...filters,
-      keyword: debouncedKeyword, // Chỉ refetch khi debounce xong
+      keyword: debouncedKeyword,
     },
     {
-      enabled: !isChildRoute, // Disable query khi ở child route (không fetch data)
+      enabled: !isChildRoute,
     }
   );
 
@@ -188,21 +193,27 @@ const ProductList: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 150, 
-      render: () => (
+      width: 150,
+      render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
-          <Button 
-            type="link" 
-            size="small" 
+          <Button
+            type="link"
+            size="small"
             icon={<EyeOutlined />}
-            onClick={() => navigate(`/products/product-detail`)} 
+            onClick={() => navigate(`/products/product-detail/${record.productId}`)}
           >
-            Xem chi tiết
+            Xem
           </Button>
-          <Button type="link" size="small">
-            Sửa
-          </Button>
-          <Button type="link" danger size="small">
+          <Button
+            type="link"
+            danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => {
+              setProductToDelete(record);
+              setDeleteModalVisible(true);
+            }}
+          >
             Xóa
           </Button>
         </Space>
@@ -231,7 +242,6 @@ const ProductList: React.FC = () => {
     setFilters((prev) => ({ ...prev, supplierName: supplier, page: 0 }));
   };
 
-
   const handleAddProduct = () => {
     navigate('/products/create');
   };
@@ -240,7 +250,11 @@ const ProductList: React.FC = () => {
     setFilters((prev) => ({ ...prev, page: currentPage - 1, size: pageSize }));
   };
 
-  
+  const handleDeleteCancel = () => {
+    setDeleteModalVisible(false);
+    setProductToDelete(null);
+  };
+
   if (!isChildRoute && error) {
     return (
       <div className="min-h-screen flex justify-center items-center">
@@ -257,10 +271,8 @@ const ProductList: React.FC = () => {
     );
   }
 
-  
   return (
     <div className="min-h-screen bg-white py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
-
       {!isChildRoute ? (
         <>
           <Title level={2} className="text-center mb-4 sm:mb-6">
@@ -358,7 +370,7 @@ const ProductList: React.FC = () => {
                 columns={columns}
                 dataSource={products}
                 pagination={false}
-                scroll={{ x: 1500 }} // Tăng scroll x để chứa thêm nút
+                scroll={{ x: 1500 }}
                 rowKey="productId"
                 className="border-none"
                 locale={{ emptyText: 'Không có dữ liệu phù hợp' }}
@@ -381,14 +393,23 @@ const ProductList: React.FC = () => {
                 onShowSizeChange={handlePageChange}
                 size="small"
                 className="lg:min-w-[400px]"
+                disabled={pagination.totalPages <= 1}
               />
             </div>
           )}
         </>
       ) : (
-        
         <Outlet />
       )}
+
+      {/* Modal xác nhận xóa */}
+      <ConfirmDeleteModal
+        visible={deleteModalVisible}
+        onCancel={handleDeleteCancel}
+        productId={productToDelete?.productId || ''}
+        productName={productToDelete?.productName || ''}
+        onSuccess={refetch}
+      />
     </div>
   );
 };

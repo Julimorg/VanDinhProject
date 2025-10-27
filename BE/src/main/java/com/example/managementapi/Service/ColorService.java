@@ -7,6 +7,8 @@ import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
 import com.example.managementapi.Dto.Response.Color.*;
 import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Supplier;
+import com.example.managementapi.Enum.ErrorCode;
+import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.ColorMapper;
 import com.example.managementapi.Repository.ColorRepository;
 import com.example.managementapi.Repository.SupplierRepository;
@@ -45,6 +47,17 @@ public class ColorService {
         return colorPage.map(color -> colorMapper.toGetColorRes(color));
     }
 
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId){
+        supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_EXISTED));
+
+        return colorRepository
+                .findBySupplier_SupplierId(supplierId)
+                .stream()
+                .map(color -> colorMapper.toGetColorWithSupplier(color)).toList();
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetColorRes> getColor(String keyword, String supplierName,Pageable pageable){
