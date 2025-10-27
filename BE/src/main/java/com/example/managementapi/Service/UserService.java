@@ -3,6 +3,7 @@ import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Dto.Response.User.*;
 import com.example.managementapi.Entity.Role;
 import com.example.managementapi.Entity.User;
@@ -28,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,6 +49,13 @@ public class UserService {
 
     private final CloudinaryService cloudinaryService;
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetUserSelectionRes> getUserSelection(){
+        return userRepository.findAll()
+                .stream()
+                .map(user -> userMapper.toGetUserSelection(user))
+                .toList();
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetUserRes> getUser(String status, String keyword, Pageable pageable){

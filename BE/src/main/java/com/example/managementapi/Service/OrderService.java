@@ -5,9 +5,11 @@ import com.example.managementapi.Component.GenerateRandomCode;
 import com.example.managementapi.Dto.Request.Order.*;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Entity.*;
+import com.example.managementapi.Enum.ErrorCode;
 import com.example.managementapi.Enum.OrderStatus;
 import com.example.managementapi.Enum.PaymentMethod;
 import com.example.managementapi.Enum.PaymentMethodStatus;
+import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.OrderMapper;
 import com.example.managementapi.Repository.*;
 import com.example.managementapi.Specification.OrderSpecification;
@@ -319,71 +321,73 @@ public class OrderService {
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public CreateOrderResponse CreateOrderByAdmin(String userId, CreateOrderRequest request) throws MessagingException {
+    public CreateOrderResponse CreateOrderByAdmin(String adminUserId, CreateOrderRequest request) throws MessagingException {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User adminUser = userRepository.findById(adminUserId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+
+        User customer = adminUser;
+        if (request.getId() != null) {
+            customer = userRepository.findById(request.getId()).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
+        }
 
         Order order = orderMapper.toOrder(request);
-
         order.setCreateAt(LocalDateTime.now());
-
         order.setOrderStatus(OrderStatus.Pending);
-
         order.setOrderCode(orderCodeGenerator.generateOrderCode());
-
-        order.setCreateBy(user.getUserName());
+        order.setCreateBy(adminUser.getUserName());
+        order.setUser(customer);
 
         List<OrderItem> orderItems = new ArrayList<>();
-
         BigDecimal totalAmount = BigDecimal.ZERO;
         int totalQuantity = 0;
 
-        for(GetProductQuantityRequest itemReq : request.getOrderItems()){
-            Product product = productRepository.findById(itemReq.getProductId()).orElseThrow(() -> new RuntimeException("Product does not exist"));
+        for (GetProductQuantityRequest itemReq : request.getOrderItems()) {
+            Product product = productRepository.findById(itemReq.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product does not exist"));
 
-            if(itemReq.getQuantity() > product.getProductQuantity()){
+            if (itemReq.getQuantity() > product.getProductQuantity()) {
                 throw new RuntimeException("Product quantity is not enough for this order");
             }
 
-            productRepository.save(product);
-
-            OrderItem orderItem = new OrderItem();
-
-
-            orderItem.setProduct(product);
-            orderItem.setQuantity(itemReq.getQuantity());
-            orderItem.setPrice(product.getProductPrice());
-            orderItem.setCreateAt(LocalDateTime.now());
-
-            orderItem.setOrder(order);
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .product(product)
+                    .quantity(itemReq.getQuantity())
+                    .price(product.getProductPrice())
+                    .createAt(LocalDateTime.now())
+                    .build();
 
             orderItems.add(orderItem);
 
-            BigDecimal totalItem = product.getProductPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity()));
-            totalAmount = totalAmount.add(totalItem);
+            totalAmount = totalAmount.add(product.getProductPrice().multiply(BigDecimal.valueOf(itemReq.getQuantity())));
             totalQuantity += itemReq.getQuantity();
+
+            productRepository.save(product);
         }
 
-        order.setUser(user);
+        order.setOrderItems(orderItems);
+        order.setTotal_quantity(totalQuantity);
+        order.setOrderAmount(totalAmount);
 
         Payment payment = new Payment();
-        payment.setPaymentMethod(PaymentMethod.VN_PAY);
-
-        order.setTotal_quantity(totalQuantity);
-        order.setOrderItems(orderItems);
-        order.setOrderAmount(totalAmount);
+        payment.setPaymentMethod(request.getPaymentMethod());
+        payment.setOrder(order);
         order.setPayment(payment);
+        order.setShipAddress(request.getShipAddress());
 
         Order savedOrder = orderRepository.save(order);
+
+
         CreateOrderResponse response = orderMapper.toCreateOrderResponse(savedOrder);
         response.setFirstName(savedOrder.getUser().getFirstName());
 
         UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(savedOrder);
 
         emailService.sendOrderCreatedByAdminEmail(
-                user.getEmail(),
-                user.getFirstName(),
+                customer.getEmail(),
+                customer.getFirstName(),
                 savedOrder.getOrderCode(),
                 savedOrder.getCreateAt(),
                 savedOrder.getOrderStatus().name(),
@@ -397,6 +401,7 @@ public class OrderService {
 
         return response;
     }
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateOrderByAdminResponse updateOrderByAdmin(String orderId, UpdateOrderByAdminRequest request) {

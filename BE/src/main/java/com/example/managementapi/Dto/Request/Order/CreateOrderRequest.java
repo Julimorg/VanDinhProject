@@ -22,6 +22,8 @@ import java.util.List;
 public class CreateOrderRequest {
     private String orderCode;
     private String orderStatus;
+    private String shipAddress;
     private List<GetProductQuantityRequest> orderItems;
     private PaymentMethod paymentMethod;
+    private String id;
 }

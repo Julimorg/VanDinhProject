@@ -4,7 +4,9 @@ import com.example.managementapi.Dto.Request.Auth.SignUpReq;
 import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Dto.Response.User.*;
+import com.example.managementapi.Entity.Supplier;
 import com.example.managementapi.Entity.User;
 
 import org.mapstruct.Mapper;
@@ -53,8 +55,6 @@ public interface UserMapper {
 
     UpdateUserRes toResUpdateUser(User user);
 
-
-
-
+    GetUserSelectionRes toGetUserSelection(User user);
 
 }

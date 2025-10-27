@@ -4,6 +4,7 @@ import com.example.managementapi.Dto.Request.Product.CreateProductReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
 import com.example.managementapi.Dto.Response.Product.*;
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Entity.Category;
 import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Product;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -55,6 +57,13 @@ public class ProductService {
 //        return products.map(product -> productMapper.toGetProductsResponses(product));
 //    }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetProductSelectionRes> getProductSelection(){
+        return productRepository.findAll()
+                .stream()
+                .map(product -> productMapper.toGetProductSelection(product))
+                .toList();
+    }
 
     //Tạo product
     public CreateProductRes createProduct(CreateProductReq request){

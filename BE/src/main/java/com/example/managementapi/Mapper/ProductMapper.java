@@ -2,10 +2,7 @@ package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
-import com.example.managementapi.Dto.Response.Product.CreateProductRes;
-import com.example.managementapi.Dto.Response.Product.GetProductsRes;
-import com.example.managementapi.Dto.Response.Product.ProductRes;
-import com.example.managementapi.Dto.Response.Product.UpdateProductRes;
+import com.example.managementapi.Dto.Response.Product.*;
 import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
 import com.example.managementapi.Entity.Product;
 import com.example.managementapi.Entity.Supplier;
@@ -35,6 +32,6 @@ public interface ProductMapper {
 
 
     UpdateProductRes toUpdateProductRes(Product product);
-    //xong bài #5
 
+    GetProductSelectionRes toGetProductSelection(Product product);
 }

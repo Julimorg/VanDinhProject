@@ -4,6 +4,7 @@ import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.User.CreateUserReq;
 import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Request.User.UpdateUserByAdminReq;
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Dto.Response.User.*;
 import com.example.managementapi.Service.UserService;
 import jakarta.validation.Valid;
@@ -18,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Slf4j
@@ -27,6 +29,17 @@ import java.time.LocalDateTime;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/select-users")
+    public ApiResponse<List<GetUserSelectionRes>> getUserSelection(){
+        return ApiResponse.<List<GetUserSelectionRes>>
+                        builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userService.getUserSelection())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @GetMapping("/get-user")
     ApiResponse<Page<GetUserRes>> getUser(

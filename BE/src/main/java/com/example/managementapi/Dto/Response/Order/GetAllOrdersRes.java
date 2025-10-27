@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -25,4 +26,6 @@ public class GetAllOrdersRes {
     private String phone;
     private String userAddress;
     private PaymentMethod paymentMethod;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 }
