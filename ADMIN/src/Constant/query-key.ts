@@ -16,4 +16,5 @@ GET_PRODUCT_DETAIL: 'Get product detail',
 GET_SUPPLIER_SELECTION: 'Get Supplier Selection',
 GET_CATEGORY_SELECTION: 'Get Category Selection',
 GET_COLOR_SELECTION: 'Get Color Selection',
+GET_COLORS: 'Get All Colors',
 }

@@ -27,6 +27,8 @@ import { IGetCategorySelectionResponse } from '@/Interface/Category/IGetCategory
 import { IGetColorSelectionResponse } from '@/Interface/Color/IGetColorSelection';
 import { ICreateProductRequest, ICreateProductResponse } from '@/Interface/Product/ICreateProduct';
 import { IUpdateProductRequest, IUpdateProductResponse } from '@/Interface/Product/IUpdateProduct';
+import { IGetAllColor } from '@/Interface/Color/IGetAllColor';
+import { ICreateColorRequest, ICreateColorResponse } from '@/Interface/Color/ICreateColor';
 
 
 export const docApi = {
@@ -338,6 +340,49 @@ export const docApi = {
   },
 
   //* ======================================================== Color  ======================================================== */
+
+  GetAllColor: async(
+    params: {
+      supplierName?: string,
+      keyword?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
+     
+      const   {
+        supplierName,
+        keyword,
+        page = 1,
+        size = 5,
+        sort = 'createAt, desc'
+      } = params;
+
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort,
+        ...( keyword && { keyword } ),
+        ...(supplierName && { supplierName })
+      })
+
+      const url = `/color/get-color?${queryParams.toString()}`;
+      const res = await axiosClient.get(url);
+      return res.data;
+  },
+
+  CreateColor: async(body: ICreateColorRequest): Promise<IApiResponse<ICreateColorResponse>> => {
+     const url = `/color/create-color`;
+     const formData = buildFormData(body);
+     const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+
+    return res.data;
+  },
 
   GetColorSelection: async(supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> =>{ 
     const url = `/color/color-selector/${supplierId}`;

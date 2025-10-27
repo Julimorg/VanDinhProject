@@ -1,31 +1,40 @@
+
 import React, { useState } from 'react';
-import { 
-  Input, 
-  Button, 
-  Space, 
-  Typography, 
-  Select, 
-  Card, 
-  Row, 
-  Col, 
-  Pagination, 
-  Empty 
+import {
+  Input,
+  Button,
+  Space,
+  Typography,
+  Select,
+  Card,
+  Row,
+  Col,
+  Pagination,
+  Empty,
+  Spin,
 } from 'antd';
-import { 
-  SearchOutlined, 
-  CalendarOutlined, 
-  SortAscendingOutlined, 
-  UserOutlined, 
-  EditOutlined, 
-  CopyOutlined, 
-  DeleteOutlined, 
-  DownloadOutlined, 
-  LeftOutlined, 
-  RightOutlined, 
-  LayoutOutlined, 
-  AppstoreOutlined, 
-  BorderOutlined 
+
+import {
+  SearchOutlined,
+  CalendarOutlined,
+  UserOutlined,
+  CopyOutlined,
+  DeleteOutlined,
+  DownloadOutlined,
+  LeftOutlined,
+  RightOutlined,
+  EyeOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useGetColors } from './Hook/useGetColors';
+import type { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplierSelection';
+import { useDebounce } from '@/Hook/useDebounce';
+import { useGetSupplierSelections } from '../ProductManagement/Hook/useGetSupplierSelection';
+import AddColorModal from './Components/AddColorModal';
+import EditColorModal from './Components/EditColorModal';
+import ViewColorDetailModal from './Components/ViewColorDetailModal';
+import DeleteColorModal from './Components/DeleteColorModal';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -41,141 +50,84 @@ interface Color {
   supplierName?: string;
 }
 
-const mockSuppliers = [
-  { id: '1', name: 'Bạch Tuyết' },
-  { id: '2', name: 'Công ty ABC' },
-  { id: '3', name: 'Doanh nghiệp DEF' }
-];
-
 const ColorList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [viewMode, setViewMode] = useState<'compact' | 'comfortable' | 'spacious'>('comfortable');
   const [sortBy, setSortBy] = useState('all');
-  const [selectedSupplier, setSelectedSupplier] = useState('all');
-  const [hoveredColor, setHoveredColor] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(0); // 0-based cho API
 
-  const colors: Color[] = [
-    {
-      colorId: "2abf9d37-789b-438c-bada-4832952e83af",
-      colorName: "BROWN",
-      colorCode: "#001203",
-      colorDescription: "Brown Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1755952986/imgBROWN_2025-08-23.png",
-      createAt: "2025-08-23T19:43:07.116991",
-      updateAt: "2025-08-23T19:43:07.116991",
-      supplierName: "Bạch Tuyết"
-    },
-    {
-      colorId: "a8762613-14b5-4346-8519-80e24e58cf07",
-      colorName: "LUNA",
-      colorCode: "#31213",
-      colorDescription: "Luna Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1756710477/imgLUNA_2025-09-01.png",
-      createAt: "2025-09-01T14:07:58.173788",
-      updateAt: "2025-09-01T14:07:58.174785",
-      supplierName: "Công ty ABC"
-    },
-    {
-      colorId: "12fd7341-f60c-43e4-9932-babda8a28710",
-      colorName: "OCTA",
-      colorCode: "#12933",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758862605/imgOCTA_2025-09-26.png",
-      createAt: "2025-09-26T13:38:56.165415",
-      updateAt: "2025-09-26T13:38:56.165415",
-      supplierName: "Doanh nghiệp DEF"
-    },
-    {
-      colorId: "587315b7-4858-4def-990d-6b099905610b",
-      colorName: "OCTA",
-      colorCode: "#12933",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758862605/imgOCTA_2025-09-26.png",
-      createAt: "2025-09-26T12:02:46.263184",
-      updateAt: "2025-09-26T12:02:46.264187",
-      supplierName: "Bạch Tuyết"
-    },
-    {
-      colorId: "50d36526-9ffa-4e73-9a07-414a374c04ed",
-      colorName: "OCTA",
-      colorCode: "#12933",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758862605/imgOCTA_2025-09-26.png",
-      createAt: "2025-09-26T11:59:44.184545",
-      updateAt: "2025-09-26T11:59:44.184545",
-      supplierName: "Công ty ABC"
-    },
-    {
-      colorId: "0f132694-76dd-4a78-b472-d55eb3a5c8d6",
-      colorName: "OCTA",
-      colorCode: "#12933",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758862605/imgOCTA_2025-09-26.png",
-      createAt: "2025-09-26T13:39:14.848777",
-      updateAt: "2025-09-26T13:39:14.848777",
-      supplierName: "Doanh nghiệp DEF"
-    },
-    {
-      colorId: "fd72f50c-3e03-4e72-93da-0b8fd0ec371e",
-      colorName: "OCTA",
-      colorCode: "#12933",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758862605/imgOCTA_2025-09-26.png",
-      createAt: "2025-09-26T11:56:47.532427",
-      updateAt: "2025-09-26T11:56:47.532427",
-      supplierName: "Bạch Tuyết"
-    },
-    {
-      colorId: "ef3c589a-82d5-4a23-91a0-e0264f5a226b",
-      colorName: "PINK",
-      colorCode: "#039O1312",
-      colorDescription: "Pink Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1756710449/imgPINK_2025-09-01.png",
-      createAt: "2025-09-01T14:07:29.913855",
-      updateAt: "2025-09-01T14:07:29.914856",
-      supplierName: "Công ty ABC"
-    },
-    {
-      colorId: "8dc90bd1-91a2-45e2-81af-5f2d88dd2053",
-      colorName: "PURPLE",
-      colorCode: "#12931",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1756710521/imgPURPLE_2025-09-01.png",
-      createAt: "2025-09-01T14:08:42.410046",
-      updateAt: "2025-09-01T14:08:42.410046",
-      supplierName: "Doanh nghiệp DEF"
-    },
-    {
-      colorId: "d6783e8d-d4e0-46fe-8c1a-483460872330",
-      colorName: "PURPLE",
-      colorCode: "#12931",
-      colorDescription: "purple Color",
-      colorImg: "https://res.cloudinary.com/dabbl1kwh/image/upload/v1758861807/imgPURPLE_2025-09-26.png",
-      createAt: "2025-09-26T11:43:28.91796",
-      updateAt: "2025-09-26T11:43:28.91796",
-      supplierName: "Bạch Tuyết"
-    }
-  ];
+  // Modal states
+  const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [viewModalVisible, setViewModalVisible] = useState(false);
+  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
 
-  const totalPages = 2;
-  const itemsPerPage = 10;
+  // Hook responsive: isMobile (<576px), isTablet (576-992px)
+  const isMobile = useMediaQuery('(max-width: 575.98px)');
+  const isTablet = useMediaQuery('(min-width: 576px) and (max-width: 991.98px)');
 
-  let filteredColors = colors.filter(color => 
-    (color.colorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    color.colorCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    color.colorDescription.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (selectedSupplier === 'all' || color.supplierName === mockSuppliers.find(s => s.id === selectedSupplier)?.name)
-  );
+  // Debounce search term
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  if (sortBy === 'newest') {
-    filteredColors.sort((a, b) => new Date(b.createAt).getTime() - new Date(a.createAt).getTime());
-  } else if (sortBy === 'oldest') {
-    filteredColors.sort((a, b) => new Date(a.createAt).getTime() - new Date(b.createAt).getTime());
-  }
+  // Fetch suppliers
+  const { data: supplierData, isLoading: supplierLoading } = useGetSupplierSelections();
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedColors = filteredColors.slice(startIndex, startIndex + itemsPerPage);
+  const suppliers: IGetSupplierSelectionResponse[] = Array.isArray(supplierData?.data)
+    ? supplierData.data
+    : supplierData?.data
+    ? [supplierData.data]
+    : [];
+
+  // Map sortBy state sang sort param cho API (giả sử API dùng 'createAt,desc' mặc định)
+  const getSortParam = () => {
+    if (sortBy === 'newest') return 'createAt,desc';
+    if (sortBy === 'oldest') return 'createAt,asc';
+    return 'createAt,desc'; // Mặc định
+  };
+
+  // Map selectedSupplierId sang supplierName cho API
+  const getSupplierName = () => {
+    if (!selectedSupplierId) return undefined;
+    return suppliers.find((s) => s.supplierId === selectedSupplierId)?.supplierName;
+  };
+
+  // Sử dụng hook useGetColors với params từ state
+  const {
+    data: apiResponse,
+    isLoading,
+    error,
+    refetch,
+  } = useGetColors({
+    keyword: debouncedSearchTerm || undefined,
+    supplierName: getSupplierName(),
+    page: currentPage, // 0-based pagination
+    size: 10, // Đồng bộ với itemsPerPage
+    sort: getSortParam(),
+  });
+
+  // Lấy dữ liệu từ response
+  const colors: Color[] = apiResponse?.data?.content || [];
+  const paginationInfo = apiResponse?.data?.page;
+  const totalElements = paginationInfo?.totalElements || 0;
+  const totalPages = paginationInfo?.totalPages || 0;
+  const itemsPerPage = paginationInfo?.size || 10;
+
+  // Handlers cho modal
+  const handleView = (color: Color) => {
+    setSelectedColor(color);
+    setViewModalVisible(true);
+  };
+
+  const handleEdit = (color: Color) => {
+    setSelectedColor(color);
+    setEditModalVisible(true);
+  };
+
+  const handleDelete = (color: Color) => {
+    setSelectedColor(color);
+    setDeleteModalVisible(true);
+  };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -186,265 +138,430 @@ const ColorList: React.FC = () => {
     navigator.clipboard.writeText(text);
   };
 
-  const getGridCols = () => {
-    switch(viewMode) {
-      case 'compact': return { xs: 2, sm: 3, md: 4, lg: 6 };
-      case 'comfortable': return { xs: 1, sm: 2, md: 3, lg: 4 };
-      case 'spacious': return { xs: 1, sm: 2, md: 3 };
-      default: return { xs: 1, sm: 2, md: 3, lg: 4 };
-    }
-  };
+  // Grid cols FIX: xs=24 (full mobile), sm=12 (2 col tablet), md=8 (3 col), lg=6 (4 col)
+  const gridCols = { xs: 24, sm: 12, md: 8, lg: 6 };
 
-  const getSwatchHeight = () => {
-    switch(viewMode) {
-      case 'compact': return 96; // h-24 ~ 96px
-      case 'comfortable': return 160; // h-40 ~ 160px
-      case 'spacious': return 224; // h-56 ~ 224px
-      default: return 160;
-    }
-  };
+  const ColorCard = ({ color }: { color: Color }) => {
+    const isSmallScreen = isMobile || isTablet; // Kết hợp mobile + tablet cho scale
 
-  const ColorCard = ({ color }: { color: Color }) => (
-    <Col {...getGridCols()}>
-      <Card
-        hoverable
-        className="rounded-2xl border-gray-200 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
-        bodyStyle={{ padding: viewMode === 'compact' ? '12px' : '16px' }}
-        onMouseEnter={() => setHoveredColor(color.colorId)}
-        onMouseLeave={() => setHoveredColor(null)}
-      >
-        <div 
-          className="relative overflow-hidden mb-3"
-          style={{ 
-            height: getSwatchHeight(), 
-            background: `linear-gradient(135deg, ${color.colorCode} 0%, ${color.colorCode}dd 100%)`,
-            borderRadius: '8px'
+    return (
+      <Col {...gridCols}>
+        <Card
+          hoverable
+          style={{
+            borderRadius: '16px', // Thay rounded-2xl
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)', // Thay shadow-lg
+            transition: 'all 0.3s ease', // Thay transition-all
+            marginBottom: 16, // Để tránh sát nhau trên mobile
+          }}
+          bodyStyle={{
+            padding: isSmallScreen ? '8px' : '16px',
           }}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <code className="text-white font-bold text-lg drop-shadow-lg">
-              {color.colorCode}
-            </code>
+          {/* Ảnh color cover lên */}
+          <div
+            className="relative overflow-hidden mb-3"
+            style={{
+              height: isSmallScreen ? 120 : 160,
+              borderRadius: '8px',
+              backgroundColor: color.colorCode, // Fallback background nếu image load chậm
+            }}
+          >
+            <img
+              src={color.colorImg}
+              alt={color.colorName}
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+            {/* Overlay với colorCode nếu cần, nhưng theo yêu cầu thì cover ảnh */}
           </div>
-          
-          {hoveredColor === color.colorId && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center gap-2">
-              <Button 
-                type="text" 
-                icon={<EditOutlined />} 
-                className="text-white hover:bg-white/20 rounded-lg" 
-                onClick={() => {/* Handle edit */}}
-                size="small"
-              />
-              <Button 
-                type="text" 
-                icon={<CopyOutlined />} 
-                className="text-white hover:bg-white/20 rounded-lg" 
-                onClick={() => copyToClipboard(color.colorCode)}
-                size="small"
-              />
-              <Button 
-                type="text" 
-                icon={<DeleteOutlined />} 
-                className="text-white hover:bg-white/20 rounded-lg" 
-                danger
-                onClick={() => {/* Handle delete */}}
-                size="small"
-              />
-            </div>
-          )}
-        </div>
 
-        <Title level={5} className={viewMode === 'compact' ? 'text-sm mb-1' : 'text-base mb-2'}>
-          {color.colorName}
-        </Title>
-        
-        {viewMode !== 'compact' && (
-          <Text className="text-sm text-gray-600 mb-3 block line-clamp-2">
+          {/* Tên color và color-code kế bên */}
+          <Space direction="vertical" style={{ width: '100%', marginBottom: 8 }}>
+            <Space align="start" style={{ width: '100%' }}>
+              <Title
+                level={5}
+                style={{
+                  margin: 0,
+                  fontSize: isSmallScreen ? '0.875rem' : '1rem',
+                  flex: 1,
+                }}
+              >
+                {color.colorName}
+              </Title>
+              <Text
+                style={{
+                  fontSize: isSmallScreen ? '0.75rem' : '0.875rem',
+                  color: '#6b7280',
+                  fontFamily: 'monospace',
+                }}
+              >
+                {color.colorCode}
+              </Text>
+            </Space>
+          </Space>
+
+          <Text
+            className="block mb-3"
+            style={{
+              fontSize: '0.75rem',
+              color: '#6b7280', // text-gray-600
+              display: '-webkit-box',
+              WebkitLineClamp: 2, // Thay line-clamp-2 (CSS thuần)
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
             {color.colorDescription}
           </Text>
-        )}
 
-        <Space className="w-full mb-2">
-          <img 
-            src={color.colorImg} 
-            alt={color.colorName}
-            className={`rounded object-cover ${viewMode === 'compact' ? 'w-5 h-5' : 'w-6 h-6'}`}
-          />
-          <Text className="text-xs text-gray-500 truncate flex-1">
-            {color.supplierName || 'N/A'}
-          </Text>
-        </Space>
+          <Space className="w-full mb-2" size="small" style={{ flexWrap: 'wrap' }}>
+            {/* flex-wrap */}
+            <img
+              src={color.colorImg}
+              alt={color.colorName}
+              style={{
+                borderRadius: '50%',
+                width: isSmallScreen ? 16 : 24,
+                height: isSmallScreen ? 16 : 24,
+                objectFit: 'cover',
+              }}
+            />
+            <Text
+              style={{
+                fontSize: '0.75rem',
+                color: '#9ca3af',
+                flex: 1,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {/* truncate */}
+              {color.supplierName || 'N/A'}
+            </Text>
+          </Space>
 
-        {viewMode !== 'compact' && (
-          <Text className="text-xs text-gray-400 block">
+          <Text style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'block' }}>
             Tạo: {formatDate(color.createAt)}
           </Text>
-        )}
 
-        <div 
-          className="h-1 w-full mt-2 rounded-b-full"
-          style={{ backgroundColor: color.colorCode }}
-        />
-      </Card>
-    </Col>
+          {/* Các nút: view detail, edit, delete */}
+          <Space style={{ width: '100%', justifyContent: 'space-between', marginTop: 8 }}>
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => handleView(color)}
+              size="small"
+              style={{ padding: 0 }}
+            >
+              Xem chi tiết
+            </Button>
+            <Space>
+              <Button
+                type="link"
+                icon={<EditOutlined />}
+                onClick={() => handleEdit(color)}
+                size="small"
+                style={{ padding: 0 }}
+              >
+                Sửa
+              </Button>
+              <Button
+                type="link"
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(color)}
+                danger
+                size="small"
+                style={{ padding: 0 }}
+              >
+                Xóa
+              </Button>
+            </Space>
+          </Space>
+
+          <div
+            className="mt-2"
+            style={{
+              height: 4,
+              width: '100%',
+              borderRadius: '9999px', // rounded-full
+              backgroundColor: color.colorCode,
+            }}
+          />
+        </Card>
+      </Col>
+    );
+  };
+
+  // Xử lý error state
+  const renderError = () => (
+    <div style={{ textAlign: 'center', padding: '50px', color: '#ff4d4f' }}>
+      <Title level={4}>Lỗi khi tải dữ liệu màu sắc</Title>
+      <Text>{error?.message || 'Vui lòng thử lại sau'}</Text>
+    </div>
   );
 
-  return (
-    <div className="min-h-screen bg-white py-6 px-4 sm:px-6 lg:px-8">
-      {/* Title */}
-      <Title level={2} className="mb-6 text-center">Quản lý các mã màu</Title>
+  // Render grid content
+  const renderGridContent = () => {
+    if (isLoading) {
+      return (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '50px',
+          }}
+        >
+          <Spin size="large" />
+        </div>
+      );
+    }
 
-      {/* Flexible Filters */}
-      <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg mb-6">
-        <Space direction="vertical" className="w-full" style={{ display: 'flex' }}>
-          {/* First Row: Search & View Mode */}
-          <Space className="w-full" align="center" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
-            <div className="flex-1 min-w-200px">
+    if (error) {
+      return renderError();
+    }
+
+    return (
+      <>
+        {/* Color Grid - Tăng gutter trên mobile */}
+        <Row gutter={isMobile ? [0, 16] : [8, 16]}>
+          {colors.map((color) => (
+            <ColorCard key={color.colorId} color={color} />
+          ))}
+        </Row>
+
+        {/* Empty State - Fix class */}
+        {colors.length === 0 && (
+          <Empty
+            description={
+              <Space direction="vertical" align="center" size="small">
+                <Title level={3} style={{ fontSize: isMobile ? '1rem' : '1.25rem' }}>
+                  Không tìm thấy màu nào
+                </Title>
+                <Text type="secondary" style={{ fontSize: '0.875rem' }}>
+                  Thử điều chỉnh bộ lọc hoặc từ khóa khác
+                </Text>
+              </Space>
+            }
+            style={{ width: '100%', textAlign: 'center' }}
+            image={<span style={{ fontSize: isMobile ? '3rem' : '4rem' }}>🎨</span>}
+          />
+        )}
+
+        {/* Pagination - Dựa trên API response, Antd Pagination dùng 1-based */}
+        {totalElements > itemsPerPage && !isLoading && !error && (
+          <Card
+            style={{
+              backgroundColor: 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(10px)',
+              border: '1px solid #e5e7eb',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            }}
+          >
+            <Row justify="space-between" align="middle" wrap>
+              <Col
+                span={24}
+                sm={12}
+                style={{
+                  marginBottom: isMobile ? '8px' : 0,
+                  textAlign: isMobile ? 'center' : 'left',
+                }}
+              >
+                <Text style={{ fontSize: isMobile ? '0.875rem' : '1rem' }}>
+                  Hiển thị{' '}
+                  <Text strong style={{ color: '#9333ea' }}>
+                    {colors.length}
+                  </Text>{' '}
+                  /{' '}
+                  <Text strong style={{ color: '#9333ea' }}>
+                    {totalElements}
+                  </Text>{' '}
+                  màu
+                </Text>
+              </Col>
+              <Col
+                span={24}
+                sm={12}
+                style={{ display: 'flex', justifyContent: isMobile ? 'center' : 'flex-end' }}
+              >
+                <Pagination
+                  current={currentPage + 1} // Hiển thị 1-based cho UI
+                  total={totalElements}
+                  pageSize={itemsPerPage}
+                  onChange={(page) => setCurrentPage(page - 1)} // Chuyển về 0-based cho API
+                  showSizeChanger={false}
+                  showQuickJumper={!isMobile && !isTablet}
+                  itemRender={(current, type, originalElement) => {
+                    if (type === 'prev') return <Button icon={<LeftOutlined />} size="small" />;
+                    if (type === 'next') return <Button icon={<RightOutlined />} size="small" />;
+                    return originalElement;
+                  }}
+                  style={{ borderRadius: '12px' }}
+                  size={isMobile ? 'small' : 'default'}
+                />
+              </Col>
+            </Row>
+          </Card>
+        )}
+      </>
+    );
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#fff', padding: '16px 8px' }}>
+      {' '}
+      {/* px-2 py-4 -> inline */}
+      {/* Title */}
+      <Title
+        level={2}
+        style={{
+          marginBottom: '16px',
+          textAlign: 'center',
+          fontSize: isMobile ? '1.125rem' : '1.5rem',
+        }}
+      >
+        Quản lý các mã màu
+      </Title>
+      {/* Filters */}
+      <Card
+        style={{
+          backgroundColor: 'rgba(255,255,255,0.8)',
+          backdropFilter: 'blur(10px)',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          marginBottom: '16px',
+        }}
+      >
+        <Space direction="vertical" style={{ width: '100%', display: 'flex', gap: '12px' }}>
+          {/* Search */}
+          <Row gutter={8} align="middle" wrap>
+            <Col span={24}>
               <Input
-                placeholder="Tìm kiếm theo tên, mã màu hoặc mô tả..."
+                placeholder="Tìm kiếm tên, mã màu hoặc mô tả..."
                 prefix={<SearchOutlined />}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="rounded-xl min-w-[200px]"
+                style={{ borderRadius: '12px' }}
                 allowClear
-              />
-            </div>
-
-            <Space>
-              <Button
-                onClick={() => setViewMode('compact')}
-                type={viewMode === 'compact' ? 'primary' : 'default'}
-                icon={<LayoutOutlined />}
-                size="small"
-                className="rounded-lg"
-              >
-                Compact
-              </Button>
-              <Button
-                onClick={() => setViewMode('comfortable')}
-                type={viewMode === 'comfortable' ? 'primary' : 'default'}
-                icon={<AppstoreOutlined />}
-                size="small"
-                className="rounded-lg"
-              >
-                Thoải mái
-              </Button>
-              <Button
-                onClick={() => setViewMode('spacious')}
-                type={viewMode === 'spacious' ? 'primary' : 'default'}
-                icon={<BorderOutlined />}
-                size="small"
-                className="rounded-lg"
-              >
-                Rộng rãi
-              </Button>
-            </Space>
-          </Space>
-
-          {/* Second Row: Filters */}
-          <Space wrap>
-            <Button 
-              onClick={() => setSortBy('all')}
-              type={sortBy === 'all' ? 'primary' : 'default'}
-              size="small"
-              className="rounded-full"
-            >
-              Tất cả
-            </Button>
-            <Button 
-              onClick={() => setSortBy('newest')}
-              type={sortBy === 'newest' ? 'primary' : 'default'}
-              icon={<CalendarOutlined />}
-              size="small"
-              className="rounded-full"
-            >
-              Mới nhất
-            </Button>
-            <Button 
-              onClick={() => setSortBy('oldest')}
-              type={sortBy === 'oldest' ? 'primary' : 'default'}
-              icon={<CalendarOutlined />}
-              size="small"
-              className="rounded-full"
-            >
-              Cũ nhất
-            </Button>
-
-            <Select
-              value={selectedSupplier}
-              onChange={setSelectedSupplier}
-              placeholder="Tất cả nhà cung cấp"
-              prefix={<UserOutlined />}
-              size="small"
-              className="min-w-[150px] rounded-full"
-              allowClear
-            >
-              <Option value="all">Tất cả nhà cung cấp</Option>
-              {mockSuppliers.map(supplier => (
-                <Option key={supplier.id} value={supplier.id}>
-                  {supplier.name}
-                </Option>
-              ))}
-            </Select>
-
-            <Button icon={<DownloadOutlined />} size="small" className="rounded-full">
-              Export
-            </Button>
-          </Space>
-        </Space>
-      </Card>
-
-      {/* Dynamic Color Grid */}
-      <Row gutter={[16, 16]} className="mb-6">
-        {paginatedColors.map((color) => (
-          <ColorCard key={color.colorId} color={color} />
-        ))}
-      </Row>
-
-      {/* Empty State */}
-      {paginatedColors.length === 0 && (
-        <Empty 
-          description={
-            <Space direction="vertical" align="center">
-              <Title level={3}>Không tìm thấy màu nào</Title>
-              <Text type="secondary">Thử điều chỉnh bộ lọc hoặc tìm kiếm với từ khóa khác</Text>
-            </Space>
-          }
-          className="col-span-full"
-        >
-          <div className="text-6xl mb-4">🎨</div>
-        </Empty>
-      )}
-
-      {/* Pagination */}
-      {filteredColors.length > itemsPerPage && (
-        <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-lg">
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Text>
-                Hiển thị <Text strong style={{ color: '#9333ea' }}>{paginatedColors.length}</Text> trong tổng số{' '}
-                <Text strong style={{ color: '#9333ea' }}>{filteredColors.length}</Text> màu sắc
-              </Text>
-            </Col>
-            <Col>
-              <Pagination
-                current={currentPage}
-                total={filteredColors.length}
-                pageSize={itemsPerPage}
-                onChange={setCurrentPage}
-                showSizeChanger={false}
-                itemRender={(current, type, originalElement) => {
-                  if (type === 'prev') return <Button icon={<LeftOutlined />} />;
-                  if (type === 'next') return <Button icon={<RightOutlined />} />;
-                  return originalElement;
+                size={isMobile ? 'small' : 'middle'}
+                onPressEnter={() => {
+                  /* Tùy chọn: debounce search nếu cần */
                 }}
-                className="rounded-xl"
               />
             </Col>
           </Row>
-        </Card>
-      )}
+
+          {/* Sort & Supplier & Add Button */}
+          <Row gutter={4} wrap>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                onClick={() => setSortBy('all')}
+                type={sortBy === 'all' ? 'primary' : 'default'}
+                size="small"
+                block
+                style={{ borderRadius: '9999px' }} // rounded-full
+              >
+                Tất cả
+              </Button>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                onClick={() => setSortBy('newest')}
+                type={sortBy === 'newest' ? 'primary' : 'default'}
+                icon={<CalendarOutlined />}
+                size="small"
+                block
+                style={{ borderRadius: '9999px' }}
+              >
+                Mới nhất
+              </Button>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                onClick={() => setSortBy('oldest')}
+                type={sortBy === 'oldest' ? 'primary' : 'default'}
+                icon={<CalendarOutlined />}
+                size="small"
+                block
+                style={{ borderRadius: '9999px' }}
+              >
+                Cũ nhất
+              </Button>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Select
+                value={selectedSupplierId}
+                onChange={(value) => setSelectedSupplierId(value as string | null)}
+                placeholder="Nhà cung cấp"
+                prefix={<UserOutlined />}
+                size="small"
+                style={{ width: '100%', borderRadius: '9999px' }}
+                allowClear
+                loading={supplierLoading}
+                notFoundContent={supplierLoading ? <Spin size="small" /> : 'Không có dữ liệu'}
+              >
+                <Option value={null}>Tất cả NCC</Option>
+                {suppliers.map((supplier) => (
+                  <Option key={supplier.supplierId} value={supplier.supplierId}>
+                    {supplier.supplierName}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                type="primary"
+                onClick={() => setAddModalVisible(true)}
+                size="small"
+                block
+                style={{ borderRadius: '9999px' }}
+              >
+                Thêm mã màu
+              </Button>
+            </Col>
+            <Col xs={12} sm={6} md={4}>
+              <Button
+                icon={<DownloadOutlined />}
+                size="small"
+                block
+                style={{ borderRadius: '9999px' }}
+              >
+                Export
+              </Button>
+            </Col>
+          </Row>
+        </Space>
+      </Card>
+      {/* Render grid content từ card color trở đi */}
+      {renderGridContent()}
+      {/* Modals */}
+      <AddColorModal
+        visible={addModalVisible}
+        onCancel={() => setAddModalVisible(false)}
+        suppliers={suppliers}
+        onAddSuccess={refetch}
+      />
+      {/* <EditColorModal
+        visible={editModalVisible}
+        onCancel={() => setEditModalVisible(false)}
+        color={selectedColor || undefined}
+        suppliers={suppliers}
+      /> */}
+      {/* <ViewColorDetailModal
+        visible={viewModalVisible}
+        onCancel={() => setViewModalVisible(false)}
+        color={selectedColor   || undefined}
+      /> */}
+      <DeleteColorModal
+        visible={deleteModalVisible}
+        onCancel={() => setDeleteModalVisible(false)}
+        colorName={selectedColor?.colorName || ''}
+      />
     </div>
   );
 };
