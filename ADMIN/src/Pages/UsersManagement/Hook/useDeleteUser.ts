@@ -1,10 +1,10 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
-import { message } from "antd";
 import { docApi } from "@/Api/docApi";
 import { QueryKeys } from "@/Constant/query-key"; 
 import { IApiResponse } from "@/Interface/IApiResponse";
+import { toast } from "react-toastify";
 
 type UseDeleteUserOptions = Omit<
   UseMutationOptions<
@@ -20,11 +20,11 @@ export const useDeleteUser = (options?: UseDeleteUserOptions) => {
   return useMutation({
     mutationFn: (userId: string) => docApi.DeleteUser(userId),
     onSuccess: () => {
-      message.success('Xóa người dùng thành công!'); 
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_USERS] }); // Tự động refetch list users
+      toast.success('Xóa người dùng thành công!'); 
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_USERS] }); 
     },
     onError: (error) => {
-      message.error('Xóa người dùng thất bại: ' + error.message);
+      toast.error('Xóa người dùng thất bại: ' + error.message);
     },
     ...options,
   });

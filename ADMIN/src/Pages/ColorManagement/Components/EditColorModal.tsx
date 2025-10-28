@@ -1,56 +1,75 @@
-// File: src/components/Color/EditColorModal.tsx
-import React from 'react';
-import { Modal, Form, Input, Select, Upload, Button, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import type { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSupplierSelection';
-import type { Color } from './ColorList'; // Giả sử import Color interface từ ColorList
-import TextArea from 'antd/es/input/TextArea';
 
-const { Option } = Select;
+import React, { useEffect, useRef } from 'react';
+import { Modal, Form, Input, Upload, Button } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import type { IGetAllColor } from '@/Interface/Color/IGetAllColor';
+import TextArea from 'antd/es/input/TextArea';
+import { useUploadImgFile } from '@/Hook/useUploadImgFile';
+import { useUpdateColor } from '../Hook/useUpdateColor';
+import { toast } from 'react-toastify';
 
 interface EditColorModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (values: {
-    colorId: string;
-    colorName: string;
-    colorCode: string;
-    colorDescription: string;
-    // colorImg: string;
-    supplierId: string;
-  }) => void;
-  color: Color;
-  suppliers: IGetSupplierSelectionResponse[];
+  color: IGetAllColor | undefined;
+  onSuccess?: () => void;
 }
 
 const EditColorModal: React.FC<EditColorModalProps> = ({
   visible,
   onCancel,
-  onSubmit,
   color,
-  suppliers,
+  onSuccess,
 }) => {
   const [form] = Form.useForm();
+  const imageUpload = useUploadImgFile({ maxCount: 1 });
+  const prevVisibleRef = useRef<boolean>(false);
 
-  React.useEffect(() => {
-    if (visible && color) {
+  const { mutate: updateColor, isPending: isUpdating } = useUpdateColor(
+    color?.colorId || '',
+    {
+      onSuccess: () => {
+        toast.success('Cập nhật mã màu thành công!');
+        form.resetFields();
+        imageUpload.reset(); 
+        onSuccess?.(); 
+        onCancel(); 
+      },
+      onError: (error) => {
+
+        toast.error(`Lỗi khi cập nhật màu: ${error}`);
+      },
+    }
+  );
+
+  useEffect(() => {
+
+    if (!prevVisibleRef.current && visible && color) {
       form.setFieldsValue({
         colorId: color.colorId,
         colorName: color.colorName,
         colorCode: color.colorCode,
         colorDescription: color.colorDescription,
-        supplierId: color.supplierName ? suppliers.find(s => s.supplierName === color.supplierName)?.supplierId : undefined,
       });
+      imageUpload.reset();
     }
-  }, [visible, color, form, suppliers]);
+    prevVisibleRef.current = visible;
+  }, [visible, color, form, imageUpload]);
 
-  const handleOk = () => {
-    form.validateFields().then((values) => {
-      onSubmit({ ...values, colorId: color.colorId });
-      form.resetFields();
-    }).catch((info) => {
-      console.log('Validate Failed:', info);
-    });
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+      const file = imageUpload.getCurrentFile();
+      const updateFile = file || new File([''], 'no-change.jpg', { type: 'image/jpeg' });
+      updateColor({
+        colorName: values.colorName,
+        colorCode: values.colorCode,
+        colorDescription: values.colorDescription,
+        colorImg: updateFile,
+      });
+    } catch (info) {
+      toast.warn(`Validate Failed: ${info}`);
+    }
   };
 
   return (
@@ -61,6 +80,8 @@ const EditColorModal: React.FC<EditColorModalProps> = ({
       onCancel={onCancel}
       okText="Cập nhật"
       cancelText="Hủy"
+      confirmLoading={isUpdating} 
+      okButtonProps={{ disabled: isUpdating }} 
     >
       <Form form={form} layout="vertical">
         <Form.Item
@@ -84,40 +105,15 @@ const EditColorModal: React.FC<EditColorModalProps> = ({
         >
           <TextArea rows={3} placeholder="Nhập mô tả màu" />
         </Form.Item>
-        <Form.Item
-          name="colorImg"
-          label="Hình ảnh màu"
-          valuePropName="fileList"
-          getValueFromEvent={(e) => {
-            if (Array.isArray(e)) {
-              return e;
-            }
-            return e && e.fileList;
-          }}
-        >
-          <Upload
-            name="colorImg"
-            listType="picture"
-            accept="image/*"
-            maxCount={1}
-            beforeUpload={() => false}
-          >
+        <Form.Item label="Hình ảnh màu">
+          <Upload {...imageUpload.uploadProps}>
             <Button icon={<UploadOutlined />}>Chọn file hình ảnh mới (tùy chọn)</Button>
           </Upload>
-          {/* {color.colorImg && <div>Hình ảnh hiện tại: <img src={color.colorImg} alt={color.colorName} style={{ width: '50px', height: '50px' }} /></div>} */}
-        </Form.Item>
-        <Form.Item
-          name="supplierId"
-          label="Nhà cung cấp"
-          rules={[{ required: true, message: 'Vui lòng chọn nhà cung cấp!' }]}
-        >
-          <Select placeholder="Chọn nhà cung cấp">
-            {suppliers.map((supplier) => (
-              <Option key={supplier.supplierId} value={supplier.supplierId}>
-                {supplier.supplierName}
-              </Option>
-            ))}
-          </Select>
+          {color?.colorImg && (
+            <div style={{ marginTop: 8 }}>
+              Hình ảnh hiện tại: <img src={color.colorImg} alt={color.colorName} style={{ width: '50px', height: '50px', marginLeft: 8 }} />
+            </div>
+          )}
         </Form.Item>
       </Form>
     </Modal>

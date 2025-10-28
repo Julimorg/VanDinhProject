@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Input,
@@ -18,12 +17,10 @@ import {
   SearchOutlined,
   CalendarOutlined,
   UserOutlined,
-  CopyOutlined,
   DeleteOutlined,
   DownloadOutlined,
   LeftOutlined,
   RightOutlined,
-  EyeOutlined,
   EditOutlined,
 } from '@ant-design/icons';
 import useMediaQuery from '@mui/material/useMediaQuery';
@@ -32,36 +29,25 @@ import type { IGetSupplierSelectionResponse } from '@/Interface/Supplier/IGetSup
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetSupplierSelections } from '../ProductManagement/Hook/useGetSupplierSelection';
 import AddColorModal from './Components/AddColorModal';
-import EditColorModal from './Components/EditColorModal';
-import ViewColorDetailModal from './Components/ViewColorDetailModal';
 import DeleteColorModal from './Components/DeleteColorModal';
+import EditColorModal from './Components/EditColorModal';
+import { IGetAllColor } from '@/Interface/Color/IGetAllColor';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-
-interface Color {
-  colorId: string;
-  colorName: string;
-  colorCode: string;
-  colorDescription: string;
-  colorImg: string;
-  createAt: string;
-  updateAt: string;
-  supplierName?: string;
-}
 
 const ColorList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('all');
   const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(0); // 0-based cho API
+  const [currentPage, setCurrentPage] = useState(0); 
+  const [pageSize, setPageSize] = useState(10); 
 
   // Modal states
   const [addModalVisible, setAddModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
-  const [viewModalVisible, setViewModalVisible] = useState(false);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [selectedColor, setSelectedColor] = useState<Color | null>(null);
+  const [selectedColor, setSelectedColor] = useState<IGetAllColor | null>(null);
 
   // Hook responsive: isMobile (<576px), isTablet (576-992px)
   const isMobile = useMediaQuery('(max-width: 575.98px)');
@@ -102,29 +88,23 @@ const ColorList: React.FC = () => {
     keyword: debouncedSearchTerm || undefined,
     supplierName: getSupplierName(),
     page: currentPage, // 0-based pagination
-    size: 10, // Đồng bộ với itemsPerPage
+    size: pageSize, // Sử dụng dynamic pageSize
     sort: getSortParam(),
   });
 
-  // Lấy dữ liệu từ response
-  const colors: Color[] = apiResponse?.data?.content || [];
+  // Lấy dữ liệu từ response - Sử dụng IGetAllColor thay vì Color
+  const colors: IGetAllColor[] = ( apiResponse?.data?.content ?? [] ) as IGetAllColor[];
   const paginationInfo = apiResponse?.data?.page;
   const totalElements = paginationInfo?.totalElements || 0;
-  const totalPages = paginationInfo?.totalPages || 0;
-  const itemsPerPage = paginationInfo?.size || 10;
+  const itemsPerPage = paginationInfo?.size || pageSize; // Fallback về pageSize nếu API chưa update
 
   // Handlers cho modal
-  const handleView = (color: Color) => {
-    setSelectedColor(color);
-    setViewModalVisible(true);
-  };
-
-  const handleEdit = (color: Color) => {
+  const handleEdit = (color: IGetAllColor) => {
     setSelectedColor(color);
     setEditModalVisible(true);
   };
 
-  const handleDelete = (color: Color) => {
+  const handleDelete = (color: IGetAllColor) => {
     setSelectedColor(color);
     setDeleteModalVisible(true);
   };
@@ -134,14 +114,10 @@ const ColorList: React.FC = () => {
     return date.toLocaleDateString('vi-VN', { year: 'numeric', month: 'short', day: 'numeric' });
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-  };
-
   // Grid cols FIX: xs=24 (full mobile), sm=12 (2 col tablet), md=8 (3 col), lg=6 (4 col)
   const gridCols = { xs: 24, sm: 12, md: 8, lg: 6 };
 
-  const ColorCard = ({ color }: { color: Color }) => {
+  const ColorCard = ({ color }: { color: IGetAllColor }) => {
     const isSmallScreen = isMobile || isTablet; // Kết hợp mobile + tablet cho scale
 
     return (
@@ -164,7 +140,7 @@ const ColorList: React.FC = () => {
             style={{
               height: isSmallScreen ? 120 : 160,
               borderRadius: '8px',
-              backgroundColor: color.colorCode, // Fallback background nếu image load chậm
+              backgroundColor: color.colorCode,
             }}
           >
             <img
@@ -230,36 +206,14 @@ const ColorList: React.FC = () => {
                 objectFit: 'cover',
               }}
             />
-            <Text
-              style={{
-                fontSize: '0.75rem',
-                color: '#9ca3af',
-                flex: 1,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {/* truncate */}
-              {color.supplierName || 'N/A'}
-            </Text>
           </Space>
 
           <Text style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'block' }}>
             Tạo: {formatDate(color.createAt)}
           </Text>
 
-          {/* Các nút: view detail, edit, delete */}
-          <Space style={{ width: '100%', justifyContent: 'space-between', marginTop: 8 }}>
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(color)}
-              size="small"
-              style={{ padding: 0 }}
-            >
-              Xem chi tiết
-            </Button>
+          {/* Các nút: Edit và Delete */}
+          <Space style={{ width: '100%', justifyContent: 'flex-end', marginTop: 8 }}>
             <Space>
               <Button
                 type="link"
@@ -297,11 +251,11 @@ const ColorList: React.FC = () => {
     );
   };
 
-  // Xử lý error state
+  // Xử lý error state - Cast error to Error để truy cập message
   const renderError = () => (
     <div style={{ textAlign: 'center', padding: '50px', color: '#ff4d4f' }}>
       <Title level={4}>Lỗi khi tải dữ liệu màu sắc</Title>
-      <Text>{error?.message || 'Vui lòng thử lại sau'}</Text>
+      <Text>{(error as Error)?.message || 'Vui lòng thử lại sau'}</Text>
     </div>
   );
 
@@ -394,7 +348,12 @@ const ColorList: React.FC = () => {
                   total={totalElements}
                   pageSize={itemsPerPage}
                   onChange={(page) => setCurrentPage(page - 1)} // Chuyển về 0-based cho API
-                  showSizeChanger={false}
+                  onShowSizeChange={(current, size) => { // Thêm handler cho thay đổi size
+                    setCurrentPage(0); // Reset về trang đầu
+                    setPageSize(size);
+                  }}
+                  showSizeChanger={true} 
+                  pageSizeOptions={['5', '10', '15', '20']} 
                   showQuickJumper={!isMobile && !isTablet}
                   itemRender={(current, type, originalElement) => {
                     if (type === 'prev') return <Button icon={<LeftOutlined />} size="small" />;
@@ -546,20 +505,16 @@ const ColorList: React.FC = () => {
         suppliers={suppliers}
         onAddSuccess={refetch}
       />
-      {/* <EditColorModal
+      <EditColorModal
         visible={editModalVisible}
         onCancel={() => setEditModalVisible(false)}
         color={selectedColor || undefined}
-        suppliers={suppliers}
-      /> */}
-      {/* <ViewColorDetailModal
-        visible={viewModalVisible}
-        onCancel={() => setViewModalVisible(false)}
-        color={selectedColor   || undefined}
-      /> */}
+        onSuccess={refetch}
+      />
       <DeleteColorModal
         visible={deleteModalVisible}
         onCancel={() => setDeleteModalVisible(false)}
+        colorId={selectedColor?.colorId || ''}
         colorName={selectedColor?.colorName || ''}
       />
     </div>
