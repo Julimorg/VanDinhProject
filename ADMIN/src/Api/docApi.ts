@@ -29,6 +29,7 @@ import { ICreateProductRequest, ICreateProductResponse } from '@/Interface/Produ
 import { IUpdateProductRequest, IUpdateProductResponse } from '@/Interface/Product/IUpdateProduct';
 import { IGetAllColor } from '@/Interface/Color/IGetAllColor';
 import { ICreateColorRequest, ICreateColorResponse } from '@/Interface/Color/ICreateColor';
+import { IUpdateColorRequest, IUpdateColorResponse } from '@/Interface/Color/IUpdateColor';
 
 
 export const docApi = {
@@ -387,6 +388,23 @@ export const docApi = {
   GetColorSelection: async(supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> =>{ 
     const url = `/color/color-selector/${supplierId}`;
     const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  UpdateColor: async(colorId: string, body: IUpdateColorRequest): Promise<IApiResponse<IUpdateColorResponse>> => {
+    const url = `/color/edit-color/${colorId}`;
+    const formData = buildFormData(body);
+     const res = await axiosClient.patch(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data; charset=utf-8',
+      },
+    });
+    return res.data;
+  },
+
+  DeleteColor: async(colorId: string): Promise<IApiResponse<void>> => {
+    const url = `/color/delete-color/${colorId}`;
+    const res = await axiosClient.delete(url);
     return res.data;
   },
 
