@@ -410,8 +410,25 @@ public class OrderService {
 
         orderMapper.updateOrder(order, request);
 
+        Payment payment = order.getPayment();
+        if(request.getPaymentMethod() != null){
+            payment.setPaymentMethod(request.getPaymentMethod());
+            paymentRepository.save(payment);
+        }
+
+        if(request.getId() != null){
+            User user = userRepository.findById(request.getId()).orElseThrow(() -> new RuntimeException("User not found"));
+            order.setUser(user);
+        }
         orderRepository.save(order);
         return orderMapper.toUpdateOrderByAdminResponse(order);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public GetAdminOrderDetailResponse getOrderDetail(String id){
+        Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+
+        return orderMapper.toGetAdminOrderDetailResponse(order);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")

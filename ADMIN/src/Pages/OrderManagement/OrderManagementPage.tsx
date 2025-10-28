@@ -21,13 +21,26 @@ import {
   EyeOutlined,
   EditOutlined,
   DeleteOutlined,
+  CheckCircleOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons';
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetAllOrders } from './Hook/useGetAllOrders';
 import DeleteOrderModal from './Components/DeleteOrderModal';
 import CreateOrderModal from './Components/CreateOrderModal';
 import { useAuthStore } from '@/Store/IAuth';
+import UpdateOrderModal from './Components/UpdateOrderModal';
+import UpdateOrderItemsModal from './Components/UpdateOrderItemsModal';
+import ApproveOrderModal from './Components/ApproveOrderModal';
 
+interface OrderData {
+  orderId: string;
+  orderCode?: string;
+  userId?: string;
+  status?: string;
+  paymentMethod?: string;
+  shipAddress?: string;
+}
 
 const { Title, Text } = Typography;
 const { useBreakpoint } = Grid;
@@ -41,7 +54,11 @@ const OrderManagementPage: React.FC = () => {
   const [currentFilter, setCurrentFilter] = useState<string>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<{ orderId: string; orderCode?: string } | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+  const [openUpdateItems, setOpenUpdateItems] = useState(false);
+  const [openApprove, setOpenApprove] = useState(false);
+  const isDetailView = location.pathname.match(/^\/orders\/[^/]+$/);
   const adminUserId = useAuthStore((state) => state.id) ?? '';
 
   const [page, setPage] = useState({
@@ -153,8 +170,31 @@ const OrderManagementPage: React.FC = () => {
           <Button
             icon={<EditOutlined />}
             type="text"
-            onClick={() => navigate(`${record.orderId}/edit`)}
+            onClick={() => {
+              setSelectedOrder({ orderId: record.orderId }); // chỉ cần orderId
+              setIsUpdateModalOpen(true);
+            }}
           />
+          <Button
+            type="text"
+            icon={<ShoppingCartOutlined />}
+            onClick={() => {
+              setSelectedOrder(record);
+              setOpenUpdateItems(true);
+            }}
+          >
+
+          </Button>
+          <Button
+            type="text"
+            icon={<CheckCircleOutlined />}
+            onClick={() => {
+              setSelectedOrder(record);
+              setOpenApprove(true);
+            }}
+          >
+
+          </Button>
           <Button
             icon={<DeleteOutlined />}
             type="text"
@@ -183,107 +223,135 @@ const OrderManagementPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-7xl mx-auto shadow-lg">
-        <Title level={2} className="text-center mb-6 text-blue-600">
-          Quản lý Đơn hàng
-        </Title>
+      {isDetailView ? (<Outlet />
+      ) : (
+        <Card className="max-w-7xl mx-auto shadow-lg">
+          <Title level={2} className="text-center mb-6 text-blue-600">
+            Quản lý Đơn hàng
+          </Title>
 
-        {/* Thanh công cụ */}
-        <Row gutter={[16, 16]} justify="space-between" align="middle" className="mb-6">
-          <Col xs={24} sm={24} md={10}>
-            <Input
-              placeholder="Tìm kiếm theo tên khách hàng hoặc ID..."
-              prefix={<SearchOutlined />}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              allowClear
-              size="large"
+          {/* Thanh công cụ */}
+          <Row gutter={[16, 16]} justify="space-between" align="middle" className="mb-6">
+            <Col xs={24} sm={24} md={10}>
+              <Input
+                placeholder="Tìm kiếm theo tên khách hàng hoặc ID..."
+                prefix={<SearchOutlined />}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                allowClear
+                size="large"
+              />
+            </Col>
+            <Col xs={24} sm={24} md={14}>
+              <Space wrap style={{ width: '100%', justifyContent: 'flex-end' }}>
+                <Button
+                  type="primary"
+                  onClick={() => setIsCreateModalOpen(true)}
+                >
+                  Tạo đơn mới
+                </Button>
+                <Button
+                  icon={<SortAscendingOutlined />}
+                  type={currentFilter === 'all' ? 'primary' : 'default'}
+                  onClick={() => handleFilter('all')}
+                >
+                  Tất cả
+                </Button>
+                <Button
+                  icon={<CalendarOutlined />}
+                  type={currentFilter === 'newest' ? 'primary' : 'default'}
+                  onClick={() => handleFilter('newest')}
+                >
+                  Mới nhất
+                </Button>
+                <Button
+                  icon={<CalendarOutlined />}
+                  type={currentFilter === 'oldest' ? 'primary' : 'default'}
+                  onClick={() => handleFilter('oldest')}
+                >
+                  Cũ nhất
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+
+          {/* Modal */}
+
+          {selectedOrder && (
+            <DeleteOrderModal
+              open={isDeleteModalOpen}
+              orderId={selectedOrder.orderId}
+              orderCode={selectedOrder.orderCode}
+              onCancel={() => setIsDeleteModalOpen(false)}
+              onDeleteSuccess={refetch} // gọi refetch để load lại danh sách orders
             />
-          </Col>
-          <Col xs={24} sm={24} md={14}>
-            <Space wrap style={{ width: '100%', justifyContent: 'flex-end' }}>
-              <Button
-                type="primary"
-                onClick={() => setIsCreateModalOpen(true)}
-              >
-                Tạo đơn mới
-              </Button>
-              <Button
-                icon={<SortAscendingOutlined />}
-                type={currentFilter === 'all' ? 'primary' : 'default'}
-                onClick={() => handleFilter('all')}
-              >
-                Tất cả
-              </Button>
-              <Button
-                icon={<CalendarOutlined />}
-                type={currentFilter === 'newest' ? 'primary' : 'default'}
-                onClick={() => handleFilter('newest')}
-              >
-                Mới nhất
-              </Button>
-              <Button
-                icon={<CalendarOutlined />}
-                type={currentFilter === 'oldest' ? 'primary' : 'default'}
-                onClick={() => handleFilter('oldest')}
-              >
-                Cũ nhất
-              </Button>
-            </Space>
-          </Col>
-        </Row>
+          )}
 
-        {/* Modal */}
-
-        {selectedOrder && (
-          <DeleteOrderModal
-            open={isDeleteModalOpen}
-            orderId={selectedOrder.orderId}
-            orderCode={selectedOrder.orderCode}
-            onCancel={() => setIsDeleteModalOpen(false)}
-            onDeleteSuccess={refetch} // gọi refetch để load lại danh sách orders
+          <CreateOrderModal
+            adminUserId={adminUserId}
+            open={isCreateModalOpen}
+            onClose={() => setIsCreateModalOpen(false)}
+            onSuccess={() => {
+              setIsCreateModalOpen(false);
+              refetch(); // tải lại danh sách orders sau khi tạo
+            }}
           />
-        )}
 
-        <CreateOrderModal
-          adminUserId={adminUserId}
-          open={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
-          onSuccess={() => {
-            setIsCreateModalOpen(false);
-            refetch(); // tải lại danh sách orders sau khi tạo
-          }}
-        />
-
-        {/* Bảng đơn hàng */}
-        <Spin spinning={isLoading}>
-          <Table
-            columns={columns}
-            dataSource={orders}
-            pagination={false}
-            rowKey="orderId"
-            scroll={{ x: 'max-content' }}
-            locale={{ emptyText: 'Không có dữ liệu' }}
-          />
-        </Spin>
-
-        {/* Phân trang */}
-        {pagination.totalPages > 1 && (
-          <div className="mt-6 flex justify-center">
-            <Pagination
-              current={pagination.number + 1} // 0-based -> hiển thị 1-based
-              total={pagination.totalElements}
-              pageSize={pagination.size}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`}
-              onChange={handlePageChange}
-              onShowSizeChange={handlePageChange}
-              className="ant-pagination-responsive"
+          {selectedOrder && (
+            <UpdateOrderModal
+              open={isUpdateModalOpen}
+              orderId={selectedOrder.orderId}
+              onClose={() => setIsUpdateModalOpen(false)}
+              onSuccess={() => refetch()}
             />
-          </div>
-        )}
-      </Card>
+          )}
+
+
+          <UpdateOrderItemsModal
+            open={openUpdateItems}
+            onClose={() => setOpenUpdateItems(false)}
+            orderData={selectedOrder}
+          />
+
+
+          <ApproveOrderModal
+            open={openApprove}
+            onClose={() => setOpenApprove(false)}
+            orderData={selectedOrder}
+          />
+
+          {/* Bảng đơn hàng */}
+          <Spin spinning={isLoading}>
+            <Table
+              columns={columns}
+              dataSource={orders}
+              pagination={false}
+              rowKey="orderId"
+              scroll={{ x: 'max-content' }}
+              locale={{ emptyText: 'Không có dữ liệu' }}
+            />
+          </Spin>
+
+
+
+          {/* Phân trang */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-6 flex justify-center">
+              <Pagination
+                current={pagination.number + 1} // 0-based -> hiển thị 1-based
+                total={pagination.totalElements}
+                pageSize={pagination.size}
+                showSizeChanger
+                showQuickJumper
+                showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`}
+                onChange={handlePageChange}
+                onShowSizeChange={handlePageChange}
+                className="ant-pagination-responsive"
+              />
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 };

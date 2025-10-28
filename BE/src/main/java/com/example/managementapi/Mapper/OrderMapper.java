@@ -127,9 +127,23 @@ public interface OrderMapper {
     @Mapping(target = "createAt", ignore = true)
     @Mapping(target = "updateAt", ignore = true)
     @Mapping(target = "completeAt", ignore = true)
-    @Mapping(target = "payment", ignore = true)
+    @Mapping(target = "payment.paymentMethod", source = "paymentMethod")
     void updateOrder(@MappingTarget Order order, UpdateOrderByAdminRequest request);
 
     UpdateOrderByAdminResponse toUpdateOrderByAdminResponse(Order order);
+
+    @Mapping(source = "user.id", target = "id")
+    @Mapping(source = "orderCode", target = "orderCode")
+    @Mapping(source = "orderStatus", target = "status")
+    @Mapping(source = "orderAmount", target = "orderAmount")
+    @Mapping(source = "user.userName", target = "userName")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.phone", target = "phone")
+    @Mapping(source = "user.userAddress", target = "userAddress")
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    @Mapping(source = "shipAddress", target = "shipAddress")
+    @Mapping(source = "createBy", target = "createBy")
+    @Mapping(source = "orderItems", target = "orderItems")
+    GetAdminOrderDetailResponse toGetAdminOrderDetailResponse(Order order);
 
 }

@@ -33,6 +33,8 @@ import { IGetProductSelectionResponse } from '@/Interface/Product/IGetProductSel
 import { IGetUserSelectionResponse } from '@/Interface/Users/IGetUserSelection';
 import { ICreateOrderRequest, ICreateOrderResponse } from '@/Interface/Order/ICreateOrder';
 import { IGetAllOrderResponse } from '@/Interface/Order/IGetAllOrderResponse';
+import { IUpdateOrderRequest, IUpdateOrderResponse } from '@/Interface/Order/IUpdateOrder';
+import { IGetOrderDetailResponse } from '@/Interface/Order/IGetOrderDetail';
 
 
 export const docApi = {
@@ -493,6 +495,16 @@ export const docApi = {
     return res.data;
   },
 
+  UpdateOrder: async (orderId: string, body: IUpdateOrderRequest): Promise<IApiResponse<IUpdateOrderResponse>> => {
+    const url = `/order/admin/update/${orderId}`;
+    const res = await axiosClient.patch(url, body, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return res.data;
+  },
+
   GetAllOrder: async (
     params: {
       keyword?: string,
@@ -515,9 +527,15 @@ export const docApi = {
     return res.data;
   },
 
-   DeleteOrder: async (orderId: string): Promise<IApiResponse<void>> => {
+  DeleteOrder: async (orderId: string): Promise<IApiResponse<void>> => {
     const url = `/order/delete/${orderId}`;
     const res = await axiosClient.delete(url);
+    return res.data;
+  },
+
+  GetOrderDetail: async (orderId: string): Promise<IApiResponse<IGetOrderDetailResponse>> => {
+    const url = `/order/admin/order-detail/${orderId}`;
+    const res = await axiosClient.get(url);
     return res.data;
   },
 

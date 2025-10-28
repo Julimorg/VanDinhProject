@@ -20,4 +20,5 @@ GET_PRODUCT_SELECTION: 'Get Product Selection',
 GET_COLOR_SELECTION: 'Get Color Selection',
 GET_COLORS: 'Get All Colors',
 GET_ALL_ORDERS: 'Get All Orders',
+GET_ORDER_DETAIL: 'Get Order Detail',
 }

@@ -7,6 +7,7 @@
     import com.example.managementapi.Dto.Request.Order.UpdateOrderReq;
     import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemRequest;
     import com.example.managementapi.Dto.Response.Order.*;
+    import com.example.managementapi.Dto.Response.Product.ProductRes;
     import com.example.managementapi.Service.OrderItemService;
     import com.example.managementapi.Service.OrderService;
     import jakarta.mail.MessagingException;
@@ -172,5 +173,16 @@
                     .build();
         }
 
+        @GetMapping("admin/order-detail/{orderId}")
+        ApiResponse<GetAdminOrderDetailResponse> getOrderDetail(@PathVariable("orderId") String orderId){
+            return ApiResponse.<GetAdminOrderDetailResponse>builder()
+
+                    .status_code(HttpStatus.OK.value())
+                    .message(HttpStatus.OK.getReasonPhrase())
+                    .data(orderService.getOrderDetail(orderId))
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+        }
 
     }

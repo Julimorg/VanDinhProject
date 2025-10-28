@@ -53,7 +53,6 @@ public class Order {
     @UpdateTimestamp
     private LocalDateTime deletedAt;
 
-    @UpdateTimestamp
     private LocalDateTime completeAt;
 
     @ManyToOne

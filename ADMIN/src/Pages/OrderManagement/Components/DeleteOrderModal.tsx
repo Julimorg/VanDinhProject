@@ -2,7 +2,7 @@ import React from "react";
 import { Modal, Button, Typography } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { useDeleteOrder } from "../Hook/useDeleteOrder";
-
+import { toast } from "react-toastify";
 const { Text } = Typography;
 
 interface DeleteOrderModalProps {
@@ -22,8 +22,12 @@ const DeleteOrderModal: React.FC<DeleteOrderModalProps> = ({
 }) => {
   const { mutate, isPending } = useDeleteOrder({
     onSuccess: () => {
+      toast.success(`Xóa đơn hàng ${orderCode || ""} thành công!`);
       onCancel();
       onDeleteSuccess?.();
+    },
+    onError: (err: any) => {
+      toast.error(`Xóa đơn hàng thất bại: ${err.message || "Có lỗi xảy ra"}`);
     },
   });
 
