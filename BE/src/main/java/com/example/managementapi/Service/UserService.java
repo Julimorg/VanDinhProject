@@ -95,7 +95,7 @@ public class UserService {
         if(userRepository.existsByUserName(req.getUserName()))
             throw  new AppException((ErrorCode.USER_EXISTED));
 
-        if(userRepository.existsByUserName(req.getEmail()))
+        if(userRepository.existsByEmail(req.getEmail()))
             throw  new AppException((ErrorCode.EMAIl_EXISTED));
 
         MultipartFile image = req.getUserImg();
@@ -107,10 +107,6 @@ public class UserService {
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
             imgUrl = cloudinaryRes.getUrl();
         }
-
-        if(userRepository.existsByUserName(req.getUserName()))
-            throw  new AppException((ErrorCode.USER_EXISTED));
-
 
         User user =  userMapper.toCreateStaff(req);
 
@@ -136,19 +132,23 @@ public class UserService {
 
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public UpdateUserRes updateProfileById(String userId, UpdateUseReq request){
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        if(userRepository.existsByUserName(request.getUserName()))
+            throw  new AppException((ErrorCode.USER_EXISTED));
+
+        if(userRepository.existsByUserName(request.getEmail()))
+            throw  new AppException((ErrorCode.EMAIl_EXISTED));
+
         MultipartFile image = request.getUserImg();
-        String imgUrl = null;
 
         if(image != null && !image.isEmpty()){
             FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
             String fileName = FileUpLoadUtil.getFileName(request.getUserName());
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
-            imgUrl = cloudinaryRes.getUrl();
+            user.setUserImg(cloudinaryRes.getUrl());
         }
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not Found!"));
-
-        user.setUserImg(imgUrl);
 
         userMapper.updateProfile(user, request);
 
@@ -158,6 +158,8 @@ public class UserService {
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public UpdateUserByAdminRes updateUserByAdmin(String userId, UpdateUserByAdminReq request){
 
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not Found!"));
+
         if(userRepository.existsByUserName(request.getUserName()))
             throw  new AppException((ErrorCode.USER_EXISTED));
 
@@ -165,18 +167,13 @@ public class UserService {
             throw  new AppException((ErrorCode.EMAIl_EXISTED));
 
         MultipartFile image = request.getUserImg();
-        String imgUrl = null;
 
         if(image != null && !image.isEmpty()){
             FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
             String fileName = FileUpLoadUtil.getFileName(request.getUserName());
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
-            imgUrl = cloudinaryRes.getUrl();
+            user.setUserImg(cloudinaryRes.getUrl());
         }
-
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not Found!"));
-
-        user.setUserImg(imgUrl);
 
         userMapper.updateUser(user, request);
 

@@ -26,7 +26,7 @@ public class UpdateUserByAdminReq {
     private String userName;
     @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}",message = "EMAIL_INVALID")
     private String email;
-    @Size(min = 2, max = 10, message = "PHONE_INVALID")
+    @Size(min = 2, max = 11, message = "PHONE_INVALID")
     private String phone;
 
     private String status;

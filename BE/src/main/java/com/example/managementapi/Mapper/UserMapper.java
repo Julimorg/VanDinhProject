@@ -7,9 +7,7 @@ import com.example.managementapi.Dto.Request.User.UpdateUseReq;
 import com.example.managementapi.Dto.Response.User.*;
 import com.example.managementapi.Entity.User;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", uses = {OrderMapper.class})
 public interface UserMapper {
@@ -40,12 +38,11 @@ public interface UserMapper {
 
     //* =========================== UPDATE MAPPER ===========================
 
-
-    @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "status", ignore = true)
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "userImg", ignore = true)
     void updateProfile(@MappingTarget User user, UpdateUseReq request);
 
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "userImg", ignore = true)
     void updateUser(@MappingTarget User user, UpdateUserByAdminReq request);
 

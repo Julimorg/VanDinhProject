@@ -17,6 +17,8 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
     //? Function nay check user da ton tai trong DB thong qua username
     boolean existsByUserName(String userName);
 
+    boolean existsByEmail(String email);
+
     Optional<User> findByUserName(String userName);
 
     Optional<User> findByEmail(String email);

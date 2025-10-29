@@ -13,33 +13,30 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface SupplierMapper {
 
+
+    //* =========================== GET MAPPER ===========================
+
+    GetSupplierRes toGetSuppliers(Supplier supplier);
+
+    GetSupplierSelectionRes toGetSuppliersSelection(Supplier supplier);
+
+    GetSupplierDetailRes  toGetSupplierDetailRes(Supplier supplier);
+
+
+    //* =========================== CREATE MAPPER ===========================
+
     @Mapping(target = "colors", ignore = true)
     @Mapping(target = "supplierImg", ignore = true)
     Supplier toCreateSupplierReq(CreateSupplierReq request);
 
     CreateSupplierRes toCreateSupplierRes(Supplier supplier);
 
+    //* =========================== PATCH MAPPER ===========================
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "supplierImg", ignore = true)
     @Mapping(target = "colors", ignore = true)
     void toUpdateSupplierReq(@MappingTarget Supplier supplier, UpdateSupplierReq request);
 
-
     UpdateSupplierRes toUpdateSupplierRes(Supplier supplier);
-
-    default List<String> mapColorsToIds(List<Color> colors) {
-        if (colors == null) return null;
-        return colors.stream()
-                .map(color -> color.getColorId().toString())
-                .toList();
-    }
-
-    GetSupplierRes toGetSuppliers(Supplier supplier);
-
-    GetSupplierSelectionRes toGetSuppliersSelection(Supplier supplier);
-
-
-    GetSupplierDetailRes  toGetSupplierDetailRes(Supplier supplier);
-
-
 }

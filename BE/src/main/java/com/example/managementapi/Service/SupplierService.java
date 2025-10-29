@@ -94,37 +94,20 @@ public class SupplierService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateSupplierRes updateSupplier(String supplierId, UpdateSupplierReq request){
 
-//        log.warn("supplier_id_service: " + supplierId);
-
-        MultipartFile image = request.getSupplierImg();
-        String imgUrl = null;
-
         Supplier supplier = supplierRepository.findById(supplierId).orElseThrow(()
                 -> new RuntimeException("Supplier not found"));
+
+        MultipartFile image = request.getSupplierImg();
 
         if(image != null && !image.isEmpty()){
             FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
             String fileName = image.getOriginalFilename();
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
-            imgUrl = cloudinaryRes.getUrl();
+            supplier.setSupplierImg(cloudinaryRes.getUrl());
         }
-
-//        if (request.getColorId() != null && !request.getColorId().isEmpty()) {
-//            log.error("IN 1");
-//            List<Color> colors = colorRepository.findAllById(request.getColorId());
-//            if (colors.size() != request.getColorId().size()) {
-//                throw new AppException(ErrorCode.COLOR_NOT_EXISTED);
-//            }
-//            supplier.setColors(colors);
-//        } else {
-//            log.error("IN 2");
-//            supplier.setColors(null);
-//        }
-//        log.info("Colors set to supplier: {}", supplier.getColors());
 
         supplierMapper.toUpdateSupplierReq(supplier, request);
 
-        supplier.setSupplierImg(imgUrl);
 
         return supplierMapper.toUpdateSupplierRes(supplierRepository.save(supplier));
 
