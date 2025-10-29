@@ -5,6 +5,7 @@ import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Product.*;
+import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Service.ProductService;
 import com.example.managementapi.Util.QRGenerateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -41,6 +43,17 @@ public class ProductController {
 //                .timestamp(LocalDateTime.now())
 //                .build();
 //    }
+
+    @GetMapping("/select-products")
+    public ApiResponse<List<GetProductSelectionRes>> getProductSelection(){
+        return ApiResponse.<List<GetProductSelectionRes>>
+                        builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(productService.getProductSelection())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @PostMapping(value = "/create-product", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ApiResponse<CreateProductRes> createProduct(@ModelAttribute CreateProductReq request){

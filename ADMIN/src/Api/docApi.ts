@@ -30,6 +30,12 @@ import { IUpdateProductRequest, IUpdateProductResponse } from '@/Interface/Produ
 import { IGetAllColor } from '@/Interface/Color/IGetAllColor';
 import { ICreateColorRequest, ICreateColorResponse } from '@/Interface/Color/ICreateColor';
 import { IUpdateColorRequest, IUpdateColorResponse } from '@/Interface/Color/IUpdateColor';
+import { IGetProductSelectionResponse } from '@/Interface/Product/IGetProductSelection';
+import { IGetUserSelectionResponse } from '@/Interface/Users/IGetUserSelection';
+import { ICreateOrderRequest, ICreateOrderResponse } from '@/Interface/Order/ICreateOrder';
+import { IGetAllOrderResponse } from '@/Interface/Order/IGetAllOrderResponse';
+import { IUpdateOrderRequest, IUpdateOrderResponse } from '@/Interface/Order/IUpdateOrder';
+import { IGetOrderDetailResponse } from '@/Interface/Order/IGetOrderDetail';
 
 
 export const docApi = {
@@ -211,12 +217,18 @@ export const docApi = {
     return res.data;
   },
 
+  GetUserSelection: async (): Promise<IApiResponse<IGetUserSelectionResponse>> => {
+    const url = `/users/select-users`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   //* ======================================================== Supplier  ======================================================== */
 
-  GetSupplierSelection: async(): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
-      const url = `/supplier/select-suppliers`;
-      const res = await axiosClient.get(url);
-      return res.data;
+  GetSupplierSelection: async (): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
+    const url = `/supplier/select-suppliers`;
+    const res = await axiosClient.get(url);
+    return res.data;
   },
 
   GetAllSupplier: async (
@@ -272,10 +284,10 @@ export const docApi = {
 
   //* ======================================================== Category  ======================================================== */
 
-  GetCategorySelection: async(): Promise<IApiResponse<IGetCategorySelectionResponse>> => {
-      const url = `/categories/select-categories`;
-      const res = await axiosClient.get(url);
-      return res.data;
+  GetCategorySelection: async (): Promise<IApiResponse<IGetCategorySelectionResponse>> => {
+    const url = `/categories/select-categories`;
+    const res = await axiosClient.get(url);
+    return res.data;
   },
 
   GetAllCategory: async (
@@ -350,33 +362,33 @@ export const docApi = {
       size?: number,
       sort?: string,
     } = {}
-  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
-     
-      const   {
-        supplierName,
-        keyword,
-        page = 1,
-        size = 5,
-        sort = 'createAt, desc'
-      } = params;
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
 
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        sort,
-        ...( keyword && { keyword } ),
-        ...(supplierName && { supplierName })
-      })
+    const {
+      supplierName,
+      keyword,
+      page = 1,
+      size = 5,
+      sort = 'createAt, desc'
+    } = params;
 
-      const url = `/color/get-color?${queryParams.toString()}`;
-      const res = await axiosClient.get(url);
-      return res.data;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+      ...(supplierName && { supplierName })
+    })
+
+    const url = `/color/get-color?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
   },
 
-  CreateColor: async(body: ICreateColorRequest): Promise<IApiResponse<ICreateColorResponse>> => {
-     const url = `/color/create-color`;
-     const formData = buildFormData(body);
-     const res = await axiosClient.post(url, formData, {
+  CreateColor: async (body: ICreateColorRequest): Promise<IApiResponse<ICreateColorResponse>> => {
+    const url = `/color/create-color`;
+    const formData = buildFormData(body);
+    const res = await axiosClient.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data; charset=utf-8',
       },
@@ -385,7 +397,7 @@ export const docApi = {
     return res.data;
   },
 
-  GetColorSelection: async(supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> =>{ 
+  GetColorSelection: async (supplierId: string): Promise<IApiResponse<IGetColorSelectionResponse>> => {
     const url = `/color/color-selector/${supplierId}`;
     const res = await axiosClient.get(url);
     return res.data;
@@ -410,7 +422,7 @@ export const docApi = {
 
   //* ======================================================== Product  ======================================================== */
 
-  GetAllProducts: async(
+  GetAllProducts: async (
     params: {
       keyword?: string,
       categoryName?: string,
@@ -419,19 +431,19 @@ export const docApi = {
       maxPrice?: number,
       page?: number,
       size?: number,
-      sort?: string 
+      sort?: string
     } = {}
-  ) : Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
-    
-    const  { 
-      keyword, 
-      categoryName, 
-      supplierName, 
-      minPrice, 
-      maxPrice, 
-      page = 1, 
-      size = 5, 
-      sort = 'createAt,desc' 
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
+
+    const {
+      keyword,
+      categoryName,
+      supplierName,
+      minPrice,
+      maxPrice,
+      page = 1,
+      size = 5,
+      sort = 'createAt,desc'
     } = params;
 
     const queryParams = new URLSearchParams({
@@ -484,7 +496,65 @@ export const docApi = {
     });
 
     return res.data;
-  }
+  },
 
+  GetProductSelection: async (): Promise<IApiResponse<IGetProductSelectionResponse>> => {
+    const url = `/products/select-products`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  //* ======================================================== Order  ======================================================== */
+  CreateOrder: async (userId: string, body: ICreateOrderRequest): Promise<IApiResponse<ICreateOrderResponse>> => {
+    const url = `/order/create-order/${userId}`;
+    const res = await axiosClient.post(url, body, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+    return res.data;
+  },
+
+  UpdateOrder: async (orderId: string, body: IUpdateOrderRequest): Promise<IApiResponse<IUpdateOrderResponse>> => {
+    const url = `/order/admin/update/${orderId}`;
+    const res = await axiosClient.patch(url, body, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return res.data;
+  },
+
+  GetAllOrder: async (
+    params: {
+      keyword?: string,
+      status?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllOrderResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+    });
+
+    const url = `/order/user-order?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  DeleteOrder: async (orderId: string): Promise<IApiResponse<void>> => {
+    const url = `/order/delete/${orderId}`;
+    const res = await axiosClient.delete(url);
+    return res.data;
+  },
+
+  GetOrderDetail: async (orderId: string): Promise<IApiResponse<IGetOrderDetailResponse>> => {
+    const url = `/order/admin/order-detail/${orderId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
 }
