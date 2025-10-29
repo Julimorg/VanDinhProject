@@ -12,18 +12,10 @@ import org.mapstruct.MappingTarget;
 @Mapper(componentModel = "spring")
 public interface ColorMapper {
 
-    @Mapping(target = "colorImg", ignore = true)
-    Color toCreateColorReq(CreateColorReq request);
-
-    CreateColorRes toCreateColorRes(Color color);
-
-    @Mapping(target = "colorImg", ignore = true)
-    void toUpdateColor(@MappingTarget Color color, UpdateColorReq request);
-
-    UpdateColorRes toUpdateColorRes(Color color);
-
+    //* =========================== GET MAPPER ===========================
     GetColorRes toGetColorRes(Color color);
 
+    GetColorWithSupplierRes toGetColorWithSupplier(Color color);
 
     SupplierInColorDetailRes toSupplierInColorDetailRes(Supplier supplier);
 
@@ -37,6 +29,18 @@ public interface ColorMapper {
     @Mapping(source = "colorCode", target = "colorCode")
     GetColorRes toSearchColor(Color color);
 
-    GetColorWithSupplierRes toGetColorWithSupplier(Color color);
+    //* =========================== CREATE MAPPER ===========================
+
+    CreateColorRes toCreateColorRes(Color color);
+
+    @Mapping(target = "colorImg", ignore = true)
+    Color toCreateColorReq(CreateColorReq request);
+
+    //* =========================== UPDATE MAPPER ===========================
+
+    @Mapping(target = "colorImg", ignore = true)
+    void toUpdateColor(@MappingTarget Color color, UpdateColorReq request);
+
+    UpdateColorRes toUpdateColorRes(Color color);
 
 }

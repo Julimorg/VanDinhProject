@@ -13,18 +13,25 @@ import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface CategoryMapper {
-    @Mapping(target = "categoryImage", ignore = true)
-    Category toCategory(CreateCategoryReq request);
-    CreateCategoryRes toCreateCategoryRes(Category category);
 
-    @Mapping(target = "categoryImage", ignore = true)
-    void updateCategory(@MappingTarget Category category, UpdateCategoryReq request);
-    UpdateCategoryRes toUpdateCategoryRes(Category category);
-
+    //* =========================== GET MAPPER ===========================
     GetCategoriesRes toGetCategoriesRes(Category categories);
 
     GetCategoriesSelectionRes toGetCategoriesSelectionRes(Category categories);
 
-
     GetDetailCategoryRes toGetDetailCategoryRes(Category category);
+
+    //* =========================== CREATE MAPPER ===========================
+
+    @Mapping(target = "categoryImage", ignore = true)
+    Category toCategory(CreateCategoryReq request);
+
+    CreateCategoryRes toCreateCategoryRes(Category category);
+
+    //* =========================== UPDATE MAPPER ===========================
+    @Mapping(target = "categoryImage", ignore = true)
+    void updateCategory(@MappingTarget Category category, UpdateCategoryReq request);
+
+    UpdateCategoryRes toUpdateCategoryRes(Category category);
+
 }

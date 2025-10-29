@@ -176,23 +176,31 @@ public class ProductService {
         return response;
     }
 
-    //Update Product
     public UpdateProductRes updateProduct(String id, UpdateProductReq request){
-        MultipartFile[] images = request.getProductImage();
-        List<String> imageUrls = new ArrayList<>();
+
 
         Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
 
-        for(MultipartFile image : images){
-            if(image != null && !image.isEmpty()) {
-                FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
-                String fileName = FileUpLoadUtil.getFileName(request.getProductName());
-                CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
-                imageUrls.add(cloudinaryRes.getUrl());
-            }else {
-                log.info("No image provided for product: {}", request.getProductName());
-                throw new RuntimeException("Image is empty!");
+        MultipartFile[] images = request.getProductImage();
+
+        List<String> imageUrls = new ArrayList<>();
+
+        int count = 1;
+        if(images != null && images.length > 0) {
+            for (MultipartFile image : images) {
+                if (image != null && !image.isEmpty()) {
+                    FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
+                    String fileName = FileUpLoadUtil.getFileName(request.getProductName() + "_" + count);
+                    CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
+                    imageUrls.add(cloudinaryRes.getUrl());
+                    count++;
+                }
             }
+            if (imageUrls.isEmpty()) {
+                imageUrls = product.getProductImage();
+            }
+        } else {
+            imageUrls = product.getProductImage();
         }
 
 
@@ -217,11 +225,6 @@ public class ProductService {
         }
 
         return response;
-
-//        product.setDescription(request.getDescription());
-//        product.setPrice(request.getPrice());
-//        product.setStatus(request.getStatus());
-//        product.setQuantity(request.getQuantity());
 
     }
 

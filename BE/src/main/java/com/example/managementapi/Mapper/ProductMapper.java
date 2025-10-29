@@ -9,32 +9,33 @@ import com.example.managementapi.Dto.Response.Product.UpdateProductRes;
 import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
 import com.example.managementapi.Entity.Product;
 import com.example.managementapi.Entity.Supplier;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
+
+    //* =========================== GET MAPPER ===========================
+
     @Mapping(target = "productImage", ignore = true)
     Product toProduct(CreateProductReq request);
 
-    //get 1 product
     ProductRes toProductResponse(Product product);
 
-    CreateProductRes toCreateProductResponse(Product product);
-
-    //get list product
     @Mapping(source = "supplier.supplierName", target = "supplierName")
     @Mapping(source = "color.colorName", target = "colorName")
     @Mapping(source = "category.categoryName", target = "categoryName")
     GetProductsRes toGetProductsResponses(Product products);
 
-    //Req
+    //* =========================== CREATE MAPPER ===========================
+
+    CreateProductRes toCreateProductResponse(Product product);
+
+    //* =========================== UPDATE MAPPER ===========================
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "productImage", ignore = true)
     void updateProduct(@MappingTarget Product product, UpdateProductReq request);
 
-
     UpdateProductRes toUpdateProductRes(Product product);
-    //xong bài #5
 
 }

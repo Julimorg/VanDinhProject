@@ -122,8 +122,6 @@ public class ColorService {
 
         MultipartFile image = request.getColorImg();
 
-        String imageUrl = null;
-
         Color color = colorRepository
                 .findById(colorId)
                 .orElseThrow(() -> new RuntimeException("Color not Found!"));
@@ -132,7 +130,7 @@ public class ColorService {
             FileUpLoadUtil.assertAllowed(image, FileUpLoadUtil.IMAGE_PATTERN);
             String fileName = FileUpLoadUtil.getFileName(request.getColorName());
             CloudinaryRes cloudinaryRes = cloudinaryService.uploadFile(image, fileName);
-            imageUrl = cloudinaryRes.getUrl();
+            color.setColorImg(cloudinaryRes.getUrl());
         }else {
             log.info("No image provided for color: {}", request.getColorName());
             throw new RuntimeException("Image is empty!");
@@ -140,7 +138,6 @@ public class ColorService {
 
         colorMapper.toUpdateColor(color, request);
 
-        color.setColorImg(imageUrl);
 
         color = colorRepository.save(color);
         return colorMapper.toUpdateColorRes(color);
