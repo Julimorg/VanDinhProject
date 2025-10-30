@@ -10,5 +10,5 @@ export type IGetAllOrderResponse = {
     paymentMethod: string,
     createAt: string,
     updateAt: string,
-}
+}[];
 

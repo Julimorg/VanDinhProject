@@ -45,12 +45,17 @@ public class ProductController {
 //    }
 
     @GetMapping("/select-products")
-    public ApiResponse<List<GetProductSelectionRes>> getProductSelection(){
-        return ApiResponse.<List<GetProductSelectionRes>>
-                        builder()
+    public ApiResponse<List<GetProductSelectionRes>> getProductSelection(
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "categoryName", required = false) String categoryName,
+            @RequestParam(value = "supplierName", required = false) String supplierName,
+            @RequestParam(value = "minPrice", required = false) Double minPrice,
+            @RequestParam(value = "maxPrice", required = false) Double maxPrice
+    ) {
+        return ApiResponse.<List<GetProductSelectionRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(productService.getProductSelection())
+                .data(productService.getProductSelection(keyword, categoryName, supplierName, minPrice, maxPrice))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

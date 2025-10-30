@@ -283,11 +283,13 @@ public class OrderService {
                 productRepository.save(product);
             }
 
-            cart.getCartItems().clear();
-            cart.setTotalQuantity(0);
-            cart.setTotalPrice(BigDecimal.ZERO);
+            if(cart != null){
+                cart.getCartItems().clear();
+                cart.setTotalQuantity(0);
+                cart.setTotalPrice(BigDecimal.ZERO);
 
-            cartRepository.save(cart);
+                cartRepository.save(cart);
+            }
 
             emailService.sendOrderApprovedEmail(orderResponse);
 
@@ -303,13 +305,16 @@ public class OrderService {
 
             order.setDeletedAt(LocalDateTime.now());
 
-            cart.getCartItems().clear();
-
-            cart.setTotalQuantity(0);
-
-            cart.setTotalPrice(BigDecimal.ZERO);
-
             order.setCompleteAt(LocalDateTime.now());
+
+            orderRepository.save(order);
+
+            if(cart != null){
+                cart.getCartItems().clear();
+                cart.setTotalQuantity(0);
+                cart.setTotalPrice(BigDecimal.ZERO);
+                cartRepository.save(cart);
+            }
 
             emailService.sendOrderCanceledEmail(orderResponse);
 

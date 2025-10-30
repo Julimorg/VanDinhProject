@@ -52,14 +52,16 @@ const OrderManagementPage: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentFilter, setCurrentFilter] = useState<string>('all');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  //const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [openUpdateItems, setOpenUpdateItems] = useState(false);
   const [openApprove, setOpenApprove] = useState(false);
-  const isDetailView = location.pathname.match(/^\/orders\/[^/]+$/);
+
+  //const isDetailView = location.pathname.match(/^\/orders\/[^/]+$/);
   const adminUserId = useAuthStore((state) => state.id) ?? '';
+  const isChildRoute = location.pathname !== '/orders';
 
   const [page, setPage] = useState({
     size: 10,
@@ -98,6 +100,14 @@ const OrderManagementPage: React.FC = () => {
     setPage((prev) => ({ ...prev, number: 0 }));
   }, [currentFilter, debouncedSearch]);
 
+
+  useEffect(() => {
+    if (location.state?.refresh) {
+      refetch();
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, refetch]);
+  
   const columns: ColumnsType<any> = [
     {
       title: 'ID',
@@ -223,7 +233,7 @@ const OrderManagementPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      {isDetailView ? (<Outlet />
+      {isChildRoute ? (<Outlet />
       ) : (
         <Card className="max-w-7xl mx-auto shadow-lg">
           <Title level={2} className="text-center mb-6 text-blue-600">
@@ -244,9 +254,15 @@ const OrderManagementPage: React.FC = () => {
             </Col>
             <Col xs={24} sm={24} md={14}>
               <Space wrap style={{ width: '100%', justifyContent: 'flex-end' }}>
-                <Button
+                {/* <Button
                   type="primary"
                   onClick={() => setIsCreateModalOpen(true)}
+                >
+                  Tạo đơn mới
+                </Button> */}
+                <Button
+                  type="primary"
+                  onClick={() => navigate('/orders/create')}
                 >
                   Tạo đơn mới
                 </Button>
@@ -287,7 +303,7 @@ const OrderManagementPage: React.FC = () => {
             />
           )}
 
-          <CreateOrderModal
+          {/* <CreateOrderModal
             adminUserId={adminUserId}
             open={isCreateModalOpen}
             onClose={() => setIsCreateModalOpen(false)}
@@ -295,7 +311,7 @@ const OrderManagementPage: React.FC = () => {
               setIsCreateModalOpen(false);
               refetch(); // tải lại danh sách orders sau khi tạo
             }}
-          />
+          /> */}
 
           {selectedOrder && (
             <UpdateOrderModal
@@ -318,6 +334,7 @@ const OrderManagementPage: React.FC = () => {
             open={openApprove}
             onClose={() => setOpenApprove(false)}
             orderData={selectedOrder}
+            onSuccess={() => refetch()}
           />
 
           {/* Bảng đơn hàng */}

@@ -16,6 +16,7 @@ import CategoryManagementPage from '@/Pages/CategoryManagement/CategoryManagemen
 import CreateProductPage from '@/Pages/ProductManagement/CreateProductPage';
 import ProductDetailPage from '@/Pages/ProductManagement/ProductDetailPage';
 import OrderDetailPage from '@/Pages/OrderManagement/OrderDetailPage';
+import CreateOrderPage from '@/Pages/OrderManagement/CreateOrderPage';
 
 const Router = () => {
   return (
@@ -44,6 +45,7 @@ const Router = () => {
 
         <Route path="orders" element={<OrderManagementPage />}>
           <Route path=":orderId" element={<OrderDetailPage />} />
+          <Route path="create" element={<CreateOrderPage />} />
         </Route>
 
         <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />

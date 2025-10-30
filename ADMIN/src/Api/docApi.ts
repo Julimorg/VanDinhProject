@@ -36,6 +36,8 @@ import { ICreateOrderRequest, ICreateOrderResponse } from '@/Interface/Order/ICr
 import { IGetAllOrderResponse } from '@/Interface/Order/IGetAllOrderResponse';
 import { IUpdateOrderRequest, IUpdateOrderResponse } from '@/Interface/Order/IUpdateOrder';
 import { IGetOrderDetailResponse } from '@/Interface/Order/IGetOrderDetail';
+import { IUpdateOrderItemRequest, IUpdateOrderItemResponse } from '@/Interface/Order/IUpdateOrderItem';
+import { IApproveOrderStatusRequest, IApproveOrderStatusResponse } from '@/Interface/Order/IApproveOrderStatus';
 
 
 export const docApi = {
@@ -354,7 +356,7 @@ export const docApi = {
 
   //* ======================================================== Color  ======================================================== */
 
-  GetAllColor: async(
+  GetAllColor: async (
     params: {
       supplierName?: string,
       keyword?: string,
@@ -403,10 +405,10 @@ export const docApi = {
     return res.data;
   },
 
-  UpdateColor: async(colorId: string, body: IUpdateColorRequest): Promise<IApiResponse<IUpdateColorResponse>> => {
+  UpdateColor: async (colorId: string, body: IUpdateColorRequest): Promise<IApiResponse<IUpdateColorResponse>> => {
     const url = `/color/edit-color/${colorId}`;
     const formData = buildFormData(body);
-     const res = await axiosClient.patch(url, formData, {
+    const res = await axiosClient.patch(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data; charset=utf-8',
       },
@@ -414,7 +416,7 @@ export const docApi = {
     return res.data;
   },
 
-  DeleteColor: async(colorId: string): Promise<IApiResponse<void>> => {
+  DeleteColor: async (colorId: string): Promise<IApiResponse<void>> => {
     const url = `/color/delete-color/${colorId}`;
     const res = await axiosClient.delete(url);
     return res.data;
@@ -447,15 +449,15 @@ export const docApi = {
     } = params;
 
     const queryParams = new URLSearchParams({
-    page: page.toString(),
-    size: size.toString(),
-    sort,
-    ...(keyword && { keyword }),
-    ...(categoryName && { categoryName }),
-    ...(supplierName && { supplierName }),
-    ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
-    ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
-      
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+      ...(categoryName && { categoryName }),
+      ...(supplierName && { supplierName }),
+      ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+      ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
+
     })
     const url = `/products/get-products?${queryParams.toString()}`;
     const res = await axiosClient.get(url);
@@ -468,7 +470,7 @@ export const docApi = {
     return res.data;
   },
 
-  CreateProduct: async(body: ICreateProductRequest): Promise<IApiResponse<ICreateProductResponse>> =>{
+  CreateProduct: async (body: ICreateProductRequest): Promise<IApiResponse<ICreateProductResponse>> => {
     const url = `/products/create-product`;
     const formData = buildFormData(body);
     const res = await axiosClient.post(url, formData, {
@@ -480,16 +482,16 @@ export const docApi = {
     return res.data;
   },
 
-  DeleteProduct: async(productId: string): Promise<IApiResponse<void>> =>{
+  DeleteProduct: async (productId: string): Promise<IApiResponse<void>> => {
     const url = `/products/delete/${productId}`;
     const res = await axiosClient.delete(url);
     return res.data;
   },
 
-  UpdateProduct: async(productId: string, body: IUpdateProductRequest): Promise<IApiResponse<IUpdateProductResponse>> => {
+  UpdateProduct: async (productId: string, body: IUpdateProductRequest): Promise<IApiResponse<IUpdateProductResponse>> => {
     const url = `/products/update/${productId}`;
     const formData = buildFormData(body);
-     const res = await axiosClient.patch(url, formData, {
+    const res = await axiosClient.patch(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data; charset=utf-8',
       },
@@ -498,8 +500,33 @@ export const docApi = {
     return res.data;
   },
 
-  GetProductSelection: async (): Promise<IApiResponse<IGetProductSelectionResponse>> => {
-    const url = `/products/select-products`;
+  GetProductSelection: async (
+    params: {
+      keyword?: string,
+      categoryName?: string,
+      supplierName?: string,
+      minPrice?: number,
+      maxPrice?: number,
+    } = {}
+  ): Promise<IApiResponse<IGetProductSelectionResponse>> => {
+
+    const {
+      keyword,
+      categoryName,
+      supplierName,
+      minPrice,
+      maxPrice,
+    } = params;
+
+    const queryParams = new URLSearchParams({
+      ...(keyword && { keyword }),
+      ...(categoryName && { categoryName }),
+      ...(supplierName && { supplierName }),
+      ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+      ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
+
+    })
+    const url = `/products/select-products?${queryParams.toString()}`;
     const res = await axiosClient.get(url);
     return res.data;
   },
@@ -518,6 +545,27 @@ export const docApi = {
     const res = await axiosClient.patch(url, body, {
       headers: {
         'Content-Type': 'application/json'
+      },
+    });
+    return res.data;
+  },
+
+  ///approve-order/{userId}/{orderId}
+  ApproveOrder: async (userId: string, orderId: string, body: IApproveOrderStatusRequest): Promise<IApiResponse<IApproveOrderStatusResponse>> => {
+    const url = `/order/approve-order/${userId}/${orderId}`;
+    const res = await axiosClient.patch(url, body, {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    return res.data;
+  },
+
+  UpdateOrderItem: async (orderId: string, body: IUpdateOrderItemRequest): Promise<IApiResponse<IUpdateOrderItemResponse>> => {
+    const url = `/order/admin/update-order-item/${orderId}`;
+    const res = await axiosClient.patch(url, body, {
+      headers: {
+        'Content-Type': 'application/json',
       },
     });
     return res.data;

@@ -35,5 +35,6 @@ public interface ProductMapper {
 
     UpdateProductRes toUpdateProductRes(Product product);
 
+    @Mapping(source = "supplier.supplierName", target = "supplierName")
     GetProductSelectionRes toGetProductSelection(Product product);
 }

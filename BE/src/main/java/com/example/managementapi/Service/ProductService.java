@@ -58,10 +58,21 @@ public class ProductService {
 //    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public List<GetProductSelectionRes> getProductSelection(){
-        return productRepository.findAll()
+    public List<GetProductSelectionRes> getProductSelection(String keyword,
+                                                            String categoryName,
+                                                            String supplierName,
+                                                            Double minPrice,
+                                                            Double maxPrice) {
+        Specification<Product> specification = ProductSpecification.searchFilterForProduct(
+                keyword,
+                categoryName,
+                supplierName,
+                minPrice,
+                maxPrice
+        );
+        return productRepository.findAll(specification)
                 .stream()
-                .map(product -> productMapper.toGetProductSelection(product))
+                .map(productMapper::toGetProductSelection)
                 .toList();
     }
 
