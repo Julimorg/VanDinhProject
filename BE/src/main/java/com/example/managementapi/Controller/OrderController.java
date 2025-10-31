@@ -61,27 +61,13 @@
                     .build();
         }
 
-        @GetMapping("/user-order/{userId}")
-        public ApiResponse<Page<GetUserOrdersRes>> getUserOrders(
-                @PathVariable String userId,
-                @PageableDefault(size = 10, sort = "userId"
-                        , direction = Sort.Direction.DESC) Pageable pageable) {
-            return ApiResponse.<Page<GetUserOrdersRes>>builder()
-                    .status_code(HttpStatus.OK.value())
-                    .message(HttpStatus.OK.getReasonPhrase())
-                    .data(orderService.getUserOrders(userId, pageable))
-                    .timestamp(LocalDateTime.now())
-                    .build();
-        }
-
-        @GetMapping("/order-detail/{userId}/{orderId}")
+        @GetMapping("/order-detail/{orderId}")
         public ApiResponse<GetUserOrdersDetailRes> getUserOrders(
-                @PathVariable String userId,
                 @PathVariable String orderId) {
             return ApiResponse.<GetUserOrdersDetailRes>builder()
                     .status_code(HttpStatus.OK.value())
                     .message(HttpStatus.OK.getReasonPhrase())
-                    .data(orderService.getUserOrderDetails(userId,orderId))
+                    .data(orderService.getUserOrderDetails(orderId))
                     .timestamp(LocalDateTime.now())
                     .build();
         }
@@ -172,17 +158,4 @@
                     .timestamp(LocalDateTime.now())
                     .build();
         }
-
-        @GetMapping("admin/order-detail/{orderId}")
-        ApiResponse<GetAdminOrderDetailResponse> getOrderDetail(@PathVariable("orderId") String orderId){
-            return ApiResponse.<GetAdminOrderDetailResponse>builder()
-
-                    .status_code(HttpStatus.OK.value())
-                    .message(HttpStatus.OK.getReasonPhrase())
-                    .data(orderService.getOrderDetail(orderId))
-                    .timestamp(LocalDateTime.now())
-                    .build();
-
-        }
-
     }

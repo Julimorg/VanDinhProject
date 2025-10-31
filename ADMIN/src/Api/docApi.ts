@@ -552,7 +552,7 @@ export const docApi = {
   },
 
   GetOrderDetail: async (orderId: string): Promise<IApiResponse<IGetOrderDetailResponse>> => {
-    const url = `/order/admin/order-detail/${orderId}`;
+    const url = `/order/order-detail/${orderId}`;
     const res = await axiosClient.get(url);
     return res.data;
   },

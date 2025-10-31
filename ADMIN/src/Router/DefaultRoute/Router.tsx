@@ -33,7 +33,7 @@ const UnAuthorizedRoute: React.FC = () => {
   if (access_token) {
     // console.log(access_token);
     // console.log('AccessToken exists, redirecting to /dashboard'); // Fix: Thay /home bằng /dashboard
-    return <Navigate to="/dashboard" replace />; // Hoặc "/home" nếu bạn định nghĩa route /home
+    return <Navigate to="/dashboard" replace />; 
   }
   return <Outlet />;
 };

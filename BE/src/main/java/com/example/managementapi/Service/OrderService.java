@@ -80,30 +80,13 @@ public class OrderService {
                 .map(order -> orderMapper.toGetAllOrdersRes(order));
     }
 
-    //** Method này làm hơi dư thừa
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
-    public Page<GetUserOrdersRes> getUserOrders(String userId, Pageable pageable){
-
-        User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-        Page<Order> ordersPage = orderRepository.findByUser(user, pageable);
-
-        return ordersPage.map(orders -> orderMapper.toGetUserOrdersRes(orders));
-    }
-
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public GetUserOrdersDetailRes getUserOrderDetails(String userId, String orderId){
+    public GetUserOrdersDetailRes getUserOrderDetails(String orderId){
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        orderRepository.findById(orderId)
+        var order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        return orderMapper.toGetUserOrdersDetailRes(
-                orderRepository.findByUserAndOrderId(user, orderId)
-                        .orElseThrow(() -> new RuntimeException("Order not found")));
+        return orderMapper.toGetUserOrdersDetailRes(order);
     }
 
     @Transactional
@@ -424,12 +407,6 @@ public class OrderService {
         return orderMapper.toUpdateOrderByAdminResponse(order);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public GetAdminOrderDetailResponse getOrderDetail(String id){
-        Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
-
-        return orderMapper.toGetAdminOrderDetailResponse(order);
-    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteOrder(String id){

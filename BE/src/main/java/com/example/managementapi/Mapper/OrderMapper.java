@@ -52,17 +52,6 @@ public interface OrderMapper {
     @Mapping(source = "user.phone", target = "phone")
     @Mapping(source = "user.userAddress", target = "userAddress")
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-    GetUserOrdersRes toGetUserOrdersRes(Order order);
-
-    @Mapping(source = "user.id", target = "userId")
-    @Mapping(source = "orderCode", target = "orderCode")
-    @Mapping(source = "orderStatus", target = "status")
-    @Mapping(source = "orderAmount", target = "amount")
-    @Mapping(source = "user.userName", target = "userName")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.phone", target = "phone")
-    @Mapping(source = "user.userAddress", target = "userAddress")
-    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     @Mapping(source = "orderItems", target = "items")
     GetUserOrdersDetailRes toGetUserOrdersDetailRes(Order order);
 
@@ -82,7 +71,9 @@ public interface OrderMapper {
     @Mapping(source = "orderItems", target = "orderItems")
     CreateOrderFromCartRes toCreateOrderFromCartRes(Order order);
 
-    CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
+    Order toOrder(CreateOrderRequest request);
+
+    CreateOrderResponse toCreateOrderResponse(Order order);
 
     //** ===============================   PATCH RESPONSE   ===========================
 
@@ -103,22 +94,12 @@ public interface OrderMapper {
     @Mapping(source = "completeAt", target = "completeAt")
     UpdateOrderByUserRes toGetOrderResponse(Order order);
 
-    ProductForCartItem toProductForCartItem(Product product);
 
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     OrderInGetUserDetailByAdminRes toOrderInGetUserDetailByAdminRes(Order order);
 
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
     OrderInGetUserDetailRes toOrderInGetUserDetailRes(Order order);
-
-
-
-    Order toOrder(CreateOrderRequest request);
-    CreateOrderResponse toCreateOrderResponse(Order order);
-
-    //Get list
-    GetOrdersResponse toGetOrdersResponse(Order orders);
-
 
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "orderAmount", ignore = true)
@@ -131,19 +112,4 @@ public interface OrderMapper {
     void updateOrder(@MappingTarget Order order, UpdateOrderByAdminRequest request);
 
     UpdateOrderByAdminResponse toUpdateOrderByAdminResponse(Order order);
-
-    @Mapping(source = "user.id", target = "id")
-    @Mapping(source = "orderCode", target = "orderCode")
-    @Mapping(source = "orderStatus", target = "status")
-    @Mapping(source = "orderAmount", target = "orderAmount")
-    @Mapping(source = "user.userName", target = "userName")
-    @Mapping(source = "user.email", target = "email")
-    @Mapping(source = "user.phone", target = "phone")
-    @Mapping(source = "user.userAddress", target = "userAddress")
-    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-    @Mapping(source = "shipAddress", target = "shipAddress")
-    @Mapping(source = "createBy", target = "createBy")
-    @Mapping(source = "orderItems", target = "orderItems")
-    GetAdminOrderDetailResponse toGetAdminOrderDetailResponse(Order order);
-
 }
