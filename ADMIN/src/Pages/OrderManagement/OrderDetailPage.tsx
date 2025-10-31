@@ -32,7 +32,7 @@ import {
 import { useGetOrderDetail } from './Hook/useGetOrderDetail';
 import type { ColumnsType } from 'antd/es/table';
 import { IOrderItemDetail } from '@/Interface/Order/IGetOrderDetail';
-import { formatToVietnamTime } from '@/Utils/ulti';
+import { formatToVietnamTime, formatCurrency } from '@/Utils/ulti';
 import { usePrint } from '@/Hook/usePrint';
 
 const { Title, Text } = Typography;
@@ -47,6 +47,9 @@ const OrderDetailPage: React.FC = () => {
   const order = data?.data;
 
   console.log("Data: " , data);
+
+  // Safely access items as an empty array if undefined
+  const orderItems = order?.items || [];
 
   const renderOrderStatus = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: React.ReactNode; printText: string }> = {
@@ -128,11 +131,19 @@ const OrderDetailPage: React.FC = () => {
       ),
     },
     {
+      title: 'Đơn giá',
+      dataIndex: 'productPrice',
+      key: 'productPrice',
+      width: 120,
+      align: 'right',
+      render: (price) => <Text>{formatCurrency(price)}</Text>,
+    },
+    {
       title: 'Thành tiền',
       key: 'total',
       width: 120,
       align: 'right',
-      render: () => <Text> - </Text>,
+      render: (_, record) => <Text>{formatCurrency(record.productPrice * record.quantity)}</Text>,
     },
   ];
 
@@ -270,7 +281,7 @@ const OrderDetailPage: React.FC = () => {
                   </Divider>
                   <Table
                     columns={columns}
-                    dataSource={order.orderItems}
+                    dataSource={orderItems}
                     rowKey="orderItemId"
                     pagination={false}
                     scroll={{ x: 'max-content' }}
@@ -288,13 +299,13 @@ const OrderDetailPage: React.FC = () => {
                     <Col xs={24} sm={8}>
                       <div className="text-right">
                         <Text className="text-gray-600 block">Số lượng sản phẩm:</Text>
-                        <Text strong className="text-lg">{order.orderItems.length}</Text>
+                        <Text strong className="text-lg">{orderItems.length}</Text>
                       </div>
                     </Col>
                     <Col xs={24} sm={8}>
                       <Statistic
                         title={<Text strong>Tổng tiền</Text>}
-                        value={order.orderAmount}
+                        value={order.amount}
                         precision={0}
                         suffix="₫"
                         prefix={<DollarOutlined className="text-green-500" />}
@@ -362,17 +373,17 @@ const OrderDetailPage: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {order.orderItems.map((item, index) => (
+                    {orderItems.map((item, index) => (
                       <tr key={item.orderItemId}>
                         <td className="border border-black py-1 px-1 text-center" style={{ fontSize: '11px' }}>{index + 1}</td>
                         <td className="border border-black py-1 px-1" style={{ fontSize: '11px' }}>{item.productName}</td>
                         <td className="border border-black py-1 px-1 text-center" style={{ fontSize: '11px' }}>Cái</td>
                         <td className="border border-black py-1 px-1 text-center" style={{ fontSize: '11px' }}>{item.quantity}</td>
-                        <td className="border border-black py-1 px-1 text-right" style={{ fontSize: '11px' }}> - </td>
-                        <td className="border border-black py-1 px-1 text-right" style={{ fontSize: '11px' }}> - </td>
+                        <td className="border border-black py-1 px-1 text-right" style={{ fontSize: '11px' }}>{formatCurrency(item.productPrice)}</td>
+                        <td className="border border-black py-1 px-1 text-right" style={{ fontSize: '11px' }}>{formatCurrency(item.productPrice * item.quantity)}</td>
                       </tr>
                     ))}
-                    {order.orderItems.length < 10 && Array.from({ length: Math.min(10 - order.orderItems.length, 5) }).map((_, i) => (
+                    {orderItems.length < 10 && Array.from({ length: Math.min(10 - orderItems.length, 5) }).map((_, i) => (
                       <tr key={`empty-${i}`}>
                         <td className="border border-black py-1 px-1">&nbsp;</td>
                         <td className="border border-black py-1 px-1">&nbsp;</td>
@@ -390,10 +401,10 @@ const OrderDetailPage: React.FC = () => {
                   <tbody>
                     <tr>
                       <td className="border border-black py-1 px-1 w-1/2" style={{ fontSize: '11px' }}>
-                        Cộng tiền hàng (Bằng chữ): {order.orderAmount.toLocaleString()} đồng
+                        Cộng tiền hàng (Bằng chữ): {formatCurrency(order.amount)}
                       </td>
                       <td className="border border-black py-1 px-1 text-right" style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                        Tổng: {order.orderAmount.toLocaleString()} ₫
+                        Tổng: {formatCurrency(order.amount)}
                       </td>
                     </tr>
                     <tr>
