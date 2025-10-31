@@ -17,6 +17,7 @@ import ProductDetailPage from '@/Pages/ProductManagement/ProductDetailPage';
 import OrderDetailPage from '@/Pages/OrderManagement/OrderDetailPage';
 import CreateOrderPage from '@/Pages/OrderManagement/CreateOrderPage';
 import { useAuthStore } from '@/Store/IAuth';
+import UpdateOrderItemsPage from '@/Pages/OrderManagement/UpdateOrderItemsPage';
 
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
@@ -73,6 +74,7 @@ const Router: React.FC = () => {
         <Route path="orders" element={<OrderManagementPage />}>
           <Route path=":orderId" element={<OrderDetailPage />} />
           <Route path="create" element={<CreateOrderPage />} />
+          <Route path=":orderId/items" element={<UpdateOrderItemsPage />} />
         </Route>
 
           <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />

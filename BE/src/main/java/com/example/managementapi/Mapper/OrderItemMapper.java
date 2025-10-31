@@ -29,7 +29,7 @@ public interface OrderItemMapper {
     SearchOrderItemResponse toSearchOrderItemResponse(OrderItem orderItemn);
     //** ===============================   POST RESPONSE   ===========================
 
-
+    @Mapping(source = "product.productId", target = "productId")
     @Mapping(source = "product.productName", target = "productName")
     @Mapping(source = "product.productImage", target = "productImage")
     @Mapping(source = "product.productVolume", target = "productVolume")

@@ -30,7 +30,6 @@ import DeleteOrderModal from './Components/DeleteOrderModal';
 import CreateOrderModal from './Components/CreateOrderModal';
 import { useAuthStore } from '@/Store/IAuth';
 import UpdateOrderModal from './Components/UpdateOrderModal';
-import UpdateOrderItemsModal from './Components/UpdateOrderItemsModal';
 import ApproveOrderModal from './Components/ApproveOrderModal';
 
 interface OrderData {
@@ -107,7 +106,7 @@ const OrderManagementPage: React.FC = () => {
       window.history.replaceState({}, document.title);
     }
   }, [location.state, refetch]);
-  
+
   const columns: ColumnsType<any> = [
     {
       title: 'ID',
@@ -188,13 +187,9 @@ const OrderManagementPage: React.FC = () => {
           <Button
             type="text"
             icon={<ShoppingCartOutlined />}
-            onClick={() => {
-              setSelectedOrder(record);
-              setOpenUpdateItems(true);
-            }}
-          >
+            onClick={() => navigate(`/orders/${record.orderId}/items`)}
+          />
 
-          </Button>
           <Button
             type="text"
             icon={<CheckCircleOutlined />}
@@ -322,14 +317,6 @@ const OrderManagementPage: React.FC = () => {
             />
           )}
 
-
-          <UpdateOrderItemsModal
-            open={openUpdateItems}
-            onClose={() => setOpenUpdateItems(false)}
-            orderData={selectedOrder}
-          />
-
-
           <ApproveOrderModal
             open={openApprove}
             onClose={() => setOpenApprove(false)}
@@ -352,21 +339,23 @@ const OrderManagementPage: React.FC = () => {
 
 
           {/* Phân trang */}
-          {pagination.totalPages > 1 && (
-            <div className="mt-6 flex justify-center">
-              <Pagination
-                current={pagination.number + 1} // 0-based -> hiển thị 1-based
-                total={pagination.totalElements}
-                pageSize={pagination.size}
-                showSizeChanger
-                showQuickJumper
-                showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} đơn hàng`}
-                onChange={handlePageChange}
-                onShowSizeChange={handlePageChange}
-                className="ant-pagination-responsive"
-              />
-            </div>
-          )}
+          <div className="mt-6 flex justify-center">
+            <Pagination
+              current={(pagination?.number ?? 0) + 1} // an toàn khi chưa load
+              total={pagination?.totalElements ?? 0}
+              pageSize={pagination?.size ?? 10}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total, range) =>
+                total > 0
+                  ? `${range[0]}-${range[1]} của ${total} đơn hàng`
+                  : 'Không có đơn hàng nào'
+              }
+              onChange={handlePageChange}
+              onShowSizeChange={handlePageChange}
+              className="ant-pagination-responsive"
+            />
+          </div>
         </Card>
       )}
     </div>

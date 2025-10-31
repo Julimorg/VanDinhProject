@@ -1,6 +1,6 @@
 export type IUpdateOrderItemRequest = {
   orderItems: {
-    orderItemId: string;
+    orderItemId?: string;
     productId: string;
     quantity: number;
   }[];

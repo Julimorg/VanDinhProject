@@ -38,46 +38,57 @@ public class OrderItemService {
     public List<UpdateOrderItemByAdminResponse> updateOrderItems(String orderId, UpdateOrderItemRequest request) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.getOrderItems().removeIf(
+                item -> request.getOrderItems().stream()
+                        .noneMatch(dto -> dto.getOrderItemId() != null && dto.getOrderItemId().equals(item.getOrderItemId()))
+        );
+
         List<UpdateOrderItemByAdminResponse> responses = new ArrayList<>();
 
         for (UpdateOrderItemByAdminRequest dto : request.getOrderItems()) {
-            OrderItem orderItem = orderItemRepository.findById(dto.getOrderItemId())
-                    .orElseThrow(() -> new RuntimeException("OrderItem not found"));
+            OrderItem orderItem;
 
-            if (dto.getProductId() != null) {
-                Product product = productRepository.findById(dto.getProductId())
-                        .orElseThrow(() -> new RuntimeException("Product not found"));
-                orderItem.setProduct(product);
-                orderItem.setPrice(product.getProductPrice());
+            if (dto.getOrderItemId() != null) {
+                orderItem = order.getOrderItems().stream()
+                        .filter(i -> i.getOrderItemId().equals(dto.getOrderItemId()))
+                        .findFirst()
+                        .orElseThrow(() -> new RuntimeException("OrderItem not found"));
+            } else {
+                orderItem = new OrderItem();
+                orderItem.setOrder(order);
+                order.getOrderItems().add(orderItem);
             }
 
+            Product product = productRepository.findById(dto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+            orderItem.setProduct(product);
+            orderItem.setPrice(product.getProductPrice());
             orderItem.setQuantity(dto.getQuantity());
 
-            orderItemRepository.save(orderItem);
-
-            UpdateOrderItemByAdminResponse res = UpdateOrderItemByAdminResponse.builder()
+            responses.add(UpdateOrderItemByAdminResponse.builder()
                     .orderItemId(orderItem.getOrderItemId())
                     .quantity(orderItem.getQuantity())
                     .price(orderItem.getPrice())
                     .createAt(orderItem.getCreateAt())
                     .updateAt(orderItem.getUpdateAt())
-                    .build();
-
-            responses.add(res);
-
-            int totalQuantity = order.getOrderItems().stream()
-                    .mapToInt(OrderItem::getQuantity)
-                    .sum();
-            order.setTotal_quantity(totalQuantity);
-
-            BigDecimal total = order.getOrderItems().stream()
-                    .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            order.setOrderAmount(total);
-            orderRepository.save(order);
+                    .build());
         }
+
+        order.setTotal_quantity(order.getOrderItems().stream()
+                .mapToInt(OrderItem::getQuantity)
+                .sum());
+
+        BigDecimal total = order.getOrderItems().stream()
+                .map(i -> i.getPrice().multiply(BigDecimal.valueOf(i.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setOrderAmount(total);
+
+        orderRepository.save(order);
 
         return responses;
     }
+
+
 
 }
