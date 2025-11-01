@@ -580,12 +580,13 @@ export const docApi = {
       sort?: string,
     } = {}
   ): Promise<IApiResponse<IApiResponsePagination<IGetAllOrderResponse>>> => {
-    const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
+    const { keyword, status, page = 1, size = 5, sort = 'createAt, desc' } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
       sort,
       ...(keyword && { keyword }),
+      ...(status && { status }), 
     });
 
     const url = `/order/user-order?${queryParams.toString()}`;

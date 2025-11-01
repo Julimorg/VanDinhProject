@@ -12,6 +12,7 @@ import {
   Row,
   Col,
   Grid,
+  Select,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import {
@@ -51,14 +52,14 @@ const OrderManagementPage: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentFilter, setCurrentFilter] = useState<string>('all');
-  //const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<OrderData | null>(null);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [openUpdateItems, setOpenUpdateItems] = useState(false);
   const [openApprove, setOpenApprove] = useState(false);
+  const [currentStatusFilter, setCurrentStatusFilter] = useState<string>('all');
+  const { Option } = Select;
 
-  //const isDetailView = location.pathname.match(/^\/orders\/[^/]+$/);
   const adminUserId = useAuthStore((state) => state.id) ?? '';
   const isChildRoute = location.pathname !== '/orders';
 
@@ -82,6 +83,7 @@ const OrderManagementPage: React.FC = () => {
           ? 'createAt,asc'
           : undefined,
     keyword: debouncedSearch,
+    status: currentStatusFilter === 'all' ? undefined : currentStatusFilter,
   });
 
   useEffect(() => {
@@ -97,7 +99,7 @@ const OrderManagementPage: React.FC = () => {
   // Reset page when filter/search changes
   useEffect(() => {
     setPage((prev) => ({ ...prev, number: 0 }));
-  }, [currentFilter, debouncedSearch]);
+  }, [currentFilter, debouncedSearch, currentStatusFilter]);
 
 
   useEffect(() => {
@@ -218,6 +220,10 @@ const OrderManagementPage: React.FC = () => {
     setCurrentFilter(type);
   };
 
+  const handleStatusFilter = (status: string) => {
+    setCurrentStatusFilter(status);
+  };
+
   const handlePageChange = (pageNumber: number, pageSize: number) => {
     setPage({
       ...page,
@@ -249,18 +255,29 @@ const OrderManagementPage: React.FC = () => {
             </Col>
             <Col xs={24} sm={24} md={14}>
               <Space wrap style={{ width: '100%', justifyContent: 'flex-end' }}>
-                {/* <Button
-                  type="primary"
-                  onClick={() => setIsCreateModalOpen(true)}
-                >
-                  Tạo đơn mới
-                </Button> */}
                 <Button
                   type="primary"
                   onClick={() => navigate('/orders/create')}
                 >
                   Tạo đơn mới
                 </Button>
+
+                <Select
+                  style={{ width: 160 }}
+                  placeholder="Trạng thái"
+                  value={currentStatusFilter}
+                  onChange={(value) => {
+                    handleStatusFilter(value);
+                  }}
+                  allowClear
+                  size="large"
+                >
+                  <Option value="all">Tất cả</Option>
+                  <Option value="Pending">Pending</Option>
+                  <Option value="Approved">Approved</Option>
+                  <Option value="Canceled">Canceled</Option>
+                </Select>
+
                 <Button
                   icon={<SortAscendingOutlined />}
                   type={currentFilter === 'all' ? 'primary' : 'default'}

@@ -15,6 +15,7 @@ import { ICreateOrderRequest } from '@/Interface/Order/ICreateOrder';
 import { useAuthStore } from '@/Store/IAuth';
 import { useDebounce } from "@/Hook/useDebounce";
 import { toast } from "react-toastify";
+import { useGetSupplierSelections } from './Hook/useGetSupplierSelection';
 
 
 const { Title, Text } = Typography;
@@ -25,13 +26,14 @@ const CreateOrderPage: React.FC = () => {
     const adminUserId = useAuthStore((state) => state.id) ?? '';
 
     const [selectedProducts, setSelectedProducts] = useState<Record<string, number>>({});
+    const { data: supplierSelection } = useGetSupplierSelections();
 
     const { mutate: createOrder, isPending } = useCreateOrder({
         onSuccess: () => {
             toast.success('Tạo đơn hàng thành công!');
             form.resetFields();
             setSelectedProducts({});
-            navigate('/orders', { state: { refresh: true } }); 
+            navigate('/orders', { state: { refresh: true } });
         },
         onError: (err: any) => {
             toast.error(`Tạo đơn hàng thất bại: ${err?.message ?? err}`);
@@ -256,14 +258,14 @@ const CreateOrderPage: React.FC = () => {
                                         value={selectedSupplier}
                                         onChange={(value) => setSelectedSupplier(value)}
                                         style={{ width: '100%' }}
-                                        options={[
-                                            ...Array.from(
-                                                new Set(productSelection?.data?.map((p: any) => p.supplierName).filter(Boolean))
-                                            ).map((name) => ({
-                                                label: name,
-                                                value: name,
-                                            })),
-                                        ]}
+                                        options={
+                                            Array.isArray(supplierSelection?.data)
+                                                ? supplierSelection.data.map((s) => ({
+                                                    label: s.supplierName,
+                                                    value: s.supplierId, 
+                                                }))
+                                                : []
+                                        }
                                     />
                                 </Col>
                             </Row>
