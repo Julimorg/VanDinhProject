@@ -137,16 +137,7 @@ export const docApi = {
     userId: string
   ): Promise<IApiResponse<IUpdateMyProfileResponse>> => {
     const url = `/users/update-profile/${userId}`;
-    const formData = new FormData();
-
-    if (body.firstName !== undefined) formData.append('firstName', body.firstName);
-    if (body.lastName !== undefined) formData.append('lastName', body.lastName);
-    if (body.userName !== undefined) formData.append('userName', body.userName);
-    if (body.email !== undefined) formData.append('email', body.email);
-    if (body.phone !== undefined) formData.append('phone', body.phone);
-    if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
-    if (body.userImg instanceof File) formData.append('userImg', body.userImg);
-    if (body.userAddress) formData.append('userAddress', body.userAddress);
+    const formData = buildFormData(body);
 
     for (const pair of formData.entries()) {
       console.log(pair[0] + ': ' + pair[1]);
@@ -165,22 +156,8 @@ export const docApi = {
 
   CreateUser: async (body: ICreateUserRequest,): Promise<IApiResponse<ICreateUserResponse>> => {
     const url = `/users/create-staff`;
-    const formData = new FormData();
-
-    if (body.firstName !== undefined) formData.append('firstName', body.firstName);
-    if (body.lastName !== undefined) formData.append('lastName', body.lastName);
-    if (body.userName !== undefined) formData.append('userName', body.userName);
-    if (body.email !== undefined) formData.append('email', body.email);
-    if (body.phone !== undefined) formData.append('phone', body.phone);
-    if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
-    if (body.password !== undefined) formData.append('password', body.password);
-    if (body.userImg instanceof File) formData.append('userImg', body.userImg);
-    if (body.userAddress) formData.append('userAddress', body.userAddress);
-    if (body.roles !== undefined && body.roles.length > 0) {
-      body.roles.forEach((role) => {
-        formData.append('roles', role);
-      });
-    }
+    
+    const formData = buildFormData(body);
 
     const res = await axiosClient.post(url, formData, {
       headers: {
@@ -193,22 +170,8 @@ export const docApi = {
 
   UpdateUser: async (body: IUpdateUserRequest, userId: string): Promise<IApiResponse<IUpdateUserResponse>> => {
     const url = `/users/update-user/${userId}`;
-    const formData = new FormData();
 
-    if (body.firstName !== undefined) formData.append('firstName', body.firstName);
-    if (body.lastName !== undefined) formData.append('lastName', body.lastName);
-    if (body.userName !== undefined) formData.append('userName', body.userName);
-    if (body.email !== undefined) formData.append('email', body.email);
-    if (body.phone !== undefined) formData.append('phone', body.phone);
-    if (body.status !== undefined) formData.append('phone', body.status);
-    if (body.userDob !== undefined) formData.append('userDob', body.userDob.toString());
-    if (body.userImg instanceof File) formData.append('userImg', body.userImg);
-    if (body.userAddress) formData.append('userAddress', body.userAddress);
-    if (body.roles !== undefined && body.roles.length > 0) {
-      body.roles.forEach((role) => {
-        formData.append('roles', role);
-      });
-    }
+    const formData = buildFormData(body);
 
     const res = await axiosClient.patch(url, formData, {
       headers: {

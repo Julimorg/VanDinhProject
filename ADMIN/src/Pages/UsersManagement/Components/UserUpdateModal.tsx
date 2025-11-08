@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Modal, Form, Input, Select, DatePicker, message, Upload } from 'antd';
 import type { IUsersResponse } from '@/Interface/Users/IGetUsers';
 import { UploadOutlined } from '@ant-design/icons';
 import { useUpdateUser } from '../Hook/useUpdateUser';
 import { IUpdateUserRequest } from '@/Interface/Users/IUpdateUser';
+import dayjs from 'dayjs'; // Thêm import dayjs để xử lý ngày tháng cho DatePicker
 
 interface UserModalProps {
   visible: boolean;
@@ -14,7 +14,6 @@ interface UserModalProps {
 
 const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
   const [form] = Form.useForm();
-
 
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id || '', {
     onSuccess: () => {
@@ -26,16 +25,21 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
     },
   });
 
-  //? Prefill form với dữ liệu user khi modal mở
+  //? Prefill form với đầy đủ dữ liệu user khi modal mở
   React.useEffect(() => {
     if (visible && user) {
+      const fullUser = user as any; // Cast tạm thời để truy cập các trường không tồn tại trong IUsersResponse
       const initialValues = {
-        userName: user.userName,
-        email: user.email,
-        status: user.status,
-        roles: user.roles || [],
-    
-        userImg: user.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: user.userImg }] : [],
+        firstName: fullUser.firstName || '',
+        lastName: fullUser.lastName || '',
+        userName: fullUser.userName || '',
+        email: fullUser.email || '',
+        phone: fullUser.phone || '',
+        userDob: fullUser.userDob ? dayjs(fullUser.userDob) : null, // Chuyển đổi thành dayjs object
+        userAddress: fullUser.userAddress || '',
+        status: fullUser.status || 'ACTIVE',
+        roles: fullUser.roles?.map((role: any) => role.name) || [], // Map roles thành array strings cho Select multiple
+        userImg: fullUser.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: fullUser.userImg }] : [],
       };
       form.setFieldsValue(initialValues);
     }
@@ -53,18 +57,15 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
   };
 
   const onFinish = (values: any) => {
-  
     if (values.userDob) {
       values.userDob = values.userDob.format('YYYY-MM-DD');
     }
-  
-    if (values.userImg && values.userImg.length > 0) {
 
+    if (values.userImg && values.userImg.length > 0) {
       const newFile = values.userImg.find((file: any) => file.originFileObj);
       if (newFile) {
         values.userImg = newFile.originFileObj; 
       } else {
-       
         values.userImg = undefined;
       }
     } else {
