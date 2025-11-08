@@ -144,9 +144,6 @@ public class UserService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not Found!"));
 
-        if(userRepository.existsByUserName(request.getUserName()))
-            throw  new AppException((ErrorCode.USER_EXISTED));
-
         if(userRepository.existsByUserName(request.getEmail()))
             throw  new AppException((ErrorCode.EMAIl_EXISTED));
 

@@ -4,7 +4,7 @@ import type { IUsersResponse } from '@/Interface/Users/IGetUsers';
 import { UploadOutlined } from '@ant-design/icons';
 import { useUpdateUser } from '../Hook/useUpdateUser';
 import { IUpdateUserRequest } from '@/Interface/Users/IUpdateUser';
-import dayjs from 'dayjs'; // Thêm import dayjs để xử lý ngày tháng cho DatePicker
+import dayjs from 'dayjs';
 
 interface UserModalProps {
   visible: boolean;
@@ -28,17 +28,17 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
   //? Prefill form với đầy đủ dữ liệu user khi modal mở
   React.useEffect(() => {
     if (visible && user) {
-      const fullUser = user as any; // Cast tạm thời để truy cập các trường không tồn tại trong IUsersResponse
+      const fullUser = user as any; 
       const initialValues = {
         firstName: fullUser.firstName || '',
         lastName: fullUser.lastName || '',
         userName: fullUser.userName || '',
         email: fullUser.email || '',
         phone: fullUser.phone || '',
-        userDob: fullUser.userDob ? dayjs(fullUser.userDob) : null, // Chuyển đổi thành dayjs object
+        userDob: fullUser.userDob ? dayjs(fullUser.userDob) : null, 
         userAddress: fullUser.userAddress || '',
         status: fullUser.status || 'ACTIVE',
-        roles: fullUser.roles?.map((role: any) => role.name) || [], // Map roles thành array strings cho Select multiple
+        roles: fullUser.roles?.map((role: any) => role.name) || [], 
         userImg: fullUser.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: fullUser.userImg }] : [],
       };
       form.setFieldsValue(initialValues);
