@@ -1,38 +1,15 @@
 import { Icons } from '@/Components/Icons';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { toast } from 'react-toastify';
 import Loading from '@/Components/Loading/index';
 import { useLogin } from '@/Auth/Login/Hook/useLogin';
-import { useLanguage } from './Hook/usegetLanguage';
-import { useAuthStore } from '@/Store/auth';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const { data: languageData } = useLanguage();
-  const setLanguageId = useAuthStore((state) => state.setLanguageId);
 
   const loginMutation = useLogin();
-  const { Option } = Icons.Select;
-
-  const codeMap: Record<string, string> = {
-    vi: 'vi-VN',
-    en: 'en-US',
-  };
-
-  useEffect(() => {
-    if (!languageData?.data) return;
-
-    const matchedLang = languageData.data.find((lang) => lang.code === codeMap[i18n.language]);
-
-    if (matchedLang) {
-      setLanguageId(matchedLang.id);
-      // console.log('Đã lưu languageId :', matchedLang.id);
-    }
-  }, [languageData, i18n.language, setLanguageId]);
 
   const onFinish = (values: { username: string; password: string }) => {
     setLoading(true);
@@ -44,95 +21,106 @@ const Login: React.FC = () => {
       {
         onSuccess: () => {
           setLoading(false);
-          toast.success(t('login.loginSuccess') || 'Đăng nhập thành công');
+          toast.success('Đăng nhập thành công');
           navigate('/tickets');
         },
         onError: (error: any) => {
           setLoading(false);
-          toast.error(t('login.loginFailed') || 'Đăng nhập thất bại');
+          toast.error('Đăng nhập thất bại');
           console.error(error);
         },
       }
     );
   };
 
+  const handleRegister = () => {
+    navigate('/register'); // Giả sử route đăng ký
+  };
+
+  const handleForgotPassword = () => {
+    navigate('/forgot-password'); // Giả sử route quên mật khẩu
+  };
+
   return (
     <>
       {loading && <Loading />}
 
-      <div className="relative flex items-center justify-center w-full min-h-screen bg-gradient-to-br from-gray-100 to-gray-300">
-        <div className="absolute flex items-center space-x-3 -translate-x-1/2 top-6 left-1/2">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-indigo-600">
-            <span className="text-3xl font-bold text-white">Z</span>
+      <div className="relative flex items-center justify-center w-full min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        {/* Header với logo */}
+        <div className="absolute flex flex-col items-center space-y-2 -translate-x-1/2 top-6 left-1/2 md:flex-row md:space-y-0 md:space-x-3">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg shadow-md bg-gradient-to-r from-blue-600 to-indigo-600 md:w-16 md:h-16">
+            <span className="text-2xl font-bold text-white md:text-3xl">S</span> {/* Icon tượng trưng cho sơn */}
           </div>
-          <h1 className="text-2xl font-extrabold tracking-wide text-gray-800">ZENTRY</h1>
+          <h1 className="text-xl font-extrabold tracking-wide text-gray-800 md:text-2xl">Cửa hàng sơn Vạn Dinh</h1>
         </div>
 
-        <Icons.Select
-          defaultValue={i18n.language}
-          onChange={(lng) => {
-            i18n.changeLanguage(lng);
-            const matchedLang = languageData?.data?.find((lang) => lang.code === codeMap[lng]);
-            if (matchedLang) {
-              setLanguageId(matchedLang.id);
-            }
-          }}
-          className="absolute w-40 bg-white rounded-md shadow-sm top-6 right-6"
-        >
-          <Option value="vi">
-            <span className="mr-2 flag-icon flag-icon-vn"></span>
-            {t('language.vi')}
-          </Option>
-          <Option value="en">
-            <span className="mr-2 flag-icon flag-icon-gb"></span>
-            {t('language.en')}
-          </Option>
-        </Icons.Select>
+        {/* Form container - Responsive cho tablet và mobile */}
+        <div className="w-full max-w-md px-4 mx-auto transition-all duration-300 transform bg-white shadow-xl rounded-xl sm:px-6 lg:max-w-lg">
+          <div className="p-6 md:p-8">
+            <h2 className="text-2xl font-semibold text-center text-gray-800 mb-2">Đăng nhập</h2>
+            <p className="mb-6 text-sm text-center text-gray-500">Chào mừng bạn quay lại với Cửa hàng sơn Vạn Dinh</p>
 
-        <div className="w-full max-w-md p-8 transition-all duration-300 transform bg-white shadow-lg rounded-xl">
-          <h2 className="text-2xl font-semibold text-center text-gray-800">{t('login.title')}</h2>
-          <p className="mb-6 text-sm text-center text-gray-500">{t('login.description')}</p>
-
-          <Icons.Form layout="vertical" onFinish={onFinish}>
-            <Icons.Form.Item
-              label={t('login.username')}
-              name="username"
-              rules={[{ required: true, message: t('login.usernamePlaceholder') }]}
-            >
-              <Icons.Input
-                placeholder={t('login.usernamePlaceholder')}
-                className="transition-all duration-200 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </Icons.Form.Item>
-
-            <Icons.Form.Item
-              label={t('login.password')}
-              name="password"
-              rules={[{ required: true, message: t('login.passwordPlaceholder') }]}
-            >
-              <Icons.Input.Password
-                placeholder={t('login.passwordPlaceholder')}
-                className="transition-all duration-200 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-              />
-            </Icons.Form.Item>
-
-            <Icons.Form.Item>
-              <Icons.Button
-                type="primary"
-                htmlType="submit"
-                loading={loading}
-                className="w-full font-semibold text-white transition-all duration-200 rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+            <Icons.Form layout="vertical" onFinish={onFinish}>
+              <Icons.Form.Item
+                label="Tên đăng nhập"
+                name="username"
+                rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập' }]}
               >
-                {t('login.loginButton')}
+                <Icons.Input
+                  placeholder="Nhập tên đăng nhập"
+                  className="transition-all duration-200 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </Icons.Form.Item>
+
+              <Icons.Form.Item
+                label="Mật khẩu"
+                name="password"
+                rules={[{ required: true, message: 'Vui lòng nhập mật khẩu' }]}
+              >
+                <Icons.Input.Password
+                  placeholder="Nhập mật khẩu"
+                  className="transition-all duration-200 border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </Icons.Form.Item>
+
+              <Icons.Form.Item>
+                <Icons.Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  className="w-full font-semibold text-white transition-all duration-200 rounded-md bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Đăng nhập
+                </Icons.Button>
+              </Icons.Form.Item>
+            </Icons.Form>
+
+            {/* Các nút thêm */}
+            <div className="flex flex-col space-y-3 mt-4 sm:flex-row sm:space-y-0 sm:space-x-3 sm:justify-center">
+              <Icons.Button
+                type="link"
+                onClick={handleRegister}
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                disabled={loading}
+              >
+                Đăng ký tài khoản mới
               </Icons.Button>
-            </Icons.Form.Item>
-          </Icons.Form>
+              <Icons.Button
+                type="link"
+                onClick={handleForgotPassword}
+                className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                disabled={loading}
+              >
+                Quên mật khẩu?
+              </Icons.Button>
+            </div>
 
-          {/* <p className="mt-4 text-sm text-center text-gray-500">{t('login.needHelp')}</p> */}
+            <Icons.Divider className="my-6 border-gray-200" />
 
-          <Icons.Divider className="my-4 border-gray-200" />
-
-          <p className="text-xs text-center text-gray-400">{t('login.copyright')}</p>
+            <p className="text-xs text-center text-gray-400">
+              © 2025 Cửa hàng sơn Vạn Dinh. Tất cả quyền được bảo lưu.
+            </p>
+          </div>
         </div>
       </div>
     </>

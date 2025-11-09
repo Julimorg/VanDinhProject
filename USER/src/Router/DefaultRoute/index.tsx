@@ -36,6 +36,7 @@ import MomoPage from '@/Page/MomoManagement/MomoPage';
 import GateDetail from '@/Page/SystemManagement/Gate/Components/GateDetail';
 import ReceipterStatisticDetail from '@/Page/ReportingAndAnalysis/Components/ReceipterStatisticDetail';
 import Permission from '@/Page/Permission/Permission';
+import WelcomePage from '@/Page/WelcomePage/WelcomePage';
 
 const DefaultRouter = () => {
   const LayoutWithNavbar = () => (
@@ -52,6 +53,8 @@ const DefaultRouter = () => {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
+      <Route path="/welcome" element={<WelcomePage />} />
+
       <Route element={<LayoutWithNavbar />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tickets" element={<Ticket />} />

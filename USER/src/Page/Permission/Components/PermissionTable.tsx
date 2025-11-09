@@ -6,7 +6,8 @@ import type { Permission, CreatePermission } from '@/Interface/TPermission';
 
 import CreatePermissionModal from './PermissionModal';
 import { useGetPermission } from '@/Hook/useGetPermission';
-import { useCreatePermission } from '../hook/ useCreatePermission';
+import { useCreatePermission } from '../hook/useCreatePermission';
+
 
 const columns: ColumnsType<Permission> = [
   // {
