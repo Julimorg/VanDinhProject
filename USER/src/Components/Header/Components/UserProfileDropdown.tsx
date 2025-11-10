@@ -45,13 +45,16 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
       key: 'profile',
       icon: <UserOutlined className="text-gray-600" />,
       label: 'Thông tin cá nhân',
-      onClick: () => navigate('/edit-profile'),
+      onClick: () => navigate('/profile'),
     },
     {
       key: 'orders',
       icon: <ShoppingCartOutlined className="text-gray-600" />,
       label: 'Đơn hàng của tôi',
-      onClick: () => navigate('/orders'),
+      onClick: () => {
+        console.log('Nav to order-history'); // Debug để check click
+        navigate('/order-history');
+      },
     },
     {
       key: 'settings',
