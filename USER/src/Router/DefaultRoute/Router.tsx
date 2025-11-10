@@ -1,6 +1,5 @@
-import { Routes, Route, Outlet } from 'react-router-dom';
-import Sidebar from '@/Components/SideBar/SideBar';
-import Login from '@/Auth/Login';
+import { Routes, Route } from 'react-router-dom';
+
 import Dashboard from '@/Page/DashBoard/Dashboard';
 import Ticket from '@/Page/ManageService/Ticket/Ticket';
 
@@ -37,25 +36,18 @@ import GateDetail from '@/Page/SystemManagement/Gate/Components/GateDetail';
 import ReceipterStatisticDetail from '@/Page/ReportingAndAnalysis/Components/ReceipterStatisticDetail';
 import Permission from '@/Page/Permission/Permission';
 import WelcomePage from '@/Page/WelcomePage/WelcomePage';
+import RegisterPage from '@/Page/RegisterPage/RegisterPage';
+import AuthPage from '@/Page/AuthenticationPage/AuthenticationPage';
+import MainLayout from '@/Page/Main/MainLayout';
 
 const DefaultRouter = () => {
-  const LayoutWithNavbar = () => (
-    <>
-      <div className="flex min-h-screen">
-        <Sidebar />
-        <main className="flex-1 p-4 bg-gray-100">
-          <Outlet />
-        </main>
-      </div>
-    </>
-  );
-
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
       <Route path="/welcome" element={<WelcomePage />} />
+      <Route path="/login" element={<AuthPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-      <Route element={<LayoutWithNavbar />}>
+      <Route path="/" element={<MainLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/tickets" element={<Ticket />} />
 

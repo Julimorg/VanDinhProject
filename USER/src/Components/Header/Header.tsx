@@ -1,68 +1,204 @@
-import React, { useState } from 'react';
-import { UserOutlined } from '@ant-design/icons';
-import { Avatar } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Drawer, Badge, Button } from 'antd';
+import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/Store/auth';
+import BrandLogo from './Components/BrandLogo';
+import NotificationsDropdown from './Components/Notification';
+import UserProfileDropdown from './Components/UserProfileDropdown';
 
-const Logo: React.FC = () => {
-  const [showMenu, setShowMenu] = useState(false);
-    const userName = useAuthStore((state) => state.userName);
-
+const Header: React.FC = () => {
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileNavVisible, setMobileNavVisible] = useState(false);
+  const userName = useAuthStore((state) => state.userName);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const handleLogout = () => {
-    setShowMenu(false);
     localStorage.removeItem('token');
     navigate('/');
   };
 
-  return (
-    <div className="absolute top-4 right-0 w-full flex justify-end pr-6 z-50">
-      <div className="relative inline-block text-left">
-        <div
-          onClick={() => setShowMenu(!showMenu)}
-          className="flex items-center cursor-pointer gap-2 px-4 py-2 rounded hover:bg-gray-100"
-        >
-          <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#1240A8' }} />
-          <span className="font-semibold text-gray-700">Admin</span>
-        </div>
+  // Mock notifications data
+  const notifications = [
+    {
+      id: 1,
+      title: 'Đơn hàng mới',
+      description: 'Bạn có 1 đơn hàng mới cần xử lý',
+      time: '5 phút trước',
+      read: false,
+    },
+    {
+      id: 2,
+      title: 'Sản phẩm sắp hết hàng',
+      description: 'Sơn Dulux màu trắng còn 10 sản phẩm',
+      time: '1 giờ trước',
+      read: false,
+    },
+    {
+      id: 3,
+      title: 'Thanh toán thành công',
+      description: 'Đơn hàng #12345 đã được thanh toán',
+      time: '2 giờ trước',
+      read: true,
+    },
+  ];
 
-        {showMenu && (
-          <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50">
-            <div className="px-6 py-4 text-sm text-gray-600 border-b">
-              Tài khoản: <span className="font-semibold text-gray-900">{userName}</span>
-            </div>
-            <ul>
-              <li>
-                <button
-                  onClick={() => navigate("/edit-profile")}
-                  className="w-full text-left px-6 py-3 text-sm hover:bg-gray-100 rounded-b-xl text-red-600"
-                >
-                  Chỉnh sửa thông tin
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => navigate("/change-password")}
-                  className="w-full text-left px-6 py-3 text-sm hover:bg-gray-100 rounded-b-xl text-red-600"
-                >
-                  Đổi mật khẩu
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={handleLogout}
-                  className="w-full text-left px-6 py-3 text-sm hover:bg-gray-100 rounded-b-xl text-red-600"
-                >
-                  Đăng xuất
-                </button>
-              </li>
-            </ul>
-          </div>
-        )}
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Mock cart count (thay bằng state thực tế)
+  const cartCount = 3; // Ví dụ: 3 items trong giỏ
+
+  // Navigation menu items cho desktop
+  const navItems = [
+    { key: 'products', label: 'Sản phẩm', path: '/products' },
+    { key: 'suppliers', label: 'Nhà Cung Cấp', path: '/suppliers' },
+    { key: 'colors', label: 'Mã Màu', path: '/colors' },
+  ];
+
+  // Xử lý click nav
+  const handleNavClick = (path: string) => {
+    navigate(path);
+    setMobileNavVisible(false); // Đóng mobile menu
+  };
+
+  // Mobile Drawer cho nav menu
+  const mobileDrawer = (
+    <Drawer
+      title="Menu"
+      placement="left"
+      onClose={() => setMobileNavVisible(false)}
+      open={mobileNavVisible}
+      width={256}
+    >
+      <div className="space-y-4">
+        {navItems.map((item) => (
+          <Button
+            key={item.key}
+            type="text"
+            block
+            className="justify-start text-left py-3"
+            onClick={() => handleNavClick(item.path)}
+          >
+            {item.label}
+          </Button>
+        ))}
+        <Button
+          type="text"
+          block
+          className="justify-start text-left py-3"
+          onClick={() => handleNavClick('/cart')}
+          icon={<ShoppingCartOutlined />}
+        >
+          Giỏ hàng ({cartCount})
+        </Button>
       </div>
-    </div>
+    </Drawer>
+  );
+
+  return (
+    <>
+      <header
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? 'bg-white shadow-md py-3'
+            : 'bg-white/95 backdrop-blur-sm py-4'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            {/* Logo & Brand */}
+            <BrandLogo />
+
+            {/* Navigation Menu - Desktop */}
+            <nav className="hidden md:flex items-center gap-8 mx-8">
+              {navItems.map((item) => (
+                <button
+                  key={item.key}
+                  onClick={() => handleNavClick(item.path)}
+                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </nav>
+
+            {/* Right Section - Desktop: Cart + Notifications + User */}
+            <div className="hidden md:flex items-center gap-2">
+              {/* Cart Icon */}
+              <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
+                <Button
+                  type="text"
+                  onClick={() => navigate('/cart')}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <ShoppingCartOutlined className="text-lg text-gray-700" />
+                </Button>
+              </Badge>
+
+              <NotificationsDropdown
+                notifications={notifications}
+                unreadCount={unreadCount}
+                navigate={navigate}
+                isMobile={false}
+              />
+              <UserProfileDropdown
+                userName={userName || 'Admin'}
+                navigate={navigate}
+                handleLogout={handleLogout}
+                isMobile={false}
+              />
+            </div>
+
+            {/* Mobile: Hamburger + Notifications + User */}
+            <div className="flex md:hidden items-center gap-2">
+              {/* Hamburger Menu */}
+              <Button
+                type="text"
+                icon={<MenuOutlined className="text-lg" />}
+                onClick={() => setMobileNavVisible(true)}
+                className="p-2"
+              />
+
+              {/* Cart Icon - Mobile */}
+              <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
+                <Button
+                  type="text"
+                  onClick={() => navigate('/cart')}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <ShoppingCartOutlined className="text-lg text-gray-700" />
+                </Button>
+              </Badge>
+
+              <NotificationsDropdown
+                notifications={notifications}
+                unreadCount={unreadCount}
+                navigate={navigate}
+                isMobile={true}
+              />
+              <UserProfileDropdown
+                userName={userName || 'Admin'}
+                navigate={navigate}
+                handleLogout={handleLogout}
+                isMobile={true}
+              />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileDrawer}
+    </>
   );
 };
 
-export default Logo;
+export default Header;

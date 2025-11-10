@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 
 import React from 'react';
-import DefaultRouter from '@/Router/DefaultRoute/index';
+import DefaultRouter from '@/Router/DefaultRoute/Router';
 function App() {
   return (
     <React.StrictMode>
@@ -38,9 +38,6 @@ function App() {
           },
         }}
       >
-        {/* <Loading></Loading> */}
-        {/* {isFetching + isMutating !== 0 && <Loading />} */}
-
         <BrowserRouter>
           <DefaultRouter />
           {/* <PrivateRoute /> */}
