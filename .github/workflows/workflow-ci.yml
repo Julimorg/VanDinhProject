@@ -42,17 +42,23 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-  # user:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v4
+  user:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '20'
-  #         cache: 'npm'
-  #         cache-dependency-path: ./user/package-lock.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'yarn'
+          cache-dependency-path: ./USER/yarn.lock
+
+      - name: Build User
+        working-directory: ./USER
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
 
   #     - name: Build User
   #       working-directory: ./user
