@@ -1,11 +1,14 @@
 import { Routes, Route } from 'react-router-dom';
+import WelcomePage from '../../Page/WelcomePage/WelcomePage';
+import AuthPage from '../../Page/AuthenticationPage/AuthPage';
+import MainLayout from '../../Page/Main/MainLayout';
+import Dashboard from '../../Page/DashBoard/DashBoard';
+import MyProfile from '../../Page/MyProfilePage/MyProfile';
+import OrderHistory from '../../Page/OrderHistoryPage/OrderHistoryPage';
+import ProductsPage from '../../Page/ProductPage/ProductPage';
+import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
+import ColorPage from '../../Page/ColorPage/ColorPage';
 
-import MainLayout from '@/Page/Main/MainLayout';
-import WelcomePage from '@/Page/WelcomePage/WelcomePage';
-import AuthPage from '@/Page/AuthenticationPage/AuthPage';
-import Dashboard from '@/Page/DashBoard/DashBoard';
-import MyProfile from '@/Page/MyProfilePage/MyProfile';
-import OrderHistory from '@/Page/OrderHistoryPage/OrderHistoryPage';
 
 const DefaultRouter = () => {
   return (
@@ -17,6 +20,9 @@ const DefaultRouter = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="profile" element={<MyProfile />} />
         <Route path="order-history" element={<OrderHistory />} />
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="suppliers" element={<SupplierPage />} />
+        <Route path="colors" element={<ColorPage />} />
 
         
       </Route>

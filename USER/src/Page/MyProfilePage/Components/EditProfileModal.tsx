@@ -1,12 +1,21 @@
-// File: EditProfileModal.tsx (cập nhật)
-import React from 'react';
-import { Modal, Input, DatePicker, Upload, message, Button } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, CalendarOutlined, UploadOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
-import type { Dayjs } from 'dayjs';
-import type { UploadProps, UploadFile } from 'antd/es/upload';
-import { useUploadImgFile } from '@/Hook/useUploadImgFile';
+import React, { useEffect } from 'react';
+import { Button, Upload, Modal, message, Form, Input, DatePicker } from 'antd'; 
+import { UploadOutlined } from '@ant-design/icons';
+import dayjs, { Dayjs } from 'dayjs';
+import { useUploadImgFile } from '../../../Hook/useUploadImgFile';
 
+interface UserData {
+  id: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  email: string;
+  userImg?: string;
+  phone: string;
+  userAddress: string;
+  userDob: string; // YYYY-MM-DD
+  status: string;
+}
 
 interface EditForm {
   firstName: string;
@@ -15,165 +24,183 @@ interface EditForm {
   email: string;
   phone: string;
   userAddress: string;
-  userDob: Dayjs | null;
-  userImg: string | File | null; // Thêm field cho ảnh
+  userDob: Dayjs; // Thay đổi thành Dayjs để tương thích với DatePicker
+  userImg?: File; 
 }
 
 interface EditProfileModalProps {
-  open: boolean;
-  editForm: EditForm;
-  onSave: () => void;
+  open: boolean; // Giữ nguyên, nhưng AntD dùng visible
+  userData: UserData;
+  onSave: (updatedData: Partial<UserData>) => void;
   onCancel: () => void;
-  onChange: (field: keyof EditForm, value: any) => void;
-  currentUserImg?: string; // URL ảnh hiện tại để preload
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({
-  open,
-  editForm,
-  onSave,
-  onCancel,
-  onChange,
-  currentUserImg,
-}) => {
-  // Sử dụng hook upload ảnh
-  const { uploadProps, fileList, getCurrentFile, reset } = useUploadImgFile({
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, userData, onSave, onCancel }) => {
+  // Sử dụng AntD Form để quản lý form state (thay vì useState thủ công)
+  const [form] = Form.useForm<EditForm>();
+
+  // Hook upload ảnh - thay listType thành 'picture' cho vuông
+  const { uploadProps, getCurrentFile, reset } = useUploadImgFile({
+    maxSize: 2 * 1024 * 1024, // 2MB
     maxCount: 1,
-    listType: 'picture-circle',
-    onFileChange: (file) => {
-      onChange('userImg', file); // Cập nhật state editForm khi file thay đổi
+    onFileChange: (file: File | null) => {
+      if (file) {
+        form.setFieldsValue({ userImg: file }); // Cập nhật form field
+        message.success('File ảnh đã được chọn!');
+      } else {
+        form.setFieldsValue({ userImg: undefined });
+      }
     },
+    listType: 'picture', // Vuông thay vì tròn
   });
 
-  // Preload ảnh hiện tại vào fileList khi modal mở
-  React.useEffect(() => {
-    if (open && currentUserImg && fileList.length === 0) {
-      const preloadFile: UploadFile = {
-        uid: '-1',
-        name: 'current-image.jpg',
-        status: 'done',
-        url: currentUserImg,
-      };
-      // Cập nhật fileList thủ công (hook không tự preload, nên dùng setState trực tiếp nếu cần, nhưng để đơn giản dùng effect)
-      // Lưu ý: Hook không expose setFileList, nên có thể cần adjust hook hoặc dùng ref. Để đơn giản, giả sử preload qua props.
+  // Khởi tạo form khi mở modal
+  useEffect(() => {
+    if (open) {
+      form.setFieldsValue({
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        userName: userData.userName,
+        email: userData.email,
+        phone: userData.phone,
+        userAddress: userData.userAddress,
+        userDob: dayjs(userData.userDob), // Chuyển string sang Dayjs
+        userImg: undefined, // Reset file
+      });
+      reset(); // Reset upload hook
     }
-  }, [open, currentUserImg, fileList.length]);
+  }, [open, userData, form, reset]);
 
-  // Reset fileList khi modal đóng (cancel)
-  React.useEffect(() => {
-    if (!open) {
-      reset();
-      onChange('userImg', null); // Reset ảnh trong form
+  // Hàm mock upload file (thay bằng API thực tế)
+  const uploadAvatarFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+      // Mock: Thay bằng await axios.post('/api/upload-avatar', formData)
+      console.log('Uploading file:', file.name);
+      // Giả sử API trả về { url: 'new-avatar-url' }
+      const mockUrl = URL.createObjectURL(file); // Tạm thời
+      return mockUrl;
+    } catch (error) {
+      message.error('Lỗi upload ảnh đại diện!');
+      throw error;
     }
-  }, [open, reset, onChange]);
-
-  const handleFormChange = (field: keyof EditForm, value: any) => {
-    onChange(field, value);
   };
+
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields(); // Validate form
+
+      let newAvatarUrl: string = userData.userImg || '';
+
+      // Nếu có file mới, upload
+      if (values.userImg) {
+        try {
+          newAvatarUrl = await uploadAvatarFile(values.userImg);
+        } catch (error) {
+          return; // Dừng nếu lỗi
+        }
+      }
+
+      // Gọi callback để cập nhật parent
+      onSave({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        userName: values.userName,
+        email: values.email,
+        phone: values.phone,
+        userAddress: values.userAddress,
+        userDob: values.userDob.format('YYYY-MM-DD'), // Chuyển Dayjs sang string
+        userImg: newAvatarUrl,
+      });
+
+      message.success('Cập nhật thông tin thành công!');
+      onCancel(); // Đóng modal
+    } catch (error) {
+      message.error('Vui lòng kiểm tra thông tin!');
+    }
+  };
+
+  const handleCancel = () => {
+    form.resetFields(); // Reset form
+    onCancel();
+  };
+
+  if (!open) return null;
 
   return (
     <Modal
-      title={<span className="text-xl font-semibold">Chỉnh sửa thông tin</span>}
+      title="Chỉnh sửa thông tin cá nhân"
       open={open}
-      onOk={onSave}
-      onCancel={onCancel}
-      width={700}
-      okText="Lưu thay đổi"
-      cancelText="Hủy"
-      centered
-      className="edit-profile-modal"
+      onCancel={handleCancel}
+      onOk={handleSave} // Sử dụng onOk của AntD, nhưng custom footer để linh hoạt
+      footer={[
+        <Button key="cancel" size="large" onClick={handleCancel}>
+          Hủy
+        </Button>,
+        <Button key="save" type="primary" size="large" onClick={handleSave}>
+          Lưu thay đổi
+        </Button>,
+      ]}
+      width={800} // Rộng hơn cho form
+      destroyOnClose // Cleanup khi đóng
+      maskClosable={false} // Không đóng khi click backdrop
     >
-      <div className="mt-6 space-y-4">
-        {/* Thêm phần upload ảnh */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Ảnh đại diện *</label>
+      <Form form={form} layout="vertical" className="space-y-4">
+        {/* Phần upload avatar - chữ nhỏ hơn, preview nhỏ hơn, vuông */}
+        <Form.Item label={<span className="text-sm">Ảnh đại diện (JPG, PNG, max 2MB)</span>} name="userImg">
           <Upload
             {...uploadProps}
-            className="w-full"
+            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
           >
-            <Button icon={<UploadOutlined />}>Chọn ảnh mới</Button>
+            <Button icon={<UploadOutlined />} size="small">Chọn ảnh</Button> {/* Button nhỏ hơn */}
           </Upload>
-          {fileList.length > 0 && (
-            <p className="text-sm text-gray-500 mt-2">Ảnh hiện tại: {fileList[0].name}</p>
+          {getCurrentFile() && (
+            <div className="mt-2 flex items-center gap-2">
+              <img
+                src={URL.createObjectURL(getCurrentFile()!)}
+                alt="Avatar preview"
+                className="w-12 h-12 rounded-lg object-cover border-2 border-gray-200" 
+              />
+              <span className="text-xs text-gray-600">Preview: {getCurrentFile()?.name}</span> {/* Chữ nhỏ hơn */}
+            </div>
           )}
-          {currentUserImg && fileList.length === 0 && (
-            <p className="text-sm text-gray-500 mt-2">Sử dụng ảnh hiện tại</p>
-          )}
-        </div>
+        </Form.Item>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Họ *</label>
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Nhập họ"
-              value={editForm.firstName}
-              onChange={(e) => handleFormChange('firstName', e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tên *</label>
-            <Input
-              prefix={<UserOutlined />}
-              placeholder="Nhập tên"
-              value={editForm.lastName}
-              onChange={(e) => handleFormChange('lastName', e.target.value)}
-            />
-          </div>
+          <Form.Item label="Họ" name="firstName" rules={[{ required: true, message: 'Vui lòng nhập họ!' }]}>
+            <Input placeholder="Nhập họ" />
+          </Form.Item>
+          <Form.Item label="Tên" name="lastName" rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}>
+            <Input placeholder="Nhập tên" />
+          </Form.Item>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Tên người dùng *</label>
-          <Input
-            prefix={<UserOutlined />}
-            placeholder="Nhập tên người dùng"
-            value={editForm.userName}
-            onChange={(e) => handleFormChange('userName', e.target.value)}
+        <Form.Item label="Tên người dùng" name="userName" rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}>
+          <Input placeholder="Nhập tên người dùng" />
+        </Form.Item>
+
+        <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
+          <Input placeholder="Nhập email" />
+        </Form.Item>
+
+        <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}>
+          <Input placeholder="Nhập số điện thoại" />
+        </Form.Item>
+
+        <Form.Item label="Địa chỉ" name="userAddress" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}>
+          <Input.TextArea rows={3} placeholder="Nhập địa chỉ" />
+        </Form.Item>
+
+        <Form.Item label="Ngày sinh" name="userDob" rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}>
+          <DatePicker 
+            style={{ width: '100%' }} 
+            format="YYYY-MM-DD" 
+            placeholder="Chọn ngày sinh" 
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-          <Input
-            prefix={<MailOutlined />}
-            placeholder="Nhập email"
-            value={editForm.email}
-            onChange={(e) => handleFormChange('email', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Số điện thoại *</label>
-          <Input
-            prefix={<PhoneOutlined />}
-            placeholder="Nhập số điện thoại"
-            value={editForm.phone}
-            onChange={(e) => handleFormChange('phone', e.target.value)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Ngày sinh *</label>
-          <DatePicker
-            className="w-full"
-            format="DD/MM/YYYY"
-            placeholder="Chọn ngày sinh"
-            value={editForm.userDob}
-            onChange={(date) => handleFormChange('userDob', date)}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Địa chỉ *</label>
-          <Input.TextArea
-            placeholder="Nhập địa chỉ"
-            rows={3}
-            value={editForm.userAddress}
-            onChange={(e) => handleFormChange('userAddress', e.target.value)}
-          />
-        </div>
-      </div>
+        </Form.Item>
+      </Form>
     </Modal>
   );
 };
