@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { docApi } from './docApi';
 import { toast } from 'react-toastify';
-import { useAuthStore } from '@/Store/auth';
-
+import { PUBLIC_API } from '../Utils/env_dev_handler';
+import { useAuthStoreCookiesStorage } from '../Middleware/useAuthStore';
+import { auth_api_handler } from './auth_api';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: PUBLIC_API,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -23,7 +23,7 @@ let refreshTokenPromise: Promise<string | null> | null = null;
 //? Config request xuống server
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().accessToken;
+    const token = useAuthStoreCookiesStorage.getState().accessToken;
 
     //? Những enpoint không cần gán Token vào Header
     const publicEndpoints = [
@@ -70,21 +70,21 @@ axiosClient.interceptors.response.use(
       try {
         if (!refreshTokenPromise) {
           console.log('Bắt đầu refresh token...');
-          const refreshToken = useAuthStore.getState().refreshToken;
+          const refreshToken = useAuthStoreCookiesStorage.getState().refreshToken;
 
           if (!refreshToken) {
             console.error('Không có refresh token để gửi yêu cầu');
             throw new Error('Không có refresh token');
           }
 
-          refreshTokenPromise = docApi
+          refreshTokenPromise = auth_api_handler
             .RefreshToken()
             .then((res) => {
               const { accessToken } = res.data;
               console.log('Refresh token thành công, access_token mới:', accessToken);
 
-              const { refreshToken: currentRefreshToken, userName, email, userImg, id } = useAuthStore.getState();
-              useAuthStore.getState().setTokens(
+              const { refreshToken: currentRefreshToken, userName, email, userImg, id } = useAuthStoreCookiesStorage.getState();
+              useAuthStoreCookiesStorage.getState().setTokens(
                 accessToken,                      
                 currentRefreshToken,            
                 userName,                       
@@ -101,7 +101,7 @@ axiosClient.interceptors.response.use(
                 response: refreshError.response?.data,
                 status: refreshError.response?.status,
               });
-              useAuthStore.getState().clearTokens();
+              useAuthStoreCookiesStorage.getState().clearTokens();
               // window.location.href = '/login';
               return null;
             })

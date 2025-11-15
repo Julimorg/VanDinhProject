@@ -1,6 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom'; 
+import type { ILoginRequest } from '../../../Interface/Auth/ILogin'; 
+import { useLogin } from '../Hook/useLogin';
 
 const { Text, Title } = Typography;
 
@@ -10,20 +13,23 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSwitchToForgot }) => {
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // Để navigate sau login thành công (tùy chọn)
+  const { mutate: loginMutate, isPending } = useLogin();
 
-  const onFinish = async (values: any) => {
-    setLoading(true);
-    try {
-      console.log('Đăng nhập:', values);
-      // TODO: API call here
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      message.success('Đăng nhập thành công!');
-    } catch (error) {
-      message.error('Đăng nhập thất bại. Vui lòng thử lại!');
-    } finally {
-      setLoading(false);
-    }
+  const onFinish = (values: ILoginRequest) => { // Type values theo ILoginRequest
+    loginMutate(values, {
+      onSuccess: () => {
+        message.success('Đăng nhập thành công!');
+        // Navigate đến dashboard hoặc trang chính sau login (tùy chọn)
+        navigate('/dashboard'); // Thay bằng route phù hợp
+      },
+      onError: (error) => {
+        console.log(import.meta.env);
+
+        console.error('Login error:', error);
+        message.error('Đăng nhập thất bại. Vui lòng thử lại!');
+      },
+    });
   };
 
   return (
@@ -96,7 +102,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSwitchToFor
           <Button 
             type="primary" 
             htmlType="submit" 
-            loading={loading}
+            loading={isPending} // Sử dụng isPending từ mutation
             className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Đăng nhập

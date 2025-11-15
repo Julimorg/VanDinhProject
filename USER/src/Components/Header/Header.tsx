@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { Drawer, Badge, Button } from 'antd';
 import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '@/Store/auth';
 import BrandLogo from './Components/BrandLogo';
 import NotificationsDropdown from './Components/Notification';
 import UserProfileDropdown from './Components/UserProfileDropdown';
+import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 
 const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
-  const userName = useAuthStore((state) => state.userName);
+  const userName = useAuthStoreCookiesStorage((state) => state.userName);
   const navigate = useNavigate();
 
   useEffect(() => {
