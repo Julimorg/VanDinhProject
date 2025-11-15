@@ -22,7 +22,7 @@ public class SignUpReq {
     private String userName;
     @Size(min = 5, max = 20, message = "USER_PASSWORD_INVALID")
     private String password;
-    @Size(min = 2, max = 20, message = "EMAIL_INVALID")
+    @Size(min = 2, max = 30, message = "EMAIL_INVALID")
     @Email(regexp = "[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,3}", message = "EMAIL_INVALID")
     private String email;
     @Size(min = 2, max = 10, message = "PHONE_INVALID")

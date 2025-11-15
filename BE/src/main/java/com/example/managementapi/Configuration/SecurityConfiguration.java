@@ -55,6 +55,7 @@ public class SecurityConfiguration {
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedOrigins(List.of(
                 "http://localhost:5173",
+                "http://localhost:5174",
                 "http://localhost:3000",
                 "https://van-dinh-project.vercel.app"
         ));
@@ -82,6 +83,7 @@ public class SecurityConfiguration {
         //? Config ra những enpoint ko cần secure với httpSecurity.authorizeHttpRequests()
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/reset-pass/change-password/**").permitAll()
                         .requestMatchers(PUBLIC_SWAGGER).permitAll()
                         .requestMatchers(HttpMethod.GET,PUBLIC_VNPAY).permitAll()
                         .anyRequest().authenticated());
