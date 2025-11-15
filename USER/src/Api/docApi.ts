@@ -10,15 +10,18 @@ import type {
   TServiceListResponse,
 } from '@/Interface/TServiceItems';
 import type { LanguageResponse } from '@/Interface/TLanguage';
-import type { EditDiscountService, DiscountServiceRs,CreateDiscountService, GetDiscountServiceResponse } from '@/Interface/TDiscountService';
+import type { EditDiscountService, DiscountServiceRs, CreateDiscountService, GetDiscountServiceResponse } from '@/Interface/TDiscountService';
 import type { ChangePasswordPayload } from '@/Interface/ChangePassword';
 import type { EditUserRequest } from '@/Interface/TEditUser';
-import type {  ReceipterRequestExportExeilFile, ReceipterStatisticDetailResponse, ReceipterStatisticResponseData, StatisticRequestExportExelFile, StatisticResponse } from '@/Interface/TRevenue';
+import type { ReceipterRequestExportExeilFile, ReceipterStatisticDetailResponse, ReceipterStatisticResponseData, StatisticRequestExportExelFile, StatisticResponse } from '@/Interface/TRevenue';
 import type { SearchResponse } from '@/Interface/TSearchTicket';
 import type { TransactionDetailResponse } from '@/Interface/TTransactionDetail';
 import type { CodeRemoveRs, DiscountCodeRs, DiscountCodeUpdate } from '@/Interface/TDiscountCode';
 import type { CreatePermission, CreatePermissionRs, Permission, UpdatePermissionPayload } from '@/Interface/TPermission';
 import type { MomoResponse } from '@/Interface/TMomo';
+import type { IRegisterRequest, IRegisterResponse } from '../Interface/Auth/IRegister';
+import type { IApiResponse } from '../Interface/IApiResponse';
+import { buildFormData } from '../Utils/ulti';
 export const docApi = {
   Login: async (body: Login): Promise<LoginResponseTokenData> => {
     const url = `/account/log-in`;
@@ -97,12 +100,12 @@ export const docApi = {
     });
     return res.data;
   },
-   /*--------------------------------------createServiceDiscount --------------------------------------------------------------- */
-createServiceDiscount:async(body:CreateDiscountService):Promise<DiscountServiceRs>=>{
- const url =`price/create-discount`
- const res = await axiosClient.post(url,body)
- return res.data
-},
+  /*--------------------------------------createServiceDiscount --------------------------------------------------------------- */
+  createServiceDiscount: async (body: CreateDiscountService): Promise<DiscountServiceRs> => {
+    const url = `price/create-discount`
+    const res = await axiosClient.post(url, body)
+    return res.data
+  },
 
 
   /*--------------------------------------editServiceDiscount --------------------------------------------------------------- */
@@ -114,29 +117,29 @@ createServiceDiscount:async(body:CreateDiscountService):Promise<DiscountServiceR
     const res = await axiosClient.patch(url, body);
     return res.data;
   },
- /*--------------------------------------getalldiscount service --------------------------------------------------------------- */
- getdiscountservice:async():Promise<GetDiscountServiceResponse>=>{
-  const url =`price`
-  const res= await axiosClient.get(url)
-  return res.data
+  /*--------------------------------------getalldiscount service --------------------------------------------------------------- */
+  getdiscountservice: async (): Promise<GetDiscountServiceResponse> => {
+    const url = `price`
+    const res = await axiosClient.get(url)
+    return res.data
 
- },
-
-
-//   /*--------------------------------------Get User By ID--------------------------------------------------------------- */
-// GetUserById: async (id: string) => {
-//   const allUsers = await axiosClient.get('/user/all');
-//   const foundUser = allUsers.data.data.find((user: any) => user.id === id);
-//   if (!foundUser) throw new Error('User not found');
-//   return foundUser;
-// }
-// ,
-  /*--------------------------------------Change Password--------------------------------------------------------------- */
-  ChangePassword: async (payload: ChangePasswordPayload) => {
-    const url = '/account/change-password';
-    const res = await axiosClient.post(url, payload);
-    return res.data;
   },
+
+
+  //   /*--------------------------------------Get User By ID--------------------------------------------------------------- */
+  // GetUserById: async (id: string) => {
+  //   const allUsers = await axiosClient.get('/user/all');
+  //   const foundUser = allUsers.data.data.find((user: any) => user.id === id);
+  //   if (!foundUser) throw new Error('User not found');
+  //   return foundUser;
+  // }
+  // ,
+  /*--------------------------------------Change Password--------------------------------------------------------------- */
+  // ChangePassword: async (payload: ChangePasswordPayload) => {
+  //   const url = '/account/change-password';
+  //   const res = await axiosClient.post(url, payload);
+  //   return res.data;
+  // },
   /*--------------------------------------Reset Password--------------------------------------------------------------- */
   UpdateUser: async (id: string, payload: any) => {
     const res = await axiosClient.post(`/account/reset-password/${id}`, payload);
@@ -182,108 +185,135 @@ createServiceDiscount:async(body:CreateDiscountService):Promise<DiscountServiceR
     const res = await axiosClient.patch(`/user/change-status/${id}`, { isActive });
     return res.data;
   },
-/*--------------------------------------Get Discount Code--------------------------------------------------------------- */
-getDiscountCode: async (params: { page: number; limit: number }): Promise<DiscountCodeRs> => {
-  const { page, limit } = params;
-  const url = `discountcode?page=${page}&limit=${limit}`;
-  const res = await axiosClient.get(url);
-  return res.data;
-},
-/*--------------------------------------Remove Discount Code--------------------------------------------------------------- */
+  /*--------------------------------------Get Discount Code--------------------------------------------------------------- */
+  getDiscountCode: async (params: { page: number; limit: number }): Promise<DiscountCodeRs> => {
+    const { page, limit } = params;
+    const url = `discountcode?page=${page}&limit=${limit}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+  /*--------------------------------------Remove Discount Code--------------------------------------------------------------- */
 
-removeDiscountCode : async(id:string):Promise<CodeRemoveRs>=>{
-  const url =`discountcode/change/${id}`
-  const res =await axiosClient.patch(url,id)
-  return res.data
-},
-/*--------------------------------------Update Discount Code--------------------------------------------------------------- */
-updateDiscountCode : async(id:string,body:DiscountCodeUpdate):Promise<CodeRemoveRs>=>{
-  const url =`discountcode/${id}`
-  const res = await axiosClient.patch(url,body)
-  return res.data
-},
-createDiscountCode: async(body:DiscountCodeUpdate):Promise<CodeRemoveRs>=>{
-  const url =`discountcode`
-  const res =await axiosClient.post(url,body)
-  return res.data
-},
+  removeDiscountCode: async (id: string): Promise<CodeRemoveRs> => {
+    const url = `discountcode/change/${id}`
+    const res = await axiosClient.patch(url, id)
+    return res.data
+  },
+  /*--------------------------------------Update Discount Code--------------------------------------------------------------- */
+  updateDiscountCode: async (id: string, body: DiscountCodeUpdate): Promise<CodeRemoveRs> => {
+    const url = `discountcode/${id}`
+    const res = await axiosClient.patch(url, body)
+    return res.data
+  },
+  createDiscountCode: async (body: DiscountCodeUpdate): Promise<CodeRemoveRs> => {
+    const url = `discountcode`
+    const res = await axiosClient.post(url, body)
+    return res.data
+  },
 
-/*--------------------------------------Export Exel File Revenue Statistic Module--------------------------------------------------------------- */
+  /*--------------------------------------Export Exel File Revenue Statistic Module--------------------------------------------------------------- */
 
-ExportRevenueExcelFile: async(body: StatisticRequestExportExelFile): Promise<Blob> => {
-  const url = 'excel/export';
-  const res = await axiosClient.post(url, body, {responseType: "blob"});
-  return res.data;
-},
-/*--------------------------------------Get all permission-------------------------------------------------------------- */
+  ExportRevenueExcelFile: async (body: StatisticRequestExportExelFile): Promise<Blob> => {
+    const url = 'excel/export';
+    const res = await axiosClient.post(url, body, { responseType: "blob" });
+    return res.data;
+  },
+  /*--------------------------------------Get all permission-------------------------------------------------------------- */
 
-/*-------------------------------------- Receipter Statistic Module --------------------------------------------------------------- */
-GetReceipterStatistic: async(start_date: string, end_date: string): Promise<ReceipterStatisticResponseData> => {
-  const url = `statistic/over-all?from=${start_date}&to=${end_date}`;
-  const res = await axiosClient.get(url);
-  return res.data;
-},
-/*-------------------------------------- Receipter Statistic Detail Module--------------------------------------------------------------- */
+  /*-------------------------------------- Receipter Statistic Module --------------------------------------------------------------- */
+  GetReceipterStatistic: async (start_date: string, end_date: string): Promise<ReceipterStatisticResponseData> => {
+    const url = `statistic/over-all?from=${start_date}&to=${end_date}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+  /*-------------------------------------- Receipter Statistic Detail Module--------------------------------------------------------------- */
 
-GetReceipterStatisticDetail: async(user_id: string, start_date: string, end_date: string): Promise<ReceipterStatisticDetailResponse> => {
-  const url = `statistic/detail/${user_id}?from=${start_date}&to=${end_date}`;
-  const res = await axiosClient.get(url);
-  return res.data;
-},
+  GetReceipterStatisticDetail: async (user_id: string, start_date: string, end_date: string): Promise<ReceipterStatisticDetailResponse> => {
+    const url = `statistic/detail/${user_id}?from=${start_date}&to=${end_date}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-/*-------------------------------------- Export Exel File Receipter Statistic Module --------------------------------------------------------------- */
-ExportReceipterStatisticExcelFile: async(body: ReceipterRequestExportExeilFile): Promise<Blob> => {
-  const url = `excel/export-receipter`;
-  const res = await axiosClient.post(url, body, {responseType: "blob"});
-  return res.data;
-},
+  /*-------------------------------------- Export Exel File Receipter Statistic Module --------------------------------------------------------------- */
+  ExportReceipterStatisticExcelFile: async (body: ReceipterRequestExportExeilFile): Promise<Blob> => {
+    const url = `excel/export-receipter`;
+    const res = await axiosClient.post(url, body, { responseType: "blob" });
+    return res.data;
+  },
 
-/*--------------------------------------Get Momo Module--------------------------------------------------------------- */
-GetMomo: async(): Promise<MomoResponse> => {
-  const url = '/momo';
-  const res = await axiosClient.get(url);
-  return res.data;
-},
-/*--------------------------------------Update Momo-------------------------------------------------------------- */
-UpdateMomo: async (id: string, body: Partial<MomoResponse>): Promise<MomoResponse> => {
-  const url = `/momo/${id}`;
-  const res = await axiosClient.patch(url, body);
-  return res.data;
-},
-/*--------------------------------------Add Momo-------------------------------------------------------------- */
-AddMomo: async (id: string, body: Partial<MomoResponse>): Promise<MomoResponse> => {
-  const url = `/momo/${id}`;
-  const res = await axiosClient.post(url, body);
-  return res.data;
-},
+  /*--------------------------------------Get Momo Module--------------------------------------------------------------- */
+  GetMomo: async (): Promise<MomoResponse> => {
+    const url = '/momo';
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+  /*--------------------------------------Update Momo-------------------------------------------------------------- */
+  UpdateMomo: async (id: string, body: Partial<MomoResponse>): Promise<MomoResponse> => {
+    const url = `/momo/${id}`;
+    const res = await axiosClient.patch(url, body);
+    return res.data;
+  },
+  /*--------------------------------------Add Momo-------------------------------------------------------------- */
+  AddMomo: async (id: string, body: Partial<MomoResponse>): Promise<MomoResponse> => {
+    const url = `/momo/${id}`;
+    const res = await axiosClient.post(url, body);
+    return res.data;
+  },
 
-/*--------------------------------------Get all permission-------------------------------------------------------------- */
+  /*--------------------------------------Get all permission-------------------------------------------------------------- */
 
-getAllPermission:async():Promise<Permission[]>=>{
-  const url =`permission/get-all`
-  const res= await axiosClient.get(url)
-  return res.data
-},
-/*--------------------------------------Createpermission-------------------------------------------------------------- */
-createPermission:async(body:CreatePermission):Promise<CreatePermissionRs>=>{
-  const url =`permission/create`
-  const res = await axiosClient.post(url,body)
-  return res.data
-},
+  getAllPermission: async (): Promise<Permission[]> => {
+    const url = `permission/get-all`
+    const res = await axiosClient.get(url)
+    return res.data
+  },
+  /*--------------------------------------Createpermission-------------------------------------------------------------- */
+  createPermission: async (body: CreatePermission): Promise<CreatePermissionRs> => {
+    const url = `permission/create`
+    const res = await axiosClient.post(url, body)
+    return res.data
+  },
 
-/*--------------------------------------Get permission by id -------------------------------------------------------------- */
+  /*--------------------------------------Get permission by id -------------------------------------------------------------- */
 
-getPermissonbyid :async(user_id:string):Promise<Permission[]>=>{
-  const url =`/permission/${user_id}`
-  const res = await axiosClient.get(url)
-  return res.data
-},
-/*--------------------------------------update permission by id -------------------------------------------------------------- */
-updatePermissionbyid: async(user_id:string,body:UpdatePermissionPayload):Promise<CreatePermissionRs>=>{
-  const url =`permission/${user_id}`
-  const res =await axiosClient.post(url,body)
-  return res.data
-},
+  getPermissonbyid: async (user_id: string): Promise<Permission[]> => {
+    const url = `/permission/${user_id}`
+    const res = await axiosClient.get(url)
+    return res.data
+  },
+  /*--------------------------------------update permission by id -------------------------------------------------------------- */
+  updatePermissionbyid: async (user_id: string, body: UpdatePermissionPayload): Promise<CreatePermissionRs> => {
+    const url = `permission/${user_id}`
+    const res = await axiosClient.post(url, body)
+    return res.data
+  },
 
+  /*-------------------------------------- Auth -------------------------------------------------------------- */
+  register: async (body: IRegisterRequest): Promise<IApiResponse<IRegisterResponse>> => {
+    const url = `/auth/sign-up`;
+    const res = await axiosClient.post(url, body, {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    return res.data;
+  },
+
+  verifyEmail: async (email: string): Promise<IApiResponse<void>> => {
+    const url = `/reset-pass/verify-email/${email}`;
+    const res = await axiosClient.post(url);
+    return res.data;
+  },
+
+  verifyOtp: async (email: string, otp: number): Promise<IApiResponse<void>> => {
+    const url = `/reset-pass/verify-otp/${email}`;
+    const res = await axiosClient.post(url, { otp });
+    return res.data;
+  },
+
+  changePassword: async (email: string, body: { password: string; newPassword: string }): Promise<IApiResponse<void>> => {
+    const url = `/reset-pass/change-password/${email}`;
+    const res = await axiosClient.patch(url, body);
+    return res.data;
+  },
 
 };

@@ -1,6 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Form, Input, Button, Typography, message } from 'antd';
 import { MailOutlined, LockOutlined } from '@ant-design/icons';
+import { useVerifyEmail } from '../Hook/useVerifyEmail';
+import { useVerifyOpt } from '../Hook/useVerifyOpt';
+import { useChangePassword } from '../Hook/useChangePassword';
+import { on } from 'events';
 
 const { Text, Title } = Typography;
 
@@ -13,13 +17,48 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email');
   const [userEmail, setUserEmail] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const otpRefs = [
     useRef<any>(null),
     useRef<any>(null),
     useRef<any>(null),
-    useRef<any>(null)
+    useRef<any>(null),
+    useRef<any>(null),
+    useRef<any>(null),
   ];
+
+  const { mutate: verifyEmail, isPending: isVerifyingEmail } = useVerifyEmail({
+    onSuccess: () => {
+      setStep('otp');
+      message.success('Email hợp lệ, mã OTP đã được gửi!');
+    },
+    onError: (err) => {
+      message.error(`Email không hợp lệ: ${err.message || 'Vui lòng thử lại!'}`);
+    }
+  });
+
+  const { mutate: verifyOpt, isPending: isVerifyingOpt } = useVerifyOpt({
+    onSuccess: () => {
+      setStep('password');
+      message.success('Xác thực OTP thành công!');
+    },
+    onError: (err) => {
+      message.error(`Xác thực OTP thất bại: ${err.message || 'Vui lòng thử lại!'}`);
+    }
+  });
+
+  const { mutate: changePassword, isPending: isChangingPassword } = useChangePassword({
+    onSuccess: () => {
+      message.success('Đặt lại mật khẩu thành công!');
+      form.resetFields();
+      setOtp(['', '', '', '', '', '']);
+      setStep('email');
+      setTimeout(() => onBackToLogin?.(), 1500);
+    },
+    onError: (err) => {
+      message.error(`Đặt lại mật khẩu thất bại: ${err.message || 'Vui lòng thử lại!'}`);
+    },
+  });
 
   useEffect(() => {
     if (step === 'otp' && otpRefs[0].current) {
@@ -28,33 +67,21 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
   }, [step]);
 
   const handleSendCode = async (values: any) => {
-    setLoading(true);
-    try {
-      console.log('Gửi mã OTP đến:', values.email);
-      // TODO: API call to send OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setUserEmail(values.email);
-      setStep('otp');
-      message.success('Mã OTP đã được gửi đến email của bạn!');
-    } catch (error) {
-      message.error('Gửi mã thất bại. Vui lòng thử lại!');
-    } finally {
-      setLoading(false);
-    }
+    setUserEmail(values.email);
+    verifyEmail(values.email);
   };
 
   const handleOtpChange = (index: number, value: string) => {
     // Only allow numbers
     const newValue = value.replace(/[^0-9]/g, '');
-    
+
     if (newValue.length <= 1) {
       const newOtp = [...otp];
       newOtp[index] = newValue;
       setOtp(newOtp);
 
       // Auto focus next input
-      if (newValue && index < 3) {
+      if (newValue && index < otp.length - 1) {
         otpRefs[index + 1].current?.focus();
       }
     }
@@ -69,86 +96,49 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 4);
+    const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
     const newOtp = [...otp];
-    
-    for (let i = 0; i < pastedData.length && i < 4; i++) {
+
+    for (let i = 0; i < pastedData.length && i < 6; i++) {
       newOtp[i] = pastedData[i];
     }
-    
+
     setOtp(newOtp);
-    
+
     // Focus last filled input or next empty
-    const lastFilledIndex = Math.min(pastedData.length, 3);
+    const lastFilledIndex = Math.min(pastedData.length, 5);
     otpRefs[lastFilledIndex].current?.focus();
   };
 
   const handleVerifyOtp = async () => {
-    const otpCode = otp.join('');
-    
-    if (otpCode.length !== 4) {
-      message.error('Vui lòng nhập đầy đủ 4 số!');
+    if (otp.some(d => d === '')) {
+      message.error('Vui lòng nhập đầy đủ 6 số!');
       return;
     }
+    console.log('Current otp array:', otp);
+    const otpCode = Number(otp.join('')); 
+    console.log('Sending OTP to backend:', otpCode);
 
-    setLoading(true);
-    try {
-      console.log('Xác thực OTP:', { email: userEmail, otp: otpCode });
-      // TODO: API call to verify OTP
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStep('password');
-      message.success('Xác thực thành công!');
-    } catch (error) {
-      message.error('Mã OTP không đúng. Vui lòng thử lại!');
-    } finally {
-      setLoading(false);
-    }
+    verifyOpt({ email: userEmail, otp: otpCode });
   };
 
   const handleResetPassword = async (values: any) => {
-    setLoading(true);
-    try {
-      const resetData = {
-        email: userEmail,
-        otp: otp.join(''),
-        newPassword: values.newPassword,
-      };
-      console.log('Đặt lại mật khẩu:', resetData);
-      // TODO: API call to reset password
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      message.success('Đặt lại mật khẩu thành công!');
-      form.resetFields();
-      setOtp(['', '', '', '']);
-      setStep('email');
-      
-      // Redirect to login after 1.5s
-      setTimeout(() => {
-        if (onBackToLogin) {
-          onBackToLogin();
-        }
-      }, 1500);
-    } catch (error) {
-      message.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại!');
-    } finally {
-      setLoading(false);
-    }
+    const resetData = {
+      email: userEmail,
+      password: values.newPassword,
+      newPassword: values.newPassword
+    };
+    changePassword(resetData);
   };
 
   const handleResendCode = async () => {
-    setLoading(true);
-    try {
-      console.log('Gửi lại mã OTP đến:', userEmail);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setOtp(['', '', '', '']);
-      otpRefs[0].current?.focus();
-      message.success('Mã OTP mới đã được gửi!');
-    } catch (error) {
-      message.error('Gửi lại mã thất bại!');
-    } finally {
-      setLoading(false);
+    if (!userEmail) {
+      return;
     }
+    verifyEmail(userEmail);
+    setOtp(['', '', '', '', '', '']);
+    otpRefs[0].current?.focus();
+    message.success('Mã OTP đã được gửi lại!');
   };
 
   const renderEmailStep = () => (
@@ -178,18 +168,18 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
             { type: 'email', message: 'Email không hợp lệ!' },
           ]}
         >
-          <Input 
-            prefix={<MailOutlined className="text-gray-400" />} 
+          <Input
+            prefix={<MailOutlined className="text-gray-400" />}
             placeholder="example@email.com"
             className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
           />
         </Form.Item>
 
         <Form.Item className="!mb-6">
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading}
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isVerifyingEmail}
             className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Gửi mã OTP
@@ -199,7 +189,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
         <div className="text-center pt-6 border-t border-gray-200">
           <Text className="text-sm text-gray-600">
             Đã nhớ mật khẩu?{' '}
-            <Button 
+            <Button
               type="link"
               onClick={onBackToLogin}
               className="!p-0 !h-auto text-sm font-medium text-gray-900 hover:!text-gray-700 transition-colors hover:underline"
@@ -244,10 +234,10 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
         </div>
       </div>
 
-      <Button 
-        type="primary" 
+      <Button
+        type="primary"
         onClick={handleVerifyOtp}
-        loading={loading}
+        loading={isVerifyingOpt}
         className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md mb-4"
       >
         Xác nhận
@@ -256,22 +246,22 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
       <div className="text-center space-y-3">
         <Text className="text-sm text-gray-600 block">
           Không nhận được mã?{' '}
-          <Button 
+          <Button
             type="link"
             onClick={handleResendCode}
-            disabled={loading}
+            disabled={isVerifyingEmail}
             className="!p-0 !h-auto text-sm font-medium text-gray-900 hover:!text-gray-700 transition-colors hover:underline"
           >
             Gửi lại
           </Button>
         </Text>
-        
+
         <div className="pt-3 border-t border-gray-200">
-          <Button 
+          <Button
             type="link"
             onClick={() => {
               setStep('email');
-              setOtp(['', '', '', '']);
+              setOtp(['', '', '', '', '', '']);
             }}
             className="!p-0 !h-auto text-sm text-gray-600 hover:!text-gray-900 transition-colors"
           >
@@ -311,8 +301,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
           ]}
           hasFeedback
         >
-          <Input.Password 
-            prefix={<LockOutlined className="text-gray-400" />} 
+          <Input.Password
+            prefix={<LockOutlined className="text-gray-400" />}
             placeholder="Nhập mật khẩu mới"
             className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
           />
@@ -335,18 +325,18 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
             }),
           ]}
         >
-          <Input.Password 
-            prefix={<LockOutlined className="text-gray-400" />} 
+          <Input.Password
+            prefix={<LockOutlined className="text-gray-400" />}
             placeholder="Nhập lại mật khẩu mới"
             className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
           />
         </Form.Item>
 
         <Form.Item className="!mb-4">
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={loading}
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={isChangingPassword}
             className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Đặt lại mật khẩu

@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Typography, DatePicker, message } from 'antd';
 import { MailOutlined, UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-
+import { useRegister } from '../Hook/useRegister';
+import type { IRegisterRequest } from '../../../Interface/Auth/IRegister'; 
+import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 const { Text, Title } = Typography;
 
 interface RegisterFormProps {
@@ -11,32 +14,54 @@ interface RegisterFormProps {
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
+  const { mutate: register, isPending } = useRegister({
+    onSuccess: () => {
+      toast.success('Đăng ký tài khoản thành công!');
+      form.resetFields();
+      // onSwitchToLogin?.();
+      navigate('/dashboard');
+    },
+    onError: (err) => {
+      toast.error(`Đăng ký thất bại: ${err.message || 'Vui lòng thử lại!'}`);
+    },
+  });
+
+ 
   const [loading, setLoading] = useState(false);
 
   const onFinish = async (values: any) => {
-    setLoading(true);
-    try {
-      const formattedValues = {
-        ...values,
-        userDob: dayjs(values.userDob).format('YYYY-MM-DD')
-      };
-      console.log('Đăng ký:', formattedValues);
-      // TODO: API call here - check duplicate userName at backend
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      message.success('Đăng ký tài khoản thành công!');
-      form.resetFields();
-    } catch (error) {
-      message.error('Đăng ký thất bại. Vui lòng thử lại!');
-    } finally {
-      setLoading(false);
-    }
+    // setLoading(true);
+    // try {
+    //   const formattedValues = {
+    //     ...values,
+    //     userDob: dayjs(values.userDob).format('YYYY-MM-DD')
+    //   };
+    //   console.log('Đăng ký:', formattedValues);
+    //   // TODO: API call here - check duplicate userName at backend
+    //   await new Promise(resolve => setTimeout(resolve, 1500));
+    //   message.success('Đăng ký tài khoản thành công!');
+    //   form.resetFields();
+    // } catch (error) {
+    //   message.error('Đăng ký thất bại. Vui lòng thử lại!');
+    // } finally {
+    //   setLoading(false);
+    // }
+
+    const formattedValues: IRegisterRequest = {
+      ...values,
+      userName: values.userName,
+      userDob: dayjs(values.userDob).format('YYYY-MM-DD'),
+    };
+    delete (formattedValues as any).confirmPassword;
+    register(formattedValues);
   };
 
   const emailRules = [
     { required: true, message: 'Vui lòng nhập email!' },
     { type: 'email' as const, message: 'Email không hợp lệ!' },
     { min: 3, message: 'Email phải có ít nhất 3 ký tự!' },
-    { max: 20, message: 'Email không được quá 20 ký tự!' },
+    { max: 30, message: 'Email không được quá 30 ký tự!' },
   ];
 
   const nameRules = [
@@ -63,7 +88,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
 
   const phoneRules = [
     { required: true, message: 'Vui lòng nhập số điện thoại!' },
-    { pattern: /^\d{9}$/, message: 'Số điện thoại phải có đúng 9 chữ số!' },
+    { pattern: /^\d{10}$/, message: 'Số điện thoại phải có đúng 10 chữ số!' },
   ];
 
   const addressRules = [
@@ -204,7 +229,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
             <Input 
               prefix={<PhoneOutlined className="text-gray-400" />} 
               placeholder="912345678"
-              maxLength={9}
+              maxLength={10}
               className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
             />
           </Form.Item>
@@ -228,7 +253,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
           <Button 
             type="primary" 
             htmlType="submit" 
-            loading={loading}
+            loading={isPending}
             className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
           >
             Đăng ký tài khoản

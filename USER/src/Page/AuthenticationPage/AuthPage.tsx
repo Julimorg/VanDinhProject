@@ -63,10 +63,10 @@ const AuthPage: React.FC = () => {
           />
         )}
         {currentForm === AuthFormType.REGISTER && (
-          <RegisterForm />
+          <RegisterForm onSwitchToLogin={() => setCurrentForm(AuthFormType.LOGIN)}/>
         )}
         {currentForm === AuthFormType.FORGOT_PASSWORD && (
-          <ForgotPasswordForm />
+          <ForgotPasswordForm onBackToLogin={() => setCurrentForm(AuthFormType.LOGIN)}/>
         )}
       </motion.div>
     </AnimatePresence>
