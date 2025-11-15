@@ -1,15 +1,14 @@
 import 'dayjs/locale/vi';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-
 import App from './App';
 import { ToastContainer } from 'react-toastify';
 import './index.css';
-import ReactQueryProvider from '@/Provider/ReactQueryProvider';
 import './i18n';
 import 'flag-icon-css/css/flag-icons.min.css';
 
 import { App as AntdApp } from 'antd';
+import ReactQueryProvider from './Provider/ReactQueryProvider';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
