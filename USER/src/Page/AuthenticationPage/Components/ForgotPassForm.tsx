@@ -4,7 +4,7 @@ import { MailOutlined, LockOutlined } from '@ant-design/icons';
 import { useVerifyEmail } from '../Hook/useVerifyEmail';
 import { useVerifyOpt } from '../Hook/useVerifyOpt';
 import { useChangePassword } from '../Hook/useChangePassword';
-import { on } from 'events';
+import { toast } from 'react-toastify';
 
 const { Text, Title } = Typography;
 
@@ -14,7 +14,6 @@ interface ForgotPasswordFormProps {
 
 const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }) => {
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
   const [step, setStep] = useState<'email' | 'otp' | 'password'>('email');
   const [userEmail, setUserEmail] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -30,7 +29,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
   const { mutate: verifyEmail, isPending: isVerifyingEmail } = useVerifyEmail({
     onSuccess: () => {
       setStep('otp');
-      message.success('Email hợp lệ, mã OTP đã được gửi!');
+      toast.success('Email hợp lệ, mã OTP đã được gửi!');
     },
     onError: (err) => {
       message.error(`Email không hợp lệ: ${err.message || 'Vui lòng thử lại!'}`);
@@ -49,10 +48,9 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
 
   const { mutate: changePassword, isPending: isChangingPassword } = useChangePassword({
     onSuccess: () => {
-      message.success('Đặt lại mật khẩu thành công!');
+      toast.success('Đặt lại mật khẩu thành công!');
       form.resetFields();
       setOtp(['', '', '', '', '', '']);
-      setStep('email');
       setTimeout(() => onBackToLogin?.(), 1500);
     },
     onError: (err) => {
@@ -115,10 +113,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBackToLogin }
       message.error('Vui lòng nhập đầy đủ 6 số!');
       return;
     }
-    console.log('Current otp array:', otp);
     const otpCode = Number(otp.join('')); 
-    console.log('Sending OTP to backend:', otpCode);
-
     verifyOpt({ email: userEmail, otp: otpCode });
   };
 

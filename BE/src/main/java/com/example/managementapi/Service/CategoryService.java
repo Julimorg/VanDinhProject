@@ -87,7 +87,7 @@ public class CategoryService {
         return categoryMapper.toUpdateCategoryRes(category);
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetCategoriesSelectionRes> getCategoriesSelection(){
         return categoryRepository.findAll().stream().map(categoryMapper::toGetCategoriesSelectionRes).toList();
     }

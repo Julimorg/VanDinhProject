@@ -48,7 +48,7 @@ public class ColorService {
     }
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId){
         supplierRepository.findById(supplierId)
                 .orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_EXISTED));

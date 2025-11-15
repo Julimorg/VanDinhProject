@@ -1,81 +1,76 @@
 import React, { useState } from 'react';
-import { Pagination, Row, Col, Empty, Spin, Button } from 'antd';
+import { Pagination, Row, Col, Empty, Skeleton, Button } from 'antd';
 import { AppstoreOutlined, BarsOutlined } from '@ant-design/icons';
-import { mockColors, mockSuppliers, type Color } from './mockColor';
-import SearchFilterBar from './Components/SearchFilterBar';
+import SearchBar from './Components/SearchBar';
 import ColorCardGrid from './Components/ColorCardGrid';
 import ColorCardList from './Components/ColorCardList';
-
+import { useGetColors } from './Hook/useGetColors';
+import type { IGetAllColor } from '../../Interface/Color/IGetAllColor';
+import SupplierAndSortFilter from './Components/FilterAndSort';
 
 const ColorPage: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [colors, setColors] = useState<Color[]>(mockColors);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
-  const [totalColors, setTotalColors] = useState(mockColors.length);
-  const [searchKeyword, setSearchKeyword] = useState('');
   const [supplierFilter, setSupplierFilter] = useState<string | undefined>(undefined);
   const [sortValue, setSortValue] = useState('createAt,desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Handle search - You will implement API call here
+  const {
+    data: colorsData,
+    isLoading,
+    isError,
+    error,
+  } = useGetColors({
+    keyword: searchKeyword,
+    supplierName: supplierFilter,
+    page: currentPage - 1,
+    size: pageSize,
+    sort: sortValue,
+  });
+
+  const rawContent = colorsData?.data?.content;
+  const colors: IGetAllColor[] = Array.isArray(rawContent) ? rawContent : [];
+  const totalColors = colorsData?.data?.page?.totalElements || 0;
+
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
     setCurrentPage(1);
-    // TODO: Call API with params
-    console.log('Search API params:', {
-      keyword: value,
-      supplierName: supplierFilter,
-      size: pageSize,
-      page: 1,
-      sort: sortValue
-    });
   };
 
-  // Handle supplier filter change - You will implement API call here
   const handleSupplierChange = (value: string | undefined) => {
     setSupplierFilter(value);
     setCurrentPage(1);
-    // TODO: Call API with params
-    console.log('Filter API params:', {
-      keyword: searchKeyword,
-      supplierName: value,
-      size: pageSize,
-      page: 1,
-      sort: sortValue
-    });
   };
 
-  // Handle sort change - You will implement API call here
   const handleSortChange = (value: string) => {
     setSortValue(value);
     setCurrentPage(1);
-    // TODO: Call API with params
-    console.log('Sort API params:', {
-      keyword: searchKeyword,
-      supplierName: supplierFilter,
-      size: pageSize,
-      page: 1,
-      sort: value
-    });
   };
 
-  // Handle pagination change - You will implement API call here
-  const handlePageChange = (page: number, pageSize?: number) => {
+  const handlePageChange = (page: number, newPageSize?: number) => {
     setCurrentPage(page);
-    if (pageSize) setPageSize(pageSize);
-    // TODO: Call API with params
-    console.log('Pagination API params:', {
-      keyword: searchKeyword,
-      supplierName: supplierFilter,
-      size: pageSize,
-      page: page,
-      sort: sortValue
-    });
-   
-    // Scroll to top
+    if (newPageSize) setPageSize(newPageSize);
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // Xử lý lỗi sớm để tránh render không mong muốn
+  if (isError) {
+    console.error('Lỗi fetch colors:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Empty description="Lỗi tải dữ liệu màu sắc. Vui lòng thử lại!" />
+          <Button type="primary" onClick={() => window.location.reload()} className="mt-4">
+            Tải lại trang
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // console.log('Colors data:', { colors, totalColors, fullData: colorsData, rawContent });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,14 +79,10 @@ const ColorPage: React.FC = () => {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Danh sách màu sắc
-              </h1>
-              <p className="text-gray-600">
-                Khám phá bộ sưu tập màu sắc đa dạng
-              </p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Danh sách màu sắc</h1>
+              <p className="text-gray-600">Khám phá bộ sưu tập màu sắc đa dạng</p>
             </div>
-           
+
             {/* View Mode Toggle */}
             <div className="flex gap-2">
               <Button
@@ -114,41 +105,56 @@ const ColorPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <SearchFilterBar
-          onSearch={handleSearch}
+        {/* Search Bar - Chỉ truyền props cần thiết cho search */}
+        <SearchBar onSearch={handleSearch} />
+
+        {/* Supplier and Sort Filter - Truyền đúng props */}
+        <SupplierAndSortFilter
           onSupplierChange={handleSupplierChange}
           onSortChange={handleSortChange}
           supplierValue={supplierFilter}
           sortValue={sortValue}
-          suppliers={mockSuppliers}
         />
-
+        
         {/* Color List */}
-        {loading ? (
-          <div className="flex justify-center items-center min-h-[400px]">
-            <Spin size="large" />
-          </div>
+        {isLoading ? (
+          <>
+            {viewMode === 'grid' ? (
+              <Row gutter={[24, 24]} className="mb-8">
+                {Array.from({ length: pageSize }).map((_, index) => (
+                  <Col key={`skeleton-grid-${index}`} xs={24} sm={24} md={12} lg={8}>
+                    <Skeleton active avatar paragraph={{ rows: 3 }} className="h-[250px]" />
+                  </Col>
+                ))}
+              </Row>
+            ) : (
+              <div className="space-y-4 mb-8">
+                {Array.from({ length: pageSize }).map((_, index) => (
+                  <Skeleton
+                    key={`skeleton-list-${index}`}
+                    active
+                    avatar
+                    paragraph={{ rows: 4 }}
+                    className="h-[150px]" // Adjust height để khớp ColorCardList
+                  />
+                ))}
+              </div>
+            )}
+          </>
         ) : colors.length > 0 ? (
           <>
             {viewMode === 'grid' ? (
               <Row gutter={[24, 24]} className="mb-8">
                 {colors.map((color) => (
-                  <Col
-                    key={color.colorId}
-                    xs={24}
-                    sm={24}
-                    md={12}
-                    lg={8}
-                  >
-                    <ColorCardGrid color={color} />
+                  <Col key={color.colorId} xs={24} sm={24} md={12} lg={8}>
+                    <ColorCardGrid color={color as IGetAllColor} />
                   </Col>
                 ))}
               </Row>
             ) : (
               <div className="space-y-4 mb-8">
                 {colors.map((color) => (
-                  <ColorCardList key={color.colorId} color={color} />
+                  <ColorCardList key={color.colorId} color={color as IGetAllColor} />
                 ))}
               </div>
             )}
@@ -162,9 +168,7 @@ const ColorPage: React.FC = () => {
                 onChange={handlePageChange}
                 onShowSizeChange={handlePageChange}
                 showSizeChanger
-                showTotal={(total, range) =>
-                  `${range[0]}-${range[1]} của ${total} màu sắc`
-                }
+                showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} màu sắc`}
                 pageSizeOptions={['6', '12', '18', '24']}
                 className="bg-white px-4 py-3 rounded-lg shadow-sm"
               />
@@ -172,10 +176,7 @@ const ColorPage: React.FC = () => {
           </>
         ) : (
           <div className="flex justify-center items-center min-h-[400px]">
-            <Empty
-              description="Không tìm thấy màu sắc"
-              className="text-gray-500"
-            />
+            <Empty description="Không tìm thấy màu sắc" className="text-gray-500" />
           </div>
         )}
       </div>

@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # env
-.env.dev
+.env.development
 .env.production
 
 # Editor directories and files

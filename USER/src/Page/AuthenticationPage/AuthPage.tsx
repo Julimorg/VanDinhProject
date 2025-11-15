@@ -5,7 +5,7 @@ import { ArrowLeftOutlined } from '@ant-design/icons';
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
 import ForgotPasswordForm from './Components/ForgotPassForm';
-import { AuthFormType } from '@/Enum/AuthEnum';
+import { AuthFormType } from '../../Enum/AuthEnum';
 
 const { Title, Paragraph } = Typography;
 

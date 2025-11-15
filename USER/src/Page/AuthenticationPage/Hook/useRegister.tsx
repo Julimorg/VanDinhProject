@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
-import { docApi } from "../../../Api/docApi";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { QueryKeys } from "@/Constant/query-key";
+import { auth_api_handler } from "../../../Api/auth_api";
 import type { IRegisterRequest } from "../../../Interface/Auth/IRegister";
 import type { IRegisterResponse } from "../../../Interface/Auth/IRegister";
 
@@ -19,9 +18,9 @@ export const useRegister = (options?: UseRegisterOptions) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: IRegisterRequest) => docApi.register(body),
+    mutationFn: (body: IRegisterRequest) => auth_api_handler.register(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_USERS] });
+      queryClient.invalidateQueries({ queryKey: ['Register'] });
     },
     onError: () => {
       console.log("Create user error");

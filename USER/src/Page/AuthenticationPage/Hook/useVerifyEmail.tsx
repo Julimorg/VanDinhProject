@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
-import { docApi } from "../../../Api/docApi";
+import { auth_api_handler } from "../../../Api/auth_api";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 import { message } from "antd";
 
@@ -16,7 +16,7 @@ type UseVerifyEmailOptions = Omit<
 export const useVerifyEmail = (options?: UseVerifyEmailOptions) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (email: string) => docApi.verifyEmail(email),
+    mutationFn: (email: string) => auth_api_handler.verifyEmail(email),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['Verify Email'] }); 
     },

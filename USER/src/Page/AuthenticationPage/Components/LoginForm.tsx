@@ -13,15 +13,15 @@ interface LoginFormProps {
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSwitchToForgot }) => {
-  const navigate = useNavigate(); // Để navigate sau login thành công (tùy chọn)
+  const navigate = useNavigate(); 
   const { mutate: loginMutate, isPending } = useLogin();
 
-  const onFinish = (values: ILoginRequest) => { // Type values theo ILoginRequest
+  const onFinish = (values: ILoginRequest) => {
     loginMutate(values, {
       onSuccess: () => {
         message.success('Đăng nhập thành công!');
-        // Navigate đến dashboard hoặc trang chính sau login (tùy chọn)
-        navigate('/dashboard'); // Thay bằng route phù hợp
+      
+        navigate('/dashboard'); 
       },
       onError: (error) => {
         console.log(import.meta.env);

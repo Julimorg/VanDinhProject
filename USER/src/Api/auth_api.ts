@@ -1,6 +1,7 @@
 import type { ILoginRequest, ILoginResponse } from "../Interface/Auth/ILogin";
 import type { ILogOutRequest } from "../Interface/Auth/ILogOut";
 import type { IRefreshTokenResponse } from "../Interface/Auth/IRefreshToken";
+import type { IRegisterRequest, IRegisterResponse } from "../Interface/Auth/IRegister";
 import type { IApiResponse } from "../Interface/IApiResponse";
 import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
 import axiosClient from "./axiosClient";
@@ -49,5 +50,32 @@ export const auth_api_handler = {
         });
         throw error;
         }
+    },
+
+    register: async (body: IRegisterRequest): Promise<IApiResponse<IRegisterResponse>> => {
+        const url = `/auth/sign-up`;
+        const res = await axiosClient.post(url, body, {
+        headers: { 'Content-Type': 'application/json' },
+        });
+
+        return res.data;
+    },
+
+    verifyEmail: async (email: string): Promise<IApiResponse<void>> => {
+        const url = `/reset-pass/verify-email/${email}`;
+        const res = await axiosClient.post(url);
+        return res.data;
+    },
+
+    verifyOtp: async (email: string, otp: number): Promise<IApiResponse<void>> => {
+        const url = `/reset-pass/verify-otp/${email}`;
+        const res = await axiosClient.post(url, { otp });
+        return res.data;
+    },
+
+    changePassword: async (email: string, body: { password: string; newPassword: string }): Promise<IApiResponse<void>> => {
+        const url = `/reset-pass/change-password/${email}`;
+        const res = await axiosClient.patch(url, body);
+        return res.data;
     },
 }

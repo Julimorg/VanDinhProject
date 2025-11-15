@@ -39,7 +39,7 @@ public class SupplierService {
     private final CloudinaryService cloudinaryService;
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetSupplierSelectionRes> getSupplierSelection(){
         return supplierRepository.findAll()
                 .stream()

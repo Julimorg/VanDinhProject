@@ -1,31 +1,14 @@
 import React from 'react';
 import { Card, Tag } from 'antd';
-import { BgColorsOutlined, CalendarOutlined } from '@ant-design/icons';
+import { CalendarOutlined } from '@ant-design/icons';
 import type { Color } from '../mockColor';
+import { getformatDateWithoutMin } from '../../../Utils/utils';
 
 interface ColorCardListProps {
   color: Color;
 }
 
 const ColorCardList: React.FC<ColorCardListProps> = ({ color }) => {
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
-  };
-
-  const getContrastColor = (hexColor: string): string => {
-    const r = parseInt(hexColor.slice(1, 3), 16);
-    const g = parseInt(hexColor.slice(3, 5), 16);
-    const b = parseInt(hexColor.slice(5, 7), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 128 ? '#000000' : '#FFFFFF';
-  };
-
-  const textColor = getContrastColor(color.colorCode);
 
   return (
     <Card
@@ -39,16 +22,13 @@ const ColorCardList: React.FC<ColorCardListProps> = ({ color }) => {
           style={{ backgroundColor: color.colorCode }}
         >
           <div className="text-center">
-            <div
-              className="text-2xl font-bold mb-1"
-              style={{ color: textColor }}
-            >
-              {color.colorCode}
-            </div>
-            <BgColorsOutlined
-              className="text-3xl opacity-80"
-              style={{ color: textColor }}
+            {color.colorImg && (
+            <img
+              src={color.colorImg}
+              alt={color.colorName}
+              className="w-full h-32 object-cover rounded-lg"
             />
+          )}
           </div>
         </div>
         {/* Color Info */}
@@ -58,25 +38,26 @@ const ColorCardList: React.FC<ColorCardListProps> = ({ color }) => {
               {color.colorName}
             </h3>
             <Tag color="default" className="flex-shrink-0">
-              {color.colorId}
+              {color.colorCode}
             </Tag>
+            
           </div>
          
           <p className="text-sm text-gray-600 line-clamp-2">
             {color.colorDescription}
           </p>
           <div className="flex flex-wrap gap-4 pt-2 text-sm">
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <span className="text-gray-500">Nhà cung cấp:</span>
               <span className="font-medium text-gray-700">
                 {color.supplierName}
               </span>
-            </div>
+            </div> */}
            
             <div className="flex items-center gap-2">
               <CalendarOutlined className="text-gray-400" />
               <span className="text-gray-500">
-                {formatDate(color.updateAt)}
+                {getformatDateWithoutMin(color.updateAt)}
               </span>
             </div>
           </div>

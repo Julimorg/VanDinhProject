@@ -1,5 +1,5 @@
-import { useMediaQuery } from 'react-responsive';
+// import { useMediaQuery } from 'react-responsive';
 
-export function useIsMobile() {
-  return useMediaQuery({ query: '(max-width: 768px)' });
-}
+// export function useIsMobile() {
+//   return useMediaQuery({ query: '(max-width: 768px)' });
+// }

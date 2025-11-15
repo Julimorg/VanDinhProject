@@ -49,7 +49,7 @@ public class UserService {
 
     private final CloudinaryService cloudinaryService;
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetUserSelectionRes> getUserSelection(){
         return userRepository.findAll()
                 .stream()

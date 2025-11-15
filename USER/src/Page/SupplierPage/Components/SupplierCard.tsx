@@ -33,11 +33,11 @@ const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
               target.src = 'https://via.placeholder.com/400x300?text=No+Image';
             }}
           />
-          <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow-md">
+          {/* <div className="absolute top-3 right-3 bg-white px-3 py-1 rounded-full shadow-md">
             <span className="text-xs font-semibold text-gray-700">
               {supplier.supplierId}
             </span>
-          </div>
+          </div> */}
         </div>
       }
     >

@@ -1,6 +1,6 @@
 
 import { useCallback } from 'react';
-import { RefObject } from 'react';
+import type { RefObject } from 'react';
 
 export const usePrint = (ref: RefObject<HTMLDivElement | null>) => {
   const handlePrint = useCallback(() => {

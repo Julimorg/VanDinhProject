@@ -12,10 +12,10 @@ export const useAuthStoreCookiesStorage = create<AuthState>()(
       email: null,
       userImg: null,
       id: null,
-      setTokens: (accessToken, refreshToken,email, userImg, id) =>
-        set({ accessToken, refreshToken, email, userImg, id}),
+      setTokens: (accessToken, refreshToken,userName, email, userImg, id) =>
+        set({ accessToken, refreshToken, userName, email, userImg, id}),
       clearTokens: () =>
-        set({accessToken: null, refreshToken: null, email: null, userImg: null, id: null}),
+        set({accessToken: null, refreshToken: null,userName: null, email: null, userImg: null, id: null}),
     }),
     {
       name: 'auth-storage',
