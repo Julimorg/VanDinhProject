@@ -13,6 +13,7 @@ const Header: React.FC = () => {
   const userName = useAuthStoreCookiesStorage((state) => state.userName);
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);

@@ -1,0 +1,32 @@
+export type ICreateProductRequest = {
+    productName: string,
+    productDescription: string,
+    productImage: File[],
+    productVolume: string,
+    productUnit: string,
+    productCode: string,
+    productQuantity: number,
+    discount?: number,
+    productPrice: number,
+    supplierId: string,
+    colorId: string,
+    categoryId: string,
+}
+
+export type ICreateProductResponse = {
+    productId: string,
+    productName: string,
+    productDescription: string,
+    productImage: File[],
+    productVolume: string,
+    productUnit: string,
+    productCode: string,
+    productQuantity: number,
+    discount?: number,
+    productPrice: number,
+    supplierId: string,
+    colorId: string,
+    categoryId: string,
+    createAt: string,
+    updateAt: string,
+}

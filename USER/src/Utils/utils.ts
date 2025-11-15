@@ -40,6 +40,16 @@ export const parseCurrency = (value: string | undefined): number => {
   return parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
 };
 
+export const getformatDateWithoutMin = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
+
+
 export const getFormattedTime = (): string => {
   const now = new Date();
   const vietnamTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
