@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card, Tag } from 'antd';
 import { CalendarOutlined } from '@ant-design/icons';
-import type { Color } from '../mockColor';
 import { getformatDateWithoutMin } from '../../../Utils/utils';
+import type { IGetAllColor } from '../../../Interface/Color/IGetAllColor';
 
 interface ColorCardListProps {
-  color: Color;
+  color: IGetAllColor;
 }
 
 const ColorCardList: React.FC<ColorCardListProps> = ({ color }) => {

@@ -1,58 +1,71 @@
 import React, { useState } from 'react';
-import { Card, Avatar, Button, Tag, Divider } from 'antd';
-import { UserOutlined, EditOutlined, MailOutlined, PhoneOutlined, HomeOutlined, CalendarOutlined, CameraOutlined, IdcardOutlined } from '@ant-design/icons';
+import { Card, Avatar, Button, Tag, Divider, Spin, Alert } from 'antd';
+import {
+  UserOutlined,
+  EditOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  HomeOutlined,
+  CalendarOutlined,
+  CameraOutlined,
+  IdcardOutlined,
+} from '@ant-design/icons';
 import dayjs from 'dayjs';
 import InfoItem from './Components/InfoItem';
 import EditProfileModal from './Components/EditProfileModal';
-
-
-interface UserData {
-  id: string;
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  userImg?: string; // URL ảnh
-  phone: string;
-  userAddress: string;
-  userDob: string; // YYYY-MM-DD
-  status: string;
-}
+import { useGetUserDetail } from './Hook/useGetMyProfile';
+import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
+import type { IGetMyProfileResponse } from '../../Interface/Users/IGetMyProfile';
+import { getUserStatusText } from '../../Utils/utils';
 
 const MyProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
- 
-  // Sample user data
-  const [userData, setUserData] = useState<UserData>({
-    id: "USR001",
-    firstName: "Nguyen",
-    lastName: "Van A",
-    userName: "nguyenvana",
-    email: "nguyenvana@email.com",
-    userImg: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=400&h=400&fit=crop",
-    phone: "0123456789",
-    userAddress: "123 Nguyen Hue, Quan 1, TP.HCM",
-    userDob: "1990-01-15",
-    status: "Active"
-  });
+  const id = useAuthStoreCookiesStorage.getState().id ?? undefined;
+
+  const { data, isLoading, error } = useGetUserDetail(id);
 
   const handleEdit = () => {
     setIsEditing(true);
-  };
-
-  const handleSave = (updatedData: Partial<UserData>) => {
-    setUserData(prev => ({
-      ...prev,
-      ...updatedData,
-    }));
   };
 
   const handleCancel = () => {
     setIsEditing(false);
   };
 
-  // Hàm lấy src cho Avatar
-  const getAvatarSrc = () => userData.userImg || undefined;
+  const getAvatarSrc = (userProfile?: IGetMyProfileResponse) => userProfile?.userImg || undefined;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <Alert
+            message="Lỗi tải thông tin hồ sơ"
+            description="Không thể tải dữ liệu. Vui lòng thử lại sau."
+            type="error"
+            showIcon
+          />
+        </div>
+      </div>
+    );
+  }
+
+  const userProfile = data?.data;
+
+  if (!userProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <p className="text-gray-500">Không tìm thấy thông tin hồ sơ</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
@@ -62,7 +75,6 @@ const MyProfile: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Hồ sơ của tôi</h1>
           <p className="text-gray-600">Quản lý thông tin cá nhân của bạn</p>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Avatar & Basic Info */}
           <div className="lg:col-span-1">
@@ -72,7 +84,7 @@ const MyProfile: React.FC = () => {
                 <div className="relative mb-6">
                   <Avatar
                     size={180}
-                    src={getAvatarSrc()}
+                    src={getAvatarSrc(userProfile)}
                     icon={<UserOutlined />}
                     className="border-4 border-white shadow-xl"
                   />
@@ -82,21 +94,21 @@ const MyProfile: React.FC = () => {
                 </div>
                 {/* Name & Username */}
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {userData.firstName} {userData.lastName}
+                  {userProfile.firstName} {userProfile.lastName}
                 </h2>
-                <p className="text-gray-500 text-lg mb-4">@{userData.userName}</p>
+                <p className="text-gray-500 text-lg mb-4">@{userProfile.userName}</p>
                 {/* Status Badge */}
                 <Tag
-                  color={userData.status === 'Active' ? 'green' : 'red'}
+                  color={userProfile.status === 'ACTIVE' ? 'green' : 'red'}
                   className="text-sm px-6 py-2 mb-6"
                 >
-                  {userData.status}
+                  {getUserStatusText(userProfile.status)}
                 </Tag>
                 {/* User ID */}
-                <div className="w-full bg-gray-50 rounded-lg p-4 mb-6">
+                {/* <div className="w-full bg-gray-50 rounded-lg p-4 mb-6">
                   <p className="text-xs text-gray-500 mb-1">Mã người dùng</p>
-                  <p className="text-sm font-mono font-semibold text-gray-900">{userData.id}</p>
-                </div>
+                  <p className="text-sm font-mono font-semibold text-gray-900">{userProfile.id}</p>
+                </div> */}
                 {/* Edit Button */}
                 <Button
                   type="primary"
@@ -111,7 +123,6 @@ const MyProfile: React.FC = () => {
               </div>
             </Card>
           </div>
-
           {/* Right Column - Detailed Information */}
           <div className="lg:col-span-2">
             <Card
@@ -127,69 +138,64 @@ const MyProfile: React.FC = () => {
                 <InfoItem
                   icon={<UserOutlined className="text-lg text-blue-500" />}
                   label="Họ"
-                  value={userData.firstName}
+                  value={userProfile.firstName}
                 />
-               
+
                 <InfoItem
                   icon={<UserOutlined className="text-lg text-blue-500" />}
                   label="Tên"
-                  value={userData.lastName}
+                  value={userProfile.lastName}
                 />
-               
+
                 <InfoItem
                   icon={<MailOutlined className="text-lg text-green-500" />}
                   label="Email"
-                  value={userData.email}
+                  value={userProfile.email}
                 />
-               
+
                 <InfoItem
                   icon={<PhoneOutlined className="text-lg text-orange-500" />}
                   label="Số điện thoại"
-                  value={userData.phone}
+                  value={userProfile.phone}
                 />
-               
+
                 <InfoItem
                   icon={<CalendarOutlined className="text-lg text-purple-500" />}
                   label="Ngày sinh"
-                  value={dayjs(userData.userDob).format('DD/MM/YYYY')}
+                  value={dayjs(userProfile.userDob).format('DD/MM/YYYY')}
                 />
-               
+
                 <InfoItem
                   icon={<HomeOutlined className="text-lg text-red-500" />}
                   label="Địa chỉ"
-                  value={userData.userAddress}
+                  value={userProfile.userAddress}
                   fullWidth
                 />
               </div>
-
               <Divider className="my-6" />
               {/* Additional Info Section */}
               <div className="bg-blue-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                  Thông tin tài khoản
-                </h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin tài khoản</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Ngày tạo tài khoản</p>
-                    <p className="text-base font-medium text-gray-900">15/01/2024</p>
+                    <p className="text-base font-medium text-gray-900">
+                      {dayjs(userProfile.createAt).format('DD/MM/YYYY')}
+                    </p>
                   </div>
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Lần cập nhật cuối</p>
-                    <p className="text-base font-medium text-gray-900">10/11/2024</p>
+                    <p className="text-base font-medium text-gray-900">
+                      {dayjs(userProfile.updateAt).format('DD/MM/YYYY')}
+                    </p>
                   </div>
                 </div>
               </div>
             </Card>
           </div>
         </div>
-
-        {/* Edit Profile Modal - Truyền userData và callbacks */}
-        <EditProfileModal
-          open={isEditing}
-          userData={userData}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
+        {/* Edit Profile Modal - Truyền userProfile và callbacks */}
+        <EditProfileModal open={isEditing} userData={userProfile} onCancel={handleCancel} />
       </div>
     </div>
   );

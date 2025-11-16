@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Typography } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { Variants } from 'framer-motion'; 
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import LoginForm from './Components/LoginForm';
 import RegisterForm from './Components/RegisterForm';
@@ -12,7 +13,7 @@ const { Title, Paragraph } = Typography;
 const AuthPage: React.FC = () => {
   const [currentForm, setCurrentForm] = useState<AuthFormType>(AuthFormType.LOGIN);
 
-  const formVariants = {
+  const formVariants: Variants = { 
     hidden: { opacity: 0, y: 20 },
     visible: { 
       opacity: 1, 
@@ -26,7 +27,7 @@ const AuthPage: React.FC = () => {
     },
   };
 
-  const headerVariants = {
+  const headerVariants: Variants = { 
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -37,7 +38,7 @@ const AuthPage: React.FC = () => {
     },
   };
 
-  const childVariants = {
+  const childVariants: Variants = { 
     hidden: { opacity: 0, y: 15 },
     visible: { 
       opacity: 1, 
@@ -72,7 +73,7 @@ const AuthPage: React.FC = () => {
     </AnimatePresence>
   );
 
-  const backButtonVariants = {
+  const backButtonVariants: Variants = { 
     hidden: { opacity: 0, x: -10 },
     visible: { 
       opacity: 1, 

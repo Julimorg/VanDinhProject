@@ -3,7 +3,6 @@ import { Drawer, Badge, Button } from 'antd';
 import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import BrandLogo from './Components/BrandLogo';
-import NotificationsDropdown from './Components/Notification';
 import UserProfileDropdown from './Components/UserProfileDropdown';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 
@@ -11,6 +10,8 @@ const Header: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
   const userName = useAuthStoreCookiesStorage((state) => state.userName);
+  const email = useAuthStoreCookiesStorage((state) => state.email);
+  const userImg = useAuthStoreCookiesStorage((state) => state.userImg);
   const navigate = useNavigate();
 
 
@@ -22,39 +23,34 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/');
-  };
+  
+  // const notifications = [
+  //   {
+  //     id: 1,
+  //     title: 'Đơn hàng mới',
+  //     description: 'Bạn có 1 đơn hàng mới cần xử lý',
+  //     time: '5 phút trước',
+  //     read: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Sản phẩm sắp hết hàng',
+  //     description: 'Sơn Dulux màu trắng còn 10 sản phẩm',
+  //     time: '1 giờ trước',
+  //     read: false,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: 'Thanh toán thành công',
+  //     description: 'Đơn hàng #12345 đã được thanh toán',
+  //     time: '2 giờ trước',
+  //     read: true,
+  //   },
+  // ];
 
-  // Mock notifications data
-  const notifications = [
-    {
-      id: 1,
-      title: 'Đơn hàng mới',
-      description: 'Bạn có 1 đơn hàng mới cần xử lý',
-      time: '5 phút trước',
-      read: false,
-    },
-    {
-      id: 2,
-      title: 'Sản phẩm sắp hết hàng',
-      description: 'Sơn Dulux màu trắng còn 10 sản phẩm',
-      time: '1 giờ trước',
-      read: false,
-    },
-    {
-      id: 3,
-      title: 'Thanh toán thành công',
-      description: 'Đơn hàng #12345 đã được thanh toán',
-      time: '2 giờ trước',
-      read: true,
-    },
-  ];
+  // const unreadCount = notifications.filter(n => !n.read).length;
 
-  const unreadCount = notifications.filter(n => !n.read).length;
 
-  // Mock cart count (thay bằng state thực tế)
   const cartCount = 3; // Ví dụ: 3 items trong giỏ
 
   // Navigation menu items cho desktop
@@ -64,13 +60,11 @@ const Header: React.FC = () => {
     { key: 'colors', label: 'Mã Màu', path: '/colors' },
   ];
 
-  // Xử lý click nav
   const handleNavClick = (path: string) => {
     navigate(path);
-    setMobileNavVisible(false); // Đóng mobile menu
+    setMobileNavVisible(false);
   };
 
-  // Mobile Drawer cho nav menu
   const mobileDrawer = (
     <Drawer
       title="Menu"
@@ -144,16 +138,18 @@ const Header: React.FC = () => {
                 </Button>
               </Badge>
 
-              <NotificationsDropdown
+              {/* <NotificationsDropdown
                 notifications={notifications}
                 unreadCount={unreadCount}
                 navigate={navigate}
                 isMobile={false}
-              />
+              /> */}
               <UserProfileDropdown
-                userName={userName || 'Admin'}
+                userName={userName || 'unknown'}
+                email={email || 'unknown'}
+                userImg = {userImg || 'unknown'}
                 navigate={navigate}
-                handleLogout={handleLogout}
+             
                 isMobile={false}
               />
             </div>
@@ -179,16 +175,18 @@ const Header: React.FC = () => {
                 </Button>
               </Badge>
 
-              <NotificationsDropdown
+              {/* <NotificationsDropdown
                 notifications={notifications}
                 unreadCount={unreadCount}
                 navigate={navigate}
                 isMobile={true}
-              />
+              /> */}
               <UserProfileDropdown
-                userName={userName || 'Admin'}
+                userName ={userName || 'unknown'}
+                email = {email || 'unknown'}
+                userImg = {userImg || 'uknown'}
                 navigate={navigate}
-                handleLogout={handleLogout}
+                
                 isMobile={true}
               />
             </div>

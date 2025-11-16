@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Typography, DatePicker, message } from 'antd';
+import React from 'react';
+import { Form, Input, Button, Typography, DatePicker } from 'antd';
 import { MailOutlined, UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import { useRegister } from '../Hook/useRegister';
 import type { IRegisterRequest } from '../../../Interface/Auth/IRegister'; 
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
 const { Text, Title } = Typography;
 
+interface RegisterFormData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  password: string;
+  confirmPassword: string;
+  userDob: Dayjs;
+  phone: string;
+  userAddress: string;
+}
+
 interface RegisterFormProps {
   onSwitchToLogin?: () => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<RegisterFormData>();
   const navigate = useNavigate();
   const { mutate: register, isPending } = useRegister({
     onSuccess: () => {
@@ -27,26 +39,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     },
   });
 
- 
-  const [loading, setLoading] = useState(false);
 
-  const onFinish = async (values: any) => {
-    // setLoading(true);
-    // try {
-    //   const formattedValues = {
-    //     ...values,
-    //     userDob: dayjs(values.userDob).format('YYYY-MM-DD')
-    //   };
-    //   console.log('Đăng ký:', formattedValues);
-    //   // TODO: API call here - check duplicate userName at backend
-    //   await new Promise(resolve => setTimeout(resolve, 1500));
-    //   message.success('Đăng ký tài khoản thành công!');
-    //   form.resetFields();
-    // } catch (error) {
-    //   message.error('Đăng ký thất bại. Vui lòng thử lại!');
-    // } finally {
-    //   setLoading(false);
-    // }
+  const onFinish = async (values: RegisterFormData) => {
 
     const formattedValues: IRegisterRequest = {
       ...values,

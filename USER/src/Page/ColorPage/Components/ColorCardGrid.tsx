@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card } from 'antd';
 import { BgColorsOutlined, CalendarOutlined } from '@ant-design/icons';
-import type { Color } from '../mockColor';
 import { getformatDateWithoutMin } from '../../../Utils/utils';
+import type { IGetAllColor } from '../../../Interface/Color/IGetAllColor';
 
 interface ColorCardGridProps {
-  color: Color;
+  color: IGetAllColor;
 }
 
 const ColorCardGrid: React.FC<ColorCardGridProps> = ({ color }) => {
@@ -24,7 +24,7 @@ const ColorCardGrid: React.FC<ColorCardGridProps> = ({ color }) => {
       className="h-full transition-all duration-300 hover:shadow-xl border border-gray-200 overflow-hidden"
     >
       <div className="space-y-4">
-        {/* Color Preview với hình ảnh thay thế */}
+ 
         <div
           className="h-48 rounded-lg flex items-center justify-center relative overflow-hidden shadow-inner"
           style={previewStyle}

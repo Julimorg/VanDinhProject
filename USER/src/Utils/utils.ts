@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
+import { STATUS_MAP, type UserStatus } from '../Enum/UserStatus';
 
 
 
@@ -78,6 +79,11 @@ export const formatToVietnamTime = (isoString: string | null | undefined): strin
     console.error('Lỗi khi format thời gian:', error);
     return 'Lỗi thời gian';
   } 
+};
+
+//? User Status Converter
+export const getUserStatusText = (status: UserStatus): string => {
+  return STATUS_MAP[status] || 'Không xác định';
 };
 
 //? Build Form Data

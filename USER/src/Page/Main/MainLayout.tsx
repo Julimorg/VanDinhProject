@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
 import Header from '@/Components/Header/Header';
+import Footer from '../../Components/Footer/Footer';
 
 const { Content } = Layout;
 
@@ -27,6 +28,8 @@ const MainLayout: React.FC = () => {
       <Content className="pt-[112px] min-h-[calc(100vh-112px)] bg-gray-50 overflow-x-hidden min-h-0">
         <Outlet />
       </Content>
+
+      <Footer/>
 
       <style>{`
         /* Giữ nguyên style cũ, thêm rule mới để tránh menu overflow */

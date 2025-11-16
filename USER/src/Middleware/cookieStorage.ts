@@ -10,8 +10,11 @@ const cookieStorage: StateStorage = {
   setItem: (name: string, value: unknown) => {
     Cookies.set(name, JSON.stringify(value), {
       expires:  COOKIE_EXPIRE, 
-      secure: true,  
-      sameSite: 'strict'  
+      //! Nên đặt secure: true khi lên HTTPS thì browser không tự động lưu cookies trong local như trên https được
+      secure: false,   
+      //! Nên đặt sameSite: 'none' cho phép FE và BE khác domain với nhau khi lên HTTPS
+      sameSite: 'lax',     
+      path: "/",   
     });
   },
   removeItem: (name: string) => {

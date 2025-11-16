@@ -1,3 +1,4 @@
+import type { UserStatus } from "../../Enum/UserStatus";
 
 export type IGetMyProfileResponse = {
     id: string,
@@ -9,7 +10,7 @@ export type IGetMyProfileResponse = {
     phone: string,
     userAddress: string,
     userDob: string,
-    status: string,
+    status: UserStatus,
     createAt: string,
     updateAt: string,
 }

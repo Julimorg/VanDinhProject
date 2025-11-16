@@ -3,8 +3,14 @@ import { Row, Col, Card, Carousel, Typography, Button } from 'antd';
 import { ShoppingCartOutlined, EyeOutlined } from '@ant-design/icons';
 import Header from "@/Components/Header/Header";
 import Footer from '@/Components/Footer/Footer';
+import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 
 const { Title, Text } = Typography;
+
+const {id, email, userImg, userName, accessToken, refreshToken} = useAuthStoreCookiesStorage.getState();
+console.log("id: " + id  + " email: " + email);
+console.log("Token: ", accessToken);
+console.log("RefreshToken: ", refreshToken);
 
 interface Product {
   id: number;
