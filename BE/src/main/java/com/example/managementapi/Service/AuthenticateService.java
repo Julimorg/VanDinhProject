@@ -80,7 +80,7 @@ public class AuthenticateService {
         boolean authenticate = passwordEncode.matches(request.getPassword(), user.getPassword());
 
         if(!authenticate)
-            throw  new AppException(ErrorCode.UNAUTHENTICATED);
+            throw new AppException(ErrorCode.UNAUTHORIZED);
 
         var accessToken = generateToken(user, EXPIRY_DATE, String.valueOf(TokenType.ACCESS_TOKEN));
 

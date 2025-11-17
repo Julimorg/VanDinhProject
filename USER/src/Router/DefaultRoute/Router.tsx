@@ -24,7 +24,7 @@ const DefaultRouter = () => {
         <Route path="products" element={<ProductsPage />} />
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="colors" element={<ColorPage />} />
-        <Route path="order-detail" element={<OrderDetailPage />} />
+        <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
 
         
       </Route>

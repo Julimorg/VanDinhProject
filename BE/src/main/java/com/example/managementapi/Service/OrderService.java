@@ -80,7 +80,7 @@ public class OrderService {
                 .map(order -> orderMapper.toGetAllOrdersRes(order));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public GetUserOrdersDetailRes getUserOrderDetails(String orderId){
 
         var order = orderRepository.findById(orderId)
