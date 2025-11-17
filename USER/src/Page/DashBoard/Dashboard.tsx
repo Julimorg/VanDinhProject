@@ -1,16 +1,10 @@
 import React from 'react';
 import { Row, Col, Card, Carousel, Typography, Button } from 'antd';
 import { ShoppingCartOutlined, EyeOutlined } from '@ant-design/icons';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import Header from '../../Components/Header/Header';
 import Footer from '../../Components/Footer/Footer';
 
 const { Title, Text } = Typography;
-
-const {id, email, userImg, userName, accessToken, refreshToken} = useAuthStoreCookiesStorage.getState();
-console.log("id: " + id  + " email: " + email);
-console.log("Token: ", accessToken);
-console.log("RefreshToken: ", refreshToken);
 
 interface Product {
   id: number;
@@ -27,7 +21,7 @@ const newProducts: Product[] = [
     id: 1,
     name: 'Sơn Dulux Weathershield',
     price: '250.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=Dulux+Weathershield', // Thay bằng URL hình thực tế
+    image: 'https://via.placeholder.com/300x200?text=Dulux+Weathershield', 
     description: 'Sơn ngoại thất chống thấm cao cấp',
     isNew: true,
   },
@@ -134,8 +128,7 @@ function Dashboard() {
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
       {/* Header */}
-      <Header />
-
+     <Header isMobile/>
       {/* Banner Carousel */}
       <BannerCarousel />
 

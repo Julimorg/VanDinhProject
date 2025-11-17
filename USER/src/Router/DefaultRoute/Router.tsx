@@ -4,7 +4,7 @@ import AuthPage from '../../Page/AuthenticationPage/AuthPage';
 import MainLayout from '../../Page/Main/MainLayout';
 import MyProfile from '../../Page/MyProfilePage/MyProfile';
 import OrderHistory from '../../Page/OrderHistoryPage/OrderHistoryPage';
-import ProductsPage from '../../Page/ProductPage/ProductPage';
+// import ProductsPage from '../../Page/ProductPage/ProductPage';
 import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
 import ColorPage from '../../Page/ColorPage/ColorPage';
 import Dashboard from '../../Page/DashBoard/Dashboard';
@@ -21,7 +21,7 @@ const DefaultRouter = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="profile" element={<MyProfile />} />
         <Route path="order-history" element={<OrderHistory />} />
-        <Route path="products" element={<ProductsPage />} />
+        {/* <Route path="products" element={<ProductsPage />} /> */}
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="colors" element={<ColorPage />} />
         <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
