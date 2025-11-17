@@ -7,21 +7,23 @@ export const order_api = {
     GetMyListOrder: async(
         userId: string,
         params: {
+        keyword?: string,
         status?: string,
         page?: number,
         size?: number,
         sort?: string,
         } = {}
     ): Promise<IApiResponse<IApiResponsePagination<IGetMyListOrder>>> => {
-          const { status, page = 1, size = 5, sort = 'createAt, desc' } = params;
+        const { keyword, status, page = 1, size = 5, sort = 'createAt, desc' } = params;
         const queryParams = new URLSearchParams({
         page: page.toString(),
         size: size.toString(),
         sort,
+        ...(keyword && { keyword }),
         ...(status && { status }),
         });
 
-        const url = `/order/list-orders/${userId}&${queryParams.toString()}`;
+        const url = `/order/list-orders/${userId}?${queryParams.toString()}`;
         const res = await axiosClient.get(url);
         return res.data;
     }

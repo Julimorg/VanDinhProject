@@ -1,108 +1,81 @@
 import React, { useState } from 'react';
-import { Empty, Pagination } from 'antd';
+import { Empty, Pagination, Skeleton } from 'antd';
 import type { IGetMyListOrder } from '../../Interface/Order/IGetMyListOrder';
 import OrderFilterSection from './Components/OrderFilterSection';
 import OrderCard from './Components/OrderCard';
+import { useGetMyListOrder } from './Hook/useGetMyListOrder';
+import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 
 const OrderHistoryCardList: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // Số lượng đơn hàng mỗi trang, có thể thay đổi thành state nếu cần
+  const pageSize = 5;
+  const userId: string = useAuthStoreCookiesStorage(state => state.id) ?? '';
 
-  // Sample orders data
-  const [orders] = useState<IGetMyListOrder[]>([
+
+  const getStatusForApi = (status: string): string | undefined => {
+    if (status === 'all') return undefined;
+    return status.charAt(0).toUpperCase() + status.slice(1); 
+  };
+
+  const { data: queryData, isLoading, error, refetch } = useGetMyListOrder(
+    userId,
     {
-      orderId: "ORD001",
-      orderCode: "EC2024110001",
-      shipAddress: "123 Nguyen Hue, Quan 1, TP.HCM",
-      orderAmount: 1250000,
-      orderStatus: "approved",
-      paymentMethod: "Credit Card",
-      createAt: "2024-11-01T10:30:00",
-      updateAt: "2024-11-05T14:20:00",
-      completeAt: "2024-11-05T14:20:00"
+      keyword: searchText || undefined,
+      status: getStatusForApi(filterStatus),
+      page: currentPage - 1, 
+      size: pageSize,
+      sort: 'createAt,desc'
     },
     {
-      orderId: "ORD002",
-      orderCode: "EC2024110002",
-      shipAddress: "456 Le Loi, Quan 3, TP.HCM",
-      orderAmount: 850000,
-      orderStatus: "Pending",
-      paymentMethod: "COD",
-      createAt: "2024-11-03T09:15:00",
-      updateAt: "2024-11-08T11:30:00",
-      completeAt: null
-    },
-    {
-      orderId: "ORD003",
-      orderCode: "EC2024110003",
-      shipAddress: "789 Tran Hung Dao, Quan 5, TP.HCM",
-      orderAmount: 2100000,
-      orderStatus: "pending",
-      paymentMethod: "Bank Transfer",
-      createAt: "2024-11-07T15:45:00",
-      updateAt: "2024-11-07T15:45:00",
-      completeAt: null
-    },
-    {
-      orderId: "ORD004",
-      orderCode: "EC2024110004",
-      shipAddress: "321 Vo Van Tan, Quan 3, TP.HCM",
-      orderAmount: 540000,
-      orderStatus: "cancelled",
-      paymentMethod: "E-Wallet",
-      createAt: "2024-11-02T12:00:00",
-      updateAt: "2024-11-03T10:00:00",
-      completeAt: null
-    },
-    {
-      orderId: "ORD005",
-      orderCode: "EC2024110005",
-      shipAddress: "555 Cach Mang Thang 8, Quan 10, TP.HCM",
-      orderAmount: 3200000,
-      orderStatus: "approved",
-      paymentMethod: "Credit Card",
-      createAt: "2024-11-09T08:20:00",
-      updateAt: "2024-11-10T08:20:00",
-      completeAt: "2024-11-10T08:20:00"
-    },
-    {
-      orderId: "ORD006",
-      orderCode: "EC2024110006",
-      shipAddress: "999 Pham Van Dong, Thu Duc, TP.HCM",
-      orderAmount: 1680000,
-      orderStatus: "cancelled",
-      paymentMethod: "Bank Transfer",
-      createAt: "2024-11-06T14:30:00",
-      updateAt: "2024-11-06T16:45:00",
-      completeAt: null
+  
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000 // 5 phút cache
     }
-  ]);
+  );
 
-  const filteredOrders = orders.filter(order => {
-    const matchesSearch = order.orderCode.toLowerCase().includes(searchText.toLowerCase()) ||
-                         order.shipAddress.toLowerCase().includes(searchText.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || order.orderStatus === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const content = queryData?.data?.content;
+  const orders: IGetMyListOrder[] = content == null ? [] : (Array.isArray(content) ? content : [content]);
+  const totalItems = queryData?.data?.page?.totalElements || 0;
 
-  // Reset về trang đầu khi search hoặc filter thay đổi
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchText, filterStatus]);
 
-  // Lấy dữ liệu cho trang hiện tại
-  const paginatedOrders = filteredOrders.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const totalItems = filteredOrders.length;
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  // Handle error
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-white rounded-lg shadow-sm border border-red-200 p-12 text-center">
+            <p className="text-red-500 mb-4">Lỗi tải dữ liệu</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Thử lại
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+
+  const renderSkeleton = () => (
+    <div className="space-y-4 mb-6">
+      {Array.from({ length: pageSize }).map((_, index) => (
+        <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+          <Skeleton active paragraph={{ rows: 4 }} />
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -124,7 +97,9 @@ const OrderHistoryCardList: React.FC = () => {
         />
 
         {/* Orders List */}
-        {totalItems === 0 ? (
+        {isLoading ? (
+          renderSkeleton()
+        ) : totalItems === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
             <Empty
               description={
@@ -135,7 +110,7 @@ const OrderHistoryCardList: React.FC = () => {
         ) : (
           <>
             <div className="space-y-4 mb-6">
-              {paginatedOrders.map((order) => (
+              {orders.map((order) => (
                 <OrderCard key={order.orderId} order={order} />
               ))}
             </div>
