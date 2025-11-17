@@ -9,4 +9,7 @@ export type IGetAllProductResponse = {
     supplierName: string,
     colorName: string,
     categoryName: string,
+    productCode: string,
+    createAt: string,
+    updateAt: string,
 }

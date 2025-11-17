@@ -9,6 +9,8 @@ import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
 import ColorPage from '../../Page/ColorPage/ColorPage';
 import Dashboard from '../../Page/DashBoard/Dashboard';
 import OrderDetailPage from '../../Page/OrderDetailPage/OrderDetailPage';
+import ProductDetailPage from '../../Page/ProductPage/ProductDetailPage';
+import CartPage from '../../Page/CartPage/CartPage';
 
 
 const DefaultRouter = () => {
@@ -21,12 +23,14 @@ const DefaultRouter = () => {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="profile" element={<MyProfile />} />
         <Route path="order-history" element={<OrderHistory />} />
-        <Route path="products" element={<ProductsPage />} />
+        <Route path="products" element={<ProductsPage />}>
+          <Route path=":id" element={<ProductDetailPage />} />
+        </Route>
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="colors" element={<ColorPage />} />
         <Route path="order-detail" element={<OrderDetailPage />} />
+        <Route path="cart" element={<CartPage />} />
 
-        
       </Route>
     </Routes>
   );
