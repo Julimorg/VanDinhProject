@@ -2,12 +2,13 @@ import { Routes, Route } from 'react-router-dom';
 import WelcomePage from '../../Page/WelcomePage/WelcomePage';
 import AuthPage from '../../Page/AuthenticationPage/AuthPage';
 import MainLayout from '../../Page/Main/MainLayout';
-import Dashboard from '../../Page/DashBoard/DashBoard';
 import MyProfile from '../../Page/MyProfilePage/MyProfile';
 import OrderHistory from '../../Page/OrderHistoryPage/OrderHistoryPage';
 import ProductsPage from '../../Page/ProductPage/ProductPage';
 import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
 import ColorPage from '../../Page/ColorPage/ColorPage';
+import Dashboard from '../../Page/DashBoard/Dashboard';
+import OrderDetailPage from '../../Page/OrderDetailPage/OrderDetailPage';
 
 
 const DefaultRouter = () => {
@@ -23,6 +24,7 @@ const DefaultRouter = () => {
         <Route path="products" element={<ProductsPage />} />
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="colors" element={<ColorPage />} />
+        <Route path="order-detail" element={<OrderDetailPage />} />
 
         
       </Route>

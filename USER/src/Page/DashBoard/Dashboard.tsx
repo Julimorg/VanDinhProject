@@ -1,9 +1,9 @@
 import React from 'react';
 import { Row, Col, Card, Carousel, Typography, Button } from 'antd';
 import { ShoppingCartOutlined, EyeOutlined } from '@ant-design/icons';
-import Header from "@/Components/Header/Header";
-import Footer from '@/Components/Footer/Footer';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
+import Header from '../../Components/Header/Header';
+import Footer from '../../Components/Footer/Footer';
 
 const { Title, Text } = Typography;
 
