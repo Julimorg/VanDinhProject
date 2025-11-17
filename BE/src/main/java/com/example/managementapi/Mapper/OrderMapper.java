@@ -5,6 +5,7 @@ import com.example.managementapi.Dto.Request.Order.CreateOrderRequest;
 import com.example.managementapi.Dto.Request.Order.UpdateOrderByAdminRequest;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.Product.ProductForCartItem;
+import com.example.managementapi.Dto.Response.User.GetUserListOrder;
 import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailByAdminRes;
 import com.example.managementapi.Dto.Response.User.OrderInGetUserDetailRes;
 import com.example.managementapi.Entity.Order;
@@ -19,6 +20,9 @@ public interface OrderMapper {
 
 
     //** ===============================   GET RESPONSE   ===========================
+
+    @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
+    GetUserListOrder toGetUserListOrder(Order order);
 
     @Mapping(source = "orderStatus", target = "status")
     @Mapping(source = "orderAmount", target = "amount")

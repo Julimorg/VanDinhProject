@@ -8,6 +8,7 @@
     import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemRequest;
     import com.example.managementapi.Dto.Response.Order.*;
     import com.example.managementapi.Dto.Response.Product.ProductRes;
+    import com.example.managementapi.Dto.Response.User.GetUserListOrder;
     import com.example.managementapi.Service.OrderItemService;
     import com.example.managementapi.Service.OrderService;
     import jakarta.mail.MessagingException;
@@ -33,16 +34,18 @@
         private final OrderService orderService;
 
         private final OrderItemService orderItemService;
-        @GetMapping("/search-order")
-        public ApiResponse<Page<SearchOrdersResponse>> searchOrdersByAdmin(
-                @RequestParam(value = "keyword", required = false) String keyword,
-                @RequestParam(value = "orderStatus", required = false) String orderStatus,
-                @PageableDefault(size = 10, sort = "orderAmount", direction = Sort.Direction.DESC) Pageable pageable){
 
-            return ApiResponse.<Page<SearchOrdersResponse>>builder()
+        @GetMapping("/list-orders/{userId}")
+        public ApiResponse<Page<GetUserListOrder>> getUserListOrders (
+                @PathVariable String userId,
+                @RequestParam(required = false) String status,
+                @PageableDefault(size = 10, sort = "createAt"
+                        , direction = Sort.Direction.DESC) Pageable pageable
+                ){
+            return ApiResponse.<Page<GetUserListOrder>>builder()
                     .status_code(HttpStatus.OK.value())
                     .message(HttpStatus.OK.getReasonPhrase())
-                    .data(orderService.searchOrdersByAdmin(keyword, orderStatus, pageable))
+                    .data(orderService.getUserListOrders(userId, status, pageable))
                     .timestamp(LocalDateTime.now())
                     .build();
         }

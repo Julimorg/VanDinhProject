@@ -10,6 +10,15 @@ public class OrderSpecification {
     //Search: order code, ship address,
     //sort: creat at, complete at, order amount, quantity
 
+    public static Specification<Order> hasUserId(String userId) {
+        return (root, query, criteriaBuilder) -> {
+            if (userId == null || userId.isEmpty()) {
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.equal(root.get("user").get("id"), userId);
+        };
+    }
+
     public static Specification<Order> filterByOrderStatus(String orderStatus){
         return ((root, query, criteriaBuilder) -> {
             if(orderStatus == null || orderStatus.isEmpty()){
@@ -38,5 +47,12 @@ public class OrderSpecification {
         return Specification.allOf(
                 hasKeyword(keyword),
                 filterByOrderStatus(orderStatus));
+    }
+
+    public static Specification<Order> filterByUserIdAndStatus(String userId, String orderStatus) {
+        return Specification.allOf(
+                hasUserId(userId),
+                filterByOrderStatus(orderStatus)
+        );
     }
 }

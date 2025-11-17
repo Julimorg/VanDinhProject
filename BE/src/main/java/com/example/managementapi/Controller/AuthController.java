@@ -42,7 +42,7 @@ public class AuthController {
 
         return ApiResponse.<LoginRes>builder()
                 .status_code(HttpStatus.OK.value())
-                .message("Login Paid!")
+                .message("Login Successfully!")
                 .data(result)
                 .timestamp(LocalDateTime.now())
                 .build();

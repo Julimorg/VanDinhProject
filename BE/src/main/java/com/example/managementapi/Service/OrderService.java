@@ -4,6 +4,7 @@ package com.example.managementapi.Service;
 import com.example.managementapi.Component.GenerateRandomCode;
 import com.example.managementapi.Dto.Request.Order.*;
 import com.example.managementapi.Dto.Response.Order.*;
+import com.example.managementapi.Dto.Response.User.GetUserListOrder;
 import com.example.managementapi.Entity.*;
 import com.example.managementapi.Enum.ErrorCode;
 import com.example.managementapi.Enum.OrderStatus;
@@ -64,12 +65,11 @@ public class OrderService {
     private final String processingDeadline = "24 giờ";
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
-    public Page<SearchOrdersResponse> searchOrdersByAdmin(String keyword, String orderStatus, Pageable pageable){
-        Specification<Order> specification = OrderSpecification.searchOrder(keyword, orderStatus);
-        Page<Order> orders = orderRepository.findAll(specification, pageable);
-
-        return orders.map(order -> orderMapper.toSearchOrdersResponse(order));
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF', 'ROLE_USER')")
+    public Page<GetUserListOrder> getUserListOrders(String userId, String status, Pageable pageable){
+        Specification<Order> spec = OrderSpecification.filterByUserIdAndStatus(userId, status);
+        return orderRepository.findAll(spec, pageable)
+                .map(order -> orderMapper.toGetUserListOrder(order));
     }
 
 
