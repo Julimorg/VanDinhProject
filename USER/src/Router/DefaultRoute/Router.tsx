@@ -28,9 +28,8 @@ const DefaultRouter = () => {
         </Route>
         <Route path="suppliers" element={<SupplierPage />} />
         <Route path="colors" element={<ColorPage />} />
-        <Route path="order-detail" element={<OrderDetailPage />} />
+        <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
         <Route path="cart" element={<CartPage />} />
-
       </Route>
     </Routes>
   );

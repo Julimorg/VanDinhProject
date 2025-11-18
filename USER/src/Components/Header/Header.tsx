@@ -6,14 +6,18 @@ import BrandLogo from './Components/BrandLogo';
 import UserProfileDropdown from './Components/UserProfileDropdown';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 
-const Header: React.FC = () => {
+
+interface HeaderProps {
+  isMobile: boolean;
+}
+
+const Header: React.FC<HeaderProps> = ({ isMobile }) => {  
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
   const userName = useAuthStoreCookiesStorage((state) => state.userName);
   const email = useAuthStoreCookiesStorage((state) => state.email);
   const userImg = useAuthStoreCookiesStorage((state) => state.userImg);
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,7 +27,6 @@ const Header: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  
   // const notifications = [
   //   {
   //     id: 1,
@@ -49,7 +52,6 @@ const Header: React.FC = () => {
   // ];
 
   // const unreadCount = notifications.filter(n => !n.read).length;
-
 
   const cartCount = 3; // Ví dụ: 3 items trong giỏ
 
@@ -147,10 +149,9 @@ const Header: React.FC = () => {
               <UserProfileDropdown
                 userName={userName || 'unknown'}
                 email={email || 'unknown'}
-                userImg = {userImg || 'unknown'}
+                userImg={userImg || 'unknown'}
                 navigate={navigate}
-             
-                isMobile={false}
+                isMobile={isMobile}  // Sử dụng props từ cha thay vì hardcode false
               />
             </div>
 
@@ -182,12 +183,11 @@ const Header: React.FC = () => {
                 isMobile={true}
               /> */}
               <UserProfileDropdown
-                userName ={userName || 'unknown'}
-                email = {email || 'unknown'}
-                userImg = {userImg || 'uknown'}
+                userName={userName || 'unknown'}
+                email={email || 'unknown'}
+                userImg={userImg || 'unknown'}  // Sửa lỗi typo: 'uknown' -> 'unknown'
                 navigate={navigate}
-                
-                isMobile={true}
+                isMobile={isMobile}  // Sử dụng props từ cha thay vì hardcode true
               />
             </div>
           </div>

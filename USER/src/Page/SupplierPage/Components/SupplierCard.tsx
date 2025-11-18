@@ -1,11 +1,11 @@
 import React from 'react';
 import { Card } from 'antd';
-import type { Supplier } from '../mockSupplier';
 import { CalendarOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
+import type { IGetAllSupplierResponse } from '../../../Interface/Supplier/IGetAllSuppliers';
 ;
 
 interface SupplierCardProps {
-  supplier: Supplier;
+  supplier: IGetAllSupplierResponse;
 }
 
 const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {

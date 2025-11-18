@@ -8,8 +8,8 @@ import org.springframework.http.HttpStatusCode;
 @Getter
 public enum ErrorCode {
     //* ======================= AUTH CATCH ERROR 5000 =======================
-    UNAUTHENTICATED("Wrong Password or UserName! Please Check Again!", HttpStatus.UNAUTHORIZED),
-    UNAUTHORIZED("Unauthorized", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATED("Unauthenticated! Please Login To Continue!", HttpStatus.UNAUTHORIZED),
+    UNAUTHORIZED("Wrong Password or UserName! Please Check Again!", HttpStatus.UNAUTHORIZED),
     BANNED("You have been banned! ", HttpStatus.FORBIDDEN),
 
     //* ======================= USER CATCH ERROR 1100 =======================

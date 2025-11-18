@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from 'antd';
 import { Outlet } from 'react-router-dom';
-import Header from '@/Components/Header/Header';
 import Footer from '../../Components/Footer/Footer';
+import Header from '../../Components/Header/Header';
 
 const { Content } = Layout;
 

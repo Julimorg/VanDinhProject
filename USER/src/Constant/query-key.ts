@@ -4,5 +4,7 @@ export const QueryKeys = {
     GET_COLORS: 'Get All Colors',
     GET_SUPPLIER_SELECTION: 'Get Supplier Selector',
     GET_MY_PROFILE: 'Get My Profile',
-    UPDATE_MY_PROFILE: 'Update my profile'
+    UPDATE_MY_PROFILE: 'Update my profile',
+    GET_MY_ORDER_HISTORY: 'Get all my order history',
+    GET_ORDER_DETAIL: 'Get Order Detail'
 }

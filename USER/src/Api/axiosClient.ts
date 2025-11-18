@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import { PUBLIC_API } from '../Utils/env_dev_handler';
+import {  PUBLIC_API } from '../Utils/env_dev_handler';
 import { useAuthStoreCookiesStorage } from '../Middleware/useAuthStore';
 import { auth_api_handler } from './auth_api';
 

@@ -22,7 +22,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const statusConfig = getStatusConfig(order.orderStatus);
 
   const handleViewDetail = () => {
-    navigate('/order-detail', { state: { order } });
+    navigate(`/order-detail/${order.orderId}`, { state: { order } });
   };
 
   return (
