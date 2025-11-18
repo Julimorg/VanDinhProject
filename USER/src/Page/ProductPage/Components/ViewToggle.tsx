@@ -5,6 +5,7 @@ import { AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
 interface ViewToggleProps {
   viewMode: 'grid' | 'list';
   onChange: (mode: 'grid' | 'list') => void;
+  disabled?: boolean;
 }
 
 const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onChange }) => {

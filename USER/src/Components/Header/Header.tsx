@@ -5,19 +5,33 @@ import { useNavigate } from 'react-router-dom';
 import BrandLogo from './Components/BrandLogo';
 import UserProfileDropdown from './Components/UserProfileDropdown';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
-
+import { useCartStore } from '../../Middleware/useCartStore';
+import { useGetAllCarts } from './Hook/useGetAllCarts';
 
 interface HeaderProps {
   isMobile: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ isMobile }) => {  
+const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
-  const userName = useAuthStoreCookiesStorage((state) => state.userName);
-  const email = useAuthStoreCookiesStorage((state) => state.email);
-  const userImg = useAuthStoreCookiesStorage((state) => state.userImg);
+
+  const { id: userId, userName, email, userImg } = useAuthStoreCookiesStorage();
+  const setCartCount = useCartStore(state => state.setCartCount);
+  const cartCount = useCartStore(state => state.cartCount);
+
+  const { data: cartResponse } = useGetAllCarts(userId ?? '');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (cartResponse?.data?.items) {
+      const totalQuantity = cartResponse.data.items.reduce(
+        (total, item) => total + item.product.productQuantity,
+        0
+      );
+      setCartCount(totalQuantity);
+    }
+  }, [cartResponse, setCartCount]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,35 +41,6 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // const notifications = [
-  //   {
-  //     id: 1,
-  //     title: 'Đơn hàng mới',
-  //     description: 'Bạn có 1 đơn hàng mới cần xử lý',
-  //     time: '5 phút trước',
-  //     read: false,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: 'Sản phẩm sắp hết hàng',
-  //     description: 'Sơn Dulux màu trắng còn 10 sản phẩm',
-  //     time: '1 giờ trước',
-  //     read: false,
-  //   },
-  //   {
-  //     id: 3,
-  //     title: 'Thanh toán thành công',
-  //     description: 'Đơn hàng #12345 đã được thanh toán',
-  //     time: '2 giờ trước',
-  //     read: true,
-  //   },
-  // ];
-
-  // const unreadCount = notifications.filter(n => !n.read).length;
-
-  const cartCount = 3; // Ví dụ: 3 items trong giỏ
-
-  // Navigation menu items cho desktop
   const navItems = [
     { key: 'products', label: 'Sản phẩm', path: '/products' },
     { key: 'suppliers', label: 'Nhà Cung Cấp', path: '/suppliers' },
@@ -104,17 +89,14 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-white shadow-md py-3'
-            : 'bg-white/95 backdrop-blur-sm py-4'
+          scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
-            {/* Logo & Brand */}
             <BrandLogo />
 
-            {/* Navigation Menu - Desktop */}
+            {/* Desktop Menu */}
             <nav className="hidden md:flex items-center gap-8 mx-8">
               {navItems.map((item) => (
                 <button
@@ -127,9 +109,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
               ))}
             </nav>
 
-            {/* Right Section - Desktop: Cart + Notifications + User */}
+            {/* Desktop Right Section */}
             <div className="hidden md:flex items-center gap-2">
-              {/* Cart Icon */}
               <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
                 <Button
                   type="text"
@@ -140,32 +121,23 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 </Button>
               </Badge>
 
-              {/* <NotificationsDropdown
-                notifications={notifications}
-                unreadCount={unreadCount}
-                navigate={navigate}
-                isMobile={false}
-              /> */}
               <UserProfileDropdown
                 userName={userName || 'unknown'}
                 email={email || 'unknown'}
                 userImg={userImg || 'unknown'}
                 navigate={navigate}
-                isMobile={isMobile}  // Sử dụng props từ cha thay vì hardcode false
+                isMobile={isMobile}
               />
             </div>
 
-            {/* Mobile: Hamburger + Notifications + User */}
+            {/* Mobile */}
             <div className="flex md:hidden items-center gap-2">
-              {/* Hamburger Menu */}
               <Button
                 type="text"
                 icon={<MenuOutlined className="text-lg" />}
                 onClick={() => setMobileNavVisible(true)}
                 className="p-2"
               />
-
-              {/* Cart Icon - Mobile */}
               <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
                 <Button
                   type="text"
@@ -175,26 +147,19 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                   <ShoppingCartOutlined className="text-lg text-gray-700" />
                 </Button>
               </Badge>
-
-              {/* <NotificationsDropdown
-                notifications={notifications}
-                unreadCount={unreadCount}
-                navigate={navigate}
-                isMobile={true}
-              /> */}
               <UserProfileDropdown
                 userName={userName || 'unknown'}
                 email={email || 'unknown'}
-                userImg={userImg || 'unknown'}  // Sửa lỗi typo: 'uknown' -> 'unknown'
+                userImg={userImg || 'unknown'}
                 navigate={navigate}
-                isMobile={isMobile}  // Sử dụng props từ cha thay vì hardcode true
+                isMobile={isMobile}
               />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Mobile Navigation Drawer */}
+      {/* Mobile Drawer */}
       {mobileDrawer}
     </>
   );

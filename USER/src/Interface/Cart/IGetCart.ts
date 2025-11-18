@@ -10,7 +10,7 @@ export type IGetCartResponse = {
     updatedAt: string;
 }
 
-interface CartItemDetailResponse {
+export type CartItemDetailResponse = {
     cartItemId: string;
     cartId: string;
     product: ProductForCartItem;

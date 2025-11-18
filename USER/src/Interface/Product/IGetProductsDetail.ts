@@ -11,6 +11,7 @@ export type IGetProductDetailResponse = {
    productPrice: number,
    supplierName: string,
    colorName: string,
+   colorCode: string,
    categoryName: string,
    createAt: string,
    updateAt: string,

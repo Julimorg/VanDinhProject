@@ -16,6 +16,20 @@ export const cart_api = {
         const url = `/cart/get-cart/${userId}`;
         const res = await axiosClient.get(url);
         return res.data;
+    },
+
+    UpdateCartItemQuantity: async(cartItemId: string, quantity: number): Promise<IApiResponse<IGetCartResponse>> => {
+        const url = `/cart/update-item/${cartItemId}`;
+        const res = await axiosClient.patch(url, {quantity} , {
+            headers: { 'Content-Type': 'application/json' },
+        });
+        return res.data;
+    },
+
+    DeleteCartItem: async(cartItemId: string): Promise<IApiResponse<void>> => {
+        const url = `/cart/delete-item/${cartItemId}`;
+        const res = await axiosClient.delete(url);
+        return res.data;
     }
 
 }

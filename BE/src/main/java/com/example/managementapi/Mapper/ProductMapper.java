@@ -16,6 +16,7 @@ public interface ProductMapper {
     @Mapping(target = "productImage", ignore = true)
     Product toProduct(CreateProductReq request);
 
+    @Mapping(source = "color.colorCode", target = "colorCode")
     ProductRes toProductResponse(Product product);
 
     @Mapping(source = "supplier.supplierName", target = "supplierName")

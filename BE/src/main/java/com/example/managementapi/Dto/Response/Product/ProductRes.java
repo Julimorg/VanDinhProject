@@ -29,6 +29,7 @@ public class ProductRes {
     private BigDecimal productPrice;
     private String supplierName;
     private String colorName;
+    private String colorCode;
     private String categoryName;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
