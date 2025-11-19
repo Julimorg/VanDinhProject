@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, Button, InputNumber, Empty, Divider, Space, Image, Tag, Popconfirm, message, Skeleton } from 'antd';
-import { DeleteOutlined, ShoppingCartOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { DeleteOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useUpdateCartItemQuantity } from './Hook/useUpdateCartItemQuantity';

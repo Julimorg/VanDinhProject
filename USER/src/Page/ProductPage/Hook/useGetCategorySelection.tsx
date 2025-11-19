@@ -17,7 +17,7 @@ type UseGetCategorySelectionOptions = Omit<
 
 export const useGetCategorySelection = (options?: UseGetCategorySelectionOptions) => {
   return useQuery<IApiResponse<IGetCategorySelectionResponse>, unknown, IApiResponse<IGetCategorySelectionResponse>, [string | undefined]>({
-    queryKey: ["Get Category Selection"], 
+    queryKey: [QueryKeys.GET_CATEGORY_SELECTION], 
     queryFn: () => category_api.GetCategorySelection(),
     ...options, 
   });

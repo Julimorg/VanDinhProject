@@ -1,4 +1,5 @@
 import { supplier_api } from '../../../Api/supplier_api';
+import { QueryKeys } from '../../../Constant/query-key';
 import type { IApiResponse } from '../../../Interface/IApiResponse';
 import type { IGetSupplierSelectionResponse } from '../../../Interface/Supplier/IGetSupplierSelection';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
@@ -15,7 +16,7 @@ type UseGetSupplierSelectionOptions = Omit<
 
 export const useGetSupplierSelections = (options?: UseGetSupplierSelectionOptions) => {
   return useQuery<IApiResponse<IGetSupplierSelectionResponse>, unknown, IApiResponse<IGetSupplierSelectionResponse>, [string | undefined]>({
-    queryKey: ["Get Supplier Selection"], 
+    queryKey: [QueryKeys.GET_SUPPLIER_SELECTION], 
     queryFn: () => supplier_api.GetSupplierSelection(),
     ...options, 
   });
