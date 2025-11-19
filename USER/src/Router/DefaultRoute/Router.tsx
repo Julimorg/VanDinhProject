@@ -11,6 +11,7 @@ import OrderDetailPage from '../../Page/OrderDetailPage/OrderDetailPage';
 import CartPage from '../../Page/CartPage/CartPage';
 import ProductsPage from '../../Page/ProductPage/ProductPage';
 import ProductDetailPage from '../../Page/ProductDetailPage/ProductDetailPage';
+import TransactionPage from '../../Page/Transaction/TransactionPage';
 
 
 const DefaultRouter = () => {
@@ -30,6 +31,7 @@ const DefaultRouter = () => {
         <Route path="colors" element={<ColorPage />} />
         <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="transaction" element={<TransactionPage />} />
       </Route>
     </Routes>
   );

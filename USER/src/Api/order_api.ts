@@ -6,6 +6,12 @@ import axiosClient from "./axiosClient";
 
 export const order_api = {
 
+    CreateOrderFromCartd: async(userId: string, cartId: string): Promise<IApiResponse<IGetOrderDetailResponse>> => {
+        const url = `/order/from-cart/${userId}/${cartId}`;
+        const res = await axiosClient.post(url);
+        return res.data;
+    },
+
     GetOrderDetail: async (orderId: string): Promise<IApiResponse<IGetOrderDetailResponse>> => {
         const url = `/order/order-detail/${orderId}`;
         const res = await axiosClient.get(url);
