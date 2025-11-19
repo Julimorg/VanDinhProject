@@ -62,19 +62,6 @@ public class SupplierController {
                 .build();
     }
 
-    @GetMapping("/search-supplier")
-    public ApiResponse<Page<GetSupplierRes>> searchSupplier(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @PageableDefault(size = 10, sort = "supplierName", direction = Sort.Direction.ASC) Pageable pageable
-    ){
-        return ApiResponse.<Page<GetSupplierRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(supplierService.searchSupplier(keyword, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
 
     @PostMapping(value = "/create-supplier", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<CreateSupplierRes> createSupplier(

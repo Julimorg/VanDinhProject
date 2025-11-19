@@ -72,12 +72,6 @@ public class UserService {
         return  userPage.map(user -> userMapper.toUserSearchResByAdmin(user));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
-    public Page<SearchByUserRes> searchUserByUser(String keyword, String userDob, Pageable pageable){
-        Specification<User> spec = UserByUserSpecification.searchByUser(keyword, userDob);
-        Page<User> userPage = userRepository.findAll(spec, pageable);
-        return userPage.map(user -> userMapper.toUserSearchResByUser(user));
-    }
 
     @PreAuthorize("hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN')")
     public GetUserProfileDetailByAdminRes getUserProfileByAdmin(String userId){

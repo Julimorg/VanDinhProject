@@ -103,3 +103,209 @@ export const buildFormData = (data: Record<string, unknown>): FormData => {
   });
   return formData;
 };
+
+
+/*
+ * Stock status configuration
+ */
+export const STOCK_THRESHOLDS = {
+  OUT_OF_STOCK: 0,
+  VERY_LOW: 5,
+  LOW: 20,
+} as const;
+
+/*
+ * Stock status type
+ */
+export type StockStatus = {
+  text: string;
+  color: string;
+  level: 'out' | 'very-low' | 'low' | 'normal';
+};
+
+/*
+ * Get stock status based on quantity
+ */
+export const getStockStatus = (quantity: number): StockStatus | null => {
+  if (quantity === STOCK_THRESHOLDS.OUT_OF_STOCK) {
+    return {
+      text: 'Hết hàng',
+      color: 'bg-gray-900',
+      level: 'out',
+    };
+  }
+  
+  if (quantity < STOCK_THRESHOLDS.VERY_LOW) {
+    return {
+      text: 'Gần hết',
+      color: 'bg-red-600',
+      level: 'very-low',
+    };
+  }
+  
+  if (quantity < STOCK_THRESHOLDS.LOW) {
+    return {
+      text: 'Sắp hết',
+      color: 'bg-gray-700',
+      level: 'low',
+    };
+  }
+  
+  return null;
+};
+
+  /*
+  * Check if product is out of stock
+  */
+export const isOutOfStock = (quantity: number): boolean => {
+  return quantity === STOCK_THRESHOLDS.OUT_OF_STOCK;
+};
+
+/*
+ * Check if product has low stock
+ */
+export const isLowStock = (quantity: number): boolean => {
+  return quantity > STOCK_THRESHOLDS.OUT_OF_STOCK && quantity < STOCK_THRESHOLDS.LOW;
+};
+
+/*
+ * Check if product has very low stock
+ */
+export const isVeryLowStock = (quantity: number): boolean => {
+  return quantity > STOCK_THRESHOLDS.OUT_OF_STOCK && quantity < STOCK_THRESHOLDS.VERY_LOW;
+};
+
+/*
+ * Get stock display text
+ */
+export const getStockDisplayText = (quantity: number): string => {
+  if (isOutOfStock(quantity)) {
+    return 'Hết hàng';
+  }
+  
+  if (isVeryLowStock(quantity)) {
+    return `Chỉ còn ${quantity} sản phẩm`;
+  }
+  
+  return `Còn ${quantity} sản phẩm`;
+};
+
+/*
+ * Validate and adjust quantity input
+ */
+export const validateQuantity = (
+  inputValue: number,
+  maxQuantity: number
+): { value: number; warning?: string } => {
+  let value = inputValue;
+  let warning: string | undefined;
+
+  //? Minimum is 1
+  if (value < 1) {
+    value = 1;
+  }
+
+  //? Maximum is available stock
+  if (value > maxQuantity) {
+    value = maxQuantity;
+    warning = `Chỉ còn ${maxQuantity} sản phẩm!`;
+  }
+
+  return { value, warning };
+};
+
+/*
+ * Format price with currency
+ */
+export const formatPrice = (value: number): string => {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
+/*
+ * Get product availability message
+ */
+export const getAvailabilityMessage = (quantity: number): string => {
+  if (isOutOfStock(quantity)) {
+    return 'Sản phẩm này hiện tại đã hết hàng';
+  }
+  
+  if (isVeryLowStock(quantity)) {
+    return `Nhanh tay! Chỉ còn ${quantity} sản phẩm`;
+  }
+  
+  if (isLowStock(quantity)) {
+    return 'Số lượng có hạn';
+  }
+  
+  return 'Còn hàng';
+};
+
+/*
+ * Check if user can add to cart
+ */
+export const canAddToCart = (quantity: number): boolean => {
+  return !isOutOfStock(quantity);
+};
+
+/*
+ * Get stock badge props
+ */
+export const getStockBadgeProps = (quantity: number) => {
+  const status = getStockStatus(quantity);
+  
+  if (!status) return null;
+  
+  return {
+    text: status.text,
+    className: `${status.color} text-white text-xs font-medium px-2 py-1 rounded`,
+    level: status.level,
+  };
+};
+
+/*
+ * Calculate max quantity that can be added to cart
+ * This can include business logic like max order per customer
+ */
+export const getMaxOrderQuantity = (
+  availableQuantity: number,
+  maxPerOrder: number = 99
+): number => {
+  return Math.min(availableQuantity, maxPerOrder);
+};
+
+/*
+ * Common product card configuration
+ */
+export const PRODUCT_CARD_CONFIG = {
+  //? Image heights
+  imageHeight: {
+    grid: 'h-56',
+    list: {
+      mobile: 'aspect-square',
+      desktop: 'md:aspect-auto md:h-52 lg:h-56',
+    },
+  },
+  
+  //? Text sizes
+  textSize: {
+    grid: {
+      title: 'text-sm',
+      price: 'text-xl',
+    },
+    list: {
+      title: 'text-base lg:text-lg',
+      price: 'text-2xl lg:text-3xl',
+    },
+  },
+  
+  //? Button heights
+  buttonHeight: 'h-9',
+  
+  //? Animation durations
+  transitionDuration: 'duration-300',
+} as const;

@@ -9,9 +9,9 @@ import {
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
-import { formatCurrency } from '../../../Utils/utils';
 import { getStatusConfig } from './OrderStatusConfig';
 import type { IGetMyListOrder } from '../../../Interface/Order/IGetMyListOrder';
+import { formatPrice } from '../../../Utils/utils';
 
 interface OrderCardProps {
   order: IGetMyListOrder;
@@ -91,7 +91,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
             <div>
               <p className="text-xs text-gray-500 mb-1">Tổng tiền</p>
               <p className="text-base font-semibold text-gray-900">
-                {formatCurrency(order.orderAmount)}
+                {formatPrice(order.orderAmount)}
               </p>
             </div>
           </div>

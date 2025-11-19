@@ -49,13 +49,7 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     private final CloudinaryService cloudinaryService;
-
-//    public Page<GetProductsRes> searchProducts(String keyword, String categoryName, String supplierName, Pageable pageable){
-//        Specification<Product> specification = ProductSpecification.searchProduct(keyword, categoryName, supplierName);
-//        Page<Product> products = productRepository.findAll(specification, pageable);
-//
-//        return products.map(product -> productMapper.toGetProductsResponses(product));
-//    }
+    
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public List<GetProductSelectionRes> getProductSelection(String keyword,

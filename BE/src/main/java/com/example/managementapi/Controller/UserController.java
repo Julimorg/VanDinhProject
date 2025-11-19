@@ -43,6 +43,11 @@ public class UserController {
 
     @GetMapping("/get-user")
     ApiResponse<Page<GetUserRes>> getUser(
+            //? Đây là những Page default nếu không truyền trên url
+            //? ví dụ GET /api/v1/users/search-user
+            //?          page = 0 (default 0-based)
+            //?          size = 10
+            //?          sort = createAt, asc
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
@@ -55,38 +60,6 @@ public class UserController {
                 .build();
     }
 
-
-    @GetMapping("/search-user")
-    public ApiResponse<Page<SearchByAdminRes>> searchUserByAdmin(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "status" , required = false) String status,
-            //? Đây là những Page default nếu không truyền trên url
-            //? ví dụ GET /api/v1/users/search-user
-            //?          page = 0 (default 0-based)
-            //?          size = 10
-            //?          sort = createAt, asc
-            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.ASC) Pageable pageable){
-
-        return ApiResponse.<Page<SearchByAdminRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.searchUserByAdmin(keyword, status, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
-
-    @GetMapping("/search")
-    public ApiResponse<Page<SearchByUserRes>> searchUserByUser(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "dob", required = false) String userDob,
-            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.ASC) Pageable pageable){
-        return ApiResponse.<Page<SearchByUserRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.searchUserByUser(userDob, keyword, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
     @GetMapping("/get-profile/{userId}")
     public ApiResponse<GetUserProfileDetailByAdminRes> getUserProfileByAdmin(@PathVariable String userId){
         return ApiResponse.<GetUserProfileDetailByAdminRes>

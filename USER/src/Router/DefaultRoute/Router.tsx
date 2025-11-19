@@ -4,13 +4,13 @@ import AuthPage from '../../Page/AuthenticationPage/AuthPage';
 import MainLayout from '../../Page/Main/MainLayout';
 import MyProfile from '../../Page/MyProfilePage/MyProfile';
 import OrderHistory from '../../Page/OrderHistoryPage/OrderHistoryPage';
-import ProductsPage from '../../Page/ProductPage/ProductPage';
 import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
 import ColorPage from '../../Page/ColorPage/ColorPage';
 import Dashboard from '../../Page/DashBoard/Dashboard';
 import OrderDetailPage from '../../Page/OrderDetailPage/OrderDetailPage';
-import ProductDetailPage from '../../Page/ProductPage/ProductDetailPage';
 import CartPage from '../../Page/CartPage/CartPage';
+import ProductsPage from '../../Page/ProductPage/ProductPage';
+import ProductDetailPage from '../../Page/ProductDetailPage/ProductDetailPage';
 
 
 const DefaultRouter = () => {

@@ -28,21 +28,6 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-//    @GetMapping("/search-product")
-//    public ApiResponse<Page<GetProductsRes>> searchProducts(
-//            @RequestParam(value = "keyword", required = false) String keyword,
-//            @RequestParam(value = "categoryName", required = false) String categoryName,
-//            @RequestParam(value = "supplierName", required = false) String supplierName,
-//            @PageableDefault(size = 10, sort = "createAt", direction = Sort.Direction.DESC) Pageable pageable){
-//
-//        return ApiResponse.<Page<GetProductsRes>>builder()
-//
-//                .status_code(HttpStatus.OK.value())
-//                .message(HttpStatus.OK.getReasonPhrase())
-//                .data(productService.searchProducts(keyword, categoryName, supplierName, pageable))
-//                .timestamp(LocalDateTime.now())
-//                .build();
-//    }
 
     @GetMapping("/select-products")
     public ApiResponse<List<GetProductSelectionRes>> getProductSelection(

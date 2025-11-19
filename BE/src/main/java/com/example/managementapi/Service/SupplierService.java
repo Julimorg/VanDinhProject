@@ -62,12 +62,6 @@ public class SupplierService {
                 .orElseThrow(() -> new RuntimeException("Supplier not found")));
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
-    public Page<GetSupplierRes> searchSupplier(String keyword, Pageable pageable){
-        Specification<Supplier> spec = SupplierSpecification.searchByCriteria(keyword);
-        Page<Supplier> supplierPage = supplierRepository.findAll(spec, pageable);
-        return supplierPage.map(supplier -> supplierMapper.toGetSuppliers(supplier));
-    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateSupplierRes createSupplier(CreateSupplierReq request){

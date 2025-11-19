@@ -27,19 +27,6 @@ public class ColorController {
 
     private final ColorService colorService;
 
-    @GetMapping("/search-color")
-    public ApiResponse<Page<GetColorRes>> searchColor(
-            @RequestParam(value = "keyword", required = false) String keyword,
-            @RequestParam(value = "filter", required = false) String filter,
-            @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable){
-
-        return ApiResponse.<Page<GetColorRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message("Successfully!")
-                .data(colorService.searchColor(keyword, filter, pageable))
-                .timestamp(LocalDateTime.now())
-                .build();
-    }
 
     @GetMapping("/color-selector/{supplierId}")
     public ApiResponse<List<GetColorWithSupplierRes>> getColorWithSupplier(@PathVariable String supplierId){
