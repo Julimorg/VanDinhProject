@@ -1,11 +1,27 @@
 
 import React from 'react';
-import { Card, Image, Tag, Space, InputNumber, Button, Popconfirm, message } from 'antd';
+import { Card, Image, Tag, Space, InputNumber, Button, Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import { formatCurrency } from '../../../Utils/utils';
 
+interface Product {
+  productPrice: string;
+  productQuantity: number;
+  productImage: string[];
+  productName: string;
+  categoryName: string;
+  productCode: string;
+  productVolume: string;
+  productUnit: string;
+}
+
+interface CartItemType {
+  cartItemId: string;
+  product: Product;
+}
+
 interface CartItemProps {
-  item: any;
+  item: CartItemType;
   onQuantityChange: (cartItemId: string, quantity: number) => void;
   onRemove: (cartItemId: string) => void;
 }
