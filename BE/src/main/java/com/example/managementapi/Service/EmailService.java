@@ -48,7 +48,7 @@ public class EmailService {
     //? Function dùng để send mail otp
     @Async
     public void sendOtpEmail(MailBody mailBody, int otp) throws Exception {
-        String htmlContent = loadTemplate("sendEmailForm.html");
+        String htmlContent = loadTemplate("templates/sendEmailForm.html");
         htmlContent = htmlContent.replace("{{otp}}", String.valueOf(otp));
         htmlContent = htmlContent.replace("{{email}}", mailBody.to());
 
