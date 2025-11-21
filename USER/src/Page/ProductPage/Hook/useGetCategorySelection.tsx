@@ -19,6 +19,7 @@ export const useGetCategorySelection = (options?: UseGetCategorySelectionOptions
   return useQuery<IApiResponse<IGetCategorySelectionResponse>, unknown, IApiResponse<IGetCategorySelectionResponse>, [string | undefined]>({
     queryKey: [QueryKeys.GET_CATEGORY_SELECTION], 
     queryFn: () => category_api.GetCategorySelection(),
+    enabled: false,
     ...options, 
   });
 };

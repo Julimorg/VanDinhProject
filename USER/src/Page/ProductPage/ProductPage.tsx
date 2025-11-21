@@ -6,6 +6,7 @@ import { Dropdown, Empty, Menu, message, Pagination } from 'antd';
 import {
   CloseOutlined,
   FilterOutlined,
+  LoadingOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   SortAscendingOutlined,
@@ -27,6 +28,7 @@ import { ProductSkeletonGrid } from './Components/ProductSkeletonGrid';
 import { ProductSkeletonList } from './Components/ProductSkeletonList';
 import type { IGetSupplierSelectionResponse } from '../../Interface/Supplier/IGetSupplierSelection';
 import type { IGetCategorySelectionResponse } from '../../Interface/Category/IGetCategorySelection';
+import AddToCartModal from './Components/AddToCartModel';
 
 const pageSize = 12;
 
@@ -36,8 +38,8 @@ const ProductsPage: React.FC = () => {
 
   const isChildRoute = location.pathname !== '/products';
 
-  const [searchInput, setSearchInput] = useState(''); 
-  const [searchText, setSearchText] = useState('');  
+  const [searchInput, setSearchInput] = useState('');
+  const [searchText, setSearchText] = useState('');
   const [filters, setFilters] = useState({
     category: null as string | null,
     supplier: null as string | null,
@@ -59,8 +61,8 @@ const ProductsPage: React.FC = () => {
 
   const addProductToCartMutation = useAddProductToCart(userId ?? '');
 
-  const { data: supplierData } = useGetSupplierSelections();
-  const { data: categoryData } = useGetCategorySelection();
+  const { data: supplierData, refetch: refetchSupplier, isLoading: loadingSupplier } = useGetSupplierSelections();
+  const { data: categoryData, refetch: refetchCategory, isLoading: loadingCategory } = useGetCategorySelection();
 
   const { data, isLoading } = useGetAllProducts({
     keyword: searchText || undefined,
@@ -131,20 +133,52 @@ const ProductsPage: React.FC = () => {
 
   const handleViewDetail = (productId: string) => navigate(`/products/${productId}`);
 
+  const [addingProduct, setAddingProduct] = useState<{
+    visible: boolean;
+    productName?: string;
+    status: 'loading' | 'success';
+  }>({
+    visible: false,
+    status: 'loading',
+  });
+
   const handleAddToCart = (product: IGetAllProductResponse, quantity: number) => {
     if (!userId) {
       message.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
       return;
     }
 
+    setAddingProduct({
+      visible: true,
+      productName: product.productName,
+      status: 'loading',
+    });
+
     addProductToCartMutation.mutate(
       { productId: product.productId, quantity },
       {
         onSuccess: () => {
-          toast.success(`${product.productName} đã được thêm vào giỏ!`);
+          //toast.success(`${product.productName} đã được thêm vào giỏ!`);
+          setAddingProduct((prev) => ({
+            ...prev,
+            status: 'success',
+          }));
           refetchCart();
+
+          setTimeout(() => {
+            setAddingProduct({
+              visible: false,
+              status: 'loading',
+            });
+          }, 1000);
         },
-        onError: (err) => message.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`),
+        onError: (err) => {
+          setAddingProduct({
+            visible: false,
+            status: 'loading',
+          })
+          message.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
+        }
       }
     );
   };
@@ -180,18 +214,46 @@ const ProductsPage: React.FC = () => {
         handleFilterChange(type, value === 'all' ? null : value);
       }}
     >
-      <Menu.SubMenu key="category" title="Danh mục">
-        <Menu.Item key="category-all">Tất cả danh mục</Menu.Item>
-        {categories.map((cat: string) => (
-          <Menu.Item key={`category-${cat}`}>{cat}</Menu.Item>
-        ))}
+      <Menu.SubMenu
+        key="category"
+        title="Danh mục"
+        onTitleMouseEnter={() => {
+          if (!categoryData) refetchCategory();
+        }}
+      >
+        {loadingCategory ? (
+          <Menu.Item key="category-loading" disabled icon={<LoadingOutlined spin />}>
+            Đang tải...
+          </Menu.Item>
+        ) : (
+          <>
+            <Menu.Item key="category-all">Tất cả danh mục</Menu.Item>
+            {categories.map((cat: string) => (
+              <Menu.Item key={`category-${cat}`}>{cat}</Menu.Item>
+            ))}
+          </>
+        )}
       </Menu.SubMenu>
 
-      <Menu.SubMenu key="supplier" title="Nhà cung cấp">
-        <Menu.Item key="supplier-all">Tất cả nhà cung cấp</Menu.Item>
-        {suppliers.map((sup: string) => (
-          <Menu.Item key={`supplier-${sup}`}>{sup}</Menu.Item>
-        ))}
+      <Menu.SubMenu
+        key="supplier"
+        title="Nhà cung cấp"
+        onTitleMouseEnter={() => {
+          if (!supplierData) refetchSupplier();
+        }}
+      >
+        {loadingSupplier ? (
+          <Menu.Item key="supplier-loading" disabled icon={<LoadingOutlined spin />}>
+            Đang tải...
+          </Menu.Item>
+        ) : (
+          <>
+            <Menu.Item key="supplier-all">Tất cả nhà cung cấp</Menu.Item>
+            {suppliers.map((sup: string) => (
+              <Menu.Item key={`supplier-${sup}`}>{sup}</Menu.Item>
+            ))}
+          </>
+        )}
       </Menu.SubMenu>
 
       <Menu.SubMenu key="sortBy" title={<><SortAscendingOutlined /> Sắp xếp</>}>
@@ -231,8 +293,8 @@ const ProductsPage: React.FC = () => {
                 <ShoppingCartOutlined className="text-2xl" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                  {cartItemCount > 99 ? '99+' : cartItemCount}
-                </span>
+                    {cartItemCount > 99 ? '99+' : cartItemCount}
+                  </span>
                 )}
               </div>
               <span className="font-semibold">Giỏ hàng</span>
@@ -393,6 +455,12 @@ const ProductsPage: React.FC = () => {
             />
           </div>
         )}
+
+        <AddToCartModal
+          visible={addingProduct.visible}
+          productName={addingProduct.productName}
+          status={addingProduct.status}
+        />
       </div>
     </div>
   );

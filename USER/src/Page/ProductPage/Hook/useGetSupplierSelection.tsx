@@ -18,6 +18,7 @@ export const useGetSupplierSelections = (options?: UseGetSupplierSelectionOption
   return useQuery<IApiResponse<IGetSupplierSelectionResponse>, unknown, IApiResponse<IGetSupplierSelectionResponse>, [string | undefined]>({
     queryKey: [QueryKeys.GET_SUPPLIER_SELECTION], 
     queryFn: () => supplier_api.GetSupplierSelection(),
+    enabled: false,
     ...options, 
   });
 };
