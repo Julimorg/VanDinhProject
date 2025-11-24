@@ -26,6 +26,8 @@ public class ForgetPassService {
 
     private final EmailService emailService;
 
+    private final MailService mailService;
+
     private final ForgotPasswordRepository forgotPasswordRepository;
 
     private final PasswordEncoder passwordEncoder;
@@ -73,7 +75,7 @@ public class ForgetPassService {
                 .text("Hello!")
                 .build();
 
-        emailService.sendOtpEmail(mailBody,otp);
+        mailService.sendOtpEmail(mailBody,otp);
     }
 
     public void verifyOtp(VerifyOtp checkOtp, String email){
