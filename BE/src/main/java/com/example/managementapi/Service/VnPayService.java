@@ -15,6 +15,9 @@ import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -73,14 +76,22 @@ public class VnPayService {
 //            vnp_Params.put("vnp_Locale", "vn");
 //        }
 
-        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+//        ! Bỏ config DateTime này
+//        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
+//
+//        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+//        String vnp_CreateDate = formatter.format(cld.getTime());
 
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-        String vnp_CreateDate = formatter.format(cld.getTime());
+//      ! Thay thế config DateTime phía trên
+        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime now = LocalDateTime.now(zoneId);
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+        String vnp_CreateDate = now.format(formatter);
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
-        cld.add(Calendar.MINUTE, 15);
-        String vnp_ExpireDate = formatter.format(cld.getTime());
+
+
+        String vnp_ExpireDate =  now.plusMinutes(15).format(formatter);
         //Add Params of 2.1.0 Version
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
         //Billing
