@@ -23,13 +23,13 @@ public class MailPropertiesConfiguration {
     private String fromName;
 
 
-    @PostConstruct
-    public void init() {
-        System.out.println(">>> MAIL_PROVIDER = " + provider);
-        System.out.println(">>> FROM_EMAIL = " + fromEmail);
-        System.out.println(">>> SENDGRID_API_KEY = " + (sendgrid != null ? sendgrid.getApiKey() : "NULL"));
-        System.out.println(">>> MAILGUN_API_KEY = " + (mailgun != null ? mailgun.getApiKey() : "NULL"));
-    }
+//    @PostConstruct
+//    public void init() {
+//        System.out.println(">>> MAIL_PROVIDER = " + provider);
+//        System.out.println(">>> FROM_EMAIL = " + fromEmail);
+//        System.out.println(">>> SENDGRID_API_KEY = " + (sendgrid != null ? sendgrid.getApiKey() : "NULL"));
+//        System.out.println(">>> MAILGUN_API_KEY = " + (mailgun != null ? mailgun.getApiKey() : "NULL"));
+//    }
     private final Sendgrid sendgrid = new Sendgrid();
     private final Mailgun mailgun = new Mailgun();
 

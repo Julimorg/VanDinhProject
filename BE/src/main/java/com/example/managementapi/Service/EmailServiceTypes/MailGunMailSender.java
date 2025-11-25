@@ -19,8 +19,4 @@ public class MailGunMailSender implements MailSenderStrategy {
         return provider == MailProvider.MAILGUN;
     }
 
-    @Override
-    public void send(MimeMessage message) throws Exception {
-
-    }
 }

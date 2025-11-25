@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -43,16 +44,32 @@ public class MailService {
         return MailService.FROM_EMAIL = fromEmail;
     }
 
+    private MailProvider getCurrentProvider() {
+        return MailProvider.valueOf(mailProperties.getProvider().toUpperCase());
+    }
+
     private void sendViaProvider(MimeMessage message) {
+        MailProvider provider = getCurrentProvider();
         try {
-            MailProvider provider = MailProvider.valueOf(mailProperties.getProvider().toUpperCase());
-            strategyFactory.getStrategy(provider).send(message);
+            strategyFactory.getMimeSender(provider).send(message);
         } catch (Exception e) {
-            throw new MailSendException("Send email failed with provider: " + mailProperties.getProvider(), e);
+            throw new MailSendException("Gửi email thất bại với provider: " + provider, e);
         }
     }
 
-    //? Load template từ resources
+    private void sendDynamicTemplate(String to, String templateId, Map<String, Object> data) {
+        MailProvider provider = getCurrentProvider();
+        if (provider != MailProvider.SENDGRID) {
+            throw new IllegalStateException("Dynamic Template chỉ hỗ trợ SendGrid");
+        }
+        try {
+            strategyFactory.getDynamicSender(provider).sendDynamic(to, templateId, data);
+        } catch (Exception e) {
+            throw new MailSendException("Gửi Dynamic Template thất bại", e);
+        }
+    }
+
+    // Load template từ file (cho fallback)
     public String loadTemplate(String fileName) throws Exception {
         ClassPathResource resource = new ClassPathResource(fileName);
         try (InputStream inputStream = resource.getInputStream()) {
@@ -63,20 +80,34 @@ public class MailService {
 
     //? Send OTP
     @Async
-    public void sendOtpEmail(MailBody mailBody, int otp) throws Exception {
-        String htmlContent = loadTemplate("templates/sendEmailForm.html");
-        htmlContent = htmlContent.replace("{{otp}}", String.valueOf(otp));
-        htmlContent = htmlContent.replace("{{email}}", mailBody.to());
+    public void sendOtpEmail(MailBody mailBody, int otp) {
+        if (getCurrentProvider() == MailProvider.SENDGRID) {
+            Map<String, Object> data = Map.of(
+                    "otp", String.valueOf(otp),
+                    "email", mailBody.to(),
+                    "app_name", "VanDinhStore",
+                    "year", String.valueOf(java.time.Year.now())
+            );
+            sendDynamicTemplate(mailBody.to(), "d-ed4f1bf600ad4c629a7391c031e773a3", data);
+        } else {
+            // Fallback dùng Thymeleaf + SMTP
+            try {
+                String htmlContent = loadTemplate("templates/sendEmailForm.html")
+                        .replace("{{otp}}", String.valueOf(otp))
+                        .replace("{{email}}", mailBody.to());
 
-        MimeMessage message = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                MimeMessage message = javaMailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                helper.setTo(mailBody.to());
+                helper.setFrom(mailProperties.getFromEmail());
+                helper.setSubject(mailBody.subject());
+                helper.setText(htmlContent, true);
 
-        helper.setTo(mailBody.to());
-        helper.setFrom(mailProperties.getFromEmail());
-        helper.setSubject(mailBody.subject());
-        helper.setText(htmlContent, true);
-
-        sendViaProvider(message);
+                sendViaProvider(message);
+            } catch (Exception e) {
+                throw new MailSendException("Gửi OTP fallback thất bại", e);
+            }
+        }
     }
 
     //? Send Order From User To Admin
