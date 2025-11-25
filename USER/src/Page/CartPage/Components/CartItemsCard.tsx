@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, InputNumber, Space, Image, Tag, Popconfirm, Button, Skeleton } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, SaveOutlined } from '@ant-design/icons';
 
 interface CartItem {
   cartItemId: string;
@@ -22,6 +22,7 @@ interface CartItemsCardProps {
   handleQuantityChange: (cartItemId: string, value: number) => void;
   handleRemoveItem: (cartItemId: string) => void;
   formatCurrency: (amount: number) => string;
+  handleUpdateItem: (cartItemId: string) => void;
 }
 
 const CartItemsCard: React.FC<CartItemsCardProps> = ({
@@ -30,6 +31,7 @@ const CartItemsCard: React.FC<CartItemsCardProps> = ({
   handleQuantityChange,
   handleRemoveItem,
   formatCurrency,
+  handleUpdateItem,
 }) => {
   if (isLoading) {
     return (
@@ -83,16 +85,27 @@ const CartItemsCard: React.FC<CartItemsCardProps> = ({
               </p>
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600">Số lượng:</span>
-                  <InputNumber
-                    min={1}
-                    max={100}
-                    value={item.product.productQuantity}
-                    onChange={(value) => handleQuantityChange(item.cartItemId, value!)}
-                    className="w-24"
-                  />
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2"> 
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600">Số lượng:</span>
+                    <InputNumber
+                      min={1}
+                      max={100}
+                      value={item.product.productQuantity}
+                      onChange={(value) => handleQuantityChange(item.cartItemId, value!)}
+                      className="w-20 sm:w-24"
+                    />
+                  </div>
+                  <Button
+                    type="primary"
+                    icon={<SaveOutlined />}
+                    onClick={() => handleUpdateItem(item.cartItemId)}
+                    className="sm:mt-0 mt-2 w-full sm:w-auto"
+                  >
+                    Cập nhật
+                  </Button>
                 </div>
+
                 <div className="text-right">
                   <p className="text-lg font-bold text-blue-600">
                     {formatCurrency(parseFloat(item.product.productPrice) * item.product.productQuantity)}

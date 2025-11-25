@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Empty, Button } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
@@ -25,9 +25,7 @@ const CartPage: React.FC = () => {
     },
   });
   const setCartCount = useCartStore((state) => state.setCartCount);
-
   const [localCart, setLocalCart] = useState<any[]>([]);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -62,10 +60,22 @@ const CartPage: React.FC = () => {
       )
     );
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      updateCartItemQuantityMutation.mutate({ cartItemId, quantity: value });
-    }, 500);
+    // if (debounceRef.current) clearTimeout(debounceRef.current);
+    // debounceRef.current = setTimeout(() => {
+    //   updateCartItemQuantityMutation.mutate({ cartItemId, quantity: value });
+    // }, 500);
+  };
+
+  const handleUpdateItem = (cartItemId: string) => {
+    const item = localCart.find((i) => i.cartItemId === cartItemId);
+    if (!item){
+      return;
+    }
+
+    updateCartItemQuantityMutation.mutate({
+      cartItemId: item.cartItemId,
+      quantity: item.product.productQuantity,
+    });
   };
 
   const handleRemoveItem = (cartItemId: string) => {
@@ -122,6 +132,7 @@ const CartPage: React.FC = () => {
             handleQuantityChange={handleQuantityChange}
             handleRemoveItem={handleRemoveItem}
             formatCurrency={formatCurrency}
+            handleUpdateItem={handleUpdateItem}
           />
 
           <OrderSummary
@@ -129,8 +140,8 @@ const CartPage: React.FC = () => {
             total={calculateTotal()}
             totalQuantity={calculateTotalQuantity()}
             formatCurrency={formatCurrency}
-            userId={userId ?? ''} 
-            cartId={cartResponse?.data?.cartId ?? ''} 
+            userId={userId ?? ''}
+            cartId={cartResponse?.data?.cartId ?? ''}
           />
         </div>
       </div>
