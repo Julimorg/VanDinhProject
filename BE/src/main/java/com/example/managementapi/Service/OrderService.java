@@ -201,7 +201,7 @@ public class OrderService {
             paymentUrl = vnPayService.createOrder(httpRequest, orderId);
 
             log.warn("PAYMENT URL: " + paymentUrl);
-            payment.setPaymentStatus(PaymentMethodStatus.Paid);
+            payment.setPaymentStatus(PaymentMethodStatus.Pending);
 
             paymentRepository.save(payment);
 

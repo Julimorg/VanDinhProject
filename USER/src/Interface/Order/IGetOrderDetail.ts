@@ -9,6 +9,7 @@ export interface IGetOrderDetailResponse {
   phone: string;
   userAddress: string;
   shipAddress: string;
+  paymentMethodStatus: 'Pending' | 'Paid' | 'Failed' | 'Canceled' | null;
   paymentMethod: 'CASH' | 'VN_PAY' | 'PAY_PAL' | null;
   items: IOrderItemDetail[];
   createBy: string;

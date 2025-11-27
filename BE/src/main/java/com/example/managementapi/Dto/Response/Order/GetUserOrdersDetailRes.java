@@ -3,6 +3,7 @@ package com.example.managementapi.Dto.Response.Order;
 
 import com.example.managementapi.Enum.OrderStatus;
 import com.example.managementapi.Enum.PaymentMethod;
+import com.example.managementapi.Enum.PaymentMethodStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,6 +28,8 @@ public class GetUserOrdersDetailRes {
     private String phone;
     private String userAddress;
     private List<CreateOrderItemRes> items;
+
+    private PaymentMethodStatus paymentMethodStatus;
 
     private PaymentMethod paymentMethod;
 

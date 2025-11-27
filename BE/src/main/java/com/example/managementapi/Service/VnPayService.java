@@ -4,9 +4,13 @@ package com.example.managementapi.Service;
 import com.example.managementapi.Configuration.VNPAYConfig;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.Payment;
+import com.example.managementapi.Enum.OrderStatus;
+import com.example.managementapi.Enum.PaymentMethodStatus;
 import com.example.managementapi.Repository.OrderRepository;
+import com.example.managementapi.Repository.PaymentRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletRequestWrapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,8 @@ public class VnPayService {
 
     private final OrderRepository orderRepository;
 
+    private final PaymentRepository paymentRepository;
+
     private final VNPAYConfig vnPayConfig;
 
     public String createOrder(HttpServletRequest request, String orderId) throws UnsupportedEncodingException {
@@ -42,7 +48,6 @@ public class VnPayService {
         BigDecimal vnpAmount = amount.multiply(BigDecimal.valueOf(100));
 
         String vnp_IpAddr = VNPAYConfig.getIpAddress(request);
-        String vnp_TxnRef = VNPAYConfig.getRandomNumber(8);
         String vnp_TmnCode = VNPAYConfig.vnp_TmnCode;
         String vnp_Version = VNPAYConfig.vnp_Version;
         String vnp_Command = VNPAYConfig.vnp_Command;
@@ -56,7 +61,7 @@ public class VnPayService {
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
+        vnp_Params.put("vnp_TxnRef", orderId);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang " + orderId);
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_ReturnUrl", VNPAYConfig.vnp_ReturnUrl);
@@ -158,6 +163,114 @@ public class VnPayService {
 //        resp.getWriter().write(gson.toJson(job));
 
 
+    }
+
+    public Map<String, String> handleReturn(HttpServletRequest request) {
+        Map<String, String> result = new HashMap<>();
+        Map<String, String> fields = new HashMap<>();
+
+        request.getParameterMap().forEach((k, v) -> fields.put(k, v[0]));
+
+        String vnp_SecureHash = fields.remove("vnp_SecureHash");
+        String signValue = VNPAYConfig.hashAllFields(fields);
+
+        result.put("orderId", fields.get("vnp_TxnRef"));
+        result.put("amount", new BigDecimal(fields.get("vnp_Amount"))
+                .divide(BigDecimal.valueOf(100)).toPlainString());
+        result.put("transactionNo", fields.get("vnp_TransactionNo"));
+        result.put("bankCode", fields.get("vnp_BankCode"));
+
+        if (signValue.equals(vnp_SecureHash)) {
+            if ("00".equals(fields.get("vnp_ResponseCode"))) {
+                result.put("success", "true");
+                result.put("message", "Thanh toán thành công! Đơn hàng đang được xử lý...");
+            } else {
+                result.put("success", "false");
+                result.put("message", "Thanh toán thất bại (mã: " + fields.get("vnp_ResponseCode") + ")");
+            }
+        } else {
+            result.put("success", "false");
+            result.put("message", "Chữ ký không hợp lệ – Có thể bị giả mạo!");
+        }
+        return result;
+    }
+
+    @Transactional
+    public Map<String, String> handleIpn(Map<String, String> fields) {
+        Map<String, String> resp = new HashMap<>();
+        resp.put("RspCode", "99");
+        resp.put("Message", "Unknown error");
+
+        String vnp_SecureHash = fields.remove("vnp_SecureHash");
+        if (vnp_SecureHash == null) {
+            resp.put("RspCode", "97");
+            resp.put("Message", "Invalid signature");
+            return resp;
+        }
+
+        String signValue = VNPAYConfig.hashAllFields(fields);
+        if (!signValue.equals(vnp_SecureHash)) {
+            log.warn("IPN: Chữ ký không hợp lệ! Có thể bị fake.");
+            resp.put("RspCode", "97");
+            resp.put("Message", "Invalid signature");
+            return resp;
+        }
+
+        String orderId = fields.get("vnp_TxnRef");
+        String vnpAmountStr = fields.get("vnp_Amount");
+        String responseCode = fields.get("vnp_ResponseCode");
+        String transactionNo = fields.get("vnp_TransactionNo");
+
+        Order order = orderRepository.findById(orderId).orElse(null);
+        if (order == null) {
+            resp.put("RspCode", "01");
+            resp.put("Message", "Order not found");
+            return resp;
+        }
+
+        Payment payment = order.getPayment();
+
+        //? Kiểm tra số tiền
+        BigDecimal vnpAmount = new BigDecimal(vnpAmountStr).divide(BigDecimal.valueOf(100));
+        if (vnpAmount.compareTo(order.getOrderAmount()) != 0) {
+            log.warn("IPN: Số tiền không khớp! Order: {} | VNPAY: {}", order.getOrderAmount(), vnpAmount);
+            resp.put("RspCode", "04");
+            resp.put("Message", "Invalid amount");
+            return resp;
+        }
+
+        //? Tránh xử lý 2 lần (idempotent)
+        if (payment.getPaymentStatus() == PaymentMethodStatus.Paid) {
+            log.info("IPN: Đơn hàng {} đã được xác nhận trước đó", orderId);
+            resp.put("RspCode", "02");
+            resp.put("Message", "Order already confirmed");
+            return resp;
+        }
+
+        if ("00".equals(responseCode)) {
+            //? THANH TOÁN THÀNH CÔNG → CẬP NHẬT DB
+            payment.setPaymentStatus(PaymentMethodStatus.Paid);
+            payment.setBankTransactionNo(transactionNo);
+            payment.setPaidAt(LocalDateTime.now());
+            order.setUpdateAt(LocalDateTime.now());
+
+            paymentRepository.save(payment);
+            orderRepository.save(order);
+
+            log.info("IPN: Thanh toán THÀNH CÔNG đơn hàng {} – TransactionNo: {}", orderId, transactionNo);
+
+            resp.put("RspCode", "00");
+            resp.put("Message", "Confirm Success");
+        } else {
+            payment.setPaymentStatus(PaymentMethodStatus.Failed);
+            paymentRepository.save(payment);
+
+            log.warn("IPN: Thanh toán THẤT BẠI đơn {} – ResponseCode: {}", orderId, responseCode);
+            resp.put("RspCode", "01");
+            resp.put("Message", "Payment Failed");
+        }
+
+        return resp;
     }
 
     public int orderReturn(HttpServletRequest request){

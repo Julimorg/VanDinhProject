@@ -56,6 +56,9 @@ public class Payment {
 
     @CreationTimestamp
     private LocalDateTime createAt;
+
+    private LocalDateTime paidAt;
+
     @UpdateTimestamp
     private LocalDateTime updateAt;
 

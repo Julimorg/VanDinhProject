@@ -15,6 +15,7 @@ const cookieStorage: StateStorage = {
       //! Nên đặt sameSite: 'none' cho phép FE và BE khác domain với nhau khi lên HTTPS
       sameSite: 'lax',     
       path: "/",   
+    
     });
   },
   removeItem: (name: string) => {
