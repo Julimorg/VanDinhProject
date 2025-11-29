@@ -39,11 +39,11 @@ public class SecurityConfiguration {
     private final String[] PUBLIC_POST_ENDPOINTS = {
             "/api/v1/auth/**",
             "/api/v1/reset-pass/**",
-            "/api/v1/vn-pay/**"
+            "/api/v1/vnpay/**"
     };
     private final String[] PUBLIC_SWAGGER = {"/swagger-ui/**","/v3/api-docs/**", "/webjars/**"};
     private final String[] PUBLIC_VNPAY = {
-            "/api/v1/vn-pay/**"
+            "/api/v1/vnpay/**"
     };
 
     @NonFinal
