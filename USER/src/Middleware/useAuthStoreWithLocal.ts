@@ -1,9 +1,9 @@
+
 import { create } from 'zustand';
-import {persist } from 'zustand/middleware';
-// import cookieStorage from './cookieStorage';
+import { persist } from 'zustand/middleware';
 import type { AuthState } from '../Interface/Auth/IAuth';
 
-export const useAuthStoreCookiesStorage = create<AuthState>()(
+export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       accessToken: null,
@@ -62,4 +62,3 @@ export const useAuthStoreCookiesStorage = create<AuthState>()(
     }
   )
 );
-

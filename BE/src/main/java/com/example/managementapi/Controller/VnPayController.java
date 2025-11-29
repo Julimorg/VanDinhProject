@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/v1/vn-pay")
+@RequestMapping("api/v1/vnpay")
 @RequiredArgsConstructor
 @Slf4j
 public class VnPayController {
@@ -45,10 +45,7 @@ public class VnPayController {
 
     }
 
-    // ==================================================================
-    // 3. IPN URL – VNPAY gọi NGẦM (quan trọng nhất – cập nhật DB thật sự)
-    // ==================================================================
-    @PostMapping("/vnpay-ipn")
+    @PostMapping("/ipn")
     public ApiResponse<String> paymentIpn(HttpServletRequest request) {
 
         Map<String, String> fields = new java.util.HashMap<>();
