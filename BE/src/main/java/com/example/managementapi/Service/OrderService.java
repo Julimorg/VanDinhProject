@@ -19,6 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -95,6 +97,13 @@ public class OrderService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Optional<Order> existingPendingOrder = orderRepository.findFirstByUserIdAndOrderStatus(userId, OrderStatus.Pending);
+
+        if (!existingPendingOrder.isEmpty()) {
+            Order pendingOrder = existingPendingOrder.get();
+            return orderMapper.toCreateOrderFromCartRes(pendingOrder);
+        }
 
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
@@ -170,6 +179,8 @@ public class OrderService {
 
         Payment payment = userOrder.getPayment();
 
+        Cart cart = user.getCart();
+
         String paymentUrl = null;
 
         if (request.getPaymentMethod() == PaymentMethod.CASH)
@@ -186,6 +197,14 @@ public class OrderService {
             paymentRepository.save(payment);
 
             orderRepository.save(userOrder);
+
+            if(cart != null){
+                cart.getCartItems().clear();
+                cart.setTotalQuantity(0);
+                cart.setTotalPrice(BigDecimal.ZERO);
+
+                cartRepository.save(cart);
+            }
         }
 
         if(request.getPaymentMethod() == PaymentMethod.VN_PAY)
