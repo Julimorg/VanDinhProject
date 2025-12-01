@@ -98,13 +98,6 @@ public class OrderService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Optional<Order> existingPendingOrder = orderRepository.findFirstByUserIdAndOrderStatus(userId, OrderStatus.Pending);
-
-        if (!existingPendingOrder.isEmpty()) {
-            Order pendingOrder = existingPendingOrder.get();
-            return orderMapper.toCreateOrderFromCartRes(pendingOrder);
-        }
-
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
