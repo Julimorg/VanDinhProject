@@ -1,8 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Carousel, Typography, Button } from 'antd';
 import { ShoppingCartOutlined, EyeOutlined } from '@ant-design/icons';
-import Header from '../../Components/Header/Header';
-import Footer from '../../Components/Footer/Footer';
+
 
 const { Title, Text } = Typography;
 
@@ -128,7 +127,7 @@ function Dashboard() {
   return (
     <div className="flex-1 bg-gray-50 min-h-screen">
       {/* Header */}
-     <Header isMobile/>
+     {/* <Header isMobile/> */}
       {/* Banner Carousel */}
       <BannerCarousel />
 
@@ -148,7 +147,7 @@ function Dashboard() {
       </Row>
 
       {/* Footer */}
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
