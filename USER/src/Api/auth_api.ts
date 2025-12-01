@@ -3,7 +3,7 @@ import type { ILogOutRequest } from "../Interface/Auth/ILogOut";
 import type { IRefreshTokenResponse } from "../Interface/Auth/IRefreshToken";
 import type { IRegisterRequest, IRegisterResponse } from "../Interface/Auth/IRegister";
 import type { IApiResponse } from "../Interface/IApiResponse";
-import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
+import { useAuthStore } from "../Middleware/useAuthStoreWithLocal";
 import axiosClient from "./axiosClient";
 
 export const auth_api_handler = {
@@ -21,7 +21,7 @@ export const auth_api_handler = {
 
      RefreshToken: async (): Promise<IApiResponse<IRefreshTokenResponse>> => {
         const url = '/auth/refresh-token';
-        const refreshToken = useAuthStoreCookiesStorage.getState().refreshToken;
+        const refreshToken = useAuthStore.getState().refreshToken;
 
         if (!refreshToken) {
         console.error('Không có refresh token trong store');

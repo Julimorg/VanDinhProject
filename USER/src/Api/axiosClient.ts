@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { PUBLIC_API } from '../Utils/env_dev_handler';
-import { auth_api_handler } from './auth_api';
 import { useAuthStore } from '../Middleware/useAuthStoreWithLocal';
+import { auth_api_handler } from './auth_api';
 
 const axiosClient = axios.create({
   baseURL: PUBLIC_API,
@@ -31,7 +31,7 @@ axiosClient.interceptors.request.use(
       '/auth/sign-up',
       '/auth/refresh-token',
       '/auth/forgot-password',
-      '/reset-pass', // nếu có
+      '/reset-pass', 
     ];
 
     const isPublic = publicEndpoints.some((path) =>

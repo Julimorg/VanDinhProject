@@ -82,7 +82,7 @@ public class AuthenticateService {
         if(!authenticate)
             throw new AppException(ErrorCode.UNAUTHORIZED);
 
-        var accessToken = generateToken(user, 100, String.valueOf(TokenType.ACCESS_TOKEN));
+        var accessToken = generateToken(user, EXPIRY_DATE, String.valueOf(TokenType.ACCESS_TOKEN));
 
         var refreshToken = generateToken(user, REFRESH_DURATION, String.valueOf(TokenType.REFRESH_TOKEN));
 
