@@ -38,6 +38,7 @@ import { IUpdateOrderRequest, IUpdateOrderResponse } from '@/Interface/Order/IUp
 import { IGetOrderDetailResponse } from '@/Interface/Order/IGetOrderDetail';
 import { IUpdateOrderItemRequest, IUpdateOrderItemResponse } from '@/Interface/Order/IUpdateOrderItem';
 import { IApproveOrderStatusRequest, IApproveOrderStatusResponse } from '@/Interface/Order/IApproveOrderStatus';
+import { IUserOrderResponse } from '@/Interface/Order/IUserOrder';
 
 
 export const docApi = {
@@ -495,6 +496,31 @@ export const docApi = {
   },
 
   //* ======================================================== Order  ======================================================== */
+  
+  GetUserListOrder: async (
+        userId: string,
+        params: {
+            keyword?: string,
+            status?: string,
+            page?: number,
+            size?: number,
+            sort?: string,
+        } = {}
+    ): Promise<IApiResponse<IApiResponsePagination<IUserOrderResponse>>> => {
+        const { keyword, status, page = 1, size = 5, sort = 'createAt, desc' } = params;
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString(),
+            sort,
+            ...(keyword && { keyword }),
+            ...(status && { status }),
+        });
+
+        const url = `/order/list-orders/${userId}?${queryParams.toString()}`;
+        const res = await axiosClient.get(url);
+        return res.data;
+    },
+  
   CreateOrder: async (userId: string, body: ICreateOrderRequest): Promise<IApiResponse<ICreateOrderResponse>> => {
     const url = `/order/create-order/${userId}`;
     const res = await axiosClient.post(url, body, {

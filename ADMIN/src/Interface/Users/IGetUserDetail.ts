@@ -11,7 +11,6 @@ export type IGetUserDetailResponse = {
     userDob: string,
     status: string,
     roles: UsersRole[],
-    orders: UserOrders[],
     creatAt: string,
     updateAt: string,
 }
@@ -21,18 +20,18 @@ export type UsersRole = {
     description: string,
 }
 
-export type UserOrders = {
-    orderId: string,
-    orderCode: string,
-    shipAddress: string,
-    orderAmount: number,
-    orderStatus: string,
-    paymentMethod: string,
-    createBy: string,
-    approvedBy: string,
-    canceledBy: string,
-    createAt: string,
-    updateAt: string,
-    deleteAt: string,
-    compeletAt: string
-}
+// export type UserOrders = {
+//     orderId: string,
+//     orderCode: string,
+//     shipAddress: string,
+//     orderAmount: number,
+//     orderStatus: string,
+//     paymentMethod: string,
+//     createBy: string,
+//     approvedBy: string,
+//     canceledBy: string,
+//     createAt: string,
+//     updateAt: string,
+//     deleteAt: string,
+//     compeletAt: string
+// }
