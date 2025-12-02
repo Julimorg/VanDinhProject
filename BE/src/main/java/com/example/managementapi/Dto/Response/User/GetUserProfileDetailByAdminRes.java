@@ -29,7 +29,7 @@ public class GetUserProfileDetailByAdminRes {
 
     private Set<RoleInGetUserRes> roles;
 
-    private List<OrderInGetUserDetailByAdminRes> orders;
+//    private List<OrderInGetUserDetailByAdminRes> orders;
 
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
