@@ -11,6 +11,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -39,7 +40,8 @@ public class SecurityConfiguration {
     private final String[] PUBLIC_POST_ENDPOINTS = {
             "/api/v1/auth/**",
             "/api/v1/reset-pass/**",
-            "/api/v1/vn-pay/**"
+            "/api/v1/vn-pay/**",
+            "/ws/**"
     };
     private final String[] PUBLIC_SWAGGER = {"/swagger-ui/**","/v3/api-docs/**", "/webjars/**"};
     private final String[] PUBLIC_VNPAY = {
@@ -55,10 +57,8 @@ public class SecurityConfiguration {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedOrigins(List.of(
-                "http://localhost:5173",
-                "http://localhost:5174",
-                "http://localhost:3000",
-                "http://localhost:5174",
+                "http://localhost:*",
+                "http://127.0.0.1:5500",
                 "https://van-dinh-store.vercel.app/",
                 "https://van-dinh-project.vercel.app"
         ));
@@ -86,6 +86,7 @@ public class SecurityConfiguration {
         //? Config ra những enpoint ko cần secure với httpSecurity.authorizeHttpRequests()
         httpSecurity.authorizeHttpRequests(request ->
                 request.requestMatchers(HttpMethod.POST, PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/reset-pass/change-password/**").permitAll()
                         .requestMatchers(PUBLIC_SWAGGER).permitAll()
                         .requestMatchers(HttpMethod.GET,PUBLIC_VNPAY).permitAll()
@@ -135,4 +136,14 @@ public class SecurityConfiguration {
         return converter;
     }
 
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/ws/**",           // WebSocket endpoint
+                "/**.html",         // file HTML test
+                "/**.js",           // nếu bạn để JS riêng
+                "/**.css",
+                "/favicon.ico"
+        );
+    }
 }
