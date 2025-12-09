@@ -25,9 +25,9 @@ public class UserNotifications {
     @JoinColumn(name = "notificationId")
     private Notifications notifications;
 
-    private Long userId;
+    private String userId;
 
-    private Boolean isRead = false;
+    private Boolean isRead;
 
     private LocalDateTime readAt;
 
