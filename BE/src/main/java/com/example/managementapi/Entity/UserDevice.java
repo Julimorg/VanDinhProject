@@ -19,7 +19,7 @@ public class UserDevice {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String userDeviceId;
 
-    private Long userId;
+    private String userId;
 
     @Enumerated(EnumType.STRING)
     private DeviceType deviceType;

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Realtime Notification - Ecommerce (Đã có Login thật)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 1350px; margin: auto; display: flex; gap: 25px; flex-wrap: wrap; }
+        .panel { background: white; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.12); padding: 28px; flex: 1; min-width: 320px; }
+        h1 { color: #2c3e50; text-align: center; margin: 0 0 20px; font-size: 26px; }
+        .user-id { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 14px; border-radius: 12px; text-align: center; font-weight: bold; font-size: 19px; }
+        input, textarea { width: 100%; padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 10px; font-size: 15px; box-sizing: border-box; }
+        button { padding: 14px 24px; margin: 8px 4px; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: all 0.3s; }
+        button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
+        .btn-login { background: #3498db; color: white; }
+        .btn-private { background: #e74c3c; color: white; }
+        .btn-broadcast { background: #2ecc71; color: white; }
+        .notifications { max-height: 580px; overflow-y: auto; margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; }
+        .noti-item { padding: 18px; margin: 12px 0; border-radius: 12px; background: white; border-left: 6px solid #3498db; box-shadow: 0 3px 12px rgba(0,0,0,0.08); animation: slideIn 0.6s ease; }
+        .noti-item.promotion { border-left-color: #9b59b6; }
+        .noti-item.order { border-left-color: #e67e22; }
+        .noti-item.system { border-left-color: #95a5a6; }
+        @keyframes slideIn { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .bell { position: fixed; top: 20px; right: 20px; font-size: 42px; color: #e74c3c; z-index: 9999; animation: ring 1.8s infinite; }
+        @keyframes ring { 0%,100% { transform: rotate(0); } 10% { transform: rotate(20deg); } 20% { transform: rotate(-18deg); } 30% { transform: rotate(15deg); } 40% { transform: rotate(-10deg); } }
+        .status { padding: 12px; text-align: center; font-weight: bold; border-radius: 10px; margin: 15px 0; font-size: 16px; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .login-form { background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Admin Panel -->
+    <div class="panel">
+        <h1>ADMIN PANEL</h1>
+        <div class="user-id">ADMIN CONTROLLER</div>
+
+        <!-- Form Login Admin -->
+        <div class="login-form">
+            <h3>Login Admin để gửi thông báo</h3>
+            <input type="text" id="adminUsername" placeholder="Username (ví dụ: admin)" value="admin">
+            <input type="password" id="adminPassword" placeholder="Password" value="123456">
+            <button class="btn-login" onclick="loginAsAdmin()">Login Admin</button>
+            <div id="adminStatus" class="status disconnected">Chưa đăng nhập</div>
+        </div>
+
+        <h3>Gửi thông báo riêng</h3>
+        <input type="text" id="targetUserId" placeholder="User ID (ví dụ: 123)" value="123">
+        <textarea id="privateMessage" placeholder="Nội dung thông báo riêng..."></textarea>
+        <button class="btn-private" onclick="sendPrivate()">Gửi Riêng</button>
+
+        <h3>Gửi cho tất cả</h3>
+        <textarea id="broadcastMessage" placeholder="Thông báo chung..."></textarea>
+        <button class="btn-broadcast" onclick="broadcast()">Broadcast</button>
+    </div>
+
+    <!-- User Panel -->
+    <div class="panel">
+        <h1>USER VIEW</h1>
+        <div class="user-id">User ID: <span id="currentUserId">Chưa kết nối</span></div>
+        
+        <div style="margin:20px 0;">
+            <input type="text" id="loginUserId" placeholder="Nhập User ID của bạn" value="123">
+            <button class="btn-login" onclick="connectAsUser()">Kết nối Realtime</button>
+        </div>
+
+        <div id="connectionStatus" class="status disconnected">Chưa kết nối WebSocket</div>
+
+        <h3>Thông báo realtime</h3>
+        <div id="notifications" class="notifications">
+            <p style="text-align:center;color:#888">Đang chờ thông báo...</p>
+        </div>
+    </div>
+</div>
+
+<i class="fas fa-bell bell" id="bellIcon" style="display:none;"></i>
+
+<script>
+    let stompClient = null;
+    let currentUserId = null;
+    let adminToken = null;  // Lưu token sau khi login
+
+    const WS_URL = 'http://localhost:8080/ws';
+    const API_BASE = 'http://localhost:8080/api/admin';
+    const LOGIN_URL = 'http://localhost:8080/api/v1/auth/log-in';  // API login của bạn
+
+    // === LOGIN ADMIN ===
+    function loginAsAdmin() {
+        const username = document.getElementById('adminUsername').value.trim();
+        const password = document.getElementById('adminPassword').value.trim();
+
+        if (!username || !password) return alert('Nhập username và password!');
+
+        fetch(LOGIN_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Login thất bại');
+            return res.json();
+        })
+        .then(data => {
+            adminToken = data.data.accessToken;
+            document.getElementById('adminStatus').textContent = 'Đã login ADMIN thành công!';
+            document.getElementById('adminStatus').className = 'status connected';
+            alert('Login Admin thành công! Giờ bạn có thể gửi thông báo');
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Login thất bại: ' + err.message);
+        });
+    }
+
+    // === KẾT NỐI WEBSOCKET USER ===
+    function connectAsUser() {
+        currentUserId = document.getElementById('loginUserId').value.trim() || '123';
+        document.getElementById('currentUserId').textContent = currentUserId;
+
+        if (stompClient) stompClient.disconnect();
+
+        const socket = new SockJS(WS_URL);
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, frame => {
+            console.log('WebSocket connected:', frame);
+            document.getElementById('connectionStatus').textContent = 'Đã kết nối realtime!';
+            document.getElementById('connectionStatus').className = 'status connected';
+
+            stompClient.subscribe('/user/queue/notifications', msg => showNotification(JSON.parse(msg.body)));
+            stompClient.subscribe('/topic/public-notifications', msg => showNotification(JSON.parse(msg.body)));
+        });
+    }
+
+    // === GỬI THÔNG BÁO ===
+    function sendPrivate() {
+        if (!adminToken) return alert('Vui lòng Login Admin trước!');
+        const targetId = document.getElementById('targetUserId').value.trim();
+        const message = document.getElementById('privateMessage').value.trim();
+        if (!targetId || !message) return alert('Thiếu thông tin!');
+
+        fetch(API_BASE + '/private', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + adminToken
+            },
+            body: JSON.stringify({
+                targetUserId: targetId,
+                title: "Thông báo từ Admin",
+                message: message,
+                type: "SYSTEM"
+            })
+        }).then(() => {
+            document.getElementById('privateMessage').value = '';
+            alert('Đã gửi riêng thành công!');
+        });
+    }
+
+    function broadcast() {
+        if (!adminToken) return alert('Vui lòng Login Admin trước!');
+        const message = document.getElementById('broadcastMessage').value.trim();
+        if (!message) return alert('Nhập nội dung!');
+
+        fetch(API_BASE + '/broadcast', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + adminToken
+            },
+            body: JSON.stringify({
+                title: "Khuyến mãi HOT!",
+                message: message,
+                type: "PROMOTION"
+            })
+        }).then(() => {
+            document.getElementById('broadcastMessage').value = '';
+            // alert('Broadcast thành công!');
+        });
+    }
+
+    function showNotification(noti) {
+        const div = document.createElement('div');
+        div.className = `noti-item ${noti.type?.toLowerCase() || 'system'}`;
+        div.innerHTML = `
+            <strong>${noti.title || 'Thông báo'}</strong><br>
+            <p style="margin:8px 0;">${noti.message}</p>
+            <small>${new Date(noti.createdAt).toLocaleString('vi-VN')}</small>
+        `;
+        const list = document.getElementById('notifications');
+        list.innerHTML = '';
+        list.prepend(div);
+
+        const bell = document.getElementById('bellIcon');
+        bell.style.display = 'block';
+        setTimeout(() => bell.style.display = 'none', 3000);
+    }
+
+    // Tự động kết nối User khi mở trang
+    window.onload = () => connectAsUser();
+</script>
+</body>
+</html>
