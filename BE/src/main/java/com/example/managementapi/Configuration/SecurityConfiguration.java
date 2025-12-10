@@ -37,6 +37,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfiguration {
 
+    @NonFinal
+    @Value("${signer.key}")
+    protected String SIGNER_KEY;
+
+
     private final String[] PUBLIC_POST_ENDPOINTS = {
             "/api/v1/auth/**",
             "/api/v1/reset-pass/**",
@@ -48,10 +53,16 @@ public class SecurityConfiguration {
             "/api/v1/vn-pay/**"
     };
 
-    @NonFinal
-    @Value("${signer.key}")
-    protected String SIGNER_KEY;
-
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/ws/**",
+                "/**.html",
+                "/**.js",
+                "/**.css",
+                "/favicon.ico"
+        );
+    }
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -136,14 +147,4 @@ public class SecurityConfiguration {
         return converter;
     }
 
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring().requestMatchers(
-                "/ws/**",           // WebSocket endpoint
-                "/**.html",         // file HTML test
-                "/**.js",           // nếu bạn để JS riêng
-                "/**.css",
-                "/favicon.ico"
-        );
-    }
 }

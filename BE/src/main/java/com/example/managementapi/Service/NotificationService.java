@@ -10,15 +10,19 @@ import com.example.managementapi.Entity.User;
 import com.example.managementapi.Entity.UserNotifications;
 import com.example.managementapi.Enum.UserNotifactionSendChannel;
 import com.example.managementapi.Enum.UserNotifactionStatus;
+import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.NotificationMapper;
 import com.example.managementapi.Repository.NotificationsRepository;
 import com.example.managementapi.Repository.UserDeviceRepository;
 import com.example.managementapi.Repository.UserNotificationsRepository;
 import com.example.managementapi.Repository.UserRepository;
+import com.example.managementapi.Util.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -32,8 +36,6 @@ public class NotificationService {
 
     private final SimpMessagingTemplate messagingTemplate;
 
-    private final UserRepository userRepository;
-
     private final NotificationsRepository notiRepo;
 
     private final UserDeviceRepository deviceRepo;
@@ -42,17 +44,29 @@ public class NotificationService {
 
     private final NotificationMapper notificationMapper;
 
+    private final UserRepository userRepo;
+
+    private final SecurityContext securityUtils;
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public SendNotiToOneUserOrManyUserRes sendToOneUserOrManyUser(SendNotiToOneUserOrManyUserReq req){
 
         if (req.getUserId() == null || req.getUserId().isEmpty()) throw new RuntimeException("User id is null");
 
+//        String currentUserId = SecurityContextHolder.getContext()
+//                .getAuthentication()
+//                .getName();
+//
+//        User sender = userRepo.findById(currentUserId)
+//                .orElseThrow(() -> new RuntimeException("Can not find User Send !"));
+
+
         Notifications noti = notiRepo.save(Notifications.builder()
                 .title(req.getTitle())
                 .message(req.getMessage())
                 .type(req.getType())
-                .createBy("ADMIN")
+                .createBy("Admin")
                 .build());
 
         List<UserNotifications> savedUserNotis = new ArrayList<>();
@@ -62,6 +76,7 @@ public class NotificationService {
                     .notifications(noti)
                     .userId(userId)
                     .isRead(false)
+                    .deliveredAt(LocalDateTime.now())
                     .status(UserNotifactionStatus.PENDING)
                     .sendChannel(UserNotifactionSendChannel.WEB)
                     .build();
@@ -94,27 +109,12 @@ public class NotificationService {
                 log.info("User {} is OFFLINE – notification saved to DB, will see when login", userId);
             }
 
-            userNotiRepo.save(un);
-
+            savedUserNotis.add(un);
         }
 
-        userNotiRepo.saveAll(savedUserNotis);
+        List<UserNotifications> savedList = userNotiRepo.saveAll(savedUserNotis);
 
-        List<UserNotiDetail> details = savedUserNotis.stream()
-                .map(un -> UserNotiDetail.builder()
-                        .userId(un.getUserId())
-                        .userNotificationId(un.getUserNotificationId())
-                        .status(un.getStatus().name())
-                        .sendChannel(un.getSendChannel().name())
-                        .isRead(un.getIsRead())
-                        .deliveredAt(un.getDeliveredAt())
-                        .build())
-                .toList();
-
-        return SendNotiToOneUserOrManyUserRes.builder()
-                .notificationId(noti.getNotificationId())
-                .results(details)
-                .build();
+        return notificationMapper.toSendNotiResponse(noti, savedList);
     }
 
     // Gửi thông báo riêng cho 1 user (dùng userId làm principal name)
