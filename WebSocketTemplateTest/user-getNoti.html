@@ -1,213 +1,201 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <title>Notification Realtime – Test Hoàn Chỉnh</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- STOMP + SockJS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <style>
-        body {font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding: 20px;}
-        .container {max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden;}
-        header {background: #2c3e50; color: white; padding: 20px; text-align: center; position: relative;}
-        .user-info {position: absolute; top: 15px; right: 20px; font-size: 14px;}
-        .logout-btn {background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;}
-        .bell-container {position: relative; display: inline-block; margin-left: 20px;}
-        .bell {font-size: 28px; color: #f1c40f; cursor: pointer;}
-        .badge {position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center;}
-        .dropdown {display: none; position: absolute; right: 0; top: 50px; width: 380px; max-height: 500px; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;}
-        .dropdown.show {display: block;}
-        .noti-item {padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s;}
-        .noti-item:hover {background: #f8f9fa;}
-        .noti-item.read {opacity: 0.7;}
-        .noti-item.unread {font-weight: bold; background: #eef5ff;}
-        .noti-title {margin: 0 0 5px; font-size: 15px;}
-        .noti-msg {margin: 0; font-size: 13px; color: #555;}
-        .noti-time {font-size: 11px; color: #999; margin-top: 5px;}
-        .login-box {max-width: 400px; margin: 50px auto; padding: 30px; background: 30px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center;}
-        input, button {width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd;}
-        button {background: #3498db; color: white; font-size: 16px; cursor: pointer;}
-        button:hover {background: #2980b9;}
-        .hidden {display: none;}
-        .status {padding: 10px; text-align: center; font-weight: bold;}
-        .online {color: green;}
-        .offline {color: red;}
-    </style>
+  <meta charset="UTF-8" />
+  <title>Notification Realtime – Test Hoàn Chỉnh (Phiên bản cuối)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* Giữ nguyên CSS như phiên bản trước (để ngắn gọn mình không copy lại toàn bộ) */
+    body { font-family: "Segoe UI", sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); overflow: hidden; }
+    header { background: #2c3e50; color: white; padding: 20px; text-align: center; position: relative; }
+    .user-info { position: absolute; top: 15px; right: 20px; font-size: 14px; }
+    .logout-btn { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin-left: 10px; }
+    .bell-container { position: relative; display: inline-block; margin-left: 20px; }
+    .bell { font-size: 28px; color: #f1c40f; cursor: pointer; }
+    .badge { position: absolute; top: -8px; right: -8px; background: #e74c3c; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .dropdown { display: none; position: absolute; right: 0; top: 50px; width: 380px; max-height: 500px; overflow-y: auto; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; }
+    .dropdown.show { display: block; }
+    .noti-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: 0.2s; }
+    .noti-item:hover { background: #f8f9fa; }
+    .noti-item.unread { font-weight: bold; background: #eef5ff; }
+    .noti-title { margin: 0 0 5px; font-size: 15px; }
+    .noti-msg { margin: 0; font-size: 13px; color: #555; }
+    .noti-time { font-size: 11px; color: #999; margin-top: 5px; }
+    .login-box { max-width: 400px; margin: 50px auto; padding: 30px; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); text-align: center; }
+    input, button { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #ddd; }
+    button { background: #3498db; color: white; font-size: 16px; cursor: pointer; }
+    .hidden { display: none; }
+    .status { padding: 10px; text-align: center; font-weight: bold; }
+    .online { color: green; }
+    .offline { color: red; }
+  </style>
 </head>
 <body>
-
-<div id="loginBox" class="login-box">
-    <h2>Đăng Nhập Để Nhận Thông Báo</h2>
-    <input type="text" id="username" placeholder="Username" value="admin">
-    <input type="password" id="password" placeholder="Password" value="123456">
+  <div id="loginBox" class="login-box">
+    <h2>Đăng Nhập Để Nhận Thông Báo Realtime</h2>
+    <input type="text" id="username" placeholder="Username (userId)" value="user1" />
+    <input type="password" id="password" placeholder="Password" value="123456" />
     <button onclick="login()">Đăng Nhập</button>
     <div id="loginStatus" class="status offline"></div>
-</div>
+  </div>
 
-<div id="app" class="container hidden">
+  <div id="app" class="container hidden">
     <header>
-        <h1>Notification Realtime Demo</h1>
-        <div class="user-info">
-            <span id="currentUser">Đang tải...</span>
-            <button class="logout-btn" onclick="logout()">Đăng xuất</button>
-            <div class="bell-container">
-                <i class="fas fa-bell bell" id="bellIcon"></i>
-                <span class="badge" id="badge">0</span>
-                <div class="dropdown" id="dropdown"></div>
-            </div>
+      <h1>Notification Realtime Demo</h1>
+      <div class="user-info">
+        <span>Người dùng: <strong id="currentUser">Đang tải...</strong></span>
+        <button class="logout-btn" onclick="logout()">Đăng xuất</button>
+        <div class="bell-container">
+          <i class="fas fa-bell bell" id="bellIcon"></i>
+          <span class="badge" id="badge">0</span>
+          <div class="dropdown" id="dropdown"></div>
         </div>
+      </div>
     </header>
 
-    <div style="padding: 30px;">
-        <h3>Trạng thái kết nối</h3>
-        <p id="wsStatus" class="status offline">Chưa kết nối WebSocket</p>
-        <hr>
-        <p><strong>Hướng dẫn test:</strong></p>
-        <ol>
-            <li>Mở 2 tab trình duyệt → đăng nhập 2 user khác nhau</li>
-            <li>Dùng Postman hoặc Swagger gọi API <code>/api/admin/notifications/send-many</code></li>
-            <li>User nào online → nhận realtime + badge tăng + bell hiện</li>
-            <li>User nào offline → lần sau mở lại sẽ thấy trong dropdown</li>
-        </ol>
+    <div style="padding: 30px">
+      <h3>Trạng thái kết nối WebSocket</h3>
+      <p id="wsStatus" class="status offline">Chưa kết nối</p>
+      <hr />
+      <p><strong>Debug console (F12) để xem log chi tiết STOMP và message nhận được.</strong></p>
     </div>
-</div>
+  </div>
 
-<script>
-    const API_BASE = 'http://localhost:8080/api/v1';
+  <script>
+    const API_BASE = "http://localhost:8080";
     let stompClient = null;
+    let accessToken = null;
     let currentUserId = null;
-    let token = null;
+    let userId = null;
+    let unreadCount = 0;
 
-    // === ĐĂNG NHẬP ===
     function login() {
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
 
-        fetch(`${API_BASE}/auth/log-in`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.status_code === 200) {
-                token = res.data.accessToken;
-                currentUserId = res.data.id || res.data.userName; // tùy bạn trả gì
-                localStorage.setItem('token', token);
-                localStorage.setItem('userId', currentUserId);
+      fetch(`${API_BASE}/api/v1/auth/log-in`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status_code === 200) {
+          accessToken = res.data.accessToken;
+          userId = res.data.id;
+          currentUserId = res.data.id || res.data.userName || username;
 
-                document.getElementById('loginBox').classList.add('hidden');
-                document.getElementById('app').classList.remove('hidden');
-                document.getElementById('currentUser').textContent = currentUserId;
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("userId", currentUserId);
 
-                connectWebSocket();
-                loadHistoryNotifications();
-            } else {
-                alert('Đăng nhập thất bại: ' + res.message);
-            }
-        })
-        .catch(() => alert('Lỗi kết nối server'));
+          document.getElementById("loginBox").classList.add("hidden");
+          document.getElementById("app").classList.remove("hidden");
+          document.getElementById("currentUser").textContent = currentUserId;
+
+          connectWebSocket();
+          loadHistoryNotifications();
+        } else {
+          alert("Đăng nhập thất bại: " + (res.message || "Unknown"));
+        }
+      })
+      .catch(err => alert("Lỗi server: " + err));
     }
 
-    // === KẾT NỐI WEBSOCKET ===
     function connectWebSocket() {
-        const socket = new SockJS(`http://localhost:8080/ws`);
-        stompClient = Stomp.over(socket);
+      const socket = new SockJS(`${API_BASE}/ws`);
+      stompClient = Stomp.over(socket);
 
-        stompClient.connect(
-            { Authorization: 'Bearer ' + token },
-            () => {
-                document.getElementById('wsStatus').textContent = 'ĐÃ KẾT NỐI REALTIME';
-                document.getElementById('wsStatus').className = 'status online';
+      // Debug chi tiết STOMP frame
+      stompClient.debug = (str) => console.log("%cSTOMP: " + str, "color: #3498db; font-weight: bold;");
 
-                // SUBSCRIBE ĐỂ NHẬN THÔNG BÁO RIÊNG
-                stompClient.subscribe('/user/queue/notifications', msg => {
-                    const noti = JSON.parse(msg.body);
-                    showNotificationInDropdown(noti);
-                    updateBadge(1);
-                    playSound();
-                });
-            },
-            err => {
-                console.error('WebSocket lỗi', err);
-                document.getElementById('wsStatus').textContent = 'Mất kết nối';
-                document.getElementById('wsStatus').className = 'status offline';
-            }
-        );
+      stompClient.connect(
+        { "Authorization": "Bearer " + accessToken },
+        function (frame) {
+          console.log("%cWEBSOCKET CONNECTED THÀNH CÔNG!", "color: green; font-size: 18px;", frame);
+          document.getElementById("wsStatus").textContent = "ĐÃ KẾT NỐI REALTIME";
+          document.getElementById("wsStatus").className = "status online";
+
+          // Subscribe chính xác (Spring tự thêm /user/{userId}/)
+          stompClient.subscribe("/user/queue/notifications", function (msg) {
+            const noti = JSON.parse(msg.body);
+            console.log("%cREALTIME NHẬN ĐƯỢC:", "color: lime; font-size: 16px;", noti);
+            showNotificationInDropdown(noti, true);
+            updateBadge(1);
+            playSound();
+          });
+
+          // Subscribe error channel để bắt lỗi nếu có
+          stompClient.subscribe("/user/queue/errors", function (msg) {
+            console.error("%cLỖI TỪ SERVER:", "color: red; font-size: 16px;", msg.body);
+          });
+        },
+        function (error) {
+          console.error("%cWEBSOCKET LỖI/MẤT KẾT NỐI:", "color: red; font-size: 18px;", error);
+          document.getElementById("wsStatus").textContent = "MẤT KẾT NỐI – Thử lại sau 5s";
+          document.getElementById("wsStatus").className = "status offline";
+          setTimeout(connectWebSocket, 5000);
+        }
+      );
     }
 
-    // === TẢI LỊCH SỬ THÔNG BÁO ===
     function loadHistoryNotifications() {
-        fetch(`${API_BASE}/api/notifications/my-notifications`, {
-            headers: { Authorization: 'Bearer ' + token }
-        })
-        .then(r => r.json())
-        .then(data => {
-            data.forEach(noti => showNotificationInDropdown(noti));
-            updateBadge(data.filter(n => !n.isRead).length);
-        });
+      fetch(`${API_BASE}/api/v1/notification/my-notifications/${userId}`, {
+        headers: { "Authorization": "Bearer " + accessToken }
+      })
+      .then(r => r.json())
+      .then(data => {
+        data.forEach(noti => showNotificationInDropdown(noti, false));
+      })
+      .catch(err => console.log("Lỗi tải lịch sử:", err));
     }
 
-    // === HIỂN THỊ TRONG DROPDOWN ===
-    function showNotificationInDropdown(noti) {
-        const div = document.createElement('div');
-        div.className = `noti-item ${noti.isRead ? 'read' : 'unread'}`;
-        div.innerHTML = `
-            <div class="noti-title">${noti.title}</div>
-            <div class="noti-msg">${noti.message}</div>
-            <div class="noti-time">${new Date(noti.createdAt).toLocaleString('vi-VN')}</div>
-        `;
-        div.onclick = () => markAsRead(noti.notificationId);
-        document.getElementById('dropdown').prepend(div);
+    function showNotificationInDropdown(noti, isUnread = false) {
+      const div = document.createElement("div");
+      div.className = `noti-item ${isUnread ? "unread" : ""}`;
+      div.innerHTML = `
+        <div class="noti-title">${noti.title || "Thông báo"}</div>
+        <div class="noti-msg">${noti.message || ""}</div>
+        <div class="noti-time">${new Date(noti.createdAt || Date.now()).toLocaleString("vi-VN")}</div>
+      `;
+      document.getElementById("dropdown").prepend(div);
     }
 
-    // === CẬP NHẬT BADGE
     function updateBadge(increase = 0) {
-        let badge = document.getElementById('badge');
-        let count = parseInt(badge.textContent || '0') + increase;
-        badge.textContent = count;
-        badge.style.display = count > 0 ? 'none' : 'flex';
-    }
-
-    // ĐÁNH DẤU ĐÃ ĐỌC (gọi API nếu cần)
-    function markAsRead(notiId) {
-        fetch(`${API_BASE}/api/notifications/read/${notiId}`, {
-            method: 'POST',
-            headers: { Authorization: 'Bearer ' + token }
-        });
-        updateBadge(-1);
+      unreadCount += increase;
+      const badge = document.getElementById("badge");
+      badge.textContent = unreadCount;
+      badge.style.display = unreadCount > 0 ? "flex" : "none";
     }
 
     function playSound() {
-        const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-software-interface-notification-2575.mp3');
-        audio.play().catch(() => {});
+      new Audio("https://assets.mixkit.co/sfx/preview/mixkit-software-interface-notification-2575.mp3").play().catch(() => {});
     }
 
     function logout() {
-        localStorage.clear();
-        location.reload();
+      if (stompClient) stompClient.disconnect();
+      localStorage.clear();
+      location.reload();
     }
 
-    // TỰ ĐỘNG ĐĂNG NHẬP NẾU ĐÃ CÓ TOKEN
     window.onload = () => {
-        token = localStorage.getItem('token');
-        if (token) {
-            currentUserId = localStorage.getItem('userId');
-            document.getElementById('loginBox').classList.add('hidden');
-            document.getElementById('app').classList.remove('hidden');
-            document.getElementById('currentUser').textContent = currentUserId;
-            connectWebSocket();
-            loadHistoryNotifications();
-        }
+      accessToken = localStorage.getItem("accessToken");
+      currentUserId = localStorage.getItem("userId");
+      if (accessToken && currentUserId) {
+        document.getElementById("loginBox").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+        document.getElementById("currentUser").textContent = currentUserId;
+        connectWebSocket();
+        loadHistoryNotifications();
+      }
     };
 
-    // Click bell để toggle dropdown
-    document.getElementById('bellIcon').onclick = () => {
-        document.getElementById('dropdown').classList.toggle('show');
+    document.getElementById("bellIcon").onclick = () => {
+      document.getElementById("dropdown").classList.toggle("show");
     };
-</script>
+  </script>
 </body>
 </html>

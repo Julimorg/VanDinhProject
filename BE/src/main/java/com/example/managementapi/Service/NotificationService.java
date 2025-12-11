@@ -76,7 +76,7 @@ public class NotificationService {
                     .notifications(noti)
                     .userId(userId)
                     .isRead(false)
-                    .deliveredAt(LocalDateTime.now())
+//                    .deliveredAt(LocalDateTime.now())
                     .status(UserNotifactionStatus.PENDING)
                     .sendChannel(UserNotifactionSendChannel.WEB)
                     .build();

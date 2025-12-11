@@ -200,7 +200,8 @@ public class AuthenticateService {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimSet = new JWTClaimsSet.Builder()
-                .subject(user.getUserName()) // --> dai dien cho user dang nhap
+                .audience(user.getId())
+                .subject(user.getUserName())
                 .issuer("kienphongtran2003@gmail.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(

@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface UserDeviceRepository extends JpaRepository<UserDevice, String> {
 
     Optional<UserDevice> findFirstByUserIdAndSocketIdIsNotNull(String userId);
+
+    Optional<UserDevice> findByUserId(String userId);
 }
