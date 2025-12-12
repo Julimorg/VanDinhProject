@@ -96,11 +96,11 @@ public class NotificationService {
                         .createdAt(noti.getCreatedAt())
                         .build();
 
-                messagingTemplate.convertAndSendToUser(
-                        userId,
-                        "/queue/notifications",
-                        payload
-                );
+
+                String fullDestination = "/user/" + userId + "/queue/notifications";
+
+                messagingTemplate.convertAndSend(fullDestination, payload);
+
                 un.setStatus(UserNotifactionStatus.DELIVERED);
                 un.setDeliveredAt(LocalDateTime.now());
                 log.info("Realtime sent to user {} (online)", userId);

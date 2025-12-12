@@ -26,13 +26,15 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         //? Tạo subscribe để client có thể connect vào
-        config.enableSimpleBroker("/topic", "/queue");
+        config.enableSimpleBroker("/topic", "/queue", "/user");
 
         //? Tạo Entry endpoint để các @MessageMapping sẽ nhận message từ /app/...
         config.setApplicationDestinationPrefixes("/app");
 
         //? Tạo private tunnel để có thể send private message đến 1 user cụ thể
         config.setUserDestinationPrefix("/user");
+
+//        config.setPreservePublishOrder(true);
 
     }
 
