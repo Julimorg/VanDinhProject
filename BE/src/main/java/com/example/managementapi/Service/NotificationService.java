@@ -7,6 +7,7 @@ import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrMa
 import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
 import com.example.managementapi.Entity.Notifications;
 import com.example.managementapi.Entity.User;
+import com.example.managementapi.Entity.UserDevice;
 import com.example.managementapi.Entity.UserNotifications;
 import com.example.managementapi.Enum.UserNotifactionSendChannel;
 import com.example.managementapi.Enum.UserNotifactionStatus;
@@ -28,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -87,7 +89,8 @@ public class NotificationService {
                     .isPresent();
 
             if(isOnline){
-
+                Optional<UserDevice> deviceOpt = deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(userId);
+                String sessionId = deviceOpt.get().getSocketId();
                 NotificationRes payload = NotificationRes.builder()
                         .notificationId(noti.getNotificationId())
                         .title(noti.getTitle())
@@ -97,9 +100,11 @@ public class NotificationService {
                         .build();
 
 
-                String fullDestination = "/user/" + userId + "/queue/notifications";
+                String personalQueue = "/queue/notifications-user" + sessionId;
+                messagingTemplate.convertAndSend(personalQueue, payload);
 
-                messagingTemplate.convertAndSend(fullDestination, payload);
+
+                log.warn("Đã Tạo Sub cho WebSocket: " + personalQueue);
 
                 un.setStatus(UserNotifactionStatus.DELIVERED);
                 un.setDeliveredAt(LocalDateTime.now());

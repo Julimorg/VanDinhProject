@@ -26,7 +26,7 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
     public void configureMessageBroker(MessageBrokerRegistry config) {
 
         //? Tạo subscribe để client có thể connect vào
-        config.enableSimpleBroker("/topic", "/queue", "/user");
+        config.enableSimpleBroker("/topic", "/queue");
 
         //? Tạo Entry endpoint để các @MessageMapping sẽ nhận message từ /app/...
         config.setApplicationDestinationPrefixes("/app");

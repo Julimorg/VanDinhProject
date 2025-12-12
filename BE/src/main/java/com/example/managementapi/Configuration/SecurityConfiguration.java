@@ -69,6 +69,7 @@ public class SecurityConfiguration {
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedOrigins(List.of(
                 "http://localhost:*",
+                "http://localhost:63342",
                 "http://127.0.0.1:5500",
                 "https://van-dinh-store.vercel.app/",
                 "https://van-dinh-project.vercel.app"

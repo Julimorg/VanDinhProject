@@ -10,6 +10,8 @@ import com.example.managementapi.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -25,6 +27,14 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     private final UserNotificationsRepository userNotiRepo;
+
+    @MessageMapping("/sendMessage")
+    @SendTo("/topic/notifications")
+    public String sendMessage(String message){
+        System.out.println("message : "+message);
+        return message;
+    }
+
 
     @PostMapping("/send-many")
     public ApiResponse<SendNotiToOneUserOrManyUserRes> sendNotiToOneUserOrManyUser(
