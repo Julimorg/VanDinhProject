@@ -259,6 +259,8 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        String customerUserId = order.getUser().getId();
+        String customerName = order.getUser().getUserName();
 
         List<OrderItem> orderItemsList = order.getOrderItems();
 
@@ -272,7 +274,7 @@ public class OrderService {
 
             order.setApprovedBy(user.getUserName());
 
-            order.setApprovedBy(user.getUserName());
+            order.setUpdateAt(LocalDateTime.now());
 
             order.setCompleteAt(LocalDateTime.now());
 
@@ -290,6 +292,17 @@ public class OrderService {
                 product.setProductQuantity(newQuantity);
                 productRepository.save(product);
             }
+
+            Notifications notifications = Notifications.builder()
+                    .notificationId(UUID.randomUUID().toString())
+                    .title("🎉 Đơn hàng đã được duyệt!")
+                    .message("Đơn hàng #" + order.getOrderCode() + " của bạn đã được " + user.getUserName() + " duyệt thành công.")
+                    .type("ORDER_APPROVED")
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+
+            log.info("Sent approval notification for order {} to user {}", orderId, customerUserId);
 
             if(cart != null){
                 cart.getCartItems().clear();

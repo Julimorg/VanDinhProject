@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface UserDeviceRepository extends JpaRepository<UserDevice, String> {
 
     Optional<UserDevice> findFirstByUserIdAndSocketIdIsNotNull(String userId);
+    void deleteBySocketId(String socketId);
 }
