@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src') 
+      '@': path.resolve(__dirname, 'src')
     }
   },
   server: {
     host: '0.0.0.0',
-    port: 5174, 
+    port: 5174,
     proxy: {
       '/api-vn': {
         target: 'https://provinces.open-api.vn',
@@ -19,5 +19,8 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api-vn/, ''),
       },
     },
+  },
+  define: {
+    global: 'window', //để {} sẽ bị lỗi 2000
   },
 })

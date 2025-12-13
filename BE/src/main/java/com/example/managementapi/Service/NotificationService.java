@@ -134,6 +134,7 @@ public class NotificationService {
 
     // Gửi thông báo riêng cho 1 user (dùng userId làm principal name)
     public void sendToUser(String userId, NotificationRes notification) {
+        log.info("Sending WS to user {}", userId);
         messagingTemplate.convertAndSendToUser(
                 userId,                              // Spring sẽ tự thêm prefix /user/
                 "/queue/notifications",              // → client nhận ở /user/{userId}/queue/notifications

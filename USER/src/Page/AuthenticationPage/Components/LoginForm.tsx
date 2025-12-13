@@ -4,6 +4,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom'; 
 import type { ILoginRequest } from '../../../Interface/Auth/ILogin'; 
 import { useLogin } from '../Hook/useLogin';
+import { useCartStore } from '../../../Middleware/useCartStore';
 
 const { Text, Title } = Typography;
 
@@ -15,11 +16,15 @@ interface LoginFormProps {
 const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSwitchToForgot }) => {
   const navigate = useNavigate(); 
   const { mutate: loginMutate, isPending } = useLogin();
+  const setCartCount = useCartStore(state => state.setCartCount);
 
   const onFinish = (values: ILoginRequest) => {
     loginMutate(values, {
       onSuccess: () => {
+        useCartStore.persist.clearStorage(); 
+        setCartCount(0);
         message.success('Đăng nhập thành công!');
+        
       
         navigate('/dashboard'); 
       },
