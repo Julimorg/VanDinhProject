@@ -50,7 +50,7 @@ public class NotificationController {
                 .build();
     }
 
-    @GetMapping("/my-notification/{userId}")
+    @GetMapping("/top-five/{userId}")
     public ApiResponse<List<GetSystemTopFiveNotifications>> getSystemTopFiveNotifications(@PathVariable String userId) {
 
         return ApiResponse.<List<GetSystemTopFiveNotifications>>builder()
