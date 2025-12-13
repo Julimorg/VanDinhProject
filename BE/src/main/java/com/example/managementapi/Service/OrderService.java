@@ -2,6 +2,7 @@ package com.example.managementapi.Service;
 
 
 import com.example.managementapi.Component.GenerateRandomCode;
+import com.example.managementapi.Component.MethodConverter;
 import com.example.managementapi.Dto.Request.Order.*;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.User.GetUserListOrder;
@@ -26,8 +27,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +58,10 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     private final VnPayService vnPayService;
+
+    private final FileService fileService;
+
+    private final MethodConverter methodConverter;
 
     private final String adminEmail = "kienphongtran2003@gmail.com";
 
@@ -424,6 +431,23 @@ public class OrderService {
         return orderMapper.toUpdateOrderByAdminResponse(order);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public byte[] exportExcelFileByGetOrdersFromUserAndDateRange(ExportFileReq req) throws IOException {
+
+        userRepository.findById(req.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        LocalDate startDate = methodConverter.parseDate(req.getStartDate());
+        LocalDate endDate = methodConverter.parseDate(req.getEndDate());
+
+        LocalDateTime start = startDate.atStartOfDay();
+        LocalDateTime end = endDate.plusDays(1).atStartOfDay();
+
+        List<Order> orders = orderRepository
+                .findOrdersByUserAndDateRange(req.getUserId(), start, end);
+
+        return fileService.generateExcelReport(orders, req.getStartDate(), req.getEndDate());
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteOrder(String id){
