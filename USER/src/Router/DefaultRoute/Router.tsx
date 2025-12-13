@@ -15,6 +15,7 @@ import TransactionPage from '../../Page/TransactionPage/TransactionPage';
 import PaymentResultPage from '../../Page/PaymentResultPage/PaymentResultPage';
 
 
+
 const DefaultRouter = () => {
   return (
     <Routes>
@@ -34,6 +35,7 @@ const DefaultRouter = () => {
         <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="transaction/:orderId" element={<TransactionPage />} />
+        
       </Route>
     </Routes>
   );

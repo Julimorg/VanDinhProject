@@ -43,7 +43,21 @@ public class CartService {
     public GetCartRes getCart(String userId) {
 
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseGet(() -> {
+                    // Tạo cart rỗng cho user mới
+                    User user = userRepository.findById(userId)
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    Cart newCart = Cart.builder()
+                            .user(user)
+                            .totalQuantity(0)
+                            .totalPrice(BigDecimal.ZERO)
+                            .cartItems(new ArrayList<>())
+                            .createAt(LocalDateTime.now())
+                            .updateAt(LocalDateTime.now())
+                            .build();
+                    user.setCart(newCart);
+                    return cartRepository.save(newCart);
+                });
 
 
         List<CartItemDetailRes> cartItemDetailResList = cart.getCartItems().stream()

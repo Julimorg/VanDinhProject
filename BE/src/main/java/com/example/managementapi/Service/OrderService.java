@@ -3,13 +3,11 @@ package com.example.managementapi.Service;
 
 import com.example.managementapi.Component.GenerateRandomCode;
 import com.example.managementapi.Dto.Request.Order.*;
+import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.User.GetUserListOrder;
 import com.example.managementapi.Entity.*;
-import com.example.managementapi.Enum.ErrorCode;
-import com.example.managementapi.Enum.OrderStatus;
-import com.example.managementapi.Enum.PaymentMethod;
-import com.example.managementapi.Enum.PaymentMethodStatus;
+import com.example.managementapi.Enum.*;
 import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.OrderMapper;
 import com.example.managementapi.Repository.*;
@@ -32,6 +30,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -55,6 +54,8 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     private final VnPayService vnPayService;
+
+    private final NotificationService notificationService;
 
     private final String adminEmail = "kienphongtran2003@gmail.com";
 
@@ -187,6 +188,16 @@ public class OrderService {
 
             payment.setPaymentStatus(PaymentMethodStatus.Paid);
 
+            NotificationRes notification = NotificationRes.builder()
+                    .notificationId(UUID.randomUUID().toString())
+                    .title("Thanh toán thành công")
+                    .message("Đơn hàng " + userOrder.getOrderCode() + " đã thanh toán")
+                    .type("ORDER")
+                    .createdAt(LocalDateTime.now())
+                    .build();
+
+            notificationService.sendToUser(userId, notification);
+
             paymentRepository.save(payment);
 
             orderRepository.save(userOrder);
@@ -198,6 +209,8 @@ public class OrderService {
 
                 cartRepository.save(cart);
             }
+
+
         }
 
         if(request.getPaymentMethod() == PaymentMethod.VN_PAY)

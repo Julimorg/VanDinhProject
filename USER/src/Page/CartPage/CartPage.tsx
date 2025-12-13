@@ -68,7 +68,7 @@ const CartPage: React.FC = () => {
 
   const handleUpdateItem = (cartItemId: string) => {
     const item = localCart.find((i) => i.cartItemId === cartItemId);
-    if (!item){
+    if (!item) {
       return;
     }
 

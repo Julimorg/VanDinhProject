@@ -57,7 +57,7 @@ public class SecurityConfiguration {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
         corsConfiguration.setAllowedOrigins(List.of(
-                "http://localhost:*",
+                "http://localhost:5174",
                 "http://127.0.0.1:5500",
                 "https://van-dinh-store.vercel.app/",
                 "https://van-dinh-project.vercel.app"
@@ -139,7 +139,7 @@ public class SecurityConfiguration {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring().requestMatchers(
-                "/ws/**",           // WebSocket endpoint
+//                "/ws/**",           // WebSocket endpoint
                 "/**.html",         // file HTML test
                 "/**.js",           // nếu bạn để JS riêng
                 "/**.css",
