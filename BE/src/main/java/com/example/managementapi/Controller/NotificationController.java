@@ -3,13 +3,17 @@ package com.example.managementapi.Controller;
 
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
+import com.example.managementapi.Dto.Response.Notification.GetSystemAllNotificationsRes;
 import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
-import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
 import com.example.managementapi.Repository.UserNotificationsRepository;
 import com.example.managementapi.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -50,7 +54,7 @@ public class NotificationController {
                 .build();
     }
 
-    @GetMapping("/top-five/{userId}")
+    @GetMapping("/system/{userId}")
     public ApiResponse<List<GetSystemTopFiveNotifications>> getSystemTopFiveNotifications(@PathVariable String userId) {
 
         return ApiResponse.<List<GetSystemTopFiveNotifications>>builder()
@@ -61,23 +65,36 @@ public class NotificationController {
                 .build();
     }
 
-    @GetMapping("/my-notifications/{userId}")
-    public List<NotificationRes> getMyNotifications(@PathVariable String userId) {
-        // Lấy userId từ JWT (bạn đã có SecurityContext)
+    @GetMapping("/system-all/{userId}")
+    public ApiResponse<Page<GetSystemAllNotificationsRes>> getSystemAllNotifications(
+            @PathVariable String userId,
+            @PageableDefault(size = 10, sort = "deliveredAt", direction = Sort.Direction.ASC) Pageable pageable) {
 
-        return userNotiRepo.findAllByUserId(userId)
-                .stream()
-                .map(un -> {
-                    var noti = un.getNotifications();
-                    return NotificationRes.builder()
-                            .notificationId(noti.getNotificationId())
-                            .title(noti.getTitle())
-                            .message(noti.getMessage())
-                            .type(noti.getType())
-                            .createdAt(noti.getCreatedAt())
-                            .build();
-                })
-                .collect(Collectors.toList());
+        return ApiResponse.<Page<GetSystemAllNotificationsRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.getSystemAllNotifications(userId, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
     }
+
+//    @GetMapping("/my-notifications/{userId}")
+//    public List<NotificationRes> getMyNotifications(@PathVariable String userId) {
+//        // Lấy userId từ JWT (bạn đã có SecurityContext)
+//
+//        return userNotiRepo.findAllByUserId(userId)
+//                .stream()
+//                .map(un -> {
+//                    var noti = un.getNotifications();
+//                    return NotificationRes.builder()
+//                            .notificationId(noti.getNotificationId())
+//                            .title(noti.getTitle())
+//                            .message(noti.getMessage())
+//                            .type(noti.getType())
+//                            .createdAt(noti.getCreatedAt())
+//                            .build();
+//                })
+//                .collect(Collectors.toList());
+//    }
 
 }
