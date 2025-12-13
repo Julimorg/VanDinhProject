@@ -3,6 +3,7 @@ package com.example.managementapi.Controller;
 
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
+import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
 import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
 import com.example.managementapi.Repository.UserNotificationsRepository;
@@ -45,6 +46,17 @@ public class NotificationController {
                 .message("Send Successfully!")
                 .data(notificationService
                         .sendToOneUserOrManyUser(req))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/my-notification/{userId}")
+    public ApiResponse<List<GetSystemTopFiveNotifications>> getSystemTopFiveNotifications(@PathVariable String userId) {
+
+        return ApiResponse.<List<GetSystemTopFiveNotifications>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.getSystemTopFiveNotifications(userId))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

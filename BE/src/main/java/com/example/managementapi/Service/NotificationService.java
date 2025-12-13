@@ -2,6 +2,7 @@ package com.example.managementapi.Service;
 
 
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
+import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
 import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
 import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
@@ -13,6 +14,7 @@ import com.example.managementapi.Enum.UserNotifactionSendChannel;
 import com.example.managementapi.Enum.UserNotifactionStatus;
 import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.NotificationMapper;
+import com.example.managementapi.Mapper.UserNotificationMapper;
 import com.example.managementapi.Repository.NotificationsRepository;
 import com.example.managementapi.Repository.UserDeviceRepository;
 import com.example.managementapi.Repository.UserNotificationsRepository;
@@ -20,6 +22,8 @@ import com.example.managementapi.Repository.UserRepository;
 import com.example.managementapi.Util.SecurityContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -46,23 +50,16 @@ public class NotificationService {
 
     private final NotificationMapper notificationMapper;
 
+    private final UserNotificationMapper userNotificationMapper;
+
     private final UserRepository userRepo;
 
-    private final SecurityContext securityUtils;
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public SendNotiToOneUserOrManyUserRes sendToOneUserOrManyUser(SendNotiToOneUserOrManyUserReq req){
 
         if (req.getUserId() == null || req.getUserId().isEmpty()) throw new RuntimeException("User id is null");
-
-//        String currentUserId = SecurityContextHolder.getContext()
-//                .getAuthentication()
-//                .getName();
-//
-//        User sender = userRepo.findById(currentUserId)
-//                .orElseThrow(() -> new RuntimeException("Can not find User Send !"));
-
 
         Notifications noti = notiRepo.save(Notifications.builder()
                 .title(req.getTitle())
@@ -121,6 +118,19 @@ public class NotificationService {
 
         return notificationMapper.toSendNotiResponse(noti, savedList);
     }
+
+    public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
+
+        userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+       return userNotiRepo
+               .findTop5ByUserIdOrderByDeliveredAtDesc(userId)
+               .stream()
+               .map(user -> notificationMapper.toGetSystemTopFiveNotifications(user))
+               .toList();
+    }
+
 
     // Gửi thông báo riêng cho 1 user (dùng userId làm principal name)
     public void sendToUser(String userId, NotificationRes notification) {

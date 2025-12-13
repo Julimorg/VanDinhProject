@@ -1,5 +1,6 @@
 package com.example.managementapi.Mapper;
 
+import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
 import com.example.managementapi.Entity.UserNotifications;
 import org.mapstruct.Mapper;
@@ -15,4 +16,6 @@ public interface UserNotificationMapper {
     @Mapping(target = "isRead", source = "isRead")
     @Mapping(target = "deliveredAt", source = "deliveredAt")
     UserNotiDetail toUserNotiDetail(UserNotifications userNotifications);
+
+    NotificationRes toUserNotification(UserNotifications userNotifications);
 }
