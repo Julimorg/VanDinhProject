@@ -1,49 +1,49 @@
-import React, { useState, useMemo } from 'react';
-import { Card, List, Typography, Spin, Empty, Tag, Button, Space, Row, Col } from 'antd';
-import { CheckOutlined, BellOutlined } from '@ant-design/icons';
+
+import React, { useState } from 'react';
 import { useAuthStore } from '@/Store/IAuth';
-import { useGetNotifications } from '@/Pages/Dashboard/Header/Hook/useGetNotifications';
-import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
+import { useMarkAllNotificationsAsRead } from '@/Pages/Dashboard/Header/Hook/useMarkAllNotificationsAsRead';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
-import { useMarkAllNotificationsAsRead } from '@/Pages/Dashboard/Header/Hook/useMarkAllNotificationsAsRead';
+import { useGetAllNotifications } from './Hook/userGetAllNotifications';
+
+import { Card, List, Skeleton, Space, Tag, Typography } from 'antd';
+import NotificationHeader from './Components/NotificationHeader';
+import NotificationFilters from './Components/NotificationFilter';
+import NotificationEmpty from './Components/NotificationEmpty';
+import NotificationPagination from './Components/NotificationPagination';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 const ViewAllNotificationsPage: React.FC = () => {
   const userId = useAuthStore((state) => state.id);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [page, setPage] = useState<number>(0); 
+  const [size] = useState<number>(10);
 
-  const { data, isLoading, refetch } = useGetNotifications(userId || undefined, {
-    enabled: !!userId,
-  });
+  const { data, isLoading, refetch } = useGetAllNotifications(
+    userId || '',
+    { page, size, sort: 'deliveredAt,desc' },
+    { enabled: !!userId }
+  );
 
   const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead({
-    onSuccess: () => {
-      refetch();
-    },
+    onSuccess: () => refetch(),
   });
 
-  // Handle response - could be array or single object
-  const allNotifications: IGetNotificationResponse[] = useMemo(() => {
-    if (!data?.data) return [];
-    if (Array.isArray(data.data)) {
-      return data.data;
-    }
-    return [data.data];
-  }, [data]);
+  const notifications = data?.data?.content || [];
+  const pagination = data?.data?.page;
 
-  const filteredNotifications = useMemo(() => {
-    if (filter === 'all') return allNotifications;
-    if (filter === 'unread') return allNotifications.filter((noti) => !noti.isRead);
-    return allNotifications.filter((noti) => noti.isRead);
-  }, [allNotifications, filter]);
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
-  const unreadCount = allNotifications.filter((noti) => !noti.isRead).length;
+  const filteredNotifications = notifications.filter((item: any) => {
+    if (filter === 'unread') return !item.isRead;
+    if (filter === 'read') return item.isRead;
+    return true;
+  });
 
   const handleMarkAllAsRead = () => {
     if (userId && unreadCount > 0) {
@@ -51,8 +51,13 @@ const ViewAllNotificationsPage: React.FC = () => {
     }
   };
 
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // Hàm lấy màu theo type
   const getNotificationColor = (type: string) => {
-    const colorMap: Record<string, string> = {
+    const map: Record<string, string> = {
       ORDER: '#1890ff',
       PRODUCT: '#52c41a',
       SYSTEM: '#fa8c16',
@@ -60,157 +65,155 @@ const ViewAllNotificationsPage: React.FC = () => {
       ERROR: '#ff4d4f',
       SUCCESS: '#52c41a',
     };
-    return colorMap[type] || '#1890ff';
+    return map[type] || '#1890ff';
   };
 
-  const formatTime = (dateString: string) => {
-    return dayjs(dateString).format('DD/MM/YYYY HH:mm');
-  };
+  // Skeleton Item giống hệt cấu trúc thật
+  const SkeletonNotificationItem = () => (
+    <Card className="mb-4" bodyStyle={{ padding: '16px' }}>
+      <div className="flex gap-4">
+        {/* Chấm màu */}
+        <div className="w-3 h-3 rounded-full mt-2 flex-shrink-0">
+          <Skeleton.Avatar active shape="circle" size={12} />
+        </div>
 
-  const formatRelativeTime = (dateString: string) => {
-    return dayjs(dateString).fromNow();
-  };
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+            <div className="flex-1">
+              {/* Tiêu đề + Tag */}
+              <div className="flex items-center gap-2 mb-2">
+                <Skeleton.Input active style={{ width: 280, height: 20 }} />
+                <Skeleton.Button active size="small" style={{ width: 70 }} />
+              </div>
+              {/* Nội dung */}
+              <Skeleton paragraph={{ rows: 2, width: ['100%', '85%'] }} active />
+            </div>
+            {/* Thời gian */}
+            <div className="text-right">
+              <Skeleton.Input active style={{ width: 130 }} />
+              <br />
+              <Skeleton.Input active style={{ width: 90, marginTop: 6 }} />
+            </div>
+          </div>
+          {/* Tạo bởi */}
+          <div className="mt-3">
+            <Skeleton.Input active style={{ width: 160 }} />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+
+  // Hiển thị 6 skeleton khi đang loading
+  const loadingSkeletons = Array.from({ length: 6 }).map((_, index) => (
+    <SkeletonNotificationItem key={index} />
+  ));
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <Card className="shadow-lg">
         <Space direction="vertical" size="large" className="w-full">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <Title level={2} className="!mb-2 flex items-center gap-2">
-                <BellOutlined />
-                Tất cả thông báo
-              </Title>
-              <Text type="secondary" className="text-sm sm:text-base">
-                Quản lý và xem tất cả thông báo của bạn
-              </Text>
-            </div>
-            {unreadCount > 0 && (
-              <Button
-                type="primary"
-                icon={<CheckOutlined />}
-                onClick={handleMarkAllAsRead}
-                loading={isMarkingAll}
-                size="large"
-              >
-                Đánh dấu xem tất cả ({unreadCount})
-              </Button>
-            )}
-          </div>
+          <NotificationHeader
+            unreadCount={unreadCount}
+            onMarkAllRead={handleMarkAllAsRead}
+            isMarkingAll={isMarkingAll}
+          />
 
-          {/* Filter Tabs */}
-          <Row gutter={[16, 16]}>
-            <Col xs={24} sm={24} md={24} lg={8}>
-              <Space wrap>
-                <Button
-                  type={filter === 'all' ? 'primary' : 'default'}
-                  onClick={() => setFilter('all')}
-                >
-                  Tất cả ({allNotifications.length})
-                </Button>
-                <Button
-                  type={filter === 'unread' ? 'primary' : 'default'}
-                  onClick={() => setFilter('unread')}
-                >
-                  Chưa đọc ({unreadCount})
-                </Button>
-                <Button
-                  type={filter === 'read' ? 'primary' : 'default'}
-                  onClick={() => setFilter('read')}
-                >
-                  Đã đọc ({allNotifications.length - unreadCount})
-                </Button>
-              </Space>
-            </Col>
-          </Row>
+          {/* Filters */}
+          <NotificationFilters
+            filter={filter}
+            setFilter={setFilter}
+            allCount={notifications.length}
+            unreadCount={unreadCount}
+            readCount={notifications.length - unreadCount}
+          />
 
-          {/* Notifications List */}
-          <Spin spinning={isLoading}>
-            {filteredNotifications.length === 0 ? (
-              <div className="py-12">
-                <Empty
-                  description={
-                    filter === 'all'
-                      ? 'Không có thông báo nào'
-                      : filter === 'unread'
-                      ? 'Không có thông báo chưa đọc'
-                      : 'Không có thông báo đã đọc'
-                  }
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-              </div>
-            ) : (
-              <List
-                itemLayout="horizontal"
-                dataSource={filteredNotifications}
-                renderItem={(item) => {
-                  const isUnread = !item.isRead;
-                  const notificationColor = getNotificationColor(item.type);
+          {/* Danh sách thông báo hoặc skeleton hoặc empty */}
+          {isLoading ? (
+            <div>{loadingSkeletons}</div>
+          ) : filteredNotifications.length === 0 ? (
+            <NotificationEmpty />
+          ) : (
+            <List
+              dataSource={filteredNotifications}
+              renderItem={(item: any) => {
+                const isUnread = !item.isRead;
+                const color = getNotificationColor(item.type);
 
-                  return (
-                    <Card
-                      className={`mb-4 transition-all ${
-                        isUnread
-                          ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-md'
-                          : 'bg-white opacity-70 border-l-4 border-l-gray-300'
-                      }`}
-                      hoverable
-                    >
-                      <div className="flex gap-4">
-                        <div
-                          className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
-                            isUnread ? 'opacity-100' : 'opacity-50'
-                          }`}
-                          style={{ background: notificationColor }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Text
-                                  strong
-                                  className={`text-base ${
-                                    isUnread ? 'text-gray-900' : 'text-gray-600'
-                                  }`}
-                                  style={isUnread ? { color: notificationColor } : {}}
-                                >
-                                  {item.title}
-                                </Text>
-                                <Tag color={isUnread ? 'blue' : 'default'}>
-                                  {item.type}
-                                </Tag>
-                              </div>
+                return (
+                  <Card
+                    key={item.userNotificationId}
+                    className={`mb-4 transition-all ${
+                      isUnread
+                        ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-md'
+                        : 'bg-white opacity-70 border-l-4 border-l-gray-300'
+                    }`}
+                    hoverable
+                  >
+                    <div className="flex gap-4">
+                      <div
+                        className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
+                          isUnread ? 'opacity-100' : 'opacity-50'
+                        }`}
+                        style={{ background: color }}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
                               <Text
-                                className={`text-sm block ${
-                                  isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
+                                strong
+                                className={`text-base ${
+                                  isUnread ? 'text-gray-900' : 'text-gray-600'
                                 }`}
+                                style={isUnread ? { color } : {}}
                               >
-                                {item.message}
+                                {item.title}
                               </Text>
+                              <Tag color={isUnread ? 'blue' : 'default'}>
+                                {item.type}
+                              </Tag>
                             </div>
-                            <div className="text-right">
-                              <Text type="secondary" className="text-xs block">
-                                {formatTime(item.createdAt)}
-                              </Text>
-                              <Text type="secondary" className="text-xs">
-                                {formatRelativeTime(item.createdAt)}
-                              </Text>
-                            </div>
-                          </div>
-                          {item.createBy && (
-                            <Text type="secondary" className="text-xs">
-                              Tạo bởi: {item.createBy}
+                            <Text
+                              className={`text-sm block ${
+                                isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
+                              }`}
+                            >
+                              {item.message}
                             </Text>
-                          )}
+                          </div>
+                          <div className="text-right">
+                            <Text type="secondary" className="text-xs block">
+                              {dayjs(item.createdAt).format('DD/MM/YYYY HH:mm')}
+                            </Text>
+                            <Text type="secondary" className="text-xs">
+                              {dayjs(item.createdAt).fromNow()}
+                            </Text>
+                          </div>
                         </div>
+                        {item.createBy && (
+                          <Text type="secondary" className="text-xs">
+                            Tạo bởi: {item.createBy}
+                          </Text>
+                        )}
                       </div>
-                    </Card>
-                  );
-                }}
-              />
-            )}
-          </Spin>
+                    </div>
+                  </Card>
+                );
+              }}
+            />
+          )}
+
+    
+          {!isLoading && pagination && pagination.totalPages > 1 && (
+            <NotificationPagination
+              current={page}
+              total={pagination.totalElements}
+              pageSize={pagination.size}
+              onChange={handlePageChange}
+            />
+          )}
         </Space>
       </Card>
     </div>
@@ -218,4 +221,3 @@ const ViewAllNotificationsPage: React.FC = () => {
 };
 
 export default ViewAllNotificationsPage;
-

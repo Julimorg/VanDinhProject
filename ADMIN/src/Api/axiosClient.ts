@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
 
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_LOCALHOST,
+  baseURL: import.meta.env.VITE_LOCAL,
   headers: {
     'Content-Type': 'application/json',
   },

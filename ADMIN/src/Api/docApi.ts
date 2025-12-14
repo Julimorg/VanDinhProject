@@ -41,6 +41,7 @@ import { IApproveOrderStatusRequest, IApproveOrderStatusResponse } from '@/Inter
 import { IUserOrderResponse } from '@/Interface/Order/IUserOrder';
 import { IExportExcelFileRequest } from '@/Interface/File/IExportExcelFile';
 import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
+import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotification';
 
 
 export const docApi = {
@@ -599,6 +600,28 @@ export const docApi = {
 
    //* ======================================================== Notification  ======================================================== */
    
+   GetAllNotifications: async(
+      userId: string,
+      params: 
+      {
+        page?: number,
+        size?: number,
+        sort?: string,
+      } = {}
+    ): Promise<IApiResponse<IApiResponsePagination<IGetAllNotifications>>> => {
+      const { page = 1, size = 5, sort = 'deliveredAt, desc' } = params;
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort,
+      });
+
+      const url = `/notification/system-all/${userId}?${queryParams.toString()}`;
+      const res = await axiosClient.get(url);
+      return res.data;
+   },
+
+
    GetMyNotification: async (userId: string): Promise<IApiResponse<IGetNotificationResponse>> => {
     const url = `/notification/system/${userId}`;
     const res = await axiosClient.get(url);
