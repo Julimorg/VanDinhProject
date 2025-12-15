@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -65,12 +66,12 @@ public class NotificationService {
                 .toList();
     }
 
-    public Page<GetSystemAllNotificationsRes> getSystemAllNotifications(String userId, Pageable pageable){
+    public Page<GetSystemAllNotificationsRes> getSystemAllNotifications(String userId, String isRead, Pageable pageable){
 
         userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not Found!"));
 
-        return userNotiRepo.findAllByUserId(userId, pageable)
+        return userNotiRepo.findAllByUserIdAndIsRead(userId, Boolean.valueOf(isRead), pageable)
                 .map(user -> notificationMapper.toGetSystemAllNotificationsRes(user));
     }
 
