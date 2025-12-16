@@ -9,14 +9,14 @@ import {
   SettingOutlined,
   LeftOutlined,
   RightOutlined,
-  ProductOutlined,
   ShopOutlined,
   BgColorsOutlined,
   KeyOutlined,
-  DotChartOutlined
+  DotChartOutlined,
+  FileSyncOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import CategoryList from '@/Pages/CategoryManagement/CategoryManagementPage';
+
 
 const { Sider } = Layout;
 
@@ -91,6 +91,12 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile, dr
       icon: <DotChartOutlined />,
       label: 'Quản lý Chi Tiêu',
       path: '/analytics'
+    },
+    {
+      key: 'file',
+      icon: <FileSyncOutlined />,
+      label: 'Xuất File',
+      path: '/file-exporter'
     },
     {
       key: 'settings',

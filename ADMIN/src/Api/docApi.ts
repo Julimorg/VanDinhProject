@@ -39,6 +39,8 @@ import { IGetOrderDetailResponse } from '@/Interface/Order/IGetOrderDetail';
 import { IUpdateOrderItemRequest, IUpdateOrderItemResponse } from '@/Interface/Order/IUpdateOrderItem';
 import { IApproveOrderStatusRequest, IApproveOrderStatusResponse } from '@/Interface/Order/IApproveOrderStatus';
 import { IUserOrderResponse } from '@/Interface/Order/IUserOrder';
+import { IExportExcelFileRequest } from '@/Interface/File/IExportExcelFile';
+import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
 
 
 export const docApi = {
@@ -594,5 +596,31 @@ export const docApi = {
     const res = await axiosClient.get(url);
     return res.data;
   },
+
+   //* ======================================================== Notification  ======================================================== */
+   
+   GetMyNotification: async (userId: string): Promise<IApiResponse<IGetNotificationResponse>> => {
+    const url = `/notification/system/${userId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  MarkAllNotificationsAsRead: async (userId: string): Promise<IApiResponse<void>> => {
+    const url = `/notifications/mark-all-read/${userId}`;
+    const res = await axiosClient.patch(url);
+    return res.data;
+  },
+
+  //* ======================================================== Export Excel  ======================================================== */
+
+  ExportUsersExcel: async (body: IExportExcelFileRequest): Promise<Blob> => {
+    const url = `/file/excel-file`;
+    const res = await axiosClient.post(url, body, {
+      responseType: 'blob',
+    });
+    return res.data;
+  },
+
+  
 
 }

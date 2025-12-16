@@ -2,10 +2,7 @@ package com.example.managementapi.Service;
 
 
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
-import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
-import com.example.managementapi.Dto.Response.Notification.NotificationRes;
-import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
-import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
+import com.example.managementapi.Dto.Response.Notification.*;
 import com.example.managementapi.Entity.Notifications;
 import com.example.managementapi.Entity.User;
 import com.example.managementapi.Entity.UserDevice;
@@ -55,6 +52,27 @@ public class NotificationService {
     private final UserRepository userRepo;
 
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
+
+        userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        return userNotiRepo
+                .findTop5ByUserIdOrderByDeliveredAtDesc(userId)
+                .stream()
+                .map(user -> notificationMapper.toGetSystemTopFiveNotifications(user))
+                .toList();
+    }
+
+    public Page<GetSystemAllNotificationsRes> getSystemAllNotifications(String userId, Pageable pageable){
+
+        userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        return userNotiRepo.findAllByUserId(userId, pageable)
+                .map(user -> notificationMapper.toGetSystemAllNotificationsRes(user));
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public SendNotiToOneUserOrManyUserRes sendToOneUserOrManyUser(SendNotiToOneUserOrManyUserReq req){
@@ -117,18 +135,6 @@ public class NotificationService {
         List<UserNotifications> savedList = userNotiRepo.saveAll(savedUserNotis);
 
         return notificationMapper.toSendNotiResponse(noti, savedList);
-    }
-
-    public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
-
-        userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not Found!"));
-
-       return userNotiRepo
-               .findTop5ByUserIdOrderByDeliveredAtDesc(userId)
-               .stream()
-               .map(user -> notificationMapper.toGetSystemTopFiveNotifications(user))
-               .toList();
     }
 
 

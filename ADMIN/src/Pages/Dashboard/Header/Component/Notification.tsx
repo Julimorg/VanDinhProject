@@ -1,57 +1,74 @@
-import React from 'react';
-import { Dropdown, List, } from 'antd';
-import { BellOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Dropdown, List, Button, Spin, Empty } from 'antd';
+import { BellOutlined, CheckOutlined } from '@ant-design/icons';
+import { useAuthStore } from '@/Store/IAuth';
+import { useGetNotifications } from '../Hook/useGetNotifications';
+import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/vi';
+import { useNavigate } from 'react-router-dom';
+import { useMarkAllNotificationsAsRead } from '../Hook/useMarkAllNotificationsAsRead';
 
-interface NotificationItem {
-  id: number;
-  title: string;
-  description: string;
-  time: string;
-  color: string;
-}
+dayjs.extend(relativeTime);
+dayjs.locale('vi');
 
 interface NotificationDropdownProps {
   isMobile: boolean;
 }
 
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile }) => {
-  const notifications: NotificationItem[] = [
-    {
-      id: 1,
-      title: 'Đơn hàng mới',
-      description: 'Đơn hàng #ORD-005 từ khách hàng Nguyễn Văn B',
-      time: '2 phút trước',
-      color: '#1890ff',
+  const navigate = useNavigate();
+  const userId = useAuthStore((state) => state.id);
+  const [open, setOpen] = useState(false);
+
+  const { data, isLoading, refetch } = useGetNotifications(userId || undefined, {
+    enabled: !!userId && open,
+  });
+
+  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead({
+    onSuccess: () => {
+      refetch();
     },
-    {
-      id: 2,
-      title: 'Đơn hàng đã giao',
-      description: 'Đơn hàng #ORD-003 đã được giao thành công',
-      time: '15 phút trước',
-      color: '#52c41a',
-    },
-    {
-      id: 3,
-      title: 'Sản phẩm sắp hết',
-      description: 'Sơn Dulux 5L chỉ còn 5 sản phẩm trong kho',
-      time: '1 giờ trước',
-      color: '#fa8c16',
-    },
-    {
-      id: 4,
-      title: 'Đánh giá mới',
-      description: 'Khách hàng Trần Thị C đã đánh giá 5 sao',
-      time: '3 giờ trước',
-      color: '#722ed1',
-    },
-    {
-      id: 5,
-      title: 'Đơn hàng bị hủy',
-      description: 'Đơn hàng #ORD-001 đã bị khách hàng hủy',
-      time: '5 giờ trước',
-      color: '#ff4d4f',
-    },
-  ];
+  });
+
+  // Handle response - could be array or single object
+  const notifications: IGetNotificationResponse[] = React.useMemo(() => {
+    if (!data?.data) return [];
+    if (Array.isArray(data.data)) {
+      return data.data;
+    }
+    return [data.data];
+  }, [data]);
+
+  const unreadCount = notifications.filter((noti) => !noti.isRead).length;
+
+  const handleMarkAllAsRead = () => {
+    if (userId && unreadCount > 0) {
+      markAllAsRead(userId);
+    }
+  };
+
+  const handleViewAll = () => {
+    setOpen(false);
+    navigate('/notifications');
+  };
+
+  const getNotificationColor = (type: string) => {
+    const colorMap: Record<string, string> = {
+      ORDER: '#1890ff',
+      PRODUCT: '#52c41a',
+      SYSTEM: '#fa8c16',
+      WARNING: '#faad14',
+      ERROR: '#ff4d4f',
+      SUCCESS: '#52c41a',
+    };
+    return colorMap[type] || '#1890ff';
+  };
+
+  const formatTime = (dateString: string) => {
+    return dayjs(dateString).fromNow();
+  };
 
   const notificationMenu = (
     <div
@@ -59,34 +76,85 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
         isMobile ? 'w-80' : 'w-96'
       } max-h-[450px] overflow-auto bg-white rounded-lg shadow-2xl`}
     >
-      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+      <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <span className="text-base font-semibold">Thông báo</span>
-      </div>
-      <List
-        itemLayout="horizontal"
-        dataSource={notifications}
-        renderItem={(item) => (
-          <div className="px-4 py-3 cursor-pointer hover:bg-gray-50 transition-colors border-b border-gray-50">
-            <div className="flex gap-3">
-              <div
-                className="w-2 h-2 rounded-full mt-2 flex-shrink-0"
-                style={{ background: item.color }}
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start gap-2 mb-1">
-                  <span className="font-semibold text-sm" style={{ color: item.color }}>
-                    {item.title}
-                  </span>
-                  <span className="text-xs text-gray-400 whitespace-nowrap">{item.time}</span>
-                </div>
-                <p className="text-sm text-gray-600 m-0">{item.description}</p>
-              </div>
-            </div>
-          </div>
+        {unreadCount > 0 && (
+          <Button
+            type="link"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={handleMarkAllAsRead}
+            loading={isMarkingAll}
+            className="p-0 h-auto text-xs"
+          >
+            Đánh dấu xem tất cả
+          </Button>
         )}
-      />
+      </div>
+
+      <Spin spinning={isLoading}>
+        {notifications.length === 0 ? (
+          <div className="py-8">
+            <Empty description="Không có thông báo nào" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+          </div>
+        ) : (
+          <List
+            itemLayout="horizontal"
+            dataSource={notifications}
+            renderItem={(item) => {
+              const isUnread = !item.isRead;
+              const notificationColor = getNotificationColor(item.type);
+
+              return (
+                <div
+                  className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-50 ${
+                    isUnread
+                      ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500'
+                      : 'bg-white hover:bg-gray-50 opacity-70'
+                  }`}
+                >
+                  <div className="flex gap-3">
+                    <div
+                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                        isUnread ? 'opacity-100' : 'opacity-50'
+                      }`}
+                      style={{ background: notificationColor }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <span
+                          className={`font-semibold text-sm ${
+                            isUnread ? 'text-gray-900' : 'text-gray-600'
+                          }`}
+                          style={isUnread ? { color: notificationColor } : {}}
+                        >
+                          {item.title}
+                        </span>
+                        <span className="text-xs text-gray-400 whitespace-nowrap">
+                          {formatTime(item.createdAt)}
+                        </span>
+                      </div>
+                      <p
+                        className={`text-sm m-0 ${
+                          isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
+                        }`}
+                      >
+                        {item.message}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }}
+          />
+        )}
+      </Spin>
+
       <div className="px-4 py-2 border-t border-gray-100 text-center">
-        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+        <button
+          onClick={handleViewAll}
+          className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+        >
           Xem tất cả thông báo
         </button>
       </div>
@@ -99,14 +167,18 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
       placement="bottomRight"
       trigger={['click']}
       overlayStyle={{ paddingTop: 8 }}
+      open={open}
+      onOpenChange={setOpen}
     >
       <div className="relative cursor-pointer">
         <button className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">
           <BellOutlined className="text-xl text-gray-600" />
         </button>
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-          5
-        </span>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">
+            {unreadCount > 99 ? '99+' : unreadCount}
+          </span>
+        )}
       </div>
     </Dropdown>
   );

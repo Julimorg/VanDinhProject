@@ -1,5 +1,6 @@
 package com.example.managementapi.Mapper;
 
+import com.example.managementapi.Dto.Response.Notification.GetSystemAllNotificationsRes;
 import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
 import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
 import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
@@ -14,15 +15,27 @@ import java.util.List;
 public interface NotificationMapper {
 
     @Mapping(source = "notifications.notificationId", target = "notificationId")
+    @Mapping(source = "userNotificationId", target = "userNotificationId")
     @Mapping(source = "notifications.title", target = "title")
     @Mapping(source = "notifications.message", target = "message")
     @Mapping(source = "notifications.type", target = "type")
+    @Mapping(source = "isRead", target = "isRead")
     @Mapping(source = "notifications.createBy", target = "createBy")
     @Mapping(source = "notifications.createdAt", target = "createdAt")
-    @Mapping(source = "isRead", target = "isRead")
-    @Mapping(source = "userNotificationId", target = "userNotificationId")
     GetSystemTopFiveNotifications toGetSystemTopFiveNotifications(UserNotifications entity);
 
+    @Mapping(source = "notifications.notificationId", target = "notificationId")
+    @Mapping(source = "userNotificationId", target = "userNotificationId")
+    @Mapping(source = "notifications.title", target = "title")
+    @Mapping(source = "notifications.message", target = "message")
+    @Mapping(source = "notifications.type", target = "type")
+    @Mapping(source = "isRead", target = "isRead")
+    @Mapping(source = "notifications.createBy", target = "createBy")
+    @Mapping(source = "notifications.createdAt", target = "createdAt")
+    @Mapping(source = "deliveredAt", target = "deliveredAt")
+    @Mapping(source = "clickedAt", target = "clickedAt")
+    @Mapping(source = "readAt", target = "readAt")
+    GetSystemAllNotificationsRes toGetSystemAllNotificationsRes(UserNotifications entity);
 
     List<UserNotiDetail> toUserNotiDetails(List<UserNotifications> userNotifications);
 

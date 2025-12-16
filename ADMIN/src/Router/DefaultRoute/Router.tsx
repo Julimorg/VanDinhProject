@@ -18,6 +18,8 @@ import OrderDetailPage from '@/Pages/OrderManagement/OrderDetailPage';
 import CreateOrderPage from '@/Pages/OrderManagement/CreateOrderPage';
 import { useAuthStore } from '@/Store/IAuth';
 import UpdateOrderItemsPage from '@/Pages/OrderManagement/UpdateOrderItemsPage';
+import FileExporterPage from '@/Pages/FileExporter/FileExporterPage';
+import ViewAllNotificationsPage from '@/Pages/Notifications/ViewAllNotificationsPage';
 
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
@@ -79,6 +81,8 @@ const Router: React.FC = () => {
 
           <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
           <Route path="profile" element={<MyProfile />} />
+          <Route path="file-exporter" element={<FileExporterPage />} />
+          <Route path="notifications" element={<ViewAllNotificationsPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>
