@@ -43,45 +43,79 @@ export const useWebSocketService = (
     });
 
     const clientRef = useRef<Client | null>(null);
-    const isConnected = useRef(false);
 
+    const onConnectRef = useRef(onConnectCallback);
+    const onErrorRef = useRef(onErrorCallback);
+
+    // Luôn cập nhật ref khi callback thay đổi
     useEffect(() => {
-        clientRef.current = state.client;
-    }, [state.client]);
+        onConnectRef.current = onConnectCallback;
+        onErrorRef.current = onErrorCallback;
+    }, [onConnectCallback, onErrorCallback]);
 
-    const connect = useCallback(() => {
-        if (state.client || isConnected.current) {
+
+    const connect = useCallback((token: string) => {
+        // Nếu đã có client trong Ref, tuyệt đối không tạo mới.
+        if (clientRef.current) {
+            console.log("WebSocket already initialized. Skipping...");
             return;
         }
 
+        if (!token) {
+            console.error("No token provided for WebSocket connection");
+            return;
+        }
+
+        console.log("Initializing WebSocket Client...");
+
         const client = new Client({
             webSocketFactory: () => new SockJS(webSocketUrl),
-            debug: str => console.log('debugLog: ', str),
+            connectHeaders: {
+                Authorization: `Bearer ${token}`,
+            },
+            debug: (str) => {
+                if (!import.meta.env.DEV) return;
+
+                // Ẩn Authorization
+                if (str.includes('Authorization')) {
+                    console.log(
+                        str.replace(/Authorization:.*(\r?\n)?/g, 'Authorization: [HIDDEN]\n')
+                    );
+                } else {
+                    console.log(str);
+                }
+            },
             reconnectDelay: 5000,
-            heartbeatIncoming: 1000,
-            heartbeatOutgoing: 1000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
+
             onConnect: () => {
-                isConnected.current = true;
                 console.log('WebSocket connected');
-                onConnectCallback();
+                if (onConnectRef.current) onConnectRef.current();
             },
             onStompError: error => {
-                onErrorCallback(error.headers['message'] || 'Unknown error');
+                console.error("Stomp Error Header:", error.headers);
+                if (onErrorRef.current) onErrorRef.current(error.headers['message'] || 'Unknown error');
             },
-
             onWebSocketClose: (evt) => {
                 console.log("Socket Closed with code:", evt.code, "reason:", evt.reason);
             }
         });
+
+
         clientRef.current = client;
+
         client.activate();
         dispatch({ type: 'SET_CLIENT', payload: client });
-    }, [webSocketUrl, onConnectCallback, onConnectCallback])
+
+    }, [webSocketUrl]);
 
     const subscribe = useCallback(
         (destination: string, callback: SubscriptionCallback) => {
             const client = clientRef.current;
-            if (!client || !isConnected.current) {
+
+            if (!client || !client.connected) {
+                console.warn("Client not connected yet, cannot subscribe to", destination);
                 return;
             }
 
@@ -89,6 +123,7 @@ export const useWebSocketService = (
                 return;
             }
 
+            console.log("Subscribing to:", destination);
             const subscription = client.subscribe(destination, (message: IMessage) => {
                 if (message.body) {
                     callback(JSON.parse(message.body));
@@ -102,12 +137,10 @@ export const useWebSocketService = (
 
     const send = useCallback((destination: string, body: Record<string, any> = {}) => {
         const client = clientRef.current;
-        if (!client || !isConnected.current) {
+        if (!client || !client.connected) {
             return;
         }
-
-        client?.publish({ destination, body: JSON.stringify(body) });
-
+        client.publish({ destination, body: JSON.stringify(body) });
     }, []);
 
     const unsubscribe = useCallback((destination: string) => {
@@ -120,13 +153,17 @@ export const useWebSocketService = (
 
     const disconnect = useCallback(() => {
         const client = clientRef.current;
-        if (client && isConnected.current) {
-            state.subscriptions.forEach(subscription => subscription.unsubscribe());
+        if (client) {
+            console.log("Disconnecting WebSocket...");
+            // Unsubscribe tất cả
+            state.subscriptions.forEach(sub => sub.unsubscribe());
+
             client.deactivate();
+
+            clientRef.current = null;
             dispatch({ type: 'CLEAR_CLIENT' });
-            isConnected.current = false;
         }
     }, [state.subscriptions]);
 
-    return { connect, subscribe, send, unsubscribe, disconnect };
+    return { connect, subscribe, send, unsubscribe, disconnect, isConnected: !!state.client };
 }

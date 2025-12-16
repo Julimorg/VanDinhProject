@@ -1,84 +1,53 @@
 //package com.example.managementapi.Component;
 //
-//import com.example.managementapi.Entity.UserDevice;
-//import com.example.managementapi.Repository.UserDeviceRepository;
-//import com.example.managementapi.Service.JwtService;
+//import com.example.managementapi.Service.UserDeviceService;
 //import lombok.RequiredArgsConstructor;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.context.event.EventListener;
 //import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 //import org.springframework.stereotype.Component;
-//import org.springframework.web.socket.messaging.SessionConnectedEvent;
+//import org.springframework.web.socket.messaging.SessionConnectEvent;
 //import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 //
-//import java.time.LocalDateTime;
+//import java.security.Principal;
 //
-//
-//@Slf4j
 //@Component
 //@RequiredArgsConstructor
-//public class WebsocketEventListener {
+//@Slf4j
+//public class WebSocketEventListener {
+//    private final UserDeviceService userDeviceService;
 //
-//    private final UserDeviceRepository deviceRepo;
-//
-//    private final JwtService jwtService;
-//
-//
-//    //* HANDSHAKE CATCH USER VIỆC MỞ WEB ĐỂ CONNECT VÀO WEBSOCKET
+//    // Sự kiện khi một session STOMP được kết nối (và xác thực)
 //    @EventListener
-//    public void handleWebSocketConnect(SessionConnectedEvent event) {
+//    public void handleWebSocketConnectListener(SessionConnectEvent event) {
+//        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+//        Principal principal = headerAccessor.getUser();
 //
-//        //? Lấy info connect từ browser send lên
-//        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+//        // 1. Lấy STOMP Session ID (chính là socketId bạn muốn lưu)
+//        String sessionId = headerAccessor.getSessionId();
 //
-//        //? Lấy header từ Auth
-//        String authHeader = accessor.getFirstNativeHeader("Authorization");
+//        if (principal != null) {
+//            // 2. Lấy User ID đã được xác thực
+//            String userId = principal.getName(); // Giả sử Principal.getName() trả về userId
 //
-//        log.warn("AuthHeader: " + authHeader);
+//            log.info("STOMP Session Connected: userId={}, sessionId={}", userId, sessionId);
+//            // 3. Lưu thông tin vào DB
+//            userDeviceService.saveUserSocketId(userId, sessionId);
 //
-//        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-//            log.warn("User Connected but dont have Token → Not Allowed!");
-//            return;
+//        } else {
+//            // Xử lý các kết nối không có authentication nếu cần (thường thì không)
+//            log.warn("STOMP Session Connected without Principal. Session ID: {}", sessionId);
 //        }
-//
-//        //? Cut từ Bearer đi để lấy Token
-//        String token = authHeader.substring(7);
-//
-//        String userId = jwtService.extractUserId(token);
-//
-//        //? Mỗi lần kết nối WebSocket, Spring tạo 1 cái "mã riêng" gọi là sessionId
-//        //? Ví dụ: "websocket_abc12345" → giống như phát cho khách 1 cái thẻ số bàn
-//        String sessionId = accessor.getSessionId();
-//
-//        //? Check DB xem User Online chưa
-//        //? Nếu chưa thì tạo mới
-//        UserDevice device = deviceRepo.findByUserId(userId)
-//                .orElseGet(UserDevice::new);
-//
-//        device.setUserId(userId);
-//        device.setSocketId(sessionId);
-//        device.setLastSeen(LocalDateTime.now());
-//
-//        deviceRepo.save(device);
-//
-//        log.info("User {} vừa MỞ WEB → ĐANG ONLINE với socketId = {}", userId, sessionId);
-//
 //    }
 //
+//    // Sự kiện khi một session STOMP bị ngắt kết nối
 //    @EventListener
-//    public void handleWebSocketDisconnect(SessionDisconnectEvent event) {
+//    public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+//        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+//        String sessionId = headerAccessor.getSessionId();
 //
-//        //? Lấy sessionId khi User Disconnect
-//        String sessionId = event.getSessionId();
-//
-//        deviceRepo.findAll().stream()
-//                .filter(d -> sessionId.equals(d.getSocketId()))
-//                .forEach(d -> {
-//
-//                    //? set socketId trong DB là null để mark user đó là Offline
-//                    d.setSocketId(null);
-//                    deviceRepo.save(d);
-//                    log.info("User {} vừa TẮT TAB → OFFLINE", d.getUserId());
-//                });
+//        log.info("STOMP Session Disconnected: sessionId={}", sessionId);
+//        // Xóa socketId khỏi DB khi người dùng ngắt kết nối
+//        userDeviceService.removeUserSocketId(sessionId);
 //    }
 //}
