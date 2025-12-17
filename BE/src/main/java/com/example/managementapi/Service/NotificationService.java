@@ -105,8 +105,11 @@ public class NotificationService {
                     .isPresent();
 
             if(isOnline){
+
                 Optional<UserDevice> deviceOpt = deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(userId);
+
                 String sessionId = deviceOpt.get().getSocketId();
+
                 NotificationRes payload = NotificationRes.builder()
                         .notificationId(noti.getNotificationId())
                         .title(noti.getTitle())
@@ -119,8 +122,11 @@ public class NotificationService {
                 String personalQueue = "/queue/notifications-user" + sessionId;
                 messagingTemplate.convertAndSend(personalQueue, payload);
 
+                log.info("✅ Đã gửi realtime notification đến user [{}]", userId);
 
-                log.warn("Đã Tạo Sub cho WebSocket: " + personalQueue);
+
+
+//                log.warn("Đã Tạo Sub cho WebSocket: " + personalQueue);
 
                 un.setStatus(UserNotifactionStatus.DELIVERED);
                 un.setDeliveredAt(LocalDateTime.now());
