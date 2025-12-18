@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { useGetAllNotifications } from './Hook/userGetAllNotifications';
+import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotification';
 
 import { Card, List, Skeleton, Space, Tag, Typography } from 'antd';
 import NotificationHeader from './Components/NotificationHeader';
@@ -24,9 +25,21 @@ const ViewAllNotificationsPage: React.FC = () => {
   const [page, setPage] = useState<number>(0); 
   const [size] = useState<number>(10);
 
+  // Convert filter to isRead parameter
+  const getIsReadParam = (): string | undefined => {
+    if (filter === 'unread') return 'false';
+    if (filter === 'read') return 'true';
+    return undefined;
+  };
+
   const { data, isLoading, refetch } = useGetAllNotifications(
     userId || '',
-    { page, size, sort: 'deliveredAt,desc' },
+    { 
+      isRead: getIsReadParam(),
+      page, 
+      size, 
+      sort: 'deliveredAt,desc' 
+    },
     { enabled: !!userId }
   );
 
@@ -34,16 +47,13 @@ const ViewAllNotificationsPage: React.FC = () => {
     onSuccess: () => refetch(),
   });
 
-  const notifications = data?.data?.content || [];
+  const notifications: IGetAllNotifications[] = Array.isArray(data?.data?.content) 
+    ? data.data.content 
+    : [];
   const pagination = data?.data?.page;
 
-  const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
-  const filteredNotifications = notifications.filter((item: any) => {
-    if (filter === 'unread') return !item.isRead;
-    if (filter === 'read') return item.isRead;
-    return true;
-  });
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAllAsRead = () => {
     if (userId && unreadCount > 0) {
@@ -55,7 +65,12 @@ const ViewAllNotificationsPage: React.FC = () => {
     setPage(newPage);
   };
 
-  // Hàm lấy màu theo type
+  const handleFilterChange = (newFilter: 'all' | 'unread' | 'read') => {
+    setFilter(newFilter);
+    setPage(0); 
+  };
+
+
   const getNotificationColor = (type: string) => {
     const map: Record<string, string> = {
       ORDER: '#1890ff',
@@ -68,7 +83,6 @@ const ViewAllNotificationsPage: React.FC = () => {
     return map[type] || '#1890ff';
   };
 
-  // Skeleton Item giống hệt cấu trúc thật
   const SkeletonNotificationItem = () => (
     <Card className="mb-4" bodyStyle={{ padding: '16px' }}>
       <div className="flex gap-4">
@@ -123,7 +137,7 @@ const ViewAllNotificationsPage: React.FC = () => {
           {/* Filters */}
           <NotificationFilters
             filter={filter}
-            setFilter={setFilter}
+            setFilter={handleFilterChange}
             allCount={notifications.length}
             unreadCount={unreadCount}
             readCount={notifications.length - unreadCount}
@@ -132,11 +146,11 @@ const ViewAllNotificationsPage: React.FC = () => {
           {/* Danh sách thông báo hoặc skeleton hoặc empty */}
           {isLoading ? (
             <div>{loadingSkeletons}</div>
-          ) : filteredNotifications.length === 0 ? (
+          ) : notifications.length === 0 ? (
             <NotificationEmpty />
           ) : (
             <List
-              dataSource={filteredNotifications}
+              dataSource={notifications}
               renderItem={(item: any) => {
                 const isUnread = !item.isRead;
                 const color = getNotificationColor(item.type);

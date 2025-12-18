@@ -18,12 +18,12 @@ export const useGetAllNotifications = (
   params: NotificationsQueryParams = {},
   options?: UseGetAllNotificationOptions
 ) => {
-  const { page = 0, size = 5, sort = "deliveredAt,desc" } = params;
+  const { isRead = 'false', page = 0, size = 5, sort = "deliveredAt,desc" } = params;
 
   return useQuery({
     ...options,
-    queryKey: [QueryKeys.GET_ALL_NOTIFICATIONS, { page, size, sort }],
-    queryFn: () => docApi.GetAllNotifications(userId, { page, size, sort }),
+    queryKey: [QueryKeys.GET_ALL_NOTIFICATIONS, { isRead, page, size, sort }],
+    queryFn: () => docApi.GetAllNotifications(userId, { isRead, page, size, sort }),
     enabled: true, 
   });
 };

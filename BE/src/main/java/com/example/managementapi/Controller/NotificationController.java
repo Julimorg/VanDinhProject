@@ -41,7 +41,7 @@ public class NotificationController {
     }
 
 
-    @PostMapping("/send-many")
+    @PostMapping("/admin/send-notifications")
     public ApiResponse<SendNotiToOneUserOrManyUserRes> sendNotiToOneUserOrManyUser(
             @RequestBody SendNotiToOneUserOrManyUserReq req) {
 
@@ -68,12 +68,13 @@ public class NotificationController {
     @GetMapping("/system-all/{userId}")
     public ApiResponse<Page<GetSystemAllNotificationsRes>> getSystemAllNotifications(
             @PathVariable String userId,
+            @RequestParam(required = false) String isRead,
             @PageableDefault(size = 10, sort = "deliveredAt", direction = Sort.Direction.ASC) Pageable pageable) {
 
         return ApiResponse.<Page<GetSystemAllNotificationsRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Send Successfully!")
-                .data(notificationService.getSystemAllNotifications(userId, pageable))
+                .data(notificationService.getSystemAllNotifications(userId, isRead, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
