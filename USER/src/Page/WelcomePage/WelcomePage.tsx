@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Row, Col, Typography } from 'antd';
+import { Button, Row, Col, Typography, Card } from 'antd';
 import { ArrowRight } from 'lucide-react';
 import FeatureCard from './Components/FeaturesCard';
 import BrandSlider from './Components/BrandSlider';
@@ -84,6 +84,100 @@ const WelcomePage: React.FC = () => {
         </div>
       </section>
 
+      {/* Overview & Stats Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-[1.4fr_minmax(0,1fr)] items-center">
+          <div>
+            <Title level={2} className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+              {data.overview.title}
+            </Title>
+            <Paragraph className="text-base sm:text-lg text-gray-600 mb-4">
+              {data.overview.description}
+            </Paragraph>
+            <Paragraph className="text-base sm:text-lg text-gray-600 opacity-90">
+              {data.overview.secondaryDescription}
+            </Paragraph>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {data.highlights.map((item) => (
+                <Card
+                  key={item.id}
+                  bordered={false}
+                  className="shadow-sm hover:shadow-md transition-shadow duration-300 h-full"
+                >
+                  <Title level={5} className="mb-2">
+                    {item.title}
+                  </Title>
+                  <Paragraph className="text-sm sm:text-base text-gray-600 mb-0">
+                    {item.description}
+                  </Paragraph>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-6 sm:p-8 text-white shadow-lg">
+            <Title level={3} className="text-white mb-4">
+              Những con số biết nói
+            </Title>
+            <div className="grid grid-cols-2 gap-4 sm:gap-6">
+              {data.stats.map((stat) => (
+                <div key={stat.id} className="text-center sm:text-left">
+                  <div className="text-2xl sm:text-3xl font-extrabold mb-1">
+                    {stat.value}
+                  </div>
+                  <div className="text-sm sm:text-base text-blue-100">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+            <Paragraph className="mt-6 text-sm sm:text-base text-blue-100">
+              Mỗi công trình là một câu chuyện. Vạn Dinh luôn nỗ lực để mang lại kết quả tốt
+              nhất cho khách hàng.
+            </Paragraph>
+          </div>
+        </div>
+      </section>
+
+      {/* Product Categories Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <Title level={2} className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+              Danh Mục Sản Phẩm Nổi Bật
+            </Title>
+            <Paragraph className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
+              Đầy đủ giải pháp sơn cho từng khu vực trong và ngoài công trình, từ nhà ở đến nhà xưởng.
+            </Paragraph>
+          </div>
+          <Row gutter={[16, 16]}>
+            {data.productCategories.map((category) => (
+              <Col xs={24} sm={12} lg={6} key={category.id}>
+                <Card
+                  hoverable
+                  className="h-full overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                  cover={
+                    <div className="h-40 sm:h-48 overflow-hidden">
+                      <img
+                        src={category.imageUrl}
+                        alt={category.name}
+                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  }
+                >
+                  <Title level={4} className="mb-2">
+                    {category.name}
+                  </Title>
+                  <Paragraph className="text-gray-600 mb-0">
+                    {category.description}
+                  </Paragraph>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
@@ -135,6 +229,101 @@ const WelcomePage: React.FC = () => {
             {data.testimonials.map((testimonial) => (
               <Col xs={24} md={12} lg={8} key={testimonial.id}>
                 <TestimonialCard testimonial={testimonial} />
+              </Col>
+            ))}
+          </Row>
+        </div>
+      </section>
+
+      {/* Services & Policies Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto grid gap-10 lg:grid-cols-2">
+          <div>
+            <Title level={2} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+              Dịch Vụ Hỗ Trợ Tận Tâm
+            </Title>
+            <Paragraph className="text-base sm:text-lg text-gray-600 mb-6">
+              Không chỉ bán sơn, Vạn Dinh đồng hành cùng bạn trong suốt hành trình hoàn thiện công trình.
+            </Paragraph>
+            <div className="space-y-4">
+              {data.services.map((service) => (
+                <Card
+                  key={service.id}
+                  bordered={false}
+                  className="shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
+                  <Title level={4} className="mb-1">
+                    {service.title}
+                  </Title>
+                  <Paragraph className="text-gray-600 mb-0">
+                    {service.description}
+                  </Paragraph>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <Title level={2} className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">
+              Chính Sách & Cam Kết
+            </Title>
+            <Paragraph className="text-base sm:text-lg text-gray-600 mb-6">
+              Minh bạch, rõ ràng để khách hàng luôn yên tâm khi lựa chọn Vạn Dinh.
+            </Paragraph>
+            <div className="space-y-4">
+              {data.policies.map((policy) => (
+                <Card
+                  key={policy.id}
+                  bordered={false}
+                  className="shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
+                  <Title level={4} className="mb-1">
+                    {policy.title}
+                  </Title>
+                  <Paragraph className="text-gray-600 mb-0">
+                    {policy.description}
+                  </Paragraph>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery Section */}
+      <section className="py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <Title level={2} className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+              Hình Ảnh Thực Tế Công Trình
+            </Title>
+            <Paragraph className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
+              Một vài góc nhìn từ những công trình đã hoàn thiện với sản phẩm của Vạn Dinh.
+            </Paragraph>
+          </div>
+          <Row gutter={[16, 16]}>
+            {data.gallery.map((item) => (
+              <Col xs={24} md={8} key={item.id}>
+                <Card
+                  hoverable
+                  className="h-full overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
+                  cover={
+                    <div className="h-48 sm:h-56 overflow-hidden">
+                      <img
+                        src={item.imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  }
+                >
+                  <Title level={4} className="mb-2">
+                    {item.title}
+                  </Title>
+                  <Paragraph className="text-gray-600 mb-0">
+                    {item.description}
+                  </Paragraph>
+                </Card>
               </Col>
             ))}
           </Row>
