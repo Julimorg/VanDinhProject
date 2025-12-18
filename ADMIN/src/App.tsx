@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import DefaultRouter from '@/Router/DefaultRoute/Router';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+
 function App() {
   return (
     <React.StrictMode>

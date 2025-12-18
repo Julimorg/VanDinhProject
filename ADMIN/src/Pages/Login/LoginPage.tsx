@@ -4,30 +4,40 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Loading from '@/Components/Loading/index';
 import { useLogin } from './Hook/useLogin';
+import { useStompWebSocket } from '@/Provider/StompWebSocketProvider';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
+  const { connectWebSocket } = useStompWebSocket();
   const navigate = useNavigate();
-
   const loginMutation = useLogin();
 
-
-  const onFinish = (values: { username: string; password: string }) => {
+  const onFinish = async (values: { username: string; password: string }) => {
     setLoading(true);
+
     loginMutation.mutate(
       {
         username: values.username,
         password: values.password,
       },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           setLoading(false);
-          toast.success("Login Successfully!");
+          toast.success('Login Successfully!');
+          console.log('🚀 Bắt đầu kết nối WebSocket sau khi đăng nhập...');
+          try {
+            await connectWebSocket();
+            console.log('✅ WebSocket đã kết nối thành công!');
+            toast.success('Kết nối thông báo realtime thành công');
+          } catch (error) {
+            console.error('❌ Kết nối WebSocket thất bại:', error);
+            toast.warn('Thông báo realtime chưa sẵn sàng (vẫn dùng app bình thường)');
+          }
           navigate('/dashboard');
         },
         onError: (error: any) => {
           setLoading(false);
-          toast.error("Login Failed!");
+          toast.error('Login Failed!');
           console.error(error);
         },
       }
@@ -44,7 +54,7 @@ const Login: React.FC = () => {
           {/* Decorative circles */}
           <div className="absolute top-20 left-20 w-64 h-64 xl:w-72 xl:h-72 bg-white opacity-10 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-20 w-80 h-80 xl:w-96 xl:h-96 bg-orange-400 opacity-20 rounded-full blur-3xl"></div>
-          
+
           <div className="relative z-10 max-w-xl text-white">
             <div className="flex items-center space-x-4 mb-8">
               <div className="flex items-center justify-center w-14 h-14 xl:w-16 xl:h-16 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl border border-white border-opacity-30">
@@ -52,21 +62,27 @@ const Login: React.FC = () => {
               </div>
               <h1 className="text-4xl xl:text-5xl font-bold tracking-tight">VẠN ĐỊNH</h1>
             </div>
-            
+
             <h2 className="text-2xl xl:text-3xl font-bold mb-4 leading-tight">
-              Giải pháp sơn chuyên nghiệp<br />cho mọi công trình
+              Giải pháp sơn chuyên nghiệp
+              <br />
+              cho mọi công trình
             </h2>
-            
+
             <p className="text-base xl:text-lg text-blue-100 mb-8 leading-relaxed">
-              Hệ thống quản lý bán hàng hiện đại, giúp bạn kiểm soát kho hàng, 
-              đơn hàng và khách hàng một cách dễ dàng và hiệu quả.
+              Hệ thống quản lý bán hàng hiện đại, giúp bạn kiểm soát kho hàng, đơn hàng và khách
+              hàng một cách dễ dàng và hiệu quả.
             </p>
 
             <div className="space-y-4">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 xl:w-12 xl:h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 xl:w-6 xl:h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <span className="text-base xl:text-lg">Quản lý kho hàng thông minh</span>
@@ -74,7 +90,11 @@ const Login: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 xl:w-12 xl:h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 xl:w-6 xl:h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <span className="text-base xl:text-lg">Theo dõi đơn hàng realtime</span>
@@ -82,7 +102,11 @@ const Login: React.FC = () => {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 xl:w-12 xl:h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-lg flex items-center justify-center flex-shrink-0">
                   <svg className="w-5 h-5 xl:w-6 xl:h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <span className="text-base xl:text-lg">Báo cáo chi tiết & phân tích</span>
@@ -117,13 +141,9 @@ const Login: React.FC = () => {
 
               <Icons.Form layout="vertical" onFinish={onFinish}>
                 <Icons.Form.Item
-                  label={
-                    <span className="text-sm font-semibold text-gray-700">
-                      UserName
-                    </span>
-                  }
+                  label={<span className="text-sm font-semibold text-gray-700">UserName</span>}
                   name="username"
-                  rules={[{ required: true, message: "Your user name..." }]}
+                  rules={[{ required: true, message: 'Your user name...' }]}
                   className="mb-5"
                 >
                   <Icons.Input
@@ -134,13 +154,9 @@ const Login: React.FC = () => {
                 </Icons.Form.Item>
 
                 <Icons.Form.Item
-                  label={
-                    <span className="text-sm font-semibold text-gray-700">
-                      Password
-                    </span>
-                  }
+                  label={<span className="text-sm font-semibold text-gray-700">Password</span>}
                   name="password"
-                  rules={[{ required: true, message: "Your password..." }]}
+                  rules={[{ required: true, message: 'Your password...' }]}
                   className="mb-6"
                 >
                   <Icons.Input.Password
@@ -177,7 +193,9 @@ const Login: React.FC = () => {
 
             {/* Footer */}
             <div className="mt-8 text-center">
-              <p className="text-xs text-gray-500">@ 2025 - VanDinh - Paint Store Management System</p>
+              <p className="text-xs text-gray-500">
+                @ 2025 - VanDinh - Paint Store Management System
+              </p>
             </div>
           </div>
         </div>

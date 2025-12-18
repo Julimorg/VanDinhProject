@@ -21,5 +21,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src') // alias @ trỏ về thư mục src
     }
-  }
+  },
+  // define: {
+  //   global: 'globalThis',  
+  // },
 })
