@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Drawer, Badge, Button } from 'antd';
 import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,10 @@ import UserProfileDropdown from './Components/UserProfileDropdown';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useCartStore } from '../../Middleware/useCartStore';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
-
+import NotificationsDropdown from './Components/Notification';
+import { useNotificationStore } from "../../Middleware/useNotificationStore";
+import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
+import type { NotificationType } from '../../Interface/Notification/INotification';
 interface HeaderProps {
   isMobile: boolean;
 }
@@ -22,6 +25,34 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
 
   const { data: cartResponse } = useGetAllCarts(userId ?? '');
   const navigate = useNavigate();
+
+  const notifications = useNotificationStore((state) => state.notifications);
+  const unreadCount = useNotificationStore((state) => state.unreadCount);
+
+  const { data, isLoading } = useGetNotifications(userId ?? undefined);
+
+  const fiveNotifications = useMemo(() => {
+    return Array.isArray(data?.data) ? data.data : [];
+  }, [data?.data]);
+
+  const apiNotifications: NotificationType[] = useMemo(() => {
+    return fiveNotifications.map((n) => ({
+      id: n.userNotificationId,
+      title: n.title,
+      description: n.message,
+      type: n.type || 'info',
+      read: n.isRead,
+      time: new Date(n.createdAt).toLocaleString(),
+    }));
+  }, [fiveNotifications]);
+
+  const finalNotifications =
+    notifications.length > 0 ? notifications : apiNotifications;
+
+  const finalUnreadCount =
+    notifications.length > 0
+      ? unreadCount
+      : apiNotifications.filter(n => !n.read).length;
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -40,6 +71,10 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    setCartCount(0);
+  }, [userId, setCartCount]);
 
   const navItems = [
     { key: 'products', label: 'Sản phẩm', path: '/products' },
@@ -88,9 +123,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -121,6 +155,22 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 </Button>
               </Badge>
 
+
+              {/* <Button
+                type="text"
+                onClick={() => navigate('/example')}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <BellOutlined className="text-lg text-gray-700" />
+              </Button> */}
+
+              <NotificationsDropdown
+                notifications={finalNotifications}
+                unreadCount={finalUnreadCount}
+                navigate={navigate}
+                isMobile={isMobile}
+              />
+
               <UserProfileDropdown
                 userName={userName || 'unknown'}
                 email={email || 'unknown'}
@@ -147,6 +197,23 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                   <ShoppingCartOutlined className="text-lg text-gray-700" />
                 </Button>
               </Badge>
+
+              {/* dropdown noti */}
+              {/* <Button
+                type="text"
+                onClick={() => navigate('/example')}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <BellOutlined className="text-lg text-gray-700" />
+              </Button> */}
+
+              <NotificationsDropdown
+                notifications={finalNotifications}
+                unreadCount={finalUnreadCount}
+                navigate={navigate}
+                isMobile={isMobile}
+              />
+
               <UserProfileDropdown
                 userName={userName || 'unknown'}
                 email={email || 'unknown'}

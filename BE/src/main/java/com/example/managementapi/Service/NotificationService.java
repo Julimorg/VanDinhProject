@@ -52,7 +52,7 @@ public class NotificationService {
     private final UserRepository userRepo;
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
 
         userRepo.findById(userId)
@@ -140,6 +140,7 @@ public class NotificationService {
 
     // Gửi thông báo riêng cho 1 user (dùng userId làm principal name)
     public void sendToUser(String userId, NotificationRes notification) {
+        log.info("Sending WS to user {}", userId);
         messagingTemplate.convertAndSendToUser(
                 userId,                              // Spring sẽ tự thêm prefix /user/
                 "/queue/notifications",              // → client nhận ở /user/{userId}/queue/notifications
