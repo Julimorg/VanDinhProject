@@ -1,6 +1,7 @@
 import React from 'react';
 import { Badge, Dropdown, Button, type MenuProps } from 'antd';
 import { BellOutlined } from '@ant-design/icons';
+import type { NotificationType } from '../../../Interface/Notification/INotification';
 
 interface NotificationsDropdownProps {
   notifications: NotificationType[];
@@ -67,7 +68,8 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   ];
 
   const dropdownWidth = isMobile ? 'w-[calc(100vw-2rem)] max-w-[360px]' : 'min-w-[360px] max-w-[400px]';
-  const offset = isMobile ? [0, 0] : [0, 0];
+  const offset: [number, number] = isMobile ? [0, 0] : [0, 0];
+
 
   return (
     <Dropdown

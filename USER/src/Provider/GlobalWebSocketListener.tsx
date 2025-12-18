@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useWebSocketService } from "../Enum/useWebSocket";
+import { useWebSocketService } from "../Hook/useWebSocket";
 import { useNotificationStore } from "../Middleware/useNotificationStore";
 import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
 

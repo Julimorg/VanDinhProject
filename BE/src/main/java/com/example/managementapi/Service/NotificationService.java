@@ -52,7 +52,7 @@ public class NotificationService {
     private final UserRepository userRepo;
 
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
 
         userRepo.findById(userId)

@@ -1,12 +1,6 @@
 import { create } from "zustand";
+import type { NotificationType } from "../Interface/Notification/INotification";
 
-interface NotificationType {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  read: boolean;
-}
 
 interface NotificationStore {
   notifications: NotificationType[];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Drawer, Badge, Button } from 'antd';
 import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
@@ -9,6 +9,8 @@ import { useCartStore } from '../../Middleware/useCartStore';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
 import NotificationsDropdown from './Components/Notification';
 import { useNotificationStore } from "../../Middleware/useNotificationStore";
+import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
+import type { NotificationType } from '../../Interface/Notification/INotification';
 interface HeaderProps {
   isMobile: boolean;
 }
@@ -26,6 +28,31 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
 
   const notifications = useNotificationStore((state) => state.notifications);
   const unreadCount = useNotificationStore((state) => state.unreadCount);
+
+  const { data, isLoading } = useGetNotifications(userId ?? undefined);
+
+  const fiveNotifications = useMemo(() => {
+    return Array.isArray(data?.data) ? data.data : [];
+  }, [data?.data]);
+
+  const apiNotifications: NotificationType[] = useMemo(() => {
+    return fiveNotifications.map((n) => ({
+      id: n.userNotificationId,
+      title: n.title,
+      description: n.message,
+      type: n.type || 'info',
+      read: n.isRead,
+      time: new Date(n.createdAt).toLocaleString(),
+    }));
+  }, [fiveNotifications]);
+
+  const finalNotifications =
+    notifications.length > 0 ? notifications : apiNotifications;
+
+  const finalUnreadCount =
+    notifications.length > 0
+      ? unreadCount
+      : apiNotifications.filter(n => !n.read).length;
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -138,8 +165,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
               </Button> */}
 
               <NotificationsDropdown
-                notifications={notifications}
-                unreadCount={unreadCount}
+                notifications={finalNotifications}
+                unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
               />
@@ -181,8 +208,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
               </Button> */}
 
               <NotificationsDropdown
-                notifications={notifications}
-                unreadCount={unreadCount}
+                notifications={finalNotifications}
+                unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
               />

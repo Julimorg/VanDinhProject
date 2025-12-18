@@ -9,8 +9,11 @@ import { toast } from 'react-toastify';
 import { useCartStore } from '../../Middleware/useCartStore';
 import CartItemsCard from './Components/CartItemsCard';
 import OrderSummary from './Components/OrderSummary';
+import { useNavigate } from 'react-router-dom';
 
 const CartPage: React.FC = () => {
+  const navigate = useNavigate();
+
   const { id: userId } = useAuthStoreCookiesStorage();
   const { data: cartResponse, isLoading, isError, refetch } = useGetAllCarts(userId ?? '');
   const deleteCartItemMutation = useDeleteCartItem();
@@ -107,7 +110,7 @@ const CartPage: React.FC = () => {
             description="Giỏ hàng của bạn đang trống"
             className="my-16"
           >
-            <Button type="primary" icon={<ShoppingCartOutlined />} size="large">
+            <Button type="primary" onClick={() => navigate("/products")} icon={<ShoppingCartOutlined />} size="large">
               Tiếp tục mua sắm
             </Button>
           </Empty>
