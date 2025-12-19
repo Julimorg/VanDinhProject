@@ -32,7 +32,7 @@ public class WebSocketBrokerConfig implements WebSocketMessageBrokerConfigurer {
         config.setApplicationDestinationPrefixes("/app");
 
         //? Tạo private tunnel để có thể send private message đến 1 user cụ thể
-        config.setUserDestinationPrefix("/user");
+//        config.setUserDestinationPrefix("/user");
 
 //        config.setPreservePublishOrder(true);
 

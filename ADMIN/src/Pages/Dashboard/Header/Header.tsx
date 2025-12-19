@@ -14,6 +14,8 @@ import NotificationDropdown from './Component/Notification';
 import { useLogOut } from './Hook/useLogOut';
 import { IApiResponse } from '@/Interface/IApiResponse';
 import { toast } from 'react-toastify';
+import { useQueryClient } from '@tanstack/react-query';
+import { useStompWebSocket } from '@/Provider/StompWebSocketProvider';
 
 const { Header: AntHeader } = Layout;
 
@@ -23,44 +25,63 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); 
-  
-  const { userName, email, userImg, accessToken: token, clearTokens} = useAuthStore();
+  const {
+    userName,
+    email,
+    userImg,
+    accessToken: token,
+    clearTokens,
+  } = useAuthStore();
 
   const [searchValue, setSearchValue] = useState('');
-  const [dropdownOpen, setDropdownOpen] = useState(false); 
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { disconnectWebSocket } = useStompWebSocket();
+  const queryClient = useQueryClient();
+
+
   const { mutate: logOut, isPending } = useLogOut({
     onSuccess: (response: IApiResponse<void>) => {
-      console.log('Logout message:', response.message);
-      
       if (response.message) {
-        toast.success(response.message); 
+        toast.success(response.message);
       }
-    
-      clearTokens();
-      setDropdownOpen(false); 
-      navigate('/login');
+      performCleanup();
     },
     onError: (err) => {
       console.error('Logout lỗi:', err);
       toast.error('Đăng xuất thất bại, vui lòng thử lại.');
-      setDropdownOpen(false);
+      performCleanup();
     },
   });
 
+
+  const performCleanup = () => {
+    console.log('🧹 Performing cleanup after logout...');
+
+    disconnectWebSocket(); 
+    clearTokens();
+    queryClient.clear();
+    navigate('/login', { replace: true }); 
+  };
+
+
   const handleLogout = () => {
-    if (token) {
-      logOut({ token }); 
-    
+    if (!token) {
+      console.warn('Không có token, thực hiện cleanup local');
+      performCleanup();
+      return;
     }
+
+    logOut({ token });
   };
 
   const handleViewProfile = () => {
-    setDropdownOpen(false); 
+    setDropdownOpen(false);
     navigate('/profile');
   };
 
+ 
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
@@ -68,19 +89,16 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
       label: 'Xem Profile',
       onClick: handleViewProfile,
     },
-    {
-      type: 'divider',
-    },
+    { type: 'divider' },
     {
       key: 'logout',
-      icon: isPending ? <LoadingOutlined spin /> : <LogoutOutlined />, 
-      label: isPending ? 'Đang đăng xuất...' : 'Đăng Xuất', 
+      icon: isPending ? <LoadingOutlined spin /> : <LogoutOutlined />,
+      label: isPending ? 'Đang đăng xuất...' : 'Đăng Xuất',
       onClick: handleLogout,
       danger: true,
       disabled: isPending,
     },
   ];
-
   return (
     <AntHeader className="px-6 bg-white flex items-center justify-between border-b border-gray-100 h-16 sticky top-0 z-[998]">
       <div className="flex items-center gap-6">
@@ -111,14 +129,14 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
 
         <NotificationDropdown isMobile={isMobile} />
 
-        <Dropdown 
-          menu={{ items: userMenuItems }} 
-          placement="bottomRight" 
-          arrow 
+        <Dropdown
+          menu={{ items: userMenuItems }}
+          placement="bottomRight"
+          arrow
           trigger={['click']}
-          open={dropdownOpen} 
+          open={dropdownOpen}
           onOpenChange={(open) => {
-            if (!isPending) { 
+            if (!isPending) {
               setDropdownOpen(open);
             }
           }}
@@ -129,7 +147,12 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
               <p className="text-xs text-gray-500 m-0">{email}</p>
             </div>
             {userImg ? (
-              <Avatar size="large" className="bg-blue-700 flex-shrink-0" src={userImg} alt={userName ?? ''} />
+              <Avatar
+                size="large"
+                className="bg-blue-700 flex-shrink-0"
+                src={userImg}
+                alt={userName ?? ''}
+              />
             ) : (
               <Avatar size="large" className="bg-blue-700 flex-shrink-0">
                 {cutStringOnThirdChar(userName ?? '')}
