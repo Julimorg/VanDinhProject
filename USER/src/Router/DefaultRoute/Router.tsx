@@ -13,6 +13,7 @@ import ProductsPage from '../../Page/ProductPage/ProductPage';
 import ProductDetailPage from '../../Page/ProductDetailPage/ProductDetailPage';
 import TransactionPage from '../../Page/TransactionPage/TransactionPage';
 import PaymentResultPage from '../../Page/PaymentResultPage/PaymentResultPage';
+import NotificationPage from '../../Page/NotificationPage/NotificationPage';
 
 
 
@@ -35,6 +36,7 @@ const DefaultRouter = () => {
         <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="transaction/:orderId" element={<TransactionPage />} />
+        <Route path="notifications" element={<NotificationPage />} />
         
       </Route>
     </Routes>

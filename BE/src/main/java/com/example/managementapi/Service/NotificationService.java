@@ -1,6 +1,7 @@
 package com.example.managementapi.Service;
 
 
+import com.example.managementapi.Dto.Request.Notification.MarkNotificationAsReadReq;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
 import com.example.managementapi.Dto.Response.Notification.*;
 import com.example.managementapi.Entity.Notifications;
@@ -72,6 +73,20 @@ public class NotificationService {
 
         return userNotiRepo.findAllByUserId(userId, pageable)
                 .map(user -> notificationMapper.toGetSystemAllNotificationsRes(user));
+    }
+
+    public MarkNotificationAsReadRes markNotificationAsRead(String userNotificationId, MarkNotificationAsReadReq request){
+        UserNotifications userNotification = userNotiRepo.findById(userNotificationId).orElseThrow(() -> new RuntimeException("User notification not found!"));
+
+
+        userNotification.setIsRead(request.getIsRead());
+        userNotification.setReadAt(request.getReadAt());
+        userNotification.setClickedAt(request.getClickedAt());
+
+        userNotificationMapper.markNotificationAsRead(userNotification, request);
+        userNotiRepo.save(userNotification);
+
+        return userNotificationMapper.toMarkNotificationAsReadRes(userNotification);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")

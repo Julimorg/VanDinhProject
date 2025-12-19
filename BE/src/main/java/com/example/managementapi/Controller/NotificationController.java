@@ -2,9 +2,11 @@ package com.example.managementapi.Controller;
 
 
 import com.example.managementapi.Dto.ApiResponse;
+import com.example.managementapi.Dto.Request.Notification.MarkNotificationAsReadReq;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
 import com.example.managementapi.Dto.Response.Notification.GetSystemAllNotificationsRes;
 import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
+import com.example.managementapi.Dto.Response.Notification.MarkNotificationAsReadRes;
 import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
 import com.example.managementapi.Repository.UserNotificationsRepository;
 import com.example.managementapi.Service.NotificationService;
@@ -74,6 +76,18 @@ public class NotificationController {
                 .status_code(HttpStatus.OK.value())
                 .message("Send Successfully!")
                 .data(notificationService.getSystemAllNotifications(userId, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PatchMapping("/mark-read/{userNotificationId}")
+    public ApiResponse<MarkNotificationAsReadRes> markNotificationAsRead(
+            @PathVariable String userNotificationId,
+            @RequestBody MarkNotificationAsReadReq request){
+        return ApiResponse.<MarkNotificationAsReadRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.markNotificationAsRead(userNotificationId, request))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
