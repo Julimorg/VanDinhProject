@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Card, Tabs, Badge, Empty, Button, Segmented } from 'antd';
+import { Card, Tabs, Badge, Empty, Button, Segmented, Pagination } from 'antd';
 import { BellOutlined, CheckOutlined, DeleteOutlined, MailOutlined } from '@ant-design/icons';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useGetAllNotifications } from './Hook/useGetAllNotifications';
@@ -11,8 +11,33 @@ dayjs.extend(relativeTime);
 const NotificationPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('all');
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const { id: userId } = useAuthStoreCookiesStorage();
-  const { data, isLoading } = useGetAllNotifications(userId || undefined);
+  const { id } = useAuthStoreCookiesStorage();
+  const userId = id ?? undefined;
+
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page: page - 1,
+      size: 10,
+    };
+
+    if (filter === 'read') {
+      params.isRead = true;
+    }
+
+    if (filter === 'unread') {
+      params.isRead = false;
+    }
+
+    return params;
+  }, [filter, page]);
+
+
+  const { data, isLoading } = useGetAllNotifications(userId, queryParams);
+
+  const totalElements = data?.data?.page.totalElements ?? 0;
 
   const notifications: NotificationType[] = useMemo(() => {
     if (!Array.isArray(data?.data?.content)) {
@@ -54,13 +79,13 @@ const NotificationPage: React.FC = () => {
     return labels[type] || 'Khác';
   };
 
-  const filteredNotifications = useMemo(() => {
-    return notifications.filter((notif) => {
-      if (filter === 'unread') return !notif.read;
-      if (filter === 'read') return notif.read;
-      return true;
-    });
-  }, [notifications, filter]);
+  // const filteredNotifications = useMemo(() => {
+  //   return notifications.filter((notif) => {
+  //     if (filter === 'unread') return !notif.read;
+  //     if (filter === 'read') return notif.read;
+  //     return true;
+  //   });
+  // }, [notifications, filter]);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.read).length,
@@ -180,7 +205,7 @@ const NotificationPage: React.FC = () => {
           isLoading ? (<Card className="rounded-xl">
             <Empty description="Đang tải thông báo..." />
           </Card>
-          ) : filteredNotifications.length === 0 ? (
+          ) : notifications.length === 0 ? (
             <Card className="rounded-xl">
               <Empty
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -198,7 +223,7 @@ const NotificationPage: React.FC = () => {
             </Card>
           ) : (
             <div className="space-y-3 sm:space-y-4">
-              {filteredNotifications.map((notif) => (
+              {notifications.map((notif) => (
                 <Card
                   key={notif.id}
                   className={`rounded-xl hover:shadow-md transition-all duration-200 cursor-pointer ${!notif.read ? 'border-l-4 border-l-blue-500' : ''
@@ -265,12 +290,15 @@ const NotificationPage: React.FC = () => {
             </div>
           )}
 
-        {/* Load More */}
-        {filteredNotifications.length > 0 && (
-          <div className="text-center mt-6 sm:mt-8">
-            <Button type="default" size="large" className="min-w-[200px]">
-              Tải thêm thông báo
-            </Button>
+        {totalElements > pageSize && (
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <Pagination
+              current={page}
+              pageSize={pageSize}
+              total={totalElements}
+              onChange={(p) => setPage(p)}
+              showSizeChanger={false}
+            />
           </div>
         )}
       </div>

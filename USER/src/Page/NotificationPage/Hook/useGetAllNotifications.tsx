@@ -5,21 +5,30 @@ import { notification_api } from "../../../Api/notification_api";
 import type { IGetAllNotificationsResponse } from "../../../Interface/Notification/IGetAllNotifications";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 
+type NotificationsQueryParams = {
+  isRead?: boolean;
+  page?: number;
+  size?: number;
+  sort?: string;
+}
+
 type UseGetAllNotificationOptions = Omit<
   UseQueryOptions<
     IApiResponse<IApiResponsePagination<IGetAllNotificationsResponse>>, 
-    unknown, 
-    IApiResponse<IApiResponsePagination<IGetAllNotificationsResponse>>, 
-    [string, string | undefined]
+    unknown
   >,
   'queryKey' | 'queryFn'
 >;
 
-export const useGetAllNotifications = (userId?: string, options?: UseGetAllNotificationOptions) => {
-  return useQuery<IApiResponse<IApiResponsePagination<IGetAllNotificationsResponse>>, unknown, IApiResponse<IApiResponsePagination<IGetAllNotificationsResponse>>, [string, string | undefined]>({
-    queryKey: ["Get all notifications", userId], 
-    queryFn: () => notification_api.GetAllNotifications(userId!),
-    enabled: !!userId, 
-    ...options, 
+export const useGetAllNotifications = (
+  userId: string | undefined,
+  params: NotificationsQueryParams = {},
+  options?: UseGetAllNotificationOptions
+) => {
+  return useQuery({
+    queryKey: ['get-all-notifications', userId, params],
+    queryFn: () => notification_api.GetAllNotifications(userId!, params),
+    enabled: !!userId,
+    ...options,
   });
 };

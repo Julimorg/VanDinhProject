@@ -11,6 +11,7 @@ import NotificationsDropdown from './Components/Notification';
 import { useNotificationStore } from "../../Middleware/useNotificationStore";
 import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
 import type { NotificationType } from '../../Interface/Notification/INotification';
+import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 interface HeaderProps {
   isMobile: boolean;
 }
@@ -30,6 +31,21 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const unreadCount = useNotificationStore((state) => state.unreadCount);
 
   const { data, isLoading } = useGetNotifications(userId ?? undefined);
+
+  const markAsRead = useMarkNotificationAsRead();
+
+  const handleOpenNotification = () => {
+    const unread = finalNotifications.filter(n => !n.read);
+    if (unread.length === 0) return;
+    
+    useNotificationStore.getState().markAllAsRead();
+    unread.forEach((noti) => {
+      markAsRead.mutate({
+        userNotificationId: noti.id,
+        body: { isRead: true },
+      });
+    });
+  };
 
   const fiveNotifications = useMemo(() => {
     return Array.isArray(data?.data) ? data.data : [];
@@ -169,6 +185,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
+                onOpen={handleOpenNotification}
               />
 
               <UserProfileDropdown
@@ -212,6 +229,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
+                onOpen={handleOpenNotification}
               />
 
               <UserProfileDropdown

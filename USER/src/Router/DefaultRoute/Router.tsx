@@ -14,6 +14,7 @@ import ProductDetailPage from '../../Page/ProductDetailPage/ProductDetailPage';
 import TransactionPage from '../../Page/TransactionPage/TransactionPage';
 import PaymentResultPage from '../../Page/PaymentResultPage/PaymentResultPage';
 import NotificationPage from '../../Page/NotificationPage/NotificationPage';
+import SendNotiToAdminPage from '../../Components/SendNotiToAdminPage';
 
 
 
@@ -37,7 +38,8 @@ const DefaultRouter = () => {
         <Route path="cart" element={<CartPage />} />
         <Route path="transaction/:orderId" element={<TransactionPage />} />
         <Route path="notifications" element={<NotificationPage />} />
-        
+        <Route path="/send" element={<SendNotiToAdminPage />} />
+
       </Route>
     </Routes>
   );
