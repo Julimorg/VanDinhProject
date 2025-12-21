@@ -5,13 +5,20 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class MarkNotificationAsReadReq {
-    private Boolean isRead;
+public class SendNotiToAdminReq {
+    private List<String> userId;
+
+    private String title;
+
+    private String message;
+
+    private String type;
+
+    private String createBy;
 }

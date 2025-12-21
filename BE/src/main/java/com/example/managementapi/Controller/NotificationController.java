@@ -3,11 +3,9 @@ package com.example.managementapi.Controller;
 
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Notification.MarkNotificationAsReadReq;
+import com.example.managementapi.Dto.Request.Notification.SendNotiToAdminReq;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
-import com.example.managementapi.Dto.Response.Notification.GetSystemAllNotificationsRes;
-import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
-import com.example.managementapi.Dto.Response.Notification.MarkNotificationAsReadRes;
-import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
+import com.example.managementapi.Dto.Response.Notification.*;
 import com.example.managementapi.Repository.UserNotificationsRepository;
 import com.example.managementapi.Service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -92,6 +90,29 @@ public class NotificationController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @PatchMapping("/mark-click/{userNotificationId}")
+    public ApiResponse<MarkNotificationAsClickedRes> markNotificationAsClicked(@PathVariable String userNotificationId){
+        return ApiResponse.<MarkNotificationAsClickedRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.markNotificationAsClicked(userNotificationId))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PostMapping("/user/send-to-admin")
+    public ApiResponse<SendNotiToAdminRes> sendNotiToAdmins(
+            @RequestBody SendNotiToAdminReq req) {
+
+        return ApiResponse.<SendNotiToAdminRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.sendNotiToAdmins(req))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
 
 //    @GetMapping("/my-notifications/{userId}")
 //    public List<NotificationRes> getMyNotifications(@PathVariable String userId) {
