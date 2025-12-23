@@ -1,10 +1,12 @@
 package com.example.managementapi.Component;
 
 import com.example.managementapi.Entity.UserDevice;
+import com.example.managementapi.Events.UserStatusChangeEvent;
 import com.example.managementapi.Repository.UserDeviceRepository;
 import com.example.managementapi.Service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
@@ -15,6 +17,8 @@ import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +26,10 @@ import java.time.LocalDateTime;
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     private final JwtService jwtService;
+
     private final UserDeviceRepository deviceRepo;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
 
@@ -61,6 +68,24 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
             log.info("WebSocket CONNECT thành công – User {} ONLINE với socketId = {}", userId, sessionId);
 
+            // 🔥 Publish Event
+            try {
+                UserStatusChangeEvent event = new UserStatusChangeEvent(
+                        this,
+                        userId,
+                        sessionId,
+                        "ONLINE",
+                        device.getLastSeen()
+                );
+
+                log.info("🚀 Publishing ONLINE event for userId: {}", userId);
+                eventPublisher.publishEvent(event);
+                log.info("✅ Event published successfully");
+
+            } catch (Exception e) {
+                log.error("❌ Error publishing event: {}", e.getMessage(), e);
+            }
+
             Principal principal = new UsernamePasswordAuthenticationToken(userId, null);
             accessor.setUser(principal);
 
@@ -74,10 +99,29 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             if ( user != null ) {
                String userId = user.getName();
 
+
                deviceRepo.findByUserId(userId).ifPresent(device -> {
                    device.setSocketId(null);
                    device.setLastSeen(LocalDateTime.now());
                    deviceRepo.save(device);
+
+                   try {
+                       UserStatusChangeEvent event = new UserStatusChangeEvent(
+                               this,
+                               userId,
+                               null,
+                               "OFFLINE",
+                               device.getLastSeen()
+                       );
+
+                       log.info("🚀 Publishing OFFLINE event for userId: {}", userId);
+                       eventPublisher.publishEvent(event);
+                       log.info("✅ Event published successfully");
+
+                   } catch (Exception e) {
+                       log.error("❌ Error publishing event: {}", e.getMessage(), e);
+                   }
+
                    log.info("👋 User [{}] DISCONNECTED - Successfully Removed socketId", userId);
                });
             }

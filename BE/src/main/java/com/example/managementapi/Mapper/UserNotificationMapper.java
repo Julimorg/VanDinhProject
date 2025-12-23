@@ -1,10 +1,9 @@
 package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.Notification.MarkNotificationAsReadReq;
-import com.example.managementapi.Dto.Response.Notification.MarkNotificationAsClickedRes;
-import com.example.managementapi.Dto.Response.Notification.MarkNotificationAsReadRes;
-import com.example.managementapi.Dto.Response.Notification.NotificationRes;
-import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
+import com.example.managementapi.Dto.Response.Notification.*;
+import com.example.managementapi.Entity.User;
+import com.example.managementapi.Entity.UserDevice;
 import com.example.managementapi.Entity.UserNotifications;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -38,4 +37,14 @@ public interface UserNotificationMapper {
     @Mapping(source = "readAt", target = "readAt")
     @Mapping(source = "isRead", target = "isRead")
     MarkNotificationAsClickedRes toMarkNotificationAsClickedRes(UserNotifications userNotifications);
+
+    @Mapping(source = "user.id", target = "userId")
+    @Mapping(source = "user.userName", target = "userName")
+    @Mapping(source = "user.firstName", target = "firstName")
+    @Mapping(source = "user.lastName", target = "lastName")
+    @Mapping(source = "user.email", target = "email")
+    @Mapping(source = "user.userImg", target = "userImg")
+    @Mapping(source = "device.socketId", target = "socketId")
+    @Mapping(source = "device.lastSeen", target = "lastSeen")
+    GetUserIsOnline toGetUserOnline(User user, UserDevice device);
 }

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Realtime User Status</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+        }
+
+        .login-section, .dashboard-section {
+            padding: 40px;
+            flex: 1;
+        }
+
+        .login-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .dashboard-section {
+            display: none;
+        }
+
+        .dashboard-section.active {
+            display: block;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.9);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 8px;
+            font-size: 16px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.6);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: white;
+            background: rgba(255,255,255,0.2);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .user-info {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .user-info p {
+            margin: 8px 0;
+            color: #374151;
+        }
+
+        .user-info strong {
+            color: #1f2937;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .status-connected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-disconnected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .users-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.2s;
+        }
+
+        .user-item:hover {
+            background: #f9fafb;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .status-dot.online {
+            background: #10b981;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: #9ca3af;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .user-time {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-left: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Login Section -->
+        <div class="login-section" id="loginSection">
+            <h1>👋 Xin chào!</h1>
+            <p class="subtitle">Đăng nhập để xem trạng thái user realtime</p>
+
+            <div id="loginError" class="alert alert-error" style="display: none;"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username hoặc Email</label>
+                    <input type="text" id="username" placeholder="Nhập username hoặc email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Nhập password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="apiUrl">Backend URL</label>
+                    <input type="text" id="apiUrl" placeholder="http://localhost:8080" value="http://localhost:8080">
+                    <small style="opacity: 0.7; font-size: 12px; display: block; margin-top: 4px;">
+                        Chỉ nhập base URL, không cần /auth/login
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="loginBtn">
+                    Đăng nhập
+                </button>
+            </form>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard-section" id="dashboardSection">
+            <h2>🌐 Realtime User Status</h2>
+
+            <div class="user-info">
+                <p><strong>👤 User:</strong> <span id="currentUser"></span></p>
+                <p><strong>🔑 Token:</strong> <span id="tokenPreview" style="font-family: monospace; font-size: 12px;"></span></p>
+                <p>
+                    <strong>📡 WebSocket:</strong> 
+                    <span class="status-badge status-disconnected" id="wsStatus">Disconnected</span>
+                </p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="onlineCount">0</div>
+                    <div class="stat-label">Online Users</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+
+            <h3 style="margin-bottom: 16px; color: #374151;">Danh sách Users</h3>
+            <div class="users-list" id="usersList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Đang tải danh sách users...</p>
+                </div>
+            </div>
+
+            <button class="btn btn-danger" id="logoutBtn">
+                Đăng xuất
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let accessToken = null;
+        let apiBaseUrl = null;
+        let usersData = [];
+
+        // DOM Elements
+        const loginSection = document.getElementById('loginSection');
+        const dashboardSection = document.getElementById('dashboardSection');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const usersList = document.getElementById('usersList');
+        const wsStatus = document.getElementById('wsStatus');
+        const currentUser = document.getElementById('currentUser');
+        const tokenPreview = document.getElementById('tokenPreview');
+        const onlineCount = document.getElementById('onlineCount');
+        const totalCount = document.getElementById('totalCount');
+
+        // Login Handler
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            apiBaseUrl = document.getElementById('apiUrl').value;
+
+            loginError.style.display = 'none';
+            document.getElementById('loginBtn').textContent = 'Đang đăng nhập...';
+            document.getElementById('loginBtn').disabled = true;
+
+            try {
+                // Call Login API
+                const response = await fetch(`http://localhost:8080/api/v1/auth/log-in`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Đăng nhập thất bại! Kiểm tra lại username/password');
+                }
+
+                const data = await response.json();
+                accessToken = data.accessToken || data.token || data.data?.accessToken;
+
+                if (!accessToken) {
+                    throw new Error('Không nhận được access token từ server');
+                }
+
+                // Save to localStorage
+                localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('apiBaseUrl', apiBaseUrl);
+                localStorage.setItem('username', username);
+
+                // Show Dashboard
+                showDashboard();
+                
+            } catch (error) {
+                loginError.textContent = error.message;
+                loginError.style.display = 'block';
+            } finally {
+                document.getElementById('loginBtn').textContent = 'Đăng nhập';
+                document.getElementById('loginBtn').disabled = false;
+            }
+        });
+
+        // Show Dashboard
+        function showDashboard() {
+            loginSection.style.display = 'none';
+            dashboardSection.classList.add('active');
+
+            const username = localStorage.getItem('username');
+            currentUser.textContent = username;
+            tokenPreview.textContent = accessToken.substring(0, 30) + '...';
+
+            // Connect WebSocket
+            connectWebSocket();
+
+            // Load Users
+            loadUsers();
+        }
+
+        // Connect WebSocket
+        function connectWebSocket() {
+            console.log('🔌 Connecting to WebSocket:', `http://localhost:8080/ws`);
+            
+            const socket = new SockJS(`http://localhost:8080/ws`);
+            stompClient = Stomp.over(socket);
+            
+            // Enable debug
+            stompClient.debug = (str) => {
+                console.log('🔍 STOMP:', str);
+            };
+
+            stompClient.connect(
+                { Authorization: `Bearer ${accessToken}` },
+                (frame) => {
+                    console.log('✅ WebSocket connected!', frame);
+                    wsStatus.textContent = 'Connected';
+                    wsStatus.className = 'status-badge status-connected';
+
+                    // Subscribe to user status updates
+                    console.log('📡 Subscribing to /topic/user-status...');
+                    const subscription = stompClient.subscribe('/topic/user-status', (message) => {
+                        console.log('📩 RAW message received:', message);
+                        
+                        try {
+                            const data = JSON.parse(message.body);
+                            console.log('📩 Parsed data:', data);
+                            handleUserStatusChange(data);
+                        } catch (e) {
+                            console.error('❌ Error parsing message:', e);
+                        }
+                    });
+                    
+                    console.log('✅ Subscribed successfully:', subscription);
+                },
+                (error) => {
+                    console.error('❌ WebSocket error:', error);
+                    wsStatus.textContent = 'Disconnected';
+                    wsStatus.className = 'status-badge status-disconnected';
+                    
+                    // Retry after 3 seconds
+                    setTimeout(() => {
+                        console.log('🔄 Retrying connection...');
+                        connectWebSocket();
+                    }, 3000);
+                }
+            );
+        }
+
+        // Load Users from API
+        async function loadUsers() {
+            console.log('📥 Loading users from API...');
+            
+            try {
+                const response = await fetch(`http://localhost:8080/api/v1/notification/online-status?page=0&size=100`, {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load users');
+
+                const data = await response.json();
+                console.log('📦 API Response:', data);
+                
+                usersData = data.content || [];
+                console.log('👥 Users loaded:', usersData.length, 'users');
+                console.log('📋 Users data:', usersData);
+                
+                renderUsers();
+                updateStats();
+
+            } catch (error) {
+                console.error('❌ Error loading users:', error);
+                usersList.innerHTML = '<div class="loading"><p>Không thể tải danh sách users</p></div>';
+            }
+        }
+
+        // Render Users List
+        function renderUsers() {
+            console.log('🎨 Rendering', usersData.length, 'users...');
+            
+            if (usersData.length === 0) {
+                usersList.innerHTML = '<div class="loading"><p>Không có user nào</p></div>';
+                return;
+            }
+
+            const html = usersData.map(user => {
+                const isOnline = user.socketId != null;
+                const lastSeen = user.lastSeen ? formatTime(user.lastSeen) : 'Chưa từng online';
+
+                return `
+                    <div class="user-item" data-user-id="${user.userId}">
+                        <div class="status-dot ${isOnline ? 'online' : 'offline'}"></div>
+                        <div class="user-details">
+                            <div class="user-name">${user.firstName || ''} ${user.lastName || ''}</div>
+                            <div class="user-email">${user.email || ''}</div>
+                        </div>
+                        <div class="user-time">${isOnline ? '🟢 Online' : lastSeen}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            usersList.innerHTML = html;
+            console.log('✅ Rendered successfully!');
+        }
+
+        // Handle User Status Change from WebSocket
+        function handleUserStatusChange(data) {
+            console.log('🔄 Handling user status change:', data);
+            
+            const { userId, status, socketId, lastSeen } = data;
+
+            // Find user in array
+            const userIndex = usersData.findIndex(u => u.userId === userId);
+            
+            console.log('🔍 User index found:', userIndex);
+
+            if (userIndex !== -1) {
+                // Update existing user
+                console.log('📝 Updating user:', usersData[userIndex]);
+                usersData[userIndex].socketId = socketId;
+                usersData[userIndex].lastSeen = lastSeen;
+                console.log('✅ Updated to:', usersData[userIndex]);
+            } else {
+                // User not in list, reload to get new user
+                console.log('⚠️ User not found in current list, reloading...');
+                loadUsers();
+                return;
+            }
+
+            // Re-render
+            console.log('🎨 Re-rendering users list...');
+            renderUsers();
+            updateStats();
+
+            // Show notification
+            showNotification(data);
+            
+            console.log('✅ Handle complete!');
+        }
+
+        // Update Statistics
+        function updateStats() {
+            const online = usersData.filter(u => u.socketId != null).length;
+            const total = usersData.length;
+
+            onlineCount.textContent = online;
+            totalCount.textContent = total;
+        }
+
+        // Show Notification
+        function showNotification(data) {
+            const { userId, status } = data;
+            const user = usersData.find(u => u.userId === userId);
+            
+            if (user) {
+                const message = status === 'ONLINE' 
+                    ? `🟢 ${user.firstName} ${user.lastName} vừa online`
+                    : `⚪ ${user.firstName} ${user.lastName} vừa offline`;
+                
+                console.log(message);
+                
+                // Có thể thêm toast notification ở đây
+            }
+        }
+
+        // Format Time
+        function formatTime(dateString) {
+            if (!dateString) return '';
+            
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000); // seconds
+
+            if (diff < 60) return 'Vừa xong';
+            if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
+            return `${Math.floor(diff / 86400)} ngày trước`;
+        }
+
+        // Logout Handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if (stompClient) {
+                stompClient.disconnect();
+            }
+            
+            localStorage.clear();
+            dashboardSection.classList.remove('active');
+            loginSection.style.display = 'flex';
+            
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        });
+
+        // Check if already logged in
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('accessToken');
+            const savedApiUrl = localStorage.getItem('apiBaseUrl');
+            
+            if (savedToken && savedApiUrl) {
+                accessToken = savedToken;
+                apiBaseUrl = savedApiUrl;
+                showDashboard();
+            }
+        });
+    </script>
+</body>
+</html>

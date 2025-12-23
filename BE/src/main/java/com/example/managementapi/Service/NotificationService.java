@@ -31,9 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -54,6 +52,25 @@ public class NotificationService {
 
     private final UserRepository userRepo;
 
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public Page<GetUserIsOnline> getUserOnline(Pageable pageable) {
+
+         Page<User> users = userRepo.findAll(pageable);
+
+         List<UserDevice> allUserDevice = deviceRepo.findAll();
+
+        Map<String, UserDevice> deviceMap = new HashMap<>();
+
+        allUserDevice.forEach(device -> deviceMap.put(device.getUserId(), device));
+
+//        messagingTemplate.convertAndSend("/topic/get-user");
+
+        return users.map(user -> {
+            UserDevice device = deviceMap.get(user.getId());
+            return userNotificationMapper.toGetUserOnline(user, device);
+        });
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId){
@@ -92,9 +109,11 @@ public class NotificationService {
     }
 
     public MarkNotificationAsClickedRes markNotificationAsClicked(String userNotificationId){
+
         UserNotifications userNotification = userNotiRepo.findById(userNotificationId).orElseThrow(() -> new RuntimeException("User notification not found!"));
 
         userNotification.setClickedAt(LocalDateTime.now());
+
         userNotiRepo.save(userNotification);
 
         return userNotificationMapper.toMarkNotificationAsClickedRes(userNotification);
