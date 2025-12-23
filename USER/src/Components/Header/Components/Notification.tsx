@@ -8,6 +8,7 @@ interface NotificationsDropdownProps {
   unreadCount: number;
   navigate: (path: string) => void;
   isMobile: boolean;
+  onOpen: () => void;
 }
 
 const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
@@ -15,6 +16,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   unreadCount,
   navigate,
   isMobile,
+  onOpen
 }) => {
   const notificationMenuItems: MenuProps['items'] = [
     {
@@ -77,6 +79,11 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
       trigger={['click']}
       placement="bottomRight"
       overlayClassName="notification-dropdown"
+      onOpenChange={(open) => {
+        if(open){
+          onOpen();
+        }
+      }}
       dropdownRender={(menu) => (
         <div className={`bg-white rounded-xl shadow-lg border border-gray-200 ${dropdownWidth}`}>
           {menu}

@@ -1,9 +1,6 @@
 package com.example.managementapi.Mapper;
 
-import com.example.managementapi.Dto.Response.Notification.GetSystemAllNotificationsRes;
-import com.example.managementapi.Dto.Response.Notification.GetSystemTopFiveNotifications;
-import com.example.managementapi.Dto.Response.Notification.SendNotiToOneUserOrManyUserRes;
-import com.example.managementapi.Dto.Response.Notification.UserNotiDetail;
+import com.example.managementapi.Dto.Response.Notification.*;
 import com.example.managementapi.Entity.Notifications;
 import com.example.managementapi.Entity.UserNotifications;
 import org.mapstruct.*;
@@ -54,6 +51,19 @@ public interface NotificationMapper {
 
         return res;
     }
+
+    default SendNotiToAdminRes toSendNotiToAdminRes(
+            Notifications notification,
+            List<UserNotifications> userNotifications) {
+
+        return SendNotiToAdminRes.builder()
+                .notificationId(notification.getNotificationId())
+                .results(userNotifications == null
+                        ? List.of()
+                        : toUserNotiDetails(userNotifications))
+                .build();
+    }
+
 
 
 

@@ -18,8 +18,10 @@ const GlobalWebSocketListener = () => {
           description: msg.message,
           time: msg.createdAt,
           read: false,
+          type: msg.type,
         });
       });
+
       subscribe("/topic/public-notifications", (msg) => {
         console.log("Public Notification received:", msg);
         addNotification({
@@ -28,8 +30,22 @@ const GlobalWebSocketListener = () => {
           description: msg.message,
           time: msg.createdAt,
           read: false,
+          type: msg.type,
         });
       });
+
+      subscribe("/topic/admin-broadcast", (msg) => {
+        console.log("Public Notification received:", msg);
+        addNotification({
+          id: msg.notificationId,
+          title: msg.title,
+          description: msg.message,
+          time: msg.createdAt,
+          read: false,
+          type: msg.type,
+        });
+      });
+
     },
     (error) => {
       console.error("WebSocket Error:", error);

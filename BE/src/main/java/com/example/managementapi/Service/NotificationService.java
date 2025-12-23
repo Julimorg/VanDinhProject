@@ -1,6 +1,8 @@
 package com.example.managementapi.Service;
 
 
+import com.example.managementapi.Dto.Request.Notification.MarkNotificationAsReadReq;
+import com.example.managementapi.Dto.Request.Notification.SendNotiToAdminReq;
 import com.example.managementapi.Dto.Request.Notification.SendNotiToOneUserOrManyUserReq;
 import com.example.managementapi.Dto.Response.Notification.*;
 import com.example.managementapi.Entity.Notifications;
@@ -75,6 +77,29 @@ public class NotificationService {
                 .map(user -> notificationMapper.toGetSystemAllNotificationsRes(user));
     }
 
+    public MarkNotificationAsReadRes markNotificationAsRead(String userNotificationId, MarkNotificationAsReadReq request){
+        UserNotifications userNotification = userNotiRepo.findById(userNotificationId).orElseThrow(() -> new RuntimeException("User notification not found!"));
+
+        if(!userNotification.getIsRead()){
+            userNotification.setIsRead(request.getIsRead());
+            userNotification.setReadAt(LocalDateTime.now());
+        }
+
+        userNotificationMapper.markNotificationAsRead(userNotification, request);
+        userNotiRepo.save(userNotification);
+
+        return userNotificationMapper.toMarkNotificationAsReadRes(userNotification);
+    }
+
+    public MarkNotificationAsClickedRes markNotificationAsClicked(String userNotificationId){
+        UserNotifications userNotification = userNotiRepo.findById(userNotificationId).orElseThrow(() -> new RuntimeException("User notification not found!"));
+
+        userNotification.setClickedAt(LocalDateTime.now());
+        userNotiRepo.save(userNotification);
+
+        return userNotificationMapper.toMarkNotificationAsClickedRes(userNotification);
+    }
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public SendNotiToOneUserOrManyUserRes sendToOneUserOrManyUser(SendNotiToOneUserOrManyUserReq req){
 
@@ -143,6 +168,76 @@ public class NotificationService {
 
         return notificationMapper.toSendNotiResponse(noti, savedList);
     }
+
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public SendNotiToAdminRes sendNotiToAdmins(SendNotiToAdminReq req) {
+
+        if (req.getTitle() == null || req.getMessage() == null) {
+            throw new RuntimeException("Title or message is null");
+        }
+
+        Notifications noti = notiRepo.save(
+                Notifications.builder()
+                        .title(req.getTitle())
+                        .message(req.getMessage())
+                        .type(req.getType())
+                        .createBy(req.getCreateBy())
+                        .build()
+        );
+
+        List<User> admins;
+        if (req.getUserId() != null && !req.getUserId().isEmpty()) {
+            admins = userRepo.findAllById(req.getUserId());
+        } else {
+            admins = userRepo.findDistinctByRoles_NameIn(
+                    List.of("ADMIN", "STAFF")
+            );
+        }
+
+        List<UserNotifications> savedUserNotis = new ArrayList<>();
+        boolean hasAnyAdminOnline = false;
+
+        for (User admin : admins) {
+
+            UserNotifications un = UserNotifications.builder()
+                    .notifications(noti)
+                    .userId(admin.getId())
+                    .isRead(false)
+                    .status(UserNotifactionStatus.PENDING)
+                    .sendChannel(UserNotifactionSendChannel.WEB)
+                    .build();
+
+            Optional<UserDevice> deviceOpt =
+                    deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(admin.getId());
+
+            if (deviceOpt.isPresent()) {
+                hasAnyAdminOnline = true;
+                un.setStatus(UserNotifactionStatus.DELIVERED);
+                un.setDeliveredAt(LocalDateTime.now());
+            }
+
+            savedUserNotis.add(un);
+        }
+
+        if (hasAnyAdminOnline) {
+            NotificationRes payload = NotificationRes.builder()
+                    .notificationId(noti.getNotificationId())
+                    .title(noti.getTitle())
+                    .message(noti.getMessage())
+                    .type(noti.getType())
+                    .createdAt(noti.getCreatedAt())
+                    .build();
+
+            messagingTemplate.convertAndSend("/topic/admin-broadcast", payload);
+
+            log.info("User sent broadcast notification to ADMIN");
+        }
+
+        userNotiRepo.saveAll(savedUserNotis);
+
+        return notificationMapper.toSendNotiToAdminRes(noti, savedUserNotis);
+    }
+
 
 
     // Gửi thông báo riêng cho 1 user (dùng userId làm principal name)
