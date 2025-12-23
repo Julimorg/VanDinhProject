@@ -394,7 +394,7 @@ const ProductsPage: React.FC = () => {
         {/* Products */}
         {isLoading ? (
           viewMode === 'grid' ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 xl:gap-7">
               {Array.from({ length: 15 }).map((_, i) => (
                 <ProductSkeletonGrid key={i} />
               ))}
@@ -418,7 +418,7 @@ const ProductsPage: React.FC = () => {
             />
           </div>
         ) : viewMode === 'grid' ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 xl:gap-7">
             {products.map((product) => (
               <ProductGridCard
                 key={product.productId}
