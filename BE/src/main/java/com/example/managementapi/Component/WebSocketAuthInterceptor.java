@@ -1,8 +1,12 @@
 package com.example.managementapi.Component;
 
+import com.example.managementapi.Dto.Response.Notification.GetUserIsOnline;
+import com.example.managementapi.Entity.User;
 import com.example.managementapi.Entity.UserDevice;
-import com.example.managementapi.Events.UserStatusChangeEvent;
+import com.example.managementapi.Events.UserOnlineStatusChangeEvent;
+import com.example.managementapi.Mapper.UserNotificationMapper;
 import com.example.managementapi.Repository.UserDeviceRepository;
+import com.example.managementapi.Repository.UserRepository;
 import com.example.managementapi.Service.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,8 +21,6 @@ import org.springframework.stereotype.Component;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
@@ -26,9 +28,9 @@ import java.util.Map;
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
     private final JwtService jwtService;
-
     private final UserDeviceRepository deviceRepo;
-
+    private final UserRepository userRepo;
+    private final UserNotificationMapper userNotiMapper;
     private final ApplicationEventPublisher eventPublisher;
 
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -68,28 +70,13 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
             log.info("WebSocket CONNECT thành công – User {} ONLINE với socketId = {}", userId, sessionId);
 
-            //?  Publish Event
-            try {
-                UserStatusChangeEvent event = new UserStatusChangeEvent(
-                        this,
-                        userId,
-                        sessionId,
-                        "ONLINE",
-                        device.getLastSeen()
-                );
-
-                log.info(" Publishing ONLINE event for userId: {}", userId);
-                eventPublisher.publishEvent(event);
-                log.info(" Event published successfully");
-
-            } catch (Exception e) {
-                log.error(" Error publishing event: {}", e.getMessage(), e);
-            }
-
             Principal principal = new UsernamePasswordAuthenticationToken(userId, null);
             accessor.setUser(principal);
 
             log.info("Set Principal: userId = {}", userId);
+
+            // Publish event với GetUserIsOnline (Listener sẽ xử lý async)
+            publishUserOnlineStatusEvent(userId);
 
         }
 
@@ -105,27 +92,28 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                    device.setLastSeen(LocalDateTime.now());
                    deviceRepo.save(device);
 
-                   try {
-                       UserStatusChangeEvent event = new UserStatusChangeEvent(
-                               this,
-                               userId,
-                               null,
-                               "OFFLINE",
-                               device.getLastSeen()
-                       );
-
-                       log.info(" Publishing OFFLINE event for userId: {}", userId);
-                       eventPublisher.publishEvent(event);
-                       log.info(" Event published successfully");
-
-                   } catch (Exception e) {
-                       log.error(" Error publishing event: {}", e.getMessage(), e);
-                   }
-
                    log.info(" User [{}] DISCONNECTED - Successfully Removed socketId", userId);
+                   
+                   // Publish event với GetUserIsOnline (Listener sẽ xử lý async)
+                   publishUserOnlineStatusEvent(userId);
                });
             }
         }
         return message;
+    }
+
+    private void publishUserOnlineStatusEvent(String userId) {
+        try {
+            User user = userRepo.findById(userId).orElse(null);
+            UserDevice device = deviceRepo.findByUserId(userId).orElse(null);
+
+            if (user != null && device != null) {
+                GetUserIsOnline dto = userNotiMapper.toGetUserOnline(user, device);
+                eventPublisher.publishEvent(new UserOnlineStatusChangeEvent(this, dto));
+                log.info("✅ Published UserOnlineStatusChangeEvent for userId: {}", userId);
+            }
+        } catch (Exception e) {
+            log.error("❌ Error publishing UserOnlineStatusChangeEvent for userId {}: {}", userId, e.getMessage(), e);
+        }
     }
 }

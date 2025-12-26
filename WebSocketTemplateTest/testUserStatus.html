@@ -402,7 +402,7 @@
             
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            apiBaseUrl = document.getElementById('apiUrl').value;
+            // apiBaseUrl = document.getElementById('apiUrl').value;
 
             loginError.style.display = 'none';
             document.getElementById('loginBtn').textContent = 'Đang đăng nhập...';
@@ -469,7 +469,7 @@
         function connectWebSocket() {
             console.log('🔌 Connecting to WebSocket:', `http://localhost:8080/ws`);
             
-            const socket = new SockJS(`http://localhost:8080/ws`);
+            const socket = new SockJS(`${apiBaseUrl}/ws`);
             stompClient = Stomp.over(socket);
             
             // Enable debug
@@ -527,12 +527,16 @@
 
                 if (!response.ok) throw new Error('Failed to load users');
 
-                const data = await response.json();
-                console.log('📦 API Response:', data);
+                const apiResponse = await response.json();
+                console.log('📦 Full API Response:', apiResponse);
                 
-                usersData = data.content || [];
+                // Handle ApiResponse wrapper
+                const pageData = apiResponse.data || apiResponse;
+                usersData = pageData.content || [];
+                
                 console.log('👥 Users loaded:', usersData.length, 'users');
-                console.log('📋 Users data:', usersData);
+                console.log('📋 First user sample:', usersData[0]);
+                console.log('📋 User ID field:', usersData[0]?.userId || usersData[0]?.id);
                 
                 renderUsers();
                 updateStats();
@@ -545,20 +549,32 @@
 
         // Render Users List
         function renderUsers() {
-            console.log('🎨 Rendering', usersData.length, 'users...');
+            console.log('🎨 ========== RENDERING ==========');
+            console.log('🎨 Total users:', usersData.length);
             
             if (usersData.length === 0) {
                 usersList.innerHTML = '<div class="loading"><p>Không có user nào</p></div>';
                 return;
             }
 
-            const html = usersData.map(user => {
+            const html = usersData.map((user, index) => {
+                const userId = user.userId || user.id;
                 const isOnline = user.socketId != null;
                 const lastSeen = user.lastSeen ? formatTime(user.lastSeen) : 'Chưa từng online';
+                
+                if (index === 0) {
+                    console.log('🎨 Rendering sample user:', {
+                        userId,
+                        isOnline,
+                        socketId: user.socketId,
+                        name: `${user.firstName} ${user.lastName}`
+                    });
+                }
 
                 return `
-                    <div class="user-item" data-user-id="${user.userId}">
-                        <div class="status-dot ${isOnline ? 'online' : 'offline'}"></div>
+                    <div class="user-item" data-user-id="${userId}">
+                        <div class="status-dot ${isOnline ? 'online' : 'offline'}" 
+                             title="${isOnline ? 'Online' : 'Offline'}"></div>
                         <div class="user-details">
                             <div class="user-name">${user.firstName || ''} ${user.lastName || ''}</div>
                             <div class="user-email">${user.email || ''}</div>
@@ -569,30 +585,57 @@
             }).join('');
             
             usersList.innerHTML = html;
-            console.log('✅ Rendered successfully!');
+            console.log('✅ Rendered', usersData.length, 'users');
+            console.log('✅ ========== RENDERING COMPLETE ==========\n');
         }
 
         // Handle User Status Change from WebSocket
         function handleUserStatusChange(data) {
-            console.log('🔄 Handling user status change:', data);
+            console.log('🔄 ========== HANDLE USER STATUS CHANGE ==========');
+            console.log('📦 Raw data:', data);
             
-            const { userId, status, socketId, lastSeen } = data;
+            // Extract data based on new payload structure
+            const user = data.user || data;  // Support both old and new format
+            const action = data.action || data.status;
+            
+            console.log('👤 User data:', user);
+            console.log('🎬 Action:', action);
+            
+            const userId = user.userId || user.id;
+            
+            if (!userId) {
+                console.error('❌ No userId found in message!');
+                return;
+            }
 
             // Find user in array
-            const userIndex = usersData.findIndex(u => u.userId === userId);
+            const userIndex = usersData.findIndex(u => 
+                (u.userId === userId) || (u.id === userId)
+            );
             
+            console.log('🔍 Searching for userId:', userId);
+            console.log('🔍 Current usersData IDs:', usersData.map(u => u.userId || u.id));
             console.log('🔍 User index found:', userIndex);
 
             if (userIndex !== -1) {
-                // Update existing user
-                console.log('📝 Updating user:', usersData[userIndex]);
-                usersData[userIndex].socketId = socketId;
-                usersData[userIndex].lastSeen = lastSeen;
-                console.log('✅ Updated to:', usersData[userIndex]);
+                // Update existing user with FULL data
+                console.log('📝 Before update:', JSON.stringify(usersData[userIndex]));
+                
+                // Update all fields from the message
+                usersData[userIndex] = {
+                    ...usersData[userIndex],  // Keep existing data
+                    ...user,                   // Override with new data
+                    socketId: user.socketId,   // Explicitly set socketId
+                    lastSeen: user.lastSeen    // Explicitly set lastSeen
+                };
+                
+                console.log('✅ After update:', JSON.stringify(usersData[userIndex]));
             } else {
-                // User not in list, reload to get new user
-                console.log('⚠️ User not found in current list, reloading...');
-                loadUsers();
+                // User not in current page, could be on another page
+                console.log('⚠️ User not found in current list');
+                console.log('💡 This is OK if user is on another page');
+                
+                // Don't reload, just ignore
                 return;
             }
 
@@ -602,9 +645,11 @@
             updateStats();
 
             // Show notification
-            showNotification(data);
+            const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+            const isOnline = user.socketId != null;
+            console.log(`📢 ${userName} is now ${isOnline ? '🟢 ONLINE' : '⚪ OFFLINE'}`);
             
-            console.log('✅ Handle complete!');
+            console.log('✅ ========== HANDLE COMPLETE ==========\n');
         }
 
         // Update Statistics

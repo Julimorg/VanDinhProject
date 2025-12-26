@@ -43,6 +43,7 @@ import { IExportExcelFileRequest } from '@/Interface/File/IExportExcelFile';
 import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
 import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotification';
 import { ISendNotificationsRequest, ISendNotificationsResponse } from '@/Interface/Notification/ISendNotifications';
+import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
 
 
 export const docApi = {
@@ -601,6 +602,27 @@ export const docApi = {
 
    //* ======================================================== Notification  ======================================================== */
    
+   GetUserOnlineStatus: async(
+    params: 
+      {
+        isRead?: string,
+        page?: number,
+        size?: number,
+        sort?: string,
+      } = {}) : Promise<IApiResponse<IApiResponsePagination<IGetUserOnlineStatus>>> => {
+      const { page = 0, size = 5, sort = 'userName, desc' } = params;
+
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        size: size.toString(),
+        sort,
+      });
+
+      const url = `/notification/online-status?${queryParams.toString()}`
+      const res = await axiosClient.get(url);
+      return res.data;
+   },
+
    GetAllNotifications: async(
       userId: string,
       params: 

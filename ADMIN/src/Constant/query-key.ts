@@ -23,5 +23,6 @@ GET_ALL_ORDERS: 'Get All Orders',
 GET_ORDER_DETAIL: 'Get Order Detail',
 GET_USER_ORDER_HISTORY: 'Get User Order History',
 GET_NOTIFICATIONS: 'Get Notifications',
-GET_ALL_NOTIFICATIONS: 'Get All Notifications'
+GET_ALL_NOTIFICATIONS: 'Get All Notifications',
+GET_USER_ONLINE_STATUS: 'Get User Online Status'
 }

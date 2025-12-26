@@ -2,10 +2,9 @@ import axios from 'axios';
 import { docApi } from './docApi';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
-import { LOCAL_API, PUBLIC_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: LOCAL_API,
+  baseURL: import.meta.env.VITE_LOCALHOST,
   headers: {
     'Content-Type': 'application/json',
   },
