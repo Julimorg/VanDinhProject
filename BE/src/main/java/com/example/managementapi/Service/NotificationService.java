@@ -73,6 +73,10 @@ public class NotificationService {
         userRepo.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not Found!"));
 
+        if(isRead == null){
+            return userNotiRepo.findAllByUserId(userId, pageable).map(notificationMapper::toGetSystemAllNotificationsRes);
+        }
+
         return userNotiRepo.findAllByUserIdAndIsRead(userId, Boolean.valueOf(isRead), pageable)
                 .map(user -> notificationMapper.toGetSystemAllNotificationsRes(user));
     }

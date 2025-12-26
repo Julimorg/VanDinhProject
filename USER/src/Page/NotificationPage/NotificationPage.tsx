@@ -6,13 +6,15 @@ import { useGetAllNotifications } from './Hook/useGetAllNotifications';
 import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { useMarkNotificationAsRead } from '../../Components/Header/Hook/useMarkNotificationAsRead';
 dayjs.extend(relativeTime);
 
 const NotificationPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('all');
+  //const [activeTab, setActiveTab] = useState<string>('all');
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const { id } = useAuthStoreCookiesStorage();
   const userId = id ?? undefined;
+  const markAsRead = useMarkNotificationAsRead();
 
   const [page, setPage] = useState(1);
   const pageSize = 10;
@@ -37,7 +39,25 @@ const NotificationPage: React.FC = () => {
 
   const { data, isLoading } = useGetAllNotifications(userId, queryParams);
 
+  const { data: allRes } = useGetAllNotifications(
+    userId,
+    { page: 0, size: 1 }
+  );
+
+  const { data: unreadRes } = useGetAllNotifications(
+    userId,
+    { isRead: false, page: 0, size: 1 }
+  );
+
+  const { data: readRes } = useGetAllNotifications(
+    userId,
+    { isRead: true, page: 0, size: 1 }
+  );
+
   const totalElements = data?.data?.page.totalElements ?? 0;
+  const totalAll = allRes?.data?.page.totalElements ?? 0;
+  const totalUnread = unreadRes?.data?.page.totalElements ?? 0;
+  const totalRead = readRes?.data?.page.totalElements ?? 0;
 
   const notifications: NotificationType[] = useMemo(() => {
     if (!Array.isArray(data?.data?.content)) {
@@ -54,6 +74,26 @@ const NotificationPage: React.FC = () => {
     }));
 
   }, [data?.data?.content]);
+
+  const handleMarkAllRead = () => {
+    const unreadList = unreadRes?.data?.content;
+
+    if (!Array.isArray(unreadList) || unreadList.length === 0) return;
+
+    unreadList.forEach((item) => {
+      markAsRead.mutate({
+        userNotificationId: item.userNotificationId,
+        body: { isRead: true },
+      });
+    });
+  };
+
+  const handleMarkOneRead = (id: string) => {
+    markAsRead.mutate({
+      userNotificationId: id,
+      body: { isRead: true },
+    });
+  };
 
   console.log('debug notifications: ', notifications);
 
@@ -116,17 +156,18 @@ const NotificationPage: React.FC = () => {
                 <Button
                   icon={<CheckOutlined />}
                   className="hover:bg-gray-100"
+                  onClick={handleMarkAllRead}
                 >
                   Đánh dấu tất cả đã đọc
                 </Button>
-                <Button
+                {/* <Button
                   icon={<DeleteOutlined />}
                   danger
                   type="text"
                   className="hover:bg-red-50"
                 >
                   Xóa tất cả
-                </Button>
+                </Button> */}
               </div>
             </div>
 
@@ -141,7 +182,7 @@ const NotificationPage: React.FC = () => {
                       <div className="px-2 sm:px-4 py-1">
                         <span className="text-sm font-medium">Tất cả</span>
                         <Badge
-                          count={notifications.length}
+                          count={totalAll}
                           className="ml-2"
                           style={{ backgroundColor: '#e5e7eb', color: '#374151' }}
                         />
@@ -154,7 +195,7 @@ const NotificationPage: React.FC = () => {
                       <div className="px-2 sm:px-4 py-1">
                         <span className="text-sm font-medium">Chưa đọc</span>
                         <Badge
-                          count={unreadCount}
+                          count={totalUnread}
                           className="ml-2"
                         />
                       </div>
@@ -165,6 +206,10 @@ const NotificationPage: React.FC = () => {
                     label: (
                       <div className="px-2 sm:px-4 py-1">
                         <span className="text-sm font-medium">Đã đọc</span>
+                        <Badge
+                          count={totalRead}
+                          className="ml-2"
+                        />
                       </div>
                     ),
                     value: 'read',
@@ -184,7 +229,7 @@ const NotificationPage: React.FC = () => {
               >
                 Đánh dấu đã đọc
               </Button>
-              <Button
+              {/* <Button
                 icon={<DeleteOutlined />}
                 danger
                 type="text"
@@ -192,7 +237,7 @@ const NotificationPage: React.FC = () => {
                 className="flex-1"
               >
                 Xóa tất cả
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -200,7 +245,6 @@ const NotificationPage: React.FC = () => {
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-
         {
           isLoading ? (<Card className="rounded-xl">
             <Empty description="Đang tải thông báo..." />
@@ -267,11 +311,12 @@ const NotificationPage: React.FC = () => {
                                 size="small"
                                 icon={<MailOutlined />}
                                 className="text-blue-600 hover:bg-blue-50"
+                                onClick={() => handleMarkOneRead(notif.id)}
                               >
                                 <span className="hidden sm:inline ml-1">Đánh dấu đã đọc</span>
                               </Button>
                             )}
-                            <Button
+                            {/* <Button
                               type="text"
                               size="small"
                               icon={<DeleteOutlined />}
@@ -279,7 +324,7 @@ const NotificationPage: React.FC = () => {
                               className="hover:bg-red-50"
                             >
                               <span className="hidden sm:inline ml-1">Xóa</span>
-                            </Button>
+                            </Button> */}
                           </div>
                         </div>
                       </div>

@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import type { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from "../../../Interface/Notification/IMarkNotificationAsRead";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
@@ -19,8 +19,14 @@ type UseMarkNotificationAsReadtOptions = Omit<
 >;
 
 export const useMarkNotificationAsRead = (options?: UseMarkNotificationAsReadtOptions) => {
-    return useMutation({
-        mutationFn: ({userNotificationId, body }) => notification_api.MarkNotificationAsRead(userNotificationId, body),
-        ...options,
-    })
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userNotificationId, body }) => notification_api.MarkNotificationAsRead(userNotificationId, body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getAllNotifications"],
+      });
+    },
+    ...options,
+  })
 }
