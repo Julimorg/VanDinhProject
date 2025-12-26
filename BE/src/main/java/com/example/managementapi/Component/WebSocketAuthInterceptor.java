@@ -68,7 +68,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
             log.info("WebSocket CONNECT thành công – User {} ONLINE với socketId = {}", userId, sessionId);
 
-            // 🔥 Publish Event
+            //?  Publish Event
             try {
                 UserStatusChangeEvent event = new UserStatusChangeEvent(
                         this,
@@ -78,12 +78,12 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                         device.getLastSeen()
                 );
 
-                log.info("🚀 Publishing ONLINE event for userId: {}", userId);
+                log.info(" Publishing ONLINE event for userId: {}", userId);
                 eventPublisher.publishEvent(event);
-                log.info("✅ Event published successfully");
+                log.info(" Event published successfully");
 
             } catch (Exception e) {
-                log.error("❌ Error publishing event: {}", e.getMessage(), e);
+                log.error(" Error publishing event: {}", e.getMessage(), e);
             }
 
             Principal principal = new UsernamePasswordAuthenticationToken(userId, null);
@@ -114,15 +114,15 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                                device.getLastSeen()
                        );
 
-                       log.info("🚀 Publishing OFFLINE event for userId: {}", userId);
+                       log.info(" Publishing OFFLINE event for userId: {}", userId);
                        eventPublisher.publishEvent(event);
-                       log.info("✅ Event published successfully");
+                       log.info(" Event published successfully");
 
                    } catch (Exception e) {
-                       log.error("❌ Error publishing event: {}", e.getMessage(), e);
+                       log.error(" Error publishing event: {}", e.getMessage(), e);
                    }
 
-                   log.info("👋 User [{}] DISCONNECTED - Successfully Removed socketId", userId);
+                   log.info(" User [{}] DISCONNECTED - Successfully Removed socketId", userId);
                });
             }
         }

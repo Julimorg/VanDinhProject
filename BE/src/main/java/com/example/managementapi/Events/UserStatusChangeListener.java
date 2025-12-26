@@ -21,11 +21,11 @@ public class UserStatusChangeListener {
     @EventListener
     public void handleUserStatusChange(UserStatusChangeEvent event) {
 
-        log.info("📢 Broadcasting user status change: userId={}, status={}",
+        log.info(" Broadcasting user status change: userId={}, status={}",
                 event.getUserId(), event.getStatus());
 
         try {
-            // Tạo payload
+            //? Tạo payload
             Map<String, Object> payload = new HashMap<>();
             payload.put("userId", event.getUserId());
             payload.put("socketId", event.getSocketId());
@@ -33,15 +33,15 @@ public class UserStatusChangeListener {
             payload.put("lastSeen", event.getLastSeen());
             payload.put("timestamp", event.getTimestamp());
 
-            // Gửi message
+            //? Gửi message
             messagingTemplate.convertAndSend("/topic/user-status", payload);
 
-            log.info("✅ Broadcasted to /topic/user-status: {}", payload);
+            log.info(" Broadcasted to /topic/user-status: {}", payload);
 
         } catch (Exception e) {
-            log.error("❌ Error broadcasting user status: {}", e.getMessage(), e);
+            log.error(" Error broadcasting user status: {}", e.getMessage(), e);
 
-            // Retry sau 100ms
+            //? Retry sau 100ms
             try {
                 Thread.sleep(100);
 
@@ -53,10 +53,10 @@ public class UserStatusChangeListener {
                 payload.put("timestamp", event.getTimestamp());
 
                 messagingTemplate.convertAndSend("/topic/user-status", payload);
-                log.info("✅ Retry successful!");
+                log.info(" Retry successful!");
 
             } catch (Exception retryError) {
-                log.error("❌ Retry failed: {}", retryError.getMessage());
+                log.error(" Retry failed: {}", retryError.getMessage());
             }
         }
     }

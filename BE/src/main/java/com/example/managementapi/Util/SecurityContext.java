@@ -10,13 +10,13 @@ public class SecurityContext {
     public static String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated()) {
-            // Nếu bạn dùng JWT custom, thường là String (userId)
+
             if (authentication.getPrincipal() instanceof String) {
                 return (String) authentication.getPrincipal();
             }
-            // Nếu dùng UserDetails (tự implement)
+
             if (authentication.getPrincipal() instanceof UserDetails userDetails) {
-                return userDetails.getUsername(); // hoặc userDetails.getUserId() nếu bạn thêm field
+                return userDetails.getUsername();
             }
         }
         return null;

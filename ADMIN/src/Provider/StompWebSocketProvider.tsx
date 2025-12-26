@@ -158,7 +158,7 @@ export const StompWebSocketProvider = ({ children }: { children: React.ReactNode
     }
   }, [accessToken, disconnectWebSocket]);
 
-  //* ==================== SUBSCRIBE CHANNEL ====================
+  //* ======== ============ SUBSCRIBE CHANNEL ====================
 
   //? Subscribe Notifications
   const subscribeToNotifications = useCallback(() => {
@@ -192,6 +192,7 @@ export const StompWebSocketProvider = ({ children }: { children: React.ReactNode
       console.error('Subscribe error:', error);
     }
   }, [isConnected]);
+  
 
   //* ==================== GENERIC SUBSCRIBE ====================
   const subscribe = useCallback(
