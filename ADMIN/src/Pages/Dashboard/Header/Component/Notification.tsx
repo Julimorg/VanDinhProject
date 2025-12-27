@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Dropdown, List, Button, Spin, Empty } from 'antd';
 import { BellOutlined, CheckOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/Store/IAuth';
@@ -9,6 +9,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { useNavigate } from 'react-router-dom';
 import { useMarkAllNotificationsAsRead } from '../Hook/useMarkAllNotificationsAsRead';
+import { toast } from 'react-toastify';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -26,14 +27,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
     enabled: !!userId && open,
   });
 
-  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead({
-    onSuccess: () => {
-      refetch();
-    },
-  });
+  const markAsRead = useMarkAllNotificationsAsRead();
 
-  // Handle response - could be array or single object
-  const notifications: IGetNotificationResponse[] = React.useMemo(() => {
+  const notifications: IGetNotificationResponse[] = useMemo(() => {
     if (!data?.data) return [];
     if (Array.isArray(data.data)) {
       return data.data;
@@ -41,18 +37,34 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
     return [data.data];
   }, [data]);
 
-  const unreadCount = notifications.filter((noti) => !noti.isRead).length;
+  const unreadNotifications = notifications.filter(n => !n.isRead);
+  const unreadCount = unreadNotifications.length;
 
   const handleMarkAllAsRead = () => {
-    if (userId && unreadCount > 0) {
-      markAllAsRead(userId);
+    if (userId && unreadNotifications.length > 0) {
+      unreadNotifications.forEach((noti) => {
+        markAsRead.mutate(
+          {
+            userNotificationId: noti.userNotificationId,
+            body: { isRead: true },
+          },
+          {
+            onSuccess: () => {
+              toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
+              refetch();
+            },
+            onError: (err: any) => {
+              toast.error(`Đánh dấu thất bại: ${err.message || 'Vui lòng thử lại!'}`);
+            },
+          }
+        );
+      });
+
+      
     }
   };
 
-  const handleViewAll = () => {
-    setOpen(false);
-    navigate('/notifications');
-  };
+
 
   const getNotificationColor = (type: string) => {
     const colorMap: Record<string, string> = {
@@ -66,16 +78,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
     return colorMap[type] || '#1890ff';
   };
 
-  const formatTime = (dateString: string) => {
-    return dayjs(dateString).fromNow();
-  };
+  const formatTime = (dateString: string) => dayjs(dateString).fromNow();
 
   const notificationMenu = (
-    <div
-      className={`${
-        isMobile ? 'w-80' : 'w-96'
-      } max-h-[450px] overflow-auto bg-white rounded-lg shadow-2xl`}
-    >
+    <div className={`${isMobile ? 'w-80' : 'w-96'} max-h-[450px] overflow-auto bg-white rounded-lg shadow-2xl`}>
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <span className="text-base font-semibold">Thông báo</span>
         {unreadCount > 0 && (
@@ -84,7 +90,6 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
             size="small"
             icon={<CheckOutlined />}
             onClick={handleMarkAllAsRead}
-            loading={isMarkingAll}
             className="p-0 h-auto text-xs"
           >
             Đánh dấu xem tất cả
@@ -107,25 +112,20 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
 
               return (
                 <div
-                  className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-50 ${
-                    isUnread
-                      ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500'
-                      : 'bg-white hover:bg-gray-50 opacity-70'
-                  }`}
+                  className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-50 ${isUnread
+                    ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500'
+                    : 'bg-white hover:bg-gray-50 opacity-70'
+                    }`}
                 >
                   <div className="flex gap-3">
                     <div
-                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                        isUnread ? 'opacity-100' : 'opacity-50'
-                      }`}
+                      className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${isUnread ? 'opacity-100' : 'opacity-50'}`}
                       style={{ background: notificationColor }}
                     />
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-start gap-2 mb-1">
                         <span
-                          className={`font-semibold text-sm ${
-                            isUnread ? 'text-gray-900' : 'text-gray-600'
-                          }`}
+                          className={`font-semibold text-sm ${isUnread ? 'text-gray-900' : 'text-gray-600'}`}
                           style={isUnread ? { color: notificationColor } : {}}
                         >
                           {item.title}
@@ -134,11 +134,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
                           {formatTime(item.createdAt)}
                         </span>
                       </div>
-                      <p
-                        className={`text-sm m-0 ${
-                          isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
-                        }`}
-                      >
+                      <p className={`text-sm m-0 ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
                         {item.message}
                       </p>
                     </div>
@@ -152,7 +148,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
 
       <div className="px-4 py-2 border-t border-gray-100 text-center">
         <button
-          onClick={handleViewAll}
+          onClick={() => navigate('/notifications')}
           className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
         >
           Xem tất cả thông báo

@@ -95,6 +95,7 @@ public class NotificationService {
         return userNotificationMapper.toMarkNotificationAsReadRes(userNotification);
     }
 
+
     public MarkNotificationAsClickedRes markNotificationAsClicked(String userNotificationId){
         UserNotifications userNotification = userNotiRepo.findById(userNotificationId).orElseThrow(() -> new RuntimeException("User notification not found!"));
 
@@ -128,6 +129,7 @@ public class NotificationService {
                     .sendChannel(UserNotifactionSendChannel.WEB)
                     .build();
 
+            un = userNotiRepo.save(un);
 
             boolean isOnline = deviceRepo
                     .findFirstByUserIdAndSocketIdIsNotNull(userId)
@@ -140,6 +142,7 @@ public class NotificationService {
                 String sessionId = deviceOpt.get().getSocketId();
 
                 NotificationRes payload = NotificationRes.builder()
+                        .userNotificationId(un.getUserNotificationId())
                         .notificationId(noti.getNotificationId())
                         .title(noti.getTitle())
                         .message(noti.getMessage())

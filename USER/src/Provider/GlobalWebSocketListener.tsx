@@ -13,7 +13,7 @@ const GlobalWebSocketListener = () => {
       subscribe("/user/queue/notifications", (msg) => {
         console.log("Private Notification received:", msg);
         addNotification({
-          id: msg.notificationId,
+          id: msg.userNotificationId,
           title: msg.title,
           description: msg.message,
           time: msg.createdAt,
@@ -25,7 +25,7 @@ const GlobalWebSocketListener = () => {
       subscribe("/topic/public-notifications", (msg) => {
         console.log("Public Notification received:", msg);
         addNotification({
-          id: msg.notificationId,
+          id: msg.userNotificationId ?? msg.notificationId,
           title: msg.title,
           description: msg.message,
           time: msg.createdAt,
@@ -59,9 +59,9 @@ const GlobalWebSocketListener = () => {
 
     // Cleanup khi unmount hoặc khi user logout (accessToken mất)
     return () => {
-        if (!accessToken) {
-            disconnect();
-        }
+      if (!accessToken) {
+        disconnect();
+      }
     };
   }, [userId, accessToken, connect, disconnect]);
 

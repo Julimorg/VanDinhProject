@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class NotificationRes {
+    private String userNotificationId;
     private String notificationId;
     private String title;
     private String message;

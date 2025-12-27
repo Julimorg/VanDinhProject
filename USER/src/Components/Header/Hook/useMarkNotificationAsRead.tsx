@@ -1,32 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { UseMutationOptions } from "@tanstack/react-query";
-import type { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from "../../../Interface/Notification/IMarkNotificationAsRead";
-import type { IApiResponse } from "../../../Interface/IApiResponse";
 import { notification_api } from "../../../Api/notification_api";
 
-type payload = {
-  userNotificationId: string;
-  body: IMarkNotificationAsReadRequest;
-};
-
-type UseMarkNotificationAsReadtOptions = Omit<
-  UseMutationOptions<
-    IApiResponse<IMarkNotificationAsReadResponse>,
-    Error,
-    payload
-  >,
-  "mutationFn"
->;
-
-export const useMarkNotificationAsRead = (options?: UseMarkNotificationAsReadtOptions) => {
+export const useMarkNotificationAsRead = (userId?: string) => {
   const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ userNotificationId, body }) => notification_api.MarkNotificationAsRead(userNotificationId, body),
+    mutationFn: ({ userNotificationId, body }: {
+      userNotificationId: string;
+      body: { isRead: boolean };
+    }) => notification_api.MarkNotificationAsRead(userNotificationId, body),
+
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["getAllNotifications"],
+        queryKey: ["notifications", userId],
+        exact: false,
       });
     },
-    ...options,
-  })
-}
+    onError: () => {
+      console.log("Failed to mark notification as read");
+    }
+  });
+};

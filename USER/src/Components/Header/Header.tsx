@@ -12,6 +12,7 @@ import { useNotificationStore } from "../../Middleware/useNotificationStore";
 import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
+import { toast } from 'react-toastify';
 interface HeaderProps {
   isMobile: boolean;
 }
@@ -30,22 +31,36 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const notifications = useNotificationStore((state) => state.notifications);
   const unreadCount = useNotificationStore((state) => state.unreadCount);
 
-  const { data, isLoading } = useGetNotifications(userId ?? undefined);
+  const { data, isLoading, refetch } = useGetNotifications(userId ?? undefined, {
+    enabled: false,
+  });
 
   const markAsRead = useMarkNotificationAsRead();
 
-  const handleOpenNotification = () => {
-    const unread = finalNotifications.filter(n => !n.read);
-    if (unread.length === 0) return;
-    
-    useNotificationStore.getState().markAllAsRead();
-    unread.forEach((noti) => {
-      markAsRead.mutate({
+  const handleMarkAllRead = () => {
+  const unread = finalNotifications.filter(n => !n.read);
+  if (unread.length === 0) return;
+
+  useNotificationStore.getState().markAllAsRead();
+
+  unread.forEach((noti) => {
+    markAsRead.mutate(
+      {
         userNotificationId: noti.id,
         body: { isRead: true },
-      });
-    });
-  };
+      },
+      {
+        onSuccess: () => {
+          toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
+          refetch();
+        },
+        onError: (err: any) => {
+          toast.error(`Đánh dấu thất bại: ${err?.message || 'Vui lòng thử lại!'}`);
+        },
+      }
+    );
+  });
+};
 
   const fiveNotifications = useMemo(() => {
     return Array.isArray(data?.data) ? data.data : [];
@@ -62,8 +77,19 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     }));
   }, [fiveNotifications]);
 
-  const finalNotifications =
-    notifications.length > 0 ? notifications : apiNotifications;
+  const finalNotifications = useMemo(() => {
+    const map = new Map<string, NotificationType>();
+
+    // API trước
+    apiNotifications.forEach(n => map.set(n.id, n));
+
+    // realtime đè lên
+    notifications.forEach(n => map.set(n.id, n));
+
+    return Array.from(map.values())
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 5);
+  }, [apiNotifications, notifications]);
 
   const finalUnreadCount =
     notifications.length > 0
@@ -185,7 +211,10 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
-                onOpen={handleOpenNotification}
+                onOpen={() => {}}
+                onMarkAllRead={handleMarkAllRead}
+                loading={isLoading}
+                refetch={refetch}
               />
 
               <UserProfileDropdown
@@ -229,7 +258,10 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
-                onOpen={handleOpenNotification}
+                onOpen={() => {}}
+                onMarkAllRead={handleMarkAllRead}
+                loading={isLoading}
+                refetch={refetch}
               />
 
               <UserProfileDropdown

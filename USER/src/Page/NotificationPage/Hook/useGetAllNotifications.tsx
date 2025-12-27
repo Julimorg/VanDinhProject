@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { useQuery, useQueryClient, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 
 import { notification_api } from "../../../Api/notification_api";
@@ -22,13 +22,32 @@ type UseGetAllNotificationOptions = Omit<
 
 export const useGetAllNotifications = (
   userId: string | undefined,
-  params: NotificationsQueryParams = {},
+  params: NotificationsQueryParams,
   options?: UseGetAllNotificationOptions
 ) => {
+  const {
+    isRead,
+    page = 0,
+    size = 10,
+  } = params;
+
   return useQuery({
-    queryKey: ['get-all-notifications', userId, params],
-    queryFn: () => notification_api.GetAllNotifications(userId!, params),
+    queryKey: [
+      "notifications",
+      userId,
+      isRead ?? "all",
+      page,
+      size,
+    ],
+    queryFn: () =>
+      notification_api.GetAllNotifications(userId!, {
+        isRead,
+        page,
+        size,
+      }),
     enabled: !!userId,
+    // keepPreviousData: true,
+    staleTime: 30_000,
     ...options,
   });
 };

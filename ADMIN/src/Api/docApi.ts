@@ -43,6 +43,7 @@ import { IExportExcelFileRequest } from '@/Interface/File/IExportExcelFile';
 import { IGetNotificationResponse } from '@/Interface/Notification/IGetNotification';
 import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotification';
 import { ISendNotificationsRequest, ISendNotificationsResponse } from '@/Interface/Notification/ISendNotifications';
+import { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from '@/Interface/Notification/IMarkNotificationAsRead';
 
 
 export const docApi = {
@@ -631,9 +632,9 @@ export const docApi = {
     return res.data;
   },
 
-  MarkAllNotificationsAsRead: async (userId: string): Promise<IApiResponse<void>> => {
-    const url = `/notifications/mark-all-read/${userId}`;
-    const res = await axiosClient.patch(url);
+  MarkNotificationAsRead: async (userNotificationId: string, body: IMarkNotificationAsReadRequest): Promise<IApiResponse<IMarkNotificationAsReadResponse>> => {
+    const url = `/notification/mark-read/${userNotificationId}`;
+    const res = await axiosClient.patch(url, body);
     return res.data;
   },
 

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuthStore } from '@/Store/IAuth';
 import { useMarkAllNotificationsAsRead } from '@/Pages/Dashboard/Header/Hook/useMarkAllNotificationsAsRead';
@@ -7,12 +6,12 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/vi';
 import { useGetAllNotifications } from './Hook/userGetAllNotifications';
 import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotification';
-
-import { Card, List, Skeleton, Space, Tag, Typography } from 'antd';
+import { Card, List, Skeleton, Space, Tag, Typography, message } from 'antd';
 import NotificationHeader from './Components/NotificationHeader';
 import NotificationFilters from './Components/NotificationFilter';
 import NotificationEmpty from './Components/NotificationEmpty';
 import NotificationPagination from './Components/NotificationPagination';
+import { toast } from 'react-toastify';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -22,7 +21,7 @@ const { Text } = Typography;
 const ViewAllNotificationsPage: React.FC = () => {
   const userId = useAuthStore((state) => state.id);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const [page, setPage] = useState<number>(0); 
+  const [page, setPage] = useState<number>(0);
   const [size] = useState<number>(10);
 
   // Convert filter to isRead parameter
@@ -34,30 +33,45 @@ const ViewAllNotificationsPage: React.FC = () => {
 
   const { data, isLoading, refetch } = useGetAllNotifications(
     userId || '',
-    { 
+    {
       isRead: getIsReadParam(),
-      page, 
-      size, 
-      sort: 'deliveredAt,desc' 
+      page,
+      size,
+      sort: 'deliveredAt,desc'
     },
     { enabled: !!userId }
   );
 
-  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead({
-    onSuccess: () => refetch(),
-  });
+  const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead();
 
-  const notifications: IGetAllNotifications[] = Array.isArray(data?.data?.content) 
-    ? data.data.content 
+  const notifications: IGetAllNotifications[] = Array.isArray(data?.data?.content)
+    ? data.data.content
     : [];
   const pagination = data?.data?.page;
-
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAllAsRead = () => {
     if (userId && unreadCount > 0) {
-      markAllAsRead(userId);
+      notifications
+        .filter(n => !n.isRead)
+        .forEach((noti) => {
+          markAllAsRead(
+            {
+              userNotificationId: noti.userNotificationId,
+              body: { isRead: true },
+            },
+            {
+              onSuccess: () => {
+                toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
+                refetch();
+              },
+              onError: (err: any) => {
+                toast.error(`Đánh dấu thất bại: ${err.message || 'Vui lòng thử lại!'}`);
+              },
+            }
+          );
+        });
     }
   };
 
@@ -67,9 +81,8 @@ const ViewAllNotificationsPage: React.FC = () => {
 
   const handleFilterChange = (newFilter: 'all' | 'unread' | 'read') => {
     setFilter(newFilter);
-    setPage(0); 
+    setPage(0);
   };
-
 
   const getNotificationColor = (type: string) => {
     const map: Record<string, string> = {
@@ -158,18 +171,16 @@ const ViewAllNotificationsPage: React.FC = () => {
                 return (
                   <Card
                     key={item.userNotificationId}
-                    className={`mb-4 transition-all ${
-                      isUnread
+                    className={`mb-4 transition-all ${isUnread
                         ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-md'
                         : 'bg-white opacity-70 border-l-4 border-l-gray-300'
-                    }`}
+                      }`}
                     hoverable
                   >
                     <div className="flex gap-4">
                       <div
-                        className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${
-                          isUnread ? 'opacity-100' : 'opacity-50'
-                        }`}
+                        className={`w-3 h-3 rounded-full mt-2 flex-shrink-0 ${isUnread ? 'opacity-100' : 'opacity-50'
+                          }`}
                         style={{ background: color }}
                       />
                       <div className="flex-1 min-w-0">
@@ -178,9 +189,8 @@ const ViewAllNotificationsPage: React.FC = () => {
                             <div className="flex items-center gap-2 mb-1">
                               <Text
                                 strong
-                                className={`text-base ${
-                                  isUnread ? 'text-gray-900' : 'text-gray-600'
-                                }`}
+                                className={`text-base ${isUnread ? 'text-gray-900' : 'text-gray-600'
+                                  }`}
                                 style={isUnread ? { color } : {}}
                               >
                                 {item.title}
@@ -190,9 +200,8 @@ const ViewAllNotificationsPage: React.FC = () => {
                               </Tag>
                             </div>
                             <Text
-                              className={`text-sm block ${
-                                isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
-                              }`}
+                              className={`text-sm block ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'
+                                }`}
                             >
                               {item.message}
                             </Text>
@@ -218,8 +227,6 @@ const ViewAllNotificationsPage: React.FC = () => {
               }}
             />
           )}
-
-    
           {!isLoading && pagination && pagination.totalPages > 1 && (
             <NotificationPagination
               current={page}

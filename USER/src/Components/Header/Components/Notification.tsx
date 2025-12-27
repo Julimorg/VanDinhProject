@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge, Dropdown, Button, type MenuProps } from 'antd';
-import { BellOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Button, type MenuProps, Spin } from 'antd';
+import { BellOutlined, LoadingOutlined } from '@ant-design/icons';
 import type { NotificationType } from '../../../Interface/Notification/INotification';
 
 interface NotificationsDropdownProps {
@@ -9,6 +9,9 @@ interface NotificationsDropdownProps {
   navigate: (path: string) => void;
   isMobile: boolean;
   onOpen: () => void;
+  onMarkAllRead: () => void;
+  loading?: boolean;
+  refetch: () => void;
 }
 
 const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
@@ -16,22 +19,51 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   unreadCount,
   navigate,
   isMobile,
-  onOpen
+  onOpen,
+  onMarkAllRead,
+  loading = false,
+  refetch,
 }) => {
+  const loadingIcon = (
+    <LoadingOutlined style={{ fontSize: 24 }} spin />
+  );
+  const loadingMenuItems: MenuProps['items'] = [
+    {
+      key: 'loading',
+      label: (
+        <div className="flex items-center justify-center py-8">
+          <Spin indicator={loadingIcon} />
+        </div>
+      ),
+    },
+  ];
   const notificationMenuItems: MenuProps['items'] = [
     {
+      type: 'group',
       key: 'header',
       label: (
         <div className="px-2 py-2">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-gray-900">Thông báo</span>
-            {unreadCount > 0 && (
-              <span className="text-xs text-blue-600">{unreadCount} chưa đọc</span>
-            )}
+            <span
+              className={`text-sm select-none ${loading || unreadCount === 0
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'text-blue-600 hover:text-blue-800 cursor-pointer'
+                }`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (loading || unreadCount === 0){ 
+                  return;
+                }
+                onMarkAllRead();
+              }}
+            >
+              Đánh dấu đã đọc
+            </span>
           </div>
         </div>
       ),
-      disabled: true,
+
     },
     {
       type: 'divider',
@@ -68,20 +100,20 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
       onClick: () => navigate('/notifications'),
     },
   ];
-
+  const menuItems = loading ? loadingMenuItems : notificationMenuItems;
   const dropdownWidth = isMobile ? 'w-[calc(100vw-2rem)] max-w-[360px]' : 'min-w-[360px] max-w-[400px]';
   const offset: [number, number] = isMobile ? [0, 0] : [0, 0];
 
 
   return (
     <Dropdown
-      menu={{ items: notificationMenuItems }}
+      menu={{ items: menuItems }}
       trigger={['click']}
       placement="bottomRight"
       overlayClassName="notification-dropdown"
       onOpenChange={(open) => {
-        if(open){
-          onOpen();
+        if (open) {
+          refetch();
         }
       }}
       dropdownRender={(menu) => (
