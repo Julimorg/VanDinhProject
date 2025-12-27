@@ -19,7 +19,6 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   unreadCount,
   navigate,
   isMobile,
-  onOpen,
   onMarkAllRead,
   loading = false,
   refetch,
