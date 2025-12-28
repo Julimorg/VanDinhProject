@@ -75,7 +75,7 @@ const SendNotificationPage: React.FC = () => {
     });
   }, [data, onlineUsers]);
 
-  //? Đếm UserOnline  
+  //? Đếm UserOnline
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
@@ -145,7 +145,7 @@ const SendNotificationPage: React.FC = () => {
       title: 'Avatar',
       key: 'avatar',
       render: (_: any, record: IGetUserOnlineStatus) => {
-        const online = isUserOnline(record.userId);
+        const online = record.socketId !== null && record.socketId !== undefined;
         return (
           <Badge dot status={online ? 'success' : 'default'} offset={[-5, 35]}>
             <Avatar src={record.userImg} icon={<UserOutlined />} size={40} />
@@ -158,7 +158,8 @@ const SendNotificationPage: React.FC = () => {
       dataIndex: 'userName',
       key: 'userName',
       render: (name: string, record: IGetUserOnlineStatus) => {
-        const online = isUserOnline(record.userId);
+        const online = record.socketId !== null && record.socketId !== undefined;
+
         return (
           <div className="flex items-center gap-2">
             <span>{name}</span>
@@ -176,10 +177,12 @@ const SendNotificationPage: React.FC = () => {
       title: 'Trạng thái',
       key: 'status',
       render: (_: any, record: IGetUserOnlineStatus) => {
-        const online = isUserOnline(record.socketId);
-        console.log("Online: ", online)
+        const online = record.socketId !== null && record.socketId !== undefined;
+
         return (
-          <Tag color={record.socketId ? 'green' : 'default'}>{online ? '🟢 Online' : '⚪ Offline'}</Tag>
+          <Tag color={record.socketId ? 'green' : 'default'}>
+            {online ? '🟢 Online' : '⚪ Offline'}
+          </Tag>
         );
       },
     },
@@ -296,7 +299,6 @@ const SendNotificationPage: React.FC = () => {
 
           {/* Table Section - Right Side */}
           <Col xs={24} lg={14}>
-      
             <Card
               className="shadow-sm border-0 bg-white rounded-xl"
               bodyStyle={{ padding: '20px' }}

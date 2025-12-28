@@ -1,3 +1,3 @@
 export type ILogOutRequest = {
-    accessToken: string,
+    token: string,
 }
