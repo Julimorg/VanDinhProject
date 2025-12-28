@@ -10,23 +10,21 @@ import './i18n';
 import 'flag-icon-css/css/flag-icons.min.css';
 
 import { App as AntdApp } from 'antd';
-import { StompWebSocketProvider } from './Provider/StompWebSocketProvider';
+// import { StompWebSocketProvider } from './Provider/StompWebSocketProvider';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ReactQueryProvider>
-      <StompWebSocketProvider>
-        <AntdApp>
-          <App />
-          <ToastContainer
-            theme="light"
-            position="top-right"
-            autoClose={3000}
-            closeOnClick
-            pauseOnHover={false}
-          />
-        </AntdApp>
-      </StompWebSocketProvider>
+      <AntdApp>
+        <App />
+        <ToastContainer
+          theme="light"
+          position="top-right"
+          autoClose={3000}
+          closeOnClick
+          pauseOnHover={false}
+        />
+      </AntdApp>
     </ReactQueryProvider>
   </React.StrictMode>
 );

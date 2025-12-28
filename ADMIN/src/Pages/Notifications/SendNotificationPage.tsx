@@ -17,20 +17,14 @@ import {
   Divider,
   Badge,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import {
-  SendOutlined,
-  UserOutlined,
-  SearchOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
+import { SendOutlined, UserOutlined, SearchOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/Store/IAuth';
 import { useGetUserOnlineStatus } from './Hook/useGetUserOnline';
 import { useSendNotifications } from './Hook/useSendNotifications';
 import { useDebounce } from '@/Hook/useDebounce';
-import { useStompWebSocket } from '@/Provider/StompWebSocketProvider';
 import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
 import { ISendNotificationsRequest } from '@/Interface/Notification/ISendNotifications';
+import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
 import { toast } from 'react-toastify';
 
 const { Title, Text } = Typography;
@@ -46,55 +40,58 @@ const SendNotificationPage: React.FC = () => {
   const [statusFilter] = useState<string>('all');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const onlineUsers = useOnlineStatusStore((state) => state.onlineUsers);
+  const isUserOnline = useOnlineStatusStore((state) => state.isUserOnline);
+
   const [pageInfo, setPageInfo] = useState({
     size: 10,
     number: 0,
   });
 
-  const debouncedSearch = useDebounce(searchTerm, 300);
-
-  const { onlineStatuses, getUserOnlineStatus, isConnected } = useStompWebSocket();
-
-  useEffect(() => {
-    setPageInfo((prev) => ({ ...prev, number: 0 }));
-  }, [statusFilter, debouncedSearch]);
-
+  //? Fetch User Status Online Data
   const { data, isLoading } = useGetUserOnlineStatus({
     page: pageInfo.number,
     size: pageInfo.size,
     sort: 'userName,asc',
   });
 
+  //? Merge Data From UserStatusOnline Data với WebSocket RealTime Message bằng Map
   const users: IGetUserOnlineStatus[] = useMemo(() => {
     const apiUsers = (data?.data?.content || []) as IGetUserOnlineStatus[];
-    
 
+    //? Gộp data từ API với realtime data từ Store
     return apiUsers.map((user) => {
-      const realtimeStatus = getUserOnlineStatus(user.userId);
-      
+      const realtimeStatus = onlineUsers.get(user.userId);
+
       if (realtimeStatus) {
-    
         return {
           ...user,
           socketId: realtimeStatus.socketId,
           lastSeen: realtimeStatus.lastSeen,
         };
       }
-      
+
       return user;
     });
-  }, [data, onlineStatuses, getUserOnlineStatus]);
+  }, [data, onlineUsers]);
+
+  //? Đếm UserOnline  
+  const debouncedSearch = useDebounce(searchTerm, 300);
+
+  useEffect(() => {
+    setPageInfo((prev) => ({ ...prev, number: 0 }));
+  }, [statusFilter, debouncedSearch]);
 
   const pagination = useMemo(
-    () => data?.data?.page || { 
-      number: pageInfo.number, 
-      size: pageInfo.size,
-      totalElements: 0,
-      totalPages: 1,
-    },
+    () =>
+      data?.data?.page || {
+        number: pageInfo.number,
+        size: pageInfo.size,
+        totalElements: 0,
+        totalPages: 1,
+      },
     [data, pageInfo]
   );
-
 
   const { mutate: sendNotifications, isPending: isSending } = useSendNotifications({
     onSuccess: () => {
@@ -128,9 +125,7 @@ const SendNotificationPage: React.FC = () => {
 
   useEffect(() => {
     const currentPageIds = users.map((user) => user.userId);
-    const selectedInCurrentPage = selectedUserIds.filter((id) =>
-      currentPageIds.includes(id)
-    );
+    const selectedInCurrentPage = selectedUserIds.filter((id) => currentPageIds.includes(id));
     setSelectedRowKeys(selectedInCurrentPage);
   }, [users, selectedUserIds]);
 
@@ -145,41 +140,30 @@ const SendNotificationPage: React.FC = () => {
   };
 
   // Columns với online status indicator
-  const columns: ColumnsType<IGetUserOnlineStatus> = [
+  const columns = [
     {
       title: 'Avatar',
-      dataIndex: 'userImg',
-      key: 'userImg',
-      width: 80,
-      render: (userImg: string, record: IGetUserOnlineStatus) => {
-        const isOnline = record.socketId !== null && record.socketId !== undefined;
+      key: 'avatar',
+      render: (_: any, record: IGetUserOnlineStatus) => {
+        const online = isUserOnline(record.userId);
         return (
-          <Badge 
-            dot 
-            status={isOnline ? 'success' : 'default'}
-            offset={[-5, 35]}
-          >
-            <Avatar src={userImg} icon={<UserOutlined />} size={40} />
+          <Badge dot status={online ? 'success' : 'default'} offset={[-5, 35]}>
+            <Avatar src={record.userImg} icon={<UserOutlined />} size={40} />
           </Badge>
         );
       },
     },
     {
-      title: 'Tên người dùng',
+      title: 'Tên',
       dataIndex: 'userName',
       key: 'userName',
-      sorter: (a, b) => a.userName.localeCompare(b.userName),
-      render: (userName: string, record: IGetUserOnlineStatus) => {
-        const isOnline = record.socketId !== null && record.socketId !== undefined;
+      render: (name: string, record: IGetUserOnlineStatus) => {
+        const online = isUserOnline(record.userId);
         return (
-          <Space>
-            <span>{userName}</span>
-            {isOnline && (
-              <Tag color="green" className="text-xs">
-                Online
-              </Tag>
-            )}
-          </Space>
+          <div className="flex items-center gap-2">
+            <span>{name}</span>
+            {online && <Tag color="green">Online</Tag>}
+          </div>
         );
       },
     },
@@ -187,40 +171,16 @@ const SendNotificationPage: React.FC = () => {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      sorter: (a, b) => a.email.localeCompare(b.email),
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
     },
     {
       title: 'Trạng thái',
-      key: 'onlineStatus',
-      render: (_, record: IGetUserOnlineStatus) => {
-        const isOnline = record.socketId !== null && record.socketId !== undefined;
+      key: 'status',
+      render: (_: any, record: IGetUserOnlineStatus) => {
+        const online = isUserOnline(record.socketId);
+        console.log("Online: ", online)
         return (
-          <Tag color={isOnline ? 'green' : 'default'}>
-            {isOnline ? '🟢 Online' : '⚪ Offline'}
-          </Tag>
+          <Tag color={record.socketId ? 'green' : 'default'}>{online ? '🟢 Online' : '⚪ Offline'}</Tag>
         );
-      },
-    },
-    {
-      title: 'Last Seen',
-      dataIndex: 'lastSeen',
-      key: 'lastSeen',
-      responsive: ['lg'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
-      render: (lastSeen: string, record: IGetUserOnlineStatus) => {
-        const isOnline = record.socketId !== null;
-        if (isOnline) return <Text type="success">Đang online</Text>;
-        if (!lastSeen) return <Text type="secondary">Chưa online</Text>;
-        
-        // Format lastSeen
-        const date = new Date(lastSeen);
-        const now = new Date();
-        const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
-        
-        if (diff < 60) return <Text type="secondary">Vừa xong</Text>;
-        if (diff < 3600) return <Text type="secondary">{Math.floor(diff / 60)} phút trước</Text>;
-        if (diff < 86400) return <Text type="secondary">{Math.floor(diff / 3600)} giờ trước</Text>;
-        return <Text type="secondary">{Math.floor(diff / 86400)} ngày trước</Text>;
       },
     },
   ];
@@ -238,9 +198,6 @@ const SendNotificationPage: React.FC = () => {
               Chọn người dùng và điền thông tin để gửi thông báo
             </Text>
           </div>
-          <Tag color={isConnected ? 'green' : 'red'} className="h-fit">
-            {isConnected ? '🟢 WebSocket Connected' : '🔴 Disconnected'}
-          </Tag>
         </div>
 
         <Row gutter={[16, 16]}>
@@ -259,12 +216,7 @@ const SendNotificationPage: React.FC = () => {
                 </Text>
               </div>
 
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-                className="w-full"
-              >
+              <Form form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
                 <Form.Item
                   label="Tiêu đề"
                   name="title"
@@ -273,11 +225,7 @@ const SendNotificationPage: React.FC = () => {
                     { max: 200, message: 'Tiêu đề không được quá 200 ký tự!' },
                   ]}
                 >
-                  <Input
-                    placeholder="Nhập tiêu đề thông báo"
-                    size="large"
-                    className="rounded-lg"
-                  />
+                  <Input placeholder="Nhập tiêu đề thông báo" size="large" className="rounded-lg" />
                 </Form.Item>
 
                 <Form.Item
@@ -302,11 +250,7 @@ const SendNotificationPage: React.FC = () => {
                   name="type"
                   rules={[{ required: true, message: 'Vui lòng chọn loại thông báo!' }]}
                 >
-                  <Select
-                    placeholder="Chọn loại thông báo"
-                    size="large"
-                    className="rounded-lg"
-                  >
+                  <Select placeholder="Chọn loại thông báo" size="large" className="rounded-lg">
                     <Option value="SYSTEM">Hệ thống</Option>
                     <Option value="ORDER">Đơn hàng</Option>
                     <Option value="PRODUCT">Sản phẩm</Option>
@@ -352,6 +296,7 @@ const SendNotificationPage: React.FC = () => {
 
           {/* Table Section - Right Side */}
           <Col xs={24} lg={14}>
+      
             <Card
               className="shadow-sm border-0 bg-white rounded-xl"
               bodyStyle={{ padding: '20px' }}
@@ -365,7 +310,8 @@ const SendNotificationPage: React.FC = () => {
                     Tổng số: {pagination.totalElements} người dùng
                   </Text>
                   <Tag color="green">
-                    {users.filter(u => u.socketId !== null && u.socketId !== undefined).length} Online
+                    {users.filter((u) => u.socketId !== null && u.socketId !== undefined).length}{' '}
+                    Online
                   </Tag>
                 </Space>
               </div>

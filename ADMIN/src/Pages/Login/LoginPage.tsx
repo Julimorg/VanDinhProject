@@ -4,11 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import Loading from '@/Components/Loading/index';
 import { useLogin } from './Hook/useLogin';
-import { useStompWebSocket } from '@/Provider/StompWebSocketProvider';
 
 const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const { connectWebSocket } = useStompWebSocket();
+  // const { connectWebSocket } = useStompWebSocket();
   const navigate = useNavigate();
   const loginMutation = useLogin();
 
@@ -25,14 +24,7 @@ const Login: React.FC = () => {
           setLoading(false);
           toast.success('Login Successfully!');
           console.log('🚀 Bắt đầu kết nối WebSocket sau khi đăng nhập...');
-          try {
-            await connectWebSocket();
-            console.log('✅ WebSocket đã kết nối thành công!');
-            toast.success('Kết nối thông báo realtime thành công');
-          } catch (error) {
-            console.error('❌ Kết nối WebSocket thất bại:', error);
-            toast.warn('Thông báo realtime chưa sẵn sàng (vẫn dùng app bình thường)');
-          }
+
           navigate('/dashboard');
         },
         onError: (error: any) => {

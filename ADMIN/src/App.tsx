@@ -5,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import DefaultRouter from '@/Router/DefaultRoute/Router';
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import GlobalWebSocketListener from './Provider/StompWebSocketProvider';
 
 function App() {
   return (
@@ -39,6 +40,7 @@ function App() {
         }}
       >
         <BrowserRouter>
+          <GlobalWebSocketListener />
           <DefaultRouter />
         </BrowserRouter>
       </ConfigProvider>

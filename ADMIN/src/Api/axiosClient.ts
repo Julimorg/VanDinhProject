@@ -10,27 +10,35 @@ const axiosClient = axios.create({
   },
 });
 
-//? Config timeout cho request
 axiosClient.defaults.timeout = 1000 * 60 * 10;
 
-//? Tạo 1 promise cho việc gọi api refresh_token
-//? Tại sao? -> Mục đích là tạo 1 promise này để khi nhận yêu cầu refreshToken đầu tiên
-//? hold lại việc gọi API refresh_token cho tới khi xong xuôi thì mới retry lại những api bị lỗi trước đó
-//? thay vì cứ để gọi lại refresh_token liên tục tới mỗi request lỗi
-let refreshTokenPromise: Promise<string | null> | null = null;
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value: any) => void;
+  reject: (reason: any) => void;
+}> = [];
 
-//? Config request xuống server
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
 axiosClient.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().accessToken;
 
-    //? Những enpoint không cần gán Token vào Header
     const publicEndpoints = [
       '/auth/log-in',
       '/auth/sign-up',
       '/auth/refresh-token',
       '/auth/forgot-password',
-      '/reset-pass', // nếu có
+      '/reset-pass',
     ];
 
     const isPublic = publicEndpoints.some((path) =>
@@ -46,81 +54,110 @@ axiosClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-//? Config resposne từ server
 axiosClient.interceptors.response.use(
   (response) => response,
   
   async (error) => {
+    
     const originalRequest = error.config;
 
-    //? Bỏ qua interceptor cho yêu cầu refresh token
-    // if (originalRequest.url === '/auth/refresh-token') {
-    //   console.log('Bỏ qua interceptor cho yêu cầu refresh token');
-    //   return Promise.reject(error);
-    // }
+    if (originalRequest.url?.includes('/auth/refresh-token')) {
+      console.log('Refresh token API failed, clearing tokens');
+      useAuthStore.getState().clearTokens();
+      // window.location.href = '/login';
+      return Promise.reject(error);
+    }
 
-    //? Xử lý lỗi 401 hoặc 410
     if (
       (error.response?.status === 401 || error.response?.status === 410) &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
 
+      // Nếu đang refresh, đưa request vào queue và chờ
+      if (isRefreshing) {
+        console.log('Already refreshing, adding to queue. Queue size:', failedQueue.length + 1);
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            console.log('Queue processed, retrying request:', originalRequest.url);
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return axiosClient(originalRequest);
+          })
+          .catch((err) => Promise.reject(err));
+      }
+
+      isRefreshing = true;
+      const refreshToken = useAuthStore.getState().refreshToken;
+
+      if (!refreshToken) {
+        console.error('Không có refresh token');
+        isRefreshing = false;
+        processQueue(new Error('Không có refresh token'), null);
+        useAuthStore.getState().clearTokens();
+        return Promise.reject(error);
+      }
+
       try {
-        if (!refreshTokenPromise) {
-          console.log('Bắt đầu refresh token...');
-          const refreshToken = useAuthStore.getState().refreshToken;
+        console.log('Bắt đầu refresh token...');
+        
+        const res = await docApi.RefreshToken();
+        const { accessToken } = res.data; 
+        
+        console.log(' Refresh token thành công, new AT:', accessToken?.substring(0, 20) + '...');
 
-          if (!refreshToken) {
-            console.error('Không có refresh token để gửi yêu cầu');
-            throw new Error('Không có refresh token');
-          }
+        const { refreshToken: currentRefreshToken, userName, email, userImg, id } = useAuthStore.getState();
+        
 
-          refreshTokenPromise = docApi
-            .RefreshToken()
-            .then((res) => {
-              const { accessToken } = res.data;
-              console.log('Refresh token thành công, access_token mới:', accessToken);
+        useAuthStore.getState().setTokens(
+          accessToken,
+          currentRefreshToken, 
+          userName,
+          email ?? null,
+          userImg ?? null,
+          id
+        );
 
-              const { refreshToken: currentRefreshToken, userName, email, userImg, id } = useAuthStore.getState();
-              useAuthStore.getState().setTokens(
-                accessToken,                      
-                currentRefreshToken,            
-                userName,                       
-                email ?? null,                         
-                userImg ?? null,                       
-                id                              
-                );
-              axiosClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
-              return accessToken;
-            })
-            .catch((refreshError) => {
-              console.error('Lỗi khi refresh token:', {
-                message: refreshError.message,
-                response: refreshError.response?.data,
-                status: refreshError.response?.status,
-              });
-              useAuthStore.getState().clearTokens();
-              // window.location.href = '/login';
-              return null;
-            })
-            .finally(() => {
-              console.log('Reset refreshTokenPromise');
-              refreshTokenPromise = null;
-            });
-        }
+        axiosClient.defaults.headers.Authorization = `Bearer ${accessToken}`;
+        
+        console.log('Processing queue:', failedQueue.length, 'requests');
+       
+        processQueue(null, accessToken);
+        
+       
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        console.log('Retrying original request:', originalRequest.url);
+       
+        console.log('Debug state:', {
+          status: error.response?.status,
+          url: originalRequest.url,
+          isRefreshing,
+          queueSize: failedQueue.length,
+          hasRetried: originalRequest._retry,
+          currentAT: useAuthStore.getState().accessToken?.substring(0, 20),
+          currentRT: useAuthStore.getState().refreshToken?.substring(0, 20)
+        });
 
-        const newAccessToken = await refreshTokenPromise;
-        if (!newAccessToken) {
-          throw new Error('Không thể lấy access token mới');
-        }
-
-        console.log('Retry request gốc với access_token mới:', newAccessToken, originalRequest.url);
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosClient(originalRequest);
-      } catch (err) {
-        console.error('Lỗi khi xử lý refresh token:', err);
-        return Promise.reject(err);
+        
+        
+      } catch (refreshError: any) {
+        console.error('Lỗi khi refresh token:', {
+          message: refreshError.message,
+          status: refreshError.response?.status,
+          data: refreshError.response?.data
+        });
+        
+        processQueue(refreshError, null);
+        useAuthStore.getState().clearTokens();
+        
+        // window.location.href = '/login';
+        
+        return Promise.reject(refreshError);
+      } finally {
+        console.log(' Reset isRefreshing flag');
+        isRefreshing = false;
       }
     }
 
@@ -129,7 +166,9 @@ axiosClient.interceptors.response.use(
     console.error('Response error:', { message: errorMessage, status: error.response?.status });
     toast.error(errorMessage);
     return Promise.reject(error);
+    
   }
+  
 );
 
 export default axiosClient;

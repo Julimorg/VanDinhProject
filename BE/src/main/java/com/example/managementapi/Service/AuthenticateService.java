@@ -135,6 +135,7 @@ public class AuthenticateService {
             log.error("Token already expired");
         }
     }
+
     public RefreshRes refreshToken (String authHeader)
             throws ParseException, JOSEException {
 
