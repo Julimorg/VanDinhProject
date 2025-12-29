@@ -87,7 +87,6 @@ public class OrderService {
                 .map(order -> orderMapper.toGetUserListOrder(order));
     }
 
-
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
     public Page<GetAllOrdersRes> getAllOrders( String keyword, String status, Pageable pageable){
         Specification<Order> spec = OrderSpecification.searchOrder(keyword,status);
@@ -235,7 +234,7 @@ public class OrderService {
                         .userId(admin.getId())
                         .isRead(false)
 //                    .deliveredAt(LocalDateTime.now())
-                        .status(UserNotifactionStatus.PENDING)
+                        .status(UserNotifactionStatus.DELIVERED)
                         .sendChannel(UserNotifactionSendChannel.WEB)
                         .build();
                 try{
@@ -305,11 +304,13 @@ public class OrderService {
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public String approveOrder(String userId, String orderId, ApproveOrderReq request) throws MessagingException {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
+
 
         Optional<UserDevice> deviceOpt = deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(userId);
 
@@ -319,6 +320,7 @@ public class OrderService {
         Cart cart = user.getCart();
 
         UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(order);
+
 
         if(request.getOrderStatus() == OrderStatus.Approved){
 
@@ -359,6 +361,7 @@ public class OrderService {
                     .type("Order!")
                     .createBy("Admin")
                     .build());
+
 
                 UserNotifications un = UserNotifications.builder()
                         .notifications(noti)

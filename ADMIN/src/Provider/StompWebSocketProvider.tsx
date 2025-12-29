@@ -45,7 +45,7 @@ const GlobalWebSocketListener = () => {
       });
 
       // 🔥 Online status - LƯU VÀO STORE
-      subscribe('/topic/online-status', (status) => {
+      subscribe('/topic/user-status', (status) => {
         console.log('👤 User status changed:', status);
         
         // Lưu vào Zustand store

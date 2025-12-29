@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuthStore } from '@/Store/IAuth';
 import { useMarkAllNotificationsAsRead } from '@/Pages/Dashboard/Header/Hook/useMarkAllNotificationsAsRead';
@@ -12,7 +11,8 @@ import { Card, List, Skeleton, Space, Tag, Typography } from 'antd';
 import NotificationHeader from './Components/NotificationHeader';
 import NotificationFilters from './Components/NotificationFilter';
 import NotificationEmpty from './Components/NotificationEmpty';
-import NotificationPagination from './Components/NotificationPagination';
+import CommonPagination from '@/Components/Pagination/Pagination';
+
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -23,7 +23,7 @@ const ViewAllNotificationsPage: React.FC = () => {
   const userId = useAuthStore((state) => state.id);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [page, setPage] = useState<number>(0); 
-  const [size] = useState<number>(10);
+  const [size, setSize] = useState<number>(10);
 
   // Convert filter to isRead parameter
   const getIsReadParam = (): string | undefined => {
@@ -52,7 +52,6 @@ const ViewAllNotificationsPage: React.FC = () => {
     : [];
   const pagination = data?.data?.page;
 
-
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   const handleMarkAllAsRead = () => {
@@ -61,15 +60,20 @@ const ViewAllNotificationsPage: React.FC = () => {
     }
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
+  const handlePageChange = (newPage: number, newPageSize: number) => {
+    // If page size changes, reset to first page
+    if (newPageSize !== size) {
+      setSize(newPageSize);
+      setPage(0);
+    } else {
+      setPage(newPage);
+    }
   };
 
   const handleFilterChange = (newFilter: 'all' | 'unread' | 'read') => {
     setFilter(newFilter);
     setPage(0); 
   };
-
 
   const getNotificationColor = (type: string) => {
     const map: Record<string, string> = {
@@ -219,13 +223,18 @@ const ViewAllNotificationsPage: React.FC = () => {
             />
           )}
 
-    
+   
           {!isLoading && pagination && pagination.totalPages > 1 && (
-            <NotificationPagination
+            <CommonPagination
               current={page}
               total={pagination.totalElements}
-              pageSize={pagination.size}
+              pageSize={size}
               onChange={handlePageChange}
+              totalText="thông báo"
+              pageSizeOptions={['5', '10', '15', '20']}
+              showSizeChanger={true}
+              showQuickJumper={true}
+              align="center"
             />
           )}
         </Space>

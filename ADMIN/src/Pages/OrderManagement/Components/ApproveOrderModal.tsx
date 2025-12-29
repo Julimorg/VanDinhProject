@@ -1,7 +1,6 @@
 import React from "react";
-import { Modal, Select, Typography, Space, Button, Form, message } from "antd";
+import { Modal, Select, Typography, Space, Button, Form } from "antd";
 import { useApproveOrderStatus } from "../Hook/useApproveOrderStatus";
-import { useAuthStore } from "@/Store/IAuth";
 import { toast } from 'react-toastify';
 
 const { Title } = Typography;
@@ -13,6 +12,7 @@ interface Props {
   orderData?: {
     orderId: string;
     orderCode?: string;
+    userId?: string;
   } | null;
   onSuccess?: () => void; 
 }
@@ -24,13 +24,15 @@ const ApproveOrderModal: React.FC<Props> = ({
   onSuccess,
 }) => {
   const [form] = Form.useForm();
-  const adminUserId = useAuthStore((state) => state.id) ?? "";
 
+  const userId = orderData?.userId || "";
+
+  
   const { mutate: approveOrder, isPending } = useApproveOrderStatus(
-    adminUserId,
+    userId,
     orderData?.orderId || "",
     {
-      onSuccess: (res) => {
+      onSuccess: () => {
         toast.success("Cập nhật trạng thái đơn hàng thành công!");
         form.resetFields();
         onClose();
