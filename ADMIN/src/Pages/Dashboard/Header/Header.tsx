@@ -15,7 +15,6 @@ import { useLogOut } from './Hook/useLogOut';
 import { IApiResponse } from '@/Interface/IApiResponse';
 import { toast } from 'react-toastify';
 import { useQueryClient } from '@tanstack/react-query';
-import { useStompWebSocket } from '@/Provider/StompWebSocketProvider';
 
 const { Header: AntHeader } = Layout;
 
@@ -37,7 +36,6 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
 
   const [searchValue, setSearchValue] = useState('');
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const { disconnectWebSocket } = useStompWebSocket();
   const queryClient = useQueryClient();
 
 
@@ -59,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile, setDrawerVisible }) => {
   const performCleanup = () => {
     console.log('🧹 Performing cleanup after logout...');
 
-    disconnectWebSocket(); 
+    // disconnectWebSocket(); 
     clearTokens();
     queryClient.clear();
     navigate('/login', { replace: true }); 

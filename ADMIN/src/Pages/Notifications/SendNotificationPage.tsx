@@ -15,20 +15,16 @@ import {
   Spin,
   message,
   Divider,
+  Badge,
 } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-import {
-  SendOutlined,
-  UserOutlined,
-  SearchOutlined,
-  CheckCircleOutlined,
-} from '@ant-design/icons';
+import { SendOutlined, UserOutlined, SearchOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useAuthStore } from '@/Store/IAuth';
-import { useUsers } from '@/Pages/UsersManagement/Hook/useGetUsers';
+import { useGetUserOnlineStatus } from './Hook/useGetUserOnline';
 import { useSendNotifications } from './Hook/useSendNotifications';
 import { useDebounce } from '@/Hook/useDebounce';
-import { IUsersResponse, UserRoles } from '@/Interface/Users/IGetUsers';
+import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
 import { ISendNotificationsRequest } from '@/Interface/Notification/ISendNotifications';
+import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
 import { toast } from 'react-toastify';
 
 const { Title, Text } = Typography;
@@ -41,40 +37,61 @@ const SendNotificationPage: React.FC = () => {
   const userName = useAuthStore((state) => state.userName) ?? '';
 
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter] = useState<string>('all');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+  const onlineUsers = useOnlineStatusStore((state) => state.onlineUsers);
+  const isUserOnline = useOnlineStatusStore((state) => state.isUserOnline);
+
   const [pageInfo, setPageInfo] = useState({
     size: 10,
     number: 0,
-    totalElements: 0,
-    totalPages: 1,
   });
 
+  //? Fetch User Status Online Data
+  const { data, isLoading } = useGetUserOnlineStatus({
+    page: pageInfo.number,
+    size: pageInfo.size,
+    sort: 'userName,asc',
+  });
+
+  //? Merge Data From UserStatusOnline Data với WebSocket RealTime Message bằng Map
+  const users: IGetUserOnlineStatus[] = useMemo(() => {
+    const apiUsers = (data?.data?.content || []) as IGetUserOnlineStatus[];
+
+    //? Gộp data từ API với realtime data từ Store
+    return apiUsers.map((user) => {
+      const realtimeStatus = onlineUsers.get(user.userId);
+
+      if (realtimeStatus) {
+        return {
+          ...user,
+          socketId: realtimeStatus.socketId,
+          lastSeen: realtimeStatus.lastSeen,
+        };
+      }
+
+      return user;
+    });
+  }, [data, onlineUsers]);
+
+  //? Đếm UserOnline
   const debouncedSearch = useDebounce(searchTerm, 300);
 
   useEffect(() => {
-    setPageInfo(prev => ({ ...prev, number: 0 }));
+    setPageInfo((prev) => ({ ...prev, number: 0 }));
   }, [statusFilter, debouncedSearch]);
 
-
-  const { data, isLoading } = useUsers({
-    status: statusFilter,
-    page: pageInfo.number,
-    size: pageInfo.size,
-    search: debouncedSearch,
-  });
-
-  const users: IUsersResponse[] = useMemo(
-    () => (data?.data?.content || []) as IUsersResponse[],
-    [data]
-  );
-
   const pagination = useMemo(
-    () => data?.data?.page || pageInfo,
+    () =>
+      data?.data?.page || {
+        number: pageInfo.number,
+        size: pageInfo.size,
+        totalElements: 0,
+        totalPages: 1,
+      },
     [data, pageInfo]
   );
-
 
   const { mutate: sendNotifications, isPending: isSending } = useSendNotifications({
     onSuccess: () => {
@@ -106,96 +123,68 @@ const SendNotificationPage: React.FC = () => {
     sendNotifications(request);
   };
 
-  // Sync selectedRowKeys với selectedUserIds khi users thay đổi
   useEffect(() => {
-    const currentPageIds = users.map((user) => user.id);
-    const selectedInCurrentPage = selectedUserIds.filter((id) =>
-      currentPageIds.includes(id)
-    );
+    const currentPageIds = users.map((user) => user.userId);
+    const selectedInCurrentPage = selectedUserIds.filter((id) => currentPageIds.includes(id));
     setSelectedRowKeys(selectedInCurrentPage);
   }, [users, selectedUserIds]);
 
-  // Handle row selection
   const rowSelection = {
     selectedRowKeys,
-    onChange: (selectedKeys: React.Key[], selectedRows: IUsersResponse[]) => {
-      const selectedIds = selectedRows.map((row) => row.id);
-      const currentPageIds = users.map((user) => user.id);
-      
-      // Lấy các IDs đã chọn ở các trang khác
-      const otherPageIds = selectedUserIds.filter(
-        (id) => !currentPageIds.includes(id)
-      );
-      
-      // Kết hợp với selection của trang hiện tại
+    onChange: (selectedKeys: React.Key[], selectedRows: IGetUserOnlineStatus[]) => {
+      const selectedIds = selectedRows.map((row) => row.userId);
+      const currentPageIds = users.map((user) => user.userId);
+      const otherPageIds = selectedUserIds.filter((id) => !currentPageIds.includes(id));
       setSelectedUserIds([...otherPageIds, ...selectedIds]);
-    },
-    onSelectAll: (selected: boolean, selectedRows: IUsersResponse[], changeRows: IUsersResponse[]) => {
-      const currentPageIds = users.map((user) => user.id);
-      const otherPageIds = selectedUserIds.filter(
-        (id) => !currentPageIds.includes(id)
-      );
-      
-      if (selected) {
-        const newIds = changeRows.map((row) => row.id);
-        setSelectedUserIds([...otherPageIds, ...newIds]);
-      } else {
-        setSelectedUserIds(otherPageIds);
-      }
     },
   };
 
-  // Columns cho table
-  const columns: ColumnsType<IUsersResponse> = [
+  // Columns với online status indicator
+  const columns = [
     {
       title: 'Avatar',
-      dataIndex: 'userImg',
-      key: 'userImg',
-      width: 80,
-      render: (userImg: string) => (
-        <Avatar src={userImg} icon={<UserOutlined />} size={40} />
-      ),
+      key: 'avatar',
+      render: (_: any, record: IGetUserOnlineStatus) => {
+        const online = record.socketId !== null && record.socketId !== undefined;
+        return (
+          <Badge dot status={online ? 'success' : 'default'} offset={[-5, 35]}>
+            <Avatar src={record.userImg} icon={<UserOutlined />} size={40} />
+          </Badge>
+        );
+      },
     },
     {
-      title: 'Tên người dùng',
+      title: 'Tên',
       dataIndex: 'userName',
       key: 'userName',
-      sorter: (a, b) => a.userName.localeCompare(b.userName),
+      render: (name: string, record: IGetUserOnlineStatus) => {
+        const online = record.socketId !== null && record.socketId !== undefined;
+
+        return (
+          <div className="flex items-center gap-2">
+            <span>{name}</span>
+            {online && <Tag color="green">Online</Tag>}
+          </div>
+        );
+      },
     },
     {
       title: 'Email',
       dataIndex: 'email',
       key: 'email',
-      sorter: (a, b) => a.email.localeCompare(b.email),
-      responsive: ['md'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
-    },
-    {
-      title: 'Vai trò',
-      dataIndex: 'roles',
-      key: 'roles',
-      render: (roles: UserRoles[]) => (
-        <Space>
-          {roles.map((role) => (
-            <Tag
-              key={role.name}
-              color={
-                role.name === 'ADMIN' ? 'red' : role.name === 'STAFF' ? 'blue' : 'green'
-              }
-            >
-              {role.name}
-            </Tag>
-          ))}
-        </Space>
-      ),
-      responsive: ['lg'] as ('xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl')[],
     },
     {
       title: 'Trạng thái',
-      dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>
-      ),
+      render: (_: any, record: IGetUserOnlineStatus) => {
+        const online = record.socketId !== null && record.socketId !== undefined;
+
+        return (
+          <Tag color={record.socketId ? 'green' : 'default'}>
+            {online ? '🟢 Online' : '⚪ Offline'}
+          </Tag>
+        );
+      },
     },
   ];
 
@@ -203,13 +192,15 @@ const SendNotificationPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50 py-4 px-2 sm:py-6 sm:px-4 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <Title level={2} className="text-center sm:text-left text-gray-900 mb-2 text-xl sm:text-2xl">
-            Gửi Thông Báo
-          </Title>
-          <Text type="secondary" className="block text-sm text-center sm:text-left">
-            Chọn người dùng và điền thông tin để gửi thông báo
-          </Text>
+        <div className="mb-6 sm:mb-8 flex items-center justify-between">
+          <div>
+            <Title level={2} className="text-gray-900 mb-2 text-xl sm:text-2xl">
+              Gửi Thông Báo
+            </Title>
+            <Text type="secondary" className="block text-sm">
+              Chọn người dùng và điền thông tin để gửi thông báo
+            </Text>
+          </div>
         </div>
 
         <Row gutter={[16, 16]}>
@@ -228,12 +219,7 @@ const SendNotificationPage: React.FC = () => {
                 </Text>
               </div>
 
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSubmit}
-                className="w-full"
-              >
+              <Form form={form} layout="vertical" onFinish={handleSubmit} className="w-full">
                 <Form.Item
                   label="Tiêu đề"
                   name="title"
@@ -242,11 +228,7 @@ const SendNotificationPage: React.FC = () => {
                     { max: 200, message: 'Tiêu đề không được quá 200 ký tự!' },
                   ]}
                 >
-                  <Input
-                    placeholder="Nhập tiêu đề thông báo"
-                    size="large"
-                    className="rounded-lg"
-                  />
+                  <Input placeholder="Nhập tiêu đề thông báo" size="large" className="rounded-lg" />
                 </Form.Item>
 
                 <Form.Item
@@ -271,11 +253,7 @@ const SendNotificationPage: React.FC = () => {
                   name="type"
                   rules={[{ required: true, message: 'Vui lòng chọn loại thông báo!' }]}
                 >
-                  <Select
-                    placeholder="Chọn loại thông báo"
-                    size="large"
-                    className="rounded-lg"
-                  >
+                  <Select placeholder="Chọn loại thông báo" size="large" className="rounded-lg">
                     <Option value="SYSTEM">Hệ thống</Option>
                     <Option value="ORDER">Đơn hàng</Option>
                     <Option value="PRODUCT">Sản phẩm</Option>
@@ -329,33 +307,28 @@ const SendNotificationPage: React.FC = () => {
                 <Title level={4} className="mb-1">
                   Danh sách người dùng
                 </Title>
-                <Text type="secondary" className="text-sm">
-                  Tổng số: {pagination.totalElements} người dùng
-                </Text>
+                <Space>
+                  <Text type="secondary" className="text-sm">
+                    Tổng số: {pagination.totalElements} người dùng
+                  </Text>
+                  <Tag color="green">
+                    {users.filter((u) => u.socketId !== null && u.socketId !== undefined).length}{' '}
+                    Online
+                  </Tag>
+                </Space>
               </div>
 
               {/* Search và Filter */}
               <div className="mb-4 flex flex-col sm:flex-row gap-3">
                 <Input
                   placeholder="Tìm kiếm theo tên hoặc email"
-                  prefix={<SearchOutlined className="text-gray-400" />}
+                  prefix={<SearchOutlined />}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   allowClear
                   className="flex-1 rounded-lg"
                   size="large"
                 />
-                <Select
-                  placeholder="Lọc theo trạng thái"
-                  value={statusFilter}
-                  onChange={(value: string) => setStatusFilter(value)}
-                  className="w-full sm:w-48 rounded-lg"
-                  size="large"
-                >
-                  <Option value="all">Tất cả</Option>
-                  <Option value="ACTIVE">Hoạt động</Option>
-                  <Option value="INACTIVE">Không hoạt động</Option>
-                </Select>
               </div>
 
               {/* Table */}
@@ -364,7 +337,7 @@ const SendNotificationPage: React.FC = () => {
                   rowSelection={rowSelection}
                   columns={columns}
                   dataSource={users}
-                  rowKey="id"
+                  rowKey="userId"
                   pagination={{
                     current: pagination.number + 1,
                     pageSize: pagination.size,
@@ -373,11 +346,7 @@ const SendNotificationPage: React.FC = () => {
                     pageSizeOptions: ['10', '20', '50', '100'],
                     showTotal: (total) => `Tổng ${total} người dùng`,
                     onChange: (page, pageSize) => {
-                      setPageInfo((prev) => ({
-                        ...prev,
-                        number: page - 1,
-                        size: pageSize,
-                      }));
+                      setPageInfo({ number: page - 1, size: pageSize });
                     },
                   }}
                   scroll={{ x: 'max-content' }}

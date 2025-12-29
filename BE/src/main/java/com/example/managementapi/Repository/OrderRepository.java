@@ -26,6 +26,7 @@ public interface OrderRepository extends JpaRepository<Order, String>, JpaSpecif
 
     Page<Order> findByUser(User user, Pageable pageable);
 
+    @Query("select o from Order o where o.user = ?1 and o.orderId = ?2")
     Optional<Order> findByUserAndOrderId(User user, String orderId);
 
     @Query(

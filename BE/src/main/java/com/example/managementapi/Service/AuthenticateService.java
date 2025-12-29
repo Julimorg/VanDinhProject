@@ -135,6 +135,7 @@ public class AuthenticateService {
             log.error("Token already expired");
         }
     }
+
     public RefreshRes refreshToken (String authHeader)
             throws ParseException, JOSEException {
 
@@ -258,7 +259,13 @@ public class AuthenticateService {
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
-        if (!signedJWT.verify(verifier)) {
+        log.info("🔍 [VERIFY TOKEN] Parsed token, isRefresh: {}", isRefresh);
+        
+        boolean signatureVerified = signedJWT.verify(verifier);
+        log.info("🔍 [VERIFY TOKEN] Signature verified: {}", signatureVerified);
+        
+        if (!signatureVerified) {
+            log.error("❌ [VERIFY TOKEN] Signature verification failed");
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
@@ -272,18 +279,31 @@ public class AuthenticateService {
 
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
         Date now = new Date();
+        
+        log.info("🔍 [VERIFY TOKEN] Token expiry: {}, Current time: {}, Is expired: {}", 
+            expiryTime, now, now.after(expiryTime));
 
         var verified = signedJWT.verify(verifier);
 
         if (now.after(expiryTime)) {
+            log.error("❌ [VERIFY TOKEN] Token has expired. Expiry: {}, Now: {}", expiryTime, now);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        if(!verified && expiryTime.after(new Date()))
+        if(!verified && expiryTime.after(new Date())) {
+            log.error("❌ [VERIFY TOKEN] Token verification failed but not expired");
             throw  new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
-        if(invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+        String jwtId = signedJWT.getJWTClaimsSet().getJWTID();
+        boolean isInvalidated = invalidatedTokenRepository.existsById(jwtId);
+        log.info("🔍 [VERIFY TOKEN] Token JWT ID: {}, Is invalidated: {}", jwtId, isInvalidated);
+        
+        if(isInvalidated) {
+            log.error("❌ [VERIFY TOKEN] Token has been invalidated. JWT ID: {}", jwtId);
             throw new AppException(ErrorCode.UNAUTHENTICATED);
+        }
 
+        log.info("✅ [VERIFY TOKEN] Token verified successfully");
         return signedJWT;
     }
 }

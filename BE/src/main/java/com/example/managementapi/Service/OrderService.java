@@ -4,13 +4,11 @@ package com.example.managementapi.Service;
 import com.example.managementapi.Component.GenerateRandomCode;
 import com.example.managementapi.Component.MethodConverter;
 import com.example.managementapi.Dto.Request.Order.*;
+import com.example.managementapi.Dto.Response.Notification.NotificationRes;
 import com.example.managementapi.Dto.Response.Order.*;
 import com.example.managementapi.Dto.Response.User.GetUserListOrder;
 import com.example.managementapi.Entity.*;
-import com.example.managementapi.Enum.ErrorCode;
-import com.example.managementapi.Enum.OrderStatus;
-import com.example.managementapi.Enum.PaymentMethod;
-import com.example.managementapi.Enum.PaymentMethodStatus;
+import com.example.managementapi.Enum.*;
 import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.OrderMapper;
 import com.example.managementapi.Repository.*;
@@ -24,6 +22,7 @@ import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -63,6 +62,14 @@ public class OrderService {
 
     private final MethodConverter methodConverter;
 
+    private final SimpMessagingTemplate messagingTemplate;
+
+    private final NotificationsRepository notificationsRepository;
+
+    private final UserDeviceRepository deviceRepo;
+
+    private final UserNotificationsRepository userNotificationsRepository;
+
     private final String adminEmail = "kienphongtran2003@gmail.com";
 
     private final String storeName = "Cửa Hàng ABC";
@@ -73,14 +80,12 @@ public class OrderService {
 
     private final String processingDeadline = "24 giờ";
 
-
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF', 'ROLE_USER')")
     public Page<GetUserListOrder> getUserListOrders(String userId, String status, Pageable pageable){
         Specification<Order> spec = OrderSpecification.filterByUserIdAndStatus(userId, status);
         return orderRepository.findAll(spec, pageable)
                 .map(order -> orderMapper.toGetUserListOrder(order));
     }
-
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
     public Page<GetAllOrdersRes> getAllOrders( String keyword, String status, Pageable pageable){
@@ -173,6 +178,9 @@ public class OrderService {
         Order userOrder = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
+        Optional<UserDevice> deviceOpt = deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(userId);
+
+
         if (!userOrder.getUser().getId().equals(userId)) {
             throw new RuntimeException("Order " + orderId + " not found in user " + user.getUserName());
         }
@@ -205,6 +213,55 @@ public class OrderService {
 
                 cartRepository.save(cart);
             }
+
+            List<UserNotifications> savedUserNotis = new ArrayList<>();
+
+            List<User> admins = userRepository.findDistinctByRoles_NameIn(
+                    List.of("ADMIN", "STAFF")
+            );
+
+            Notifications noti = notificationsRepository.save(Notifications.builder()
+                    .title("Order Confirmation!")
+                    .message("User has successfully confirm their order!")
+                    .type("Order!")
+                    .createBy(user.getUserName())
+                    .build());
+
+            for (User admin : admins) {
+
+                UserNotifications un = UserNotifications.builder()
+                        .notifications(noti)
+                        .userId(admin.getId())
+                        .isRead(false)
+//                    .deliveredAt(LocalDateTime.now())
+                        .status(UserNotifactionStatus.DELIVERED)
+                        .sendChannel(UserNotifactionSendChannel.WEB)
+                        .build();
+                try{
+                    String sessionId = deviceOpt.get().getSocketId();
+
+                    NotificationRes payload = NotificationRes.builder()
+                            .notificationId(noti.getNotificationId())
+                            .title(noti.getTitle())
+                            .message(noti.getMessage())
+                            .type(noti.getType())
+                            .createdAt(noti.getCreatedAt())
+                            .build();
+
+                    String personalQueue = "/queue/notifications-user" + sessionId;
+                    messagingTemplate.convertAndSend(personalQueue, payload);
+
+                    log.info("✅ Đã gửi realtime notification đến user [{}]", userId);
+
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("There is something wrong!");
+                }
+
+                savedUserNotis.add(un);
+            }
+
+            userNotificationsRepository.saveAll(savedUserNotis);
+
         }
 
         if(request.getPaymentMethod() == PaymentMethod.VN_PAY)
@@ -247,6 +304,7 @@ public class OrderService {
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public String approveOrder(String userId, String orderId, ApproveOrderReq request) throws MessagingException {
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -254,11 +312,15 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
 
+        Optional<UserDevice> deviceOpt = deviceRepo.findFirstByUserIdAndSocketIdIsNotNull(userId);
+
+
         List<OrderItem> orderItemsList = order.getOrderItems();
 
         Cart cart = user.getCart();
 
         UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(order);
+
 
         if(request.getOrderStatus() == OrderStatus.Approved){
 
@@ -293,6 +355,46 @@ public class OrderService {
                 cartRepository.save(cart);
             }
 
+            Notifications noti = notificationsRepository.save(Notifications.builder()
+                    .title("Order's status approved!")
+                    .message("Your order has been approved !")
+                    .type("Order!")
+                    .createBy("Admin")
+                    .build());
+
+
+                UserNotifications un = UserNotifications.builder()
+                        .notifications(noti)
+                        .userId(user.getId())
+                        .isRead(false)
+//                    .deliveredAt(LocalDateTime.now())
+                        .status(UserNotifactionStatus.PENDING)
+                        .sendChannel(UserNotifactionSendChannel.WEB)
+                        .build();
+                try{
+                    String sessionId = deviceOpt.get().getSocketId();
+
+                    NotificationRes payload = NotificationRes.builder()
+                            .notificationId(noti.getNotificationId())
+                            .title(noti.getTitle())
+                            .message(noti.getMessage())
+                            .type(noti.getType())
+                            .createdAt(noti.getCreatedAt())
+                            .build();
+
+                    String personalQueue = "/queue/notifications-user" + sessionId;
+                    messagingTemplate.convertAndSend(personalQueue, payload);
+
+                    log.info("✅ Đã gửi realtime notification đến user [{}]", userId);
+
+                } catch (RuntimeException e) {
+                    throw new RuntimeException("There is something wrong!");
+                }
+
+
+            userNotificationsRepository.save(un);
+
+
             emailService.sendOrderApprovedEmail(orderResponse);
 
             return "Approved Order Successfully!";
@@ -317,6 +419,44 @@ public class OrderService {
                 cart.setTotalPrice(BigDecimal.ZERO);
                 cartRepository.save(cart);
             }
+
+            Notifications noti = notificationsRepository.save(Notifications.builder()
+                    .title("Order's status canceled!")
+                    .message("Your order has been canceled !")
+                    .type("Order!")
+                    .createBy("Admin")
+                    .build());
+
+            UserNotifications un = UserNotifications.builder()
+                    .notifications(noti)
+                    .userId(user.getId())
+                    .isRead(false)
+//                    .deliveredAt(LocalDateTime.now())
+                    .status(UserNotifactionStatus.PENDING)
+                    .sendChannel(UserNotifactionSendChannel.WEB)
+                    .build();
+            try{
+                String sessionId = deviceOpt.get().getSocketId();
+
+                NotificationRes payload = NotificationRes.builder()
+                        .notificationId(noti.getNotificationId())
+                        .title(noti.getTitle())
+                        .message(noti.getMessage())
+                        .type(noti.getType())
+                        .createdAt(noti.getCreatedAt())
+                        .build();
+
+                String personalQueue = "/queue/notifications-user" + sessionId;
+                messagingTemplate.convertAndSend(personalQueue, payload);
+
+                log.info("✅ Đã gửi realtime notification đến user [{}]", userId);
+
+            } catch (RuntimeException e) {
+                throw new RuntimeException("There is something wrong!");
+            }
+
+
+            userNotificationsRepository.save(un);
 
             emailService.sendOrderCanceledEmail(orderResponse);
 

@@ -41,6 +41,26 @@ public class NotificationController {
     }
 
 
+    @GetMapping("/online-status")
+    public ApiResponse<Page<GetUserIsOnline>> getUserIsOnline(
+            @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+
+        return ApiResponse.<Page<GetUserIsOnline>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Successfully!")
+                .data(notificationService
+                        .getUserOnline(pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @MessageMapping("/users/refresh")
+    @SendTo("/topic/users-list")
+    public Page<GetUserIsOnline> refreshUsersList(Pageable pageable) {
+        return notificationService.getUserOnline(pageable);
+    }
+
     @PostMapping("/admin/send-notifications")
     public ApiResponse<SendNotiToOneUserOrManyUserRes> sendNotiToOneUserOrManyUser(
             @RequestBody SendNotiToOneUserOrManyUserReq req) {

@@ -1,5 +1,6 @@
 export type IGetAllOrderResponse = {
     orderId: string,
+    userId: string,
     orderCode: string,
     status: string,
     amount: number,
