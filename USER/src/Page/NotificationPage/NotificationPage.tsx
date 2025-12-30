@@ -3,11 +3,11 @@ import { Card, Badge, Empty, Button, Segmented, Pagination } from 'antd';
 import { BellOutlined, CheckOutlined, MailOutlined } from '@ant-design/icons';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useGetAllNotifications } from './Hook/useGetAllNotifications';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { useMarkNotificationAsRead } from '../../Components/Header/Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 dayjs.extend(relativeTime);
 
@@ -17,7 +17,7 @@ const NotificationPage: React.FC = () => {
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [page, setPage] = useState(1);
 
-  const { id } = useAuthStoreCookiesStorage();
+  const { id } = useAuthStore();
   const userId = id ?? undefined;
 
   const markAsRead = useMarkNotificationAsRead(userId);

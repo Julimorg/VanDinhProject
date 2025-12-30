@@ -10,7 +10,8 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useLogOut } from '../Hook/useLogOut';
 import { toast } from 'react-toastify';
-import { useAuthStoreCookiesStorage } from '../../../Middleware/useAuthStore';
+import { useAuthStore } from '../../../Middleware/useAuthStoreWithLocal';
+
 
 interface UserProfileDropdownProps {
   userName: string;
@@ -30,7 +31,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [open, setOpen] = useState(false);
   const navigateHook = useNavigate();
   const navigateTo = navigate || navigateHook;
-  const { accessToken: token, clearTokens } = useAuthStoreCookiesStorage();
+  const { accessToken: token, clearTokens } = useAuthStore();
 
   const { mutate: logOut, isPending } = useLogOut({
     onSuccess: () => {

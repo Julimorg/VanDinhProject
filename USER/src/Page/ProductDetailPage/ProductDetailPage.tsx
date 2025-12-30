@@ -2,7 +2,6 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Row, Col, Spin, Button, message } from 'antd';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useCartStore } from '../../Middleware/useCartStore';
 import { toast } from 'react-toastify';
 import ProductBreadcrumb from './Components/ProductBreadCrumb';
@@ -12,12 +11,13 @@ import ProductDescription from './Components/ProductDescription';
 import ProductActions from './Components/ProductAction';
 import { useGetProductDetail } from './Hook/useGetProductDetail';
 import { useAddProductToCart } from '../ProductPage/Hook/useAddProductToCart';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 
 const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { id: userId } = useAuthStoreCookiesStorage();
+  const { id: userId } = useAuthStore();
   const { data, isLoading, isError } = useGetProductDetail(id);
   const addCartMutation = useAddProductToCart(userId ?? '');
   const setCartCount = useCartStore((state) => state.setCartCount);
