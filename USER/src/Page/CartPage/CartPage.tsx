@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Empty, Button } from 'antd';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useUpdateCartItemQuantity } from './Hook/useUpdateCartItemQuantity';
 import { useDeleteCartItem } from './Hook/useDeleteCartItem';
 import { toast } from 'react-toastify';
@@ -10,11 +9,12 @@ import { useCartStore } from '../../Middleware/useCartStore';
 import CartItemsCard from './Components/CartItemsCard';
 import OrderSummary from './Components/OrderSummary';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const CartPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const { id: userId } = useAuthStoreCookiesStorage();
+  const { id: userId } = useAuthStore();
   const { data: cartResponse, isLoading, isError, refetch } = useGetAllCarts(userId ?? '');
   const deleteCartItemMutation = useDeleteCartItem();
   const updateCartItemQuantityMutation = useUpdateCartItemQuantity({

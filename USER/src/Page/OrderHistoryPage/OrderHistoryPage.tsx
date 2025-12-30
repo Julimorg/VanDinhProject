@@ -4,14 +4,14 @@ import type { IGetMyListOrder } from '../../Interface/Order/IGetMyListOrder';
 import OrderFilterSection from './Components/OrderFilterSection';
 import OrderCard from './Components/OrderCard';
 import { useGetMyListOrder } from './Hook/useGetMyListOrder';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const OrderHistoryCardList: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;
-  const userId: string = useAuthStoreCookiesStorage(state => state.id) ?? '';
+  const userId: string = useAuthStore(state => state.id) ?? '';
 
 
   const getStatusForApi = (status: string): string | undefined => {

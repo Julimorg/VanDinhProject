@@ -1,0 +1,50 @@
+name: CI/CD Mobile (React Native Expo)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "Fong", "bao" ]
+    paths:
+      - 'Mobile/**'
+      - '.github/workflows/mobile.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'Mobile/**'
+      - '.github/workflows/mobile.yml'
+
+jobs:
+  build-mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Mobile
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: ./Mobile/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install EAS CLI
+        run: npm install -g eas-cli
+
+      - name: Expo Login
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas login --non-interactive --token $EXPO_TOKEN
+
+      - name: Build Preview APK (cho PR - test nhanh)
+        if: github.event_name == 'pull_request'
+        run: eas build --platform android --profile preview --non-interactive --wait
+
+      - name: Build Production (AAB + IPA - khi push main)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: eas build --platform all --profile production --non-interactive --wait

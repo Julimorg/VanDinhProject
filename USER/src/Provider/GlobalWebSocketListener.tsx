@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useWebSocketService } from "../Hook/useWebSocket";
 import { useNotificationStore } from "../Middleware/useNotificationStore";
-import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
 import { PUBLIC_API_RAW } from "../Utils/env_dev_handler";
+import { useAuthStore } from "../Middleware/useAuthStoreWithLocal";
 
 const GlobalWebSocketListener = () => {
-  const { id: userId, accessToken } = useAuthStoreCookiesStorage();
+  const { id: userId, accessToken } = useAuthStore();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   const PUBLIC_API = PUBLIC_API_RAW;

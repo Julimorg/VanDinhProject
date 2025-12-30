@@ -30,7 +30,7 @@ import PaymentMethodCard from './Components/PaymentMethod';
 import TransactionItemCard from './Components/TransactionItemCard';
 import { formatCurrency } from '../../Utils/utils';
 import ConfirmPaymentButton from './Components/ConfirmPaymentButton';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const { Title, Text } = Typography;
 
@@ -39,7 +39,7 @@ const TransactionPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { orderId } = useParams<{ orderId: string }>();
-  const userId = useAuthStoreCookiesStorage(state => state.id);
+  const userId = useAuthStore(state => state.id);
 
 
   const { data: orderResponse, isLoading, isError } = useGetOrderDetail(orderId || '');

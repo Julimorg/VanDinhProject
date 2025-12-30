@@ -14,13 +14,13 @@ import dayjs from 'dayjs';
 import InfoItem from './Components/InfoItem';
 import EditProfileModal from './Components/EditProfileModal';
 import { useGetUserDetail } from './Hook/useGetMyProfile';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import type { IGetMyProfileResponse } from '../../Interface/Users/IGetMyProfile';
 import { getUserStatusText } from '../../Utils/utils';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const MyProfile: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const id = useAuthStoreCookiesStorage.getState().id ?? undefined;
+  const id = useAuthStore.getState().id ?? undefined;
 
   const { data, isLoading, error } = useGetUserDetail(id);
 

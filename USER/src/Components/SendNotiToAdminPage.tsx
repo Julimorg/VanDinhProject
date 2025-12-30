@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
+import { useAuthStore } from "../Middleware/useAuthStoreWithLocal";
 
 const SendNotiToAdminPage = () => {
-    const { id: userId, accessToken } = useAuthStoreCookiesStorage();
+    const { id: userId, accessToken } = useAuthStore();
 
     const [title, setTitle] = useState("");
     const [message, setMessage] = useState("");

@@ -13,7 +13,6 @@ import {
 
 import { useGetAllCarts } from '../CartPage/Hook/useGetAllCarts';
 import { useCartStore } from '../../Middleware/useCartStore';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useAddProductToCart } from './Hook/useAddProductToCart';
 import { useGetSupplierSelections } from './Hook/useGetSupplierSelection';
 import { useGetCategorySelection } from './Hook/useGetCategorySelection';
@@ -28,6 +27,7 @@ import { ProductSkeletonList } from './Components/ProductSkeletonList';
 import type { IGetSupplierSelectionResponse } from '../../Interface/Supplier/IGetSupplierSelection';
 import type { IGetCategorySelectionResponse } from '../../Interface/Category/IGetCategorySelection';
 import AddToCartModal from './Components/AddToCartModel';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const pageSize = 12;
 
@@ -47,7 +47,7 @@ const ProductsPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const { id: userId } = useAuthStoreCookiesStorage();
+  const { id: userId } = useAuthStore();
   const { data: cartData, refetch: refetchCart } = useGetAllCarts(userId ?? '');
   const setCartCount = useCartStore((state) => state.setCartCount);
 

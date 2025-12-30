@@ -4,7 +4,6 @@ import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import BrandLogo from './Components/BrandLogo';
 import UserProfileDropdown from './Components/UserProfileDropdown';
-import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useCartStore } from '../../Middleware/useCartStore';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
 import NotificationsDropdown from './Components/Notification';
@@ -13,6 +12,7 @@ import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 interface HeaderProps {
   isMobile: boolean;
@@ -22,7 +22,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
 
-  const { id: userId, userName, email, userImg, accessToken } = useAuthStoreCookiesStorage();
+  const { id: userId, userName, email, userImg, accessToken } = useAuthStore();
   const setCartCount = useCartStore((state) => state.setCartCount);
   const cartCount = useCartStore((state) => state.cartCount);
 
