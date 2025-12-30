@@ -1,8 +1,9 @@
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IGetMyProfileResponse } from "../Interface/Users/IGetMyProfile";
-import type { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from "../Interface/Users/IUpdateMyProfile";
-import { buildFormData } from "../Utils/utils";
-import axiosClient from "./axiosClient";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IGetMyProfileResponse } from "../../Interface/Users/IGetMyProfile";
+import type { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from "../../Interface/Users/IUpdateMyProfile";
+import { buildFormData } from "../../Utils/utils";
+import axiosClient from "../Axios/axiosClient";
+
 
 export const user_api = {
     

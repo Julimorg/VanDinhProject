@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { auth_api_handler } from "../../../Api/auth_api";
+import { auth_api_handler } from "../../../Api/Api_Handler/auth_api";
 import type { IRegisterRequest } from "../../../Interface/Auth/IRegister";
 import type { IRegisterResponse } from "../../../Interface/Auth/IRegister";
 

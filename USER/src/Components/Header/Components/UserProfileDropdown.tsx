@@ -30,7 +30,7 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [open, setOpen] = useState(false);
   const navigateHook = useNavigate();
   const navigateTo = navigate || navigateHook;
-  const { accessToken, clearTokens } = useAuthStoreCookiesStorage();
+  const { accessToken: token, clearTokens } = useAuthStoreCookiesStorage();
 
   const { mutate: logOut, isPending } = useLogOut({
     onSuccess: () => {
@@ -48,13 +48,13 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   });
 
   const handleLogout = () => {
-    if (!accessToken) {
+    if (!token) {
       message.warning('Không tìm thấy token, đang chuyển hướng...');
       setOpen(false);
       navigateTo('/login');
       return;
     }
-    logOut({ accessToken });
+    logOut({ token });
   };
 
   const handleMenuClick = (key: string) => {

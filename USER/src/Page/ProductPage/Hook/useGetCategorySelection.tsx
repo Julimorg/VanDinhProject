@@ -1,4 +1,4 @@
-import { category_api } from '../../../Api/category_api';
+import { category_api } from '../../../Api/Api_Handler/category_api';
 import { QueryKeys } from '../../../Constant/query-key';
 import type { IGetCategorySelectionResponse } from '../../../Interface/Category/IGetCategorySelection';
 import type { IApiResponse } from '../../../Interface/IApiResponse';

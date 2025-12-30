@@ -1,4 +1,4 @@
-import { product_api } from '../../../Api/product_api';
+import { product_api } from '../../../Api/Api_Handler/product_api';
 import type { IApiResponse } from '../../../Interface/IApiResponse';
 import type { IGetProductDetailResponse } from '../../../Interface/Product/IGetProductsDetail';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';

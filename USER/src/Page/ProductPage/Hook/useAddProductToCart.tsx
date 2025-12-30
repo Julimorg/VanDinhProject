@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IAddProductToCartRequest, IAddProductToCartResponse } from "../../../Interface/Cart/IAddProductToCart";
-import { cart_api } from "../../../Api/cart_api";
+import { cart_api } from "../../../Api/Api_Handler/cart_api";
 
 type UseAddProductToCartOptions = Omit<
   UseMutationOptions<

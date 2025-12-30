@@ -1,9 +1,9 @@
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IApiResponsePagination } from "../Interface/IApiResponsePagination";
-import type { IGetAllNotificationsResponse } from "../Interface/Notification/IGetAllNotifications";
-import type { IGetNotificationResponse } from "../Interface/Notification/IGetNotification";
-import type { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from "../Interface/Notification/IMarkNotificationAsRead";
-import axiosClient from "./axiosClient";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
+import type { IGetAllNotificationsResponse } from "../../Interface/Notification/IGetAllNotifications";
+import type { IGetNotificationResponse } from "../../Interface/Notification/IGetNotification";
+import type { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from "../../Interface/Notification/IMarkNotificationAsRead";
+import axiosClient from "../Axios/axiosClient";
 
 export const notification_api = {
   GetMyNotification: async (userId: string): Promise<IApiResponse<IGetNotificationResponse>> => {

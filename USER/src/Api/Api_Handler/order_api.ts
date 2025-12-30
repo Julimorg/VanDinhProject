@@ -1,9 +1,9 @@
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IApiResponsePagination } from "../Interface/IApiResponsePagination";
-import type { IConfirmOrderRequest, IConfirmOrderResponse } from "../Interface/Order/IConfirmOrder";
-import type { IGetMyListOrder } from "../Interface/Order/IGetMyListOrder";
-import type { IGetOrderDetailResponse } from "../Interface/Order/IGetOrderDetail";
-import axiosClient from "./axiosClient";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
+import type { IConfirmOrderRequest, IConfirmOrderResponse } from "../../Interface/Order/IConfirmOrder";
+import type { IGetMyListOrder } from "../../Interface/Order/IGetMyListOrder";
+import type { IGetOrderDetailResponse } from "../../Interface/Order/IGetOrderDetail";
+import axiosClient from "../Axios/axiosClient";
 
 export const order_api = {
 

@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
-import { auth_api_handler } from "../../../Api/auth_api";
+import { auth_api_handler } from "../../../Api/Api_Handler/auth_api";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 import { message } from "antd";
 import type { IVerifyOtp } from "../../../Interface/Auth/IVerifyOtp";

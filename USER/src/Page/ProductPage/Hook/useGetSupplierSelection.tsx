@@ -1,4 +1,4 @@
-import { supplier_api } from '../../../Api/supplier_api';
+import { supplier_api } from '../../../Api/Api_Handler/supplier_api';
 import { QueryKeys } from '../../../Constant/query-key';
 import type { IApiResponse } from '../../../Interface/IApiResponse';
 import type { IGetSupplierSelectionResponse } from '../../../Interface/Supplier/IGetSupplierSelection';

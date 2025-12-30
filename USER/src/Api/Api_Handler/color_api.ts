@@ -1,7 +1,7 @@
-import type { IGetAllColor } from "../Interface/Color/IGetAllColor";
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IApiResponsePagination } from "../Interface/IApiResponsePagination";
-import axiosClient from "./axiosClient";
+import type { IGetAllColor } from "../../Interface/Color/IGetAllColor";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
+import axiosClient from "../Axios/axiosClient";
 
 export const color_api = {
     GetAllColor: async (

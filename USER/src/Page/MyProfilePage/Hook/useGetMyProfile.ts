@@ -2,8 +2,8 @@
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import type { IApiResponse } from '../../../Interface/IApiResponse';
 import type { IGetMyProfileResponse } from '../../../Interface/Users/IGetMyProfile';
-import { user_api } from '../../../Api/user_api';
 import { QueryKeys } from '../../../Constant/query-key';
+import { user_api } from '../../../Api/Api_Handler/user_api';
 
 type UseGetUserDetailOptions = Omit<
   UseQueryOptions<

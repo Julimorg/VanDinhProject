@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { order_api } from '../../../Api/order_api';
+import { order_api } from '../../../Api/Api_Handler/order_api';
 import type { IGetOrderDetailResponse } from '../../../Interface/Order/IGetOrderDetail';
 import { QueryKeys } from '../../../Constant/query-key';
 

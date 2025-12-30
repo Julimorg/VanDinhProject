@@ -1,6 +1,6 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { cart_api } from "../../../Api/cart_api";
+import { cart_api } from "../../../Api/Api_Handler/cart_api";
 import type { IGetCartResponse } from "../../../Interface/Cart/IGetCart";
 
 

@@ -4,7 +4,7 @@ import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 import type { IGetAllSupplierResponse } from "../../../Interface/Supplier/IGetAllSuppliers";
 import { QueryKeys } from "../../../Constant/query-key";
-import { supplier_api } from "../../../Api/supplier_api";
+import { supplier_api } from "../../../Api/Api_Handler/supplier_api";
 import type { SupplierQueryParams } from "../../../Constant/query-param";
 
 type UseSupplierOptions = Omit<

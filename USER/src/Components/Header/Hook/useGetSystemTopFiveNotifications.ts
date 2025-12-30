@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IGetNotificationResponse } from "../../../Interface/Notification/IGetNotification";
-import { notification_api } from "../../../Api/notification_api";
+import { notification_api } from "../../../Api/Api_Handler/notification_api";
 
 type UseGetNotificationOptions = Omit<
   UseQueryOptions<

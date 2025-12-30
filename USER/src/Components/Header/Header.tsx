@@ -8,11 +8,12 @@ import { useAuthStoreCookiesStorage } from '../../Middleware/useAuthStore';
 import { useCartStore } from '../../Middleware/useCartStore';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
 import NotificationsDropdown from './Components/Notification';
-import { useNotificationStore } from "../../Middleware/useNotificationStore";
+import { useNotificationStore } from '../../Middleware/useNotificationStore';
 import { useGetNotifications } from './Hook/useGetSystemTopFiveNotifications';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
+
 interface HeaderProps {
   isMobile: boolean;
 }
@@ -21,46 +22,50 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileNavVisible, setMobileNavVisible] = useState(false);
 
-  const { id: userId, userName, email, userImg } = useAuthStoreCookiesStorage();
-  const setCartCount = useCartStore(state => state.setCartCount);
-  const cartCount = useCartStore(state => state.cartCount);
-
-  const { data: cartResponse } = useGetAllCarts(userId ?? '');
-  const navigate = useNavigate();
+  const { id: userId, userName, email, userImg, accessToken } = useAuthStoreCookiesStorage();
+  const setCartCount = useCartStore((state) => state.setCartCount);
+  const cartCount = useCartStore((state) => state.cartCount);
 
   const notifications = useNotificationStore((state) => state.notifications);
   const unreadCount = useNotificationStore((state) => state.unreadCount);
 
-  const { data, isLoading, refetch } = useGetNotifications(userId ?? undefined, {
-    enabled: false,
+  const shouldFetch = !!(userId && accessToken);
+
+  const { data: cartResponse } = useGetAllCarts(userId ?? '', {
+    enabled: shouldFetch,
   });
 
+  const { data, isLoading, refetch } = useGetNotifications(userId ?? undefined, {
+    enabled: shouldFetch,
+  });
+
+  const navigate = useNavigate();
   const markAsRead = useMarkNotificationAsRead();
 
   const handleMarkAllRead = () => {
-  const unread = finalNotifications.filter(n => !n.read);
-  if (unread.length === 0) return;
+    const unread = finalNotifications.filter((n) => !n.read);
+    if (unread.length === 0) return;
 
-  useNotificationStore.getState().markAllAsRead();
+    useNotificationStore.getState().markAllAsRead();
 
-  unread.forEach((noti) => {
-    markAsRead.mutate(
-      {
-        userNotificationId: noti.id,
-        body: { isRead: true },
-      },
-      {
-        onSuccess: () => {
-          toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
-          refetch();
+    unread.forEach((noti) => {
+      markAsRead.mutate(
+        {
+          userNotificationId: noti.id,
+          body: { isRead: true },
         },
-        onError: (err: any) => {
-          toast.error(`Đánh dấu thất bại: ${err?.message || 'Vui lòng thử lại!'}`);
-        },
-      }
-    );
-  });
-};
+        {
+          onSuccess: () => {
+            toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
+            refetch();
+          },
+          onError: (err: Error) => {
+            toast.error(`Đánh dấu thất bại: ${err?.message || 'Vui lòng thử lại!'}`);
+          },
+        }
+      );
+    });
+  };
 
   const fiveNotifications = useMemo(() => {
     return Array.isArray(data?.data) ? data.data : [];
@@ -80,11 +85,9 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const finalNotifications = useMemo(() => {
     const map = new Map<string, NotificationType>();
 
-    // API trước
-    apiNotifications.forEach(n => map.set(n.id, n));
+    apiNotifications.forEach((n) => map.set(n.id, n));
 
-    // realtime đè lên
-    notifications.forEach(n => map.set(n.id, n));
+    notifications.forEach((n) => map.set(n.id, n));
 
     return Array.from(map.values())
       .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
@@ -92,9 +95,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   }, [apiNotifications, notifications]);
 
   const finalUnreadCount =
-    notifications.length > 0
-      ? unreadCount
-      : apiNotifications.filter(n => !n.read).length;
+    notifications.length > 0 ? unreadCount : apiNotifications.filter((n) => !n.read).length;
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -115,8 +116,10 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   }, []);
 
   useEffect(() => {
-    setCartCount(0);
-  }, [userId, setCartCount]);
+    if (!accessToken) {
+      setCartCount(0);
+    }
+  }, [accessToken, setCartCount]);
 
   const navItems = [
     { key: 'products', label: 'Sản phẩm', path: '/products' },
@@ -165,8 +168,9 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
-          }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
+        }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -196,15 +200,6 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                   <ShoppingCartOutlined className="text-lg text-gray-700" />
                 </Button>
               </Badge>
-
-
-              {/* <Button
-                type="text"
-                onClick={() => navigate('/example')}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <BellOutlined className="text-lg text-gray-700" />
-              </Button> */}
 
               <NotificationsDropdown
                 notifications={finalNotifications}
@@ -243,15 +238,6 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                   <ShoppingCartOutlined className="text-lg text-gray-700" />
                 </Button>
               </Badge>
-
-              {/* dropdown noti */}
-              {/* <Button
-                type="text"
-                onClick={() => navigate('/example')}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <BellOutlined className="text-lg text-gray-700" />
-              </Button> */}
 
               <NotificationsDropdown
                 notifications={finalNotifications}

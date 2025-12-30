@@ -1,7 +1,7 @@
 import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 
-import { notification_api } from "../../../Api/notification_api";
+import { notification_api } from "../../../Api/Api_Handler/notification_api";
 import type { IGetAllNotificationsResponse } from "../../../Interface/Notification/IGetAllNotifications";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 

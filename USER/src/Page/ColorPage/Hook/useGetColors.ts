@@ -4,7 +4,7 @@ import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 import type { IGetAllColor } from "../../../Interface/Color/IGetAllColor";
 import { QueryKeys } from "../../../Constant/query-key";
-import { color_api } from "../../../Api/color_api";
+import { color_api } from "../../../Api/Api_Handler/color_api";
 
 type ColorsQueryParams = {
   supplierName?: string;

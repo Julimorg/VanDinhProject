@@ -1,7 +1,7 @@
-import type { IAddProductToCartRequest, IAddProductToCartResponse } from "../Interface/Cart/IAddProductToCart";
-import type { IGetCartResponse } from "../Interface/Cart/IGetCart";
-import type { IApiResponse } from "../Interface/IApiResponse";
-import axiosClient from "./axiosClient";
+import type { IAddProductToCartRequest, IAddProductToCartResponse } from "../../Interface/Cart/IAddProductToCart";
+import type { IGetCartResponse } from "../../Interface/Cart/IGetCart";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import axiosClient from "../Axios/axiosClient";
 
 export const cart_api = {
     AddProductToCart: async (userId: string, body: IAddProductToCartRequest): Promise<IApiResponse<IAddProductToCartResponse>> => {

@@ -2,7 +2,7 @@ import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 import type { IGetAllProductResponse } from "../../../Interface/Product/IGetAllProducts";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { product_api } from "../../../Api/product_api";
+import { product_api } from "../../../Api/Api_Handler/product_api";
 
 
 type ProductsQueryParams = {

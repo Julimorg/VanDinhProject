@@ -1,8 +1,8 @@
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IApiResponsePagination } from "../Interface/IApiResponsePagination";
-import type { IGetAllProductResponse } from "../Interface/Product/IGetAllProducts";
-import type { IGetProductDetailResponse } from "../Interface/Product/IGetProductsDetail";
-import axiosClient from "./axiosClient";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
+import type { IGetAllProductResponse } from "../../Interface/Product/IGetAllProducts";
+import type { IGetProductDetailResponse } from "../../Interface/Product/IGetProductsDetail";
+import axiosClient from "../Axios/axiosClient";
 
 export const product_api = {
     GetAllProducts: async (

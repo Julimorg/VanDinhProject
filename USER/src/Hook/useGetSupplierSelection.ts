@@ -2,7 +2,7 @@ import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 import type { IApiResponse } from '../Interface/IApiResponse';
 import type { IGetSupplierSelectionResponse } from '../Interface/Supplier/IGetSupplierSelection';
 import { QueryKeys } from '../Constant/query-key';
-import { supplier_api } from '../Api/supplier_api';
+import { supplier_api } from '../Api/Api_Handler/supplier_api';
 
 type UseGetSupplierSelectionOptions = Omit<
   UseQueryOptions<

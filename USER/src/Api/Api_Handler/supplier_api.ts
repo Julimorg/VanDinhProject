@@ -1,8 +1,8 @@
-import type { IApiResponse } from "../Interface/IApiResponse";
-import type { IApiResponsePagination } from "../Interface/IApiResponsePagination";
-import type { IGetAllSupplierResponse } from "../Interface/Supplier/IGetAllSuppliers";
-import type { IGetSupplierSelectionResponse } from "../Interface/Supplier/IGetSupplierSelection";
-import axiosClient from "./axiosClient";
+import type { IApiResponse } from "../../Interface/IApiResponse";
+import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
+import type { IGetAllSupplierResponse } from "../../Interface/Supplier/IGetAllSuppliers";
+import type { IGetSupplierSelectionResponse } from "../../Interface/Supplier/IGetSupplierSelection";
+import axiosClient from "../Axios/axiosClient";
 
 
 export const supplier_api = {

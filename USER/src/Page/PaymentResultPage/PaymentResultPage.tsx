@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { order_api } from '../../Api/order_api';
+import { order_api } from '../../Api/Api_Handler/order_api';
 
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams();

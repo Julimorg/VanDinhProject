@@ -3,7 +3,7 @@ import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IApiResponsePagination } from "../../../Interface/IApiResponsePagination";
 import type { IGetMyListOrder } from "../../../Interface/Order/IGetMyListOrder";
 import { QueryKeys } from "../../../Constant/query-key";
-import { order_api } from "../../../Api/order_api";
+import { order_api } from "../../../Api/Api_Handler/order_api";
 
 
 type OrderHistoryQueryParams = {

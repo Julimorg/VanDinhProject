@@ -2,7 +2,7 @@ import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
 import type { IGetOrderDetailResponse } from "../../../Interface/Order/IGetOrderDetail";
 import { QueryKeys } from "../../../Constant/query-key";
-import { order_api } from "../../../Api/order_api";
+import { order_api } from "../../../Api/Api_Handler/order_api";
 
 
 type UseGetOrderDetailOptions = Omit<

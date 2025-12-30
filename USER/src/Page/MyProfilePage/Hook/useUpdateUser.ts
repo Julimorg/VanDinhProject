@@ -1,8 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { user_api } from "../../../Api/user_api";
 import type { IUdpateMyProfileRequest, IUpdateMyProfileResponse } from "../../../Interface/Users/IUpdateMyProfile";
+import { user_api } from "../../../Api/Api_Handler/user_api";
 
 
 type UseUpdateUserOptions = Omit<
