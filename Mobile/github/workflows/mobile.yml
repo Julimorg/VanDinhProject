@@ -36,15 +36,14 @@ jobs:
       - name: Install EAS CLI
         run: npm install -g eas-cli
 
-      - name: Expo Login
+      - name: EAS Build - Preview APK (cho PR)
+        if: github.event_name == 'pull_request'
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas login --non-interactive --token $EXPO_TOKEN
+        run: eas build --platform android --profile preview --non-interactive --no-wait  
 
-      - name: Build Preview APK (cho PR - test nhanh)
-        if: github.event_name == 'pull_request'
-        run: eas build --platform android --profile preview --non-interactive --wait
-
-      - name: Build Production (AAB + IPA - khi push main)
+      - name: EAS Build - Production (AAB + IPA cho main)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: eas build --platform all --profile production --non-interactive --wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: eas build --platform all --profile production --non-interactive --no-wait
