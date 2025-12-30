@@ -2,13 +2,15 @@ import { useEffect } from "react";
 import { useWebSocketService } from "../Hook/useWebSocket";
 import { useNotificationStore } from "../Middleware/useNotificationStore";
 import { useAuthStoreCookiesStorage } from "../Middleware/useAuthStore";
+import { PUBLIC_API_RAW } from "../Utils/env_dev_handler";
 
 const GlobalWebSocketListener = () => {
   const { id: userId, accessToken } = useAuthStoreCookiesStorage();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
+  const PUBLIC_API = PUBLIC_API_RAW;
   const { connect, subscribe, disconnect } = useWebSocketService(
-    "http://localhost:8080/ws",
+    `${PUBLIC_API}/ws`,
     () => {
       subscribe("/user/queue/notifications", (msg) => {
         console.log("Private Notification received:", msg);

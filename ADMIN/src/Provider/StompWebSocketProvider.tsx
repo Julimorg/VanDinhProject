@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useWebSocketService } from '../Hook/useWebSocket';
 import { useAuthStore } from '@/Store/IAuth';
 import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
-import { LOCAL_API_RAW } from '@/Utils/env_dev_handler';
+import { PUBLIC_API_RAW } from '@/Utils/env_dev_handler';
 import { toast } from 'react-toastify';
 import { WS_CHANNELS } from '@/Constant/websocket-channels';
 
@@ -11,9 +11,9 @@ const GlobalWebSocketListener = () => {
   const updateUserStatus = useOnlineStatusStore((state) => state.updateUserStatus);
   const clearAll = useOnlineStatusStore((state) => state.clearAll);
 
-  const LOCAL_API = LOCAL_API_RAW;
+  const PUBLIC_API = PUBLIC_API_RAW;
   const { connect, subscribe, disconnect, isConnected } = useWebSocketService(
-    LOCAL_API + '/ws',
+    PUBLIC_API + '/ws',
     () => {
       console.log('WebSocket Connected - Setting up subscriptions...');
       toast.success('Kết nối realtime thành công!');
