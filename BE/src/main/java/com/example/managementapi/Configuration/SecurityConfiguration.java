@@ -49,9 +49,12 @@ public class SecurityConfiguration {
             "/ws/**"
     };
     private final String[] PUBLIC_SWAGGER = {"/swagger-ui/**","/v3/api-docs/**", "/webjars/**"};
+
     private final String[] PUBLIC_VNPAY = {
             "/api/v1/vn-pay/**"
     };
+
+    private String PUBLIC_ENDPOINT = "/api/v1/public/**";
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
@@ -104,6 +107,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PATCH, "/api/v1/reset-pass/change-password/**").permitAll()
                         .requestMatchers(PUBLIC_SWAGGER).permitAll()
                         .requestMatchers(HttpMethod.GET,PUBLIC_VNPAY).permitAll()
+                        .requestMatchers(HttpMethod.GET,PUBLIC_ENDPOINT).permitAll()
                         .anyRequest().authenticated());
 
         httpSecurity.exceptionHandling(ex -> ex

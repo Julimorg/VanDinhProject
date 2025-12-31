@@ -1,6 +1,7 @@
 package com.example.managementapi.Mapper;
 
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
+import com.example.managementapi.Dto.Request.Product.UpdateProductQuantityReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Product.*;
 import com.example.managementapi.Dto.Response.Supplier.UpdateSupplierRes;
@@ -38,4 +39,13 @@ public interface ProductMapper {
 
     @Mapping(source = "supplier.supplierName", target = "supplierName")
     GetProductSelectionRes toGetProductSelection(Product product);
+
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "productQuantity", source = "productQuantity")
+    void updateProductQuantity(@MappingTarget Product product, UpdateProductQuantityReq request);
+
+    @Mapping(source = "supplier.supplierName", target = "supplierName")
+    @Mapping(source = "color.colorName", target = "colorName")
+    @Mapping(source = "category.categoryName", target = "categoryName")
+    UpdateProductQuantityRes toUpdateProductQuantityRes(Product product);
 }

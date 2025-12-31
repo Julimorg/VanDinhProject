@@ -3,6 +3,7 @@ package com.example.managementapi.Controller;
 import com.cloudinary.Api;
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
+import com.example.managementapi.Dto.Request.Product.UpdateProductQuantityReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Product.*;
 import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
@@ -93,6 +94,16 @@ public class ProductController {
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
                 .data(productService.updateProduct(productId, request))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PatchMapping(value = "update-quantity/{productId}")
+    ApiResponse<UpdateProductQuantityRes> updateProductQuantity(@PathVariable("productId") String productId, @RequestBody UpdateProductQuantityReq request){
+        return ApiResponse.<UpdateProductQuantityRes>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(productService.updateProductQuantity(productId, request))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

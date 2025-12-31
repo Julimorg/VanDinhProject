@@ -23,12 +23,14 @@ import {
   FilterOutlined,
   EyeOutlined,
   DeleteOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
 import { useGetAllProducts } from './Hook/useGetAllProducts';
 import { formatCurrency } from '@/Utils/ulti';
 import ConfirmDeleteModal from './Components/DeleteProductModal';
+import UpdateProductQuantityModal from './Components/UpdateProductQuantityModal';
 const { Title, Text } = Typography;
 
 const ProductList: React.FC = () => {
@@ -96,6 +98,10 @@ const ProductList: React.FC = () => {
       setUniqueSuppliers(suppliers);
     }
   }, [products]);
+
+  //modal sửa số lượng
+  const [editQuantityModal, setEditQuantityModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<IGetAllProductResponse | null>(null);
 
   const columns: ColumnsType<IGetAllProductResponse> = [
     {
@@ -193,7 +199,7 @@ const ProductList: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 150,
+      width: 320,
       render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
           <Button
@@ -204,6 +210,19 @@ const ProductList: React.FC = () => {
           >
             Xem
           </Button>
+
+          <Button
+            type="link"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => {
+              setSelectedProduct(record);
+              setEditQuantityModal(true);
+            }}
+          >
+            Chỉnh sửa số lượng
+          </Button>
+
           <Button
             type="link"
             danger
@@ -409,6 +428,21 @@ const ProductList: React.FC = () => {
         productId={productToDelete?.productId || ''}
         productName={productToDelete?.productName || ''}
         onSuccess={refetch}
+      />
+
+      {/* Modal chỉnh số lượng sản phẩm */}
+      <UpdateProductQuantityModal
+        visible={editQuantityModal}
+        product={selectedProduct}
+        onCancel={() => {
+          setEditQuantityModal(false);
+          setSelectedProduct(null);
+        }}
+        onSuccess={() => {
+          setEditQuantityModal(false);
+          setSelectedProduct(null);
+          refetch(); 
+        }}
       />
     </div>
   );

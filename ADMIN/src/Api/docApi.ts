@@ -45,6 +45,7 @@ import { IGetAllNotifications } from '@/Interface/Notification/IGetAllNotificati
 import { ISendNotificationsRequest, ISendNotificationsResponse } from '@/Interface/Notification/ISendNotifications';
 import { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from '@/Interface/Notification/IMarkNotificationAsRead';
 import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
+import { IUpdateProductQuantityRequest, IUpdateProductQuantityResponse } from '@/Interface/Product/IUpdateProductQuantity';
 
 
 export const docApi = {
@@ -498,6 +499,14 @@ export const docApi = {
     })
     const url = `/products/select-products?${queryParams.toString()}`;
     const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  UpdateProductQuantity: async (productId: string, body: IUpdateProductQuantityRequest): Promise<IApiResponse<IUpdateProductQuantityResponse>> => {
+    const url = `/products/update-quantity/${productId}`;
+    const res = await axiosClient.patch(url, body, {
+      headers: {'Content-Type': 'application/json'},
+    });
     return res.data;
   },
 
