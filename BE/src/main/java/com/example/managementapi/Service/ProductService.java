@@ -1,6 +1,7 @@
 package com.example.managementapi.Service;
 
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
+import com.example.managementapi.Dto.Request.Product.UpdateProductQuantityReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
 import com.example.managementapi.Dto.Response.Product.*;
@@ -240,6 +241,18 @@ public class ProductService {
 
         return response;
 
+    }
+
+    public UpdateProductQuantityRes updateProductQuantity(String id, UpdateProductQuantityReq request){
+        if (request.getProductQuantity() < 0) {
+            throw new IllegalArgumentException("Quantity must be equal or higher than 0");
+        }
+
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        productMapper.updateProductQuantity(product, request);
+
+        return productMapper.toUpdateProductQuantityRes(productRepository.save(product));
     }
 
     public void deleteProduct(String id){
