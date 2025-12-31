@@ -60,38 +60,38 @@ jobs:
           yarn install --frozen-lockfile
           yarn build
 
-  mobile:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+  # mobile:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'                                     
-          cache-dependency-path: ./Mobile/package-lock.json  
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'                                     
+  #         cache-dependency-path: ./Mobile/package-lock.json  
 
-      - name: Install dependencies (Mobile)
-        working-directory: ./Mobile
-        run: npm ci
+  #     - name: Install dependencies (Mobile)
+  #       working-directory: ./Mobile
+  #       run: npm ci
 
-      - name: Install EAS CLI
-        working-directory: ./Mobile
-        run: npm install -g eas-cli                      
+  #     - name: Install EAS CLI
+  #       working-directory: ./Mobile
+  #       run: npm install -g eas-cli                      
 
-      - name: Expo Login
-        working-directory: ./Mobile
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        run: eas login --non-interactive --token $EXPO_TOKEN
+  #     - name: Expo Login
+  #       working-directory: ./Mobile
+  #       env:
+  #         EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  #       run: eas login --non-interactive --token $EXPO_TOKEN
 
-      - name: EAS Build - Preview APK (cho Pull Request)
-        if: github.event_name == 'pull_request'
-        working-directory: ./Mobile
-        run: eas build --platform android --profile preview --non-interactive --wait
+  #     - name: EAS Build - Preview APK (cho Pull Request)
+  #       if: github.event_name == 'pull_request'
+  #       working-directory: ./Mobile
+  #       run: eas build --platform android --profile preview --non-interactive --wait
 
-      - name: EAS Build - Production (AAB + IPA khi push main)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        working-directory: ./Mobile
-        run: eas build --platform all --profile production --non-interactive --wait
+  #     - name: EAS Build - Production (AAB + IPA khi push main)
+  #       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #       working-directory: ./Mobile
+  #       run: eas build --platform all --profile production --non-interactive --wait
