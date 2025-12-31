@@ -1,0 +1,12 @@
+export type IGetAllProductResponse = {
+    productId: string,
+    productName: string,
+    productImage: string[],
+    productVolume: string,
+    productUnit: string,
+    productQuantity: number,
+    productPrice: number,
+    supplierName: string,
+    colorName: string,
+    categoryName: string,
+}[];
