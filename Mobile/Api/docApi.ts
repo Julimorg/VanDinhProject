@@ -6,9 +6,43 @@ import { IGetProductDetailResponse } from "@/Interface/Product/IGetProductsDetai
 import { IGetProductSelectionResponse } from "@/Interface/Product/IGetProductSelection";
 import { IGetSupplierSelectionResponse } from "@/Interface/Supplier/IGetSupplierSelection";
 import { IGetCategorySelectionResponse } from "@/Interface/Category/IGetCategorySelection";
+import { IGetAllSupplierResponse } from "@/Interface/Supplier/IGetAllSuppliers";
+import { IGetAllColor } from "@/Interface/Color/IGetAllColor";
 
 
 export const docApi = {
+
+    // * =================== COLOR =================== * //
+    GetAllColor: async (
+        params: {
+            supplierName?: string,
+            keyword?: string,
+            page?: number,
+            size?: number,
+            sort?: string,
+        } = {}
+    ): Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
+
+        const {
+            supplierName,
+            keyword,
+            page = 1,
+            size = 5,
+            sort = 'createAt, desc'
+        } = params;
+
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString(),
+            sort,
+            ...(keyword && { keyword }),
+            ...(supplierName && { supplierName })
+        })
+
+        const url = `/public/get-color?${queryParams.toString()}`;
+        const res = await axiosClient.get(url);
+        return res.data;
+    },
 
     // * =================== CATEGORY =================== * //
 
@@ -29,6 +63,27 @@ export const docApi = {
         return res.data;
     },
 
+
+    GetAllSupplier: async (
+        params: {
+            keyword?: string,
+            page?: number,
+            size?: number,
+            sort?: string,
+        } = {}
+    ): Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
+        const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
+        const queryParams = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString(),
+            sort,
+            ...(keyword && { keyword }),
+        });
+
+        const url = `/public/get-suppliers?${queryParams.toString()}`;
+        const res = await axiosClient.get(url);
+        return res.data;
+    },
 
     // * =================== PRODUCT =================== * //
     GetAllProducts: async (

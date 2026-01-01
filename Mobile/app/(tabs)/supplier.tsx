@@ -1,22 +1,132 @@
-import { View, Text, StyleSheet } from "react-native";
+
+import { SupplierSkeleton } from '@/components/Supplier/LoadingSkeleton';
+import { SupplierCard } from '@/components/Supplier/SupplierCard';
+import { SupplierSearchBar } from '@/components/Supplier/SupplierSearchBar';
+import { useSuppliersInfinite } from '@/hooks/Supplier/useSuppliersInfinite';
+import React, { useState } from 'react';
+import {
+  StatusBar,
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+
+const SKELETON_COUNT = 6;
 
 export default function SupplierScreen() {
+  const [searchText, setSearchText] = useState('');
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+    isRefetching,    
+    isRefetchError,
+  } = useSuppliersInfinite({ keyword: searchText });
+
+
+  const suppliers = data?.pages.flatMap((page) => page.content) ?? [];
+
+  const handleSupplierPress = (supplierId: string) => {
+    console.log('Navigate to supplier detail:', supplierId);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Chào mừng đến với ứng dụng!</Text>
-      <Text style={styles.description}>Đây là trang Supplier.</Text>
-    </View>
+    <SafeAreaView className="flex-1 bg-white">
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+
+      {/* Header */}
+      <View className="bg-white border-b border-gray-100">
+        <Text className="text-3xl font-extrabold text-center py-6 text-black">
+          Nhà Cung Cấp
+        </Text>
+        <SupplierSearchBar
+          value={searchText}
+          onChangeText={setSearchText}
+          placeholder="Tìm kiếm nhà cung cấp..."
+        />
+      </View>
+
+      <FlatList
+        data={suppliers}
+        keyExtractor={(item) => item.supplierId}
+        renderItem={({ item }) => (
+          <SupplierCard
+            item={{
+              ...item,
+              supplierImg: item.supplierImg instanceof File ? URL.createObjectURL(item.supplierImg) : item.supplierImg,
+            }}
+            onPress={() => handleSupplierPress(item.supplierId)}
+          />
+        )}
+        // Infinite scroll
+        onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
+        onEndReachedThreshold={0.5}
+
+   
+        refreshing={isRefetching || isLoading} 
+        onRefresh={refetch}                     
+
+        // Footer khi load more
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <View className="py-8 items-center">
+              <ActivityIndicator size="large" color="#000000" />
+              <Text className="mt-4 text-gray-600">Đang tải thêm...</Text>
+            </View>
+          ) : null
+        }
+
+        // Empty state
+        ListEmptyComponent={
+          !isLoading && !isRefetching ? (
+            <View className="flex-1 justify-center items-center py-20 px-8">
+              <Text className="text-gray-500 text-lg text-center">
+                {searchText
+                  ? 'Không tìm thấy nhà cung cấp nào phù hợp'
+                  : 'Chưa có nhà cung cấp nào'}
+              </Text>
+            </View>
+          ) : null
+        }
+
+        contentContainerStyle={{
+          paddingTop: 16,
+          paddingBottom: 40,
+        }}
+        showsVerticalScrollIndicator={false}
+      />
+
+      {/* Skeleton overlay khi loading lần đầu hoặc refetch */}
+      {(isLoading || isRefetching) && suppliers.length === 0 && (
+        <View className="absolute inset-0 bg-white pt-4">
+          {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+            <SupplierSkeleton key={`refresh-skeleton-${i}`} />
+          ))}
+        </View>
+      )}
+
+      {/* Error state - có nút thử lại */}
+      {(isError || isRefetchError) && (
+        <View className="absolute inset-0 bg-white justify-center items-center px-8">
+          <Text className="text-red-600 text-center text-lg font-medium mb-6">
+            Không thể tải dữ liệu
+          </Text>
+          <Text
+            className="text-blue-600 text-lg underline"
+            onPress={() => refetch()}
+          >
+            Nhấn để thử lại
+          </Text>
+        </View>
+      )}
+    </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    color: "#fff",
-  },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
-  description: { fontSize: 16, textAlign: "center" },
-});

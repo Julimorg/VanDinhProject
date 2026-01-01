@@ -2,7 +2,7 @@ import { ExpoConfig, ConfigContext } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "Mobile",
+  name: "VanDinhaPP",
   slug: "Mobile",
   version: "1.0.0",
   orientation: "portrait",
@@ -49,5 +49,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   extra: {
     apiUrl: process.env.API_URL,
+    eas: {
+      projectId: "36178f2c-52e5-4a3a-832b-7b90da89274b"  
+    },
   },
 });
