@@ -22,7 +22,7 @@ export const unstable_settings = {
 export default function RootLayout() {
   return (
     <RefreshProvider>
-      <GluestackUIProvider mode="dark">
+      <GluestackUIProvider>
         <QueryProvider>
           {/* <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}> */}
           <Stack>

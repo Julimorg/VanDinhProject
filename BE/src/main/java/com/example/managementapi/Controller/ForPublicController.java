@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("api/v1/public")
 @RequiredArgsConstructor
 public class ForPublicController {

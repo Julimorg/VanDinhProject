@@ -1,4 +1,3 @@
-// components/CategoryDropdown.tsx (đã thêm try-catch an toàn + log rõ ràng)
 import React, { useState } from "react";
 import {
   View,

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import {
   Modal,
   View,
@@ -14,24 +14,30 @@ import { CategoryDropdown } from "./CategoryDropdown";
 
 interface FilterSidebarProps {
   visible: boolean;
+  selectedCategory: string | null;
+  selectedSupplier: string | null;
+  onSelectCategory: (categoryId: string | null) => void;
+  onSelectSupplier: (supplierId: string | null) => void;
   onClose: () => void;
 }
 
 export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   visible,
+  selectedCategory,
+  selectedSupplier,
+  onSelectCategory,
+  onSelectSupplier,
   onClose,
 }) => {
   const slideAnim = useRef(new Animated.Value(400)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
-  const [selectedSupplier, setSelectedSupplier] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   useEffect(() => {
     if (visible) {
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
-          duration: 280, // Smooth & not too slow
+          duration: 280,
           useNativeDriver: true,
         }),
         Animated.timing(opacityAnim, {
@@ -57,15 +63,23 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   }, [visible]);
 
   const handleReset = () => {
-    setSelectedSupplier(null);
-    setSelectedCategory(null);
-    console.log("Xóa bộ lọc");
+    onSelectSupplier(null);
+    onSelectCategory(null);
+    console.log("Đã xóa tất cả bộ lọc");
+  };
+
+  const handleApply = () => {
+    console.log("Áp dụng filter:", {
+      category: selectedCategory,
+      supplier: selectedSupplier,
+    });
+    onClose();
   };
 
   return (
     <Modal visible={visible} transparent animationType="none">
       <View className="flex-1">
-        {/* Backdrop với opacity */}
+        {/* Backdrop */}
         <TouchableWithoutFeedback onPress={onClose}>
           <Animated.View
             className="absolute inset-0 bg-black"
@@ -78,7 +92,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
           />
         </TouchableWithoutFeedback>
 
-        {/* Sidebar trắng */}
+        {/* Sidebar */}
         <TouchableWithoutFeedback>
           <Animated.View
             className="absolute right-0 top-0 bottom-0 w-80 bg-white shadow-2xl"
@@ -109,10 +123,9 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 <Text className="text-base font-bold text-black mb-4 tracking-wide">
                   DANH MỤC
                 </Text>
-
                 <CategoryDropdown
                   selectedCategory={selectedCategory || undefined}
-                  onSelectCategory={(id) => setSelectedCategory(id)}
+                  onSelectCategory={onSelectCategory}
                 />
               </View>
 
@@ -123,22 +136,20 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </Text>
                 <SupplierDropdown
                   selectedSupplier={selectedSupplier || undefined}
-                  onSelectSupplier={(id) => setSelectedSupplier(id)}
+                  onSelectSupplier={onSelectSupplier}
                 />
               </View>
 
-              {/* Khoảng giá Section */}
+              {/* Khoảng giá Section (placeholder) */}
               <View className="my-4">
                 <Text className="text-base font-bold text-black mb-4 tracking-wide">
                   KHOẢNG GIÁ
                 </Text>
-
                 <View className="bg-gray-50 p-4 rounded-xl border border-gray-200">
                   <Text className="text-sm text-gray-600 mb-2">Từ</Text>
                   <Text className="text-lg font-semibold text-black mb-3">
                     0₫
                   </Text>
-
                   <Text className="text-sm text-gray-600 mb-2">Đến</Text>
                   <Text className="text-lg font-semibold text-black">
                     50,000,000₫
@@ -146,28 +157,11 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                 </View>
               </View>
 
-              {/* Sắp xếp Section */}
+              {/* Sắp xếp Section (placeholder) */}
               <View className="my-4 mb-8">
                 <Text className="text-base font-bold text-black mb-4 tracking-wide">
                   SẮP XẾP
                 </Text>
-
-                <TouchableOpacity
-                  className="flex-row items-center py-3.5 border-b border-gray-100"
-                  activeOpacity={0.7}
-                >
-                  <View className="w-5 h-5 rounded-full border-2 border-gray-300 mr-3" />
-                  <Text className="text-base text-gray-700">Tên (A → Z)</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="flex-row items-center py-3.5 border-b border-gray-100"
-                  activeOpacity={0.7}
-                >
-                  <View className="w-5 h-5 rounded-full border-2 border-gray-300 mr-3" />
-                  <Text className="text-base text-gray-700">Tên (Z → A)</Text>
-                </TouchableOpacity>
-
                 <TouchableOpacity
                   className="flex-row items-center py-3.5 border-b border-gray-100"
                   activeOpacity={0.7}
@@ -179,26 +173,10 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
                     Mới nhất
                   </Text>
                 </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="flex-row items-center py-3.5 border-b border-gray-100"
-                  activeOpacity={0.7}
-                >
-                  <View className="w-5 h-5 rounded-full border-2 border-gray-300 mr-3" />
-                  <Text className="text-base text-gray-700">Giá tăng dần</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  className="flex-row items-center py-3.5"
-                  activeOpacity={0.7}
-                >
-                  <View className="w-5 h-5 rounded-full border-2 border-gray-300 mr-3" />
-                  <Text className="text-base text-gray-700">Giá giảm dần</Text>
-                </TouchableOpacity>
               </View>
             </ScrollView>
 
-            {/* Footer - Fixed Bottom */}
+            {/* Footer */}
             <View className="px-6 py-4 border-t border-gray-200 bg-white">
               <View className="flex-row gap-3">
                 <TouchableOpacity
@@ -213,7 +191,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
                 <TouchableOpacity
                   className="flex-1 bg-black py-3.5 rounded-xl"
-                  onPress={onClose}
+                  onPress={handleApply}
                   activeOpacity={0.8}
                 >
                   <Text className="text-center text-white font-semibold text-base">
