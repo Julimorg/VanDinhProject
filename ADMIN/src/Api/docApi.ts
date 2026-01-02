@@ -105,16 +105,16 @@ export const docApi = {
       page?: number;
       size?: number;
       sort?: string;
-      search?: string;
+      keyword?: string;
     } = {}
   ): Promise<IApiResponse<IApiResponsePagination<IUsersResponse>>> => {
-    const { status, page = 1, size = 5, sort = 'createAt,desc', search } = params;
+    const { status, page = 1, size = 5, sort = 'createAt,desc', keyword } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
       sort,
       ...(status && status !== 'all' && { status }),
-      ...(search && { search }),
+      ...(keyword && { keyword }),
     });
 
     const url = `/users/get-user?${queryParams.toString()}`;

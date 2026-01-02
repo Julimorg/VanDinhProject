@@ -11,7 +11,7 @@ type UsersQueryParams = {
   page?: number;
   size?: number;
   sort?: string;
-  search?: string;
+  keyword?: string;
 };
 
 type UseUsersOptions = Omit<
@@ -23,12 +23,12 @@ export const useUsers = (
   params: UsersQueryParams = {},
   options?: UseUsersOptions
 ) => {
-  const { status, page = 0, size = 5, sort = "createAt,desc", search } = params;
+  const { status, page = 0, size = 5, sort = "createAt,desc", keyword } = params;
 
   return useQuery({
     ...options,
-    queryKey: [QueryKeys.GET_USERS, { status, page, size, sort, search }],
-    queryFn: () => docApi.GetAllUsers({ status, page, size, sort, search }),
+    queryKey: [QueryKeys.GET_USERS, { status, page, size, sort, keyword }],
+    queryFn: () => docApi.GetAllUsers({ status, page, size, sort, keyword }),
     enabled: true, 
   });
 };

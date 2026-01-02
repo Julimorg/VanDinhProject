@@ -44,7 +44,7 @@ const UserManagementView: React.FC = () => {
     status: statusFilter,
     page: pageInfo.number,
     size: pageInfo.size,
-    search: debouncedSearch,
+    keyword: debouncedSearch,
   });
 
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({
