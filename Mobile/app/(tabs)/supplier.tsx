@@ -1,4 +1,3 @@
-
 import { SupplierSkeleton } from '@/components/Supplier/LoadingSkeleton';
 import { SupplierCard } from '@/components/Supplier/SupplierCard';
 import { SupplierSearchBar } from '@/components/Supplier/SupplierSearchBar';
@@ -13,8 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-
-const SKELETON_COUNT = 6;
+const SKELETON_COUNT = 8; 
 
 export default function SupplierScreen() {
   const [searchText, setSearchText] = useState('');
@@ -27,12 +25,12 @@ export default function SupplierScreen() {
     isLoading,
     isError,
     refetch,
-    isRefetching,    
+    isRefetching,
     isRefetchError,
   } = useSuppliersInfinite({ keyword: searchText });
 
-
   const suppliers = data?.pages.flatMap((page) => page.content) ?? [];
+  const isInitialLoading = isLoading && suppliers.length === 0;
 
   const handleSupplierPress = (supplierId: string) => {
     console.log('Navigate to supplier detail:', supplierId);
@@ -43,7 +41,7 @@ export default function SupplierScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Header */}
-      <View className="bg-white border-b border-gray-100">
+      <View className="bg-white border-b border-gray-200">
         <Text className="text-3xl font-extrabold text-center py-6 text-black">
           Nhà Cung Cấp
         </Text>
@@ -61,20 +59,19 @@ export default function SupplierScreen() {
           <SupplierCard
             item={{
               ...item,
-              supplierImg: item.supplierImg instanceof File ? URL.createObjectURL(item.supplierImg) : item.supplierImg,
+              supplierImg: item.supplierImg instanceof File 
+                ? URL.createObjectURL(item.supplierImg) 
+                : item.supplierImg,
             }}
             onPress={() => handleSupplierPress(item.supplierId)}
           />
         )}
-        // Infinite scroll
         onEndReached={() => hasNextPage && !isFetchingNextPage && fetchNextPage()}
         onEndReachedThreshold={0.5}
+        
+        refreshing={isRefetching}
+        onRefresh={refetch}
 
-   
-        refreshing={isRefetching || isLoading} 
-        onRefresh={refetch}                     
-
-        // Footer khi load more
         ListFooterComponent={
           isFetchingNextPage ? (
             <View className="py-8 items-center">
@@ -84,49 +81,51 @@ export default function SupplierScreen() {
           ) : null
         }
 
-        // Empty state
         ListEmptyComponent={
-          !isLoading && !isRefetching ? (
-            <View className="flex-1 justify-center items-center py-20 px-8">
-              <Text className="text-gray-500 text-lg text-center">
-                {searchText
-                  ? 'Không tìm thấy nhà cung cấp nào phù hợp'
-                  : 'Chưa có nhà cung cấp nào'}
-              </Text>
-            </View>
-          ) : null
+          <>
+            {/* Skeleton khi loading lần đầu */}
+            {isInitialLoading && (
+              <View className="pt-4">
+                {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                  <SupplierSkeleton key={`skeleton-${i}`} />
+                ))}
+              </View>
+            )}
+
+            {/* Empty state khi không có data (không phải loading) */}
+            {!isInitialLoading && suppliers.length === 0 && !isError && !isRefetchError && (
+              <View className="flex-1 justify-center items-center py-20 px-8">
+                <Text className="text-gray-500 text-lg text-center">
+                  {searchText
+                    ? 'Không tìm thấy nhà cung cấp nào phù hợp'
+                    : 'Chưa có nhà cung cấp nào'}
+                </Text>
+              </View>
+            )}
+
+            {/* Error state */}
+            {(isError || isRefetchError) && (
+              <View className="flex-1 justify-center items-center py-20 px-8">
+                <Text className="text-red-600 text-center text-lg font-medium mb-6">
+                  Không thể tải dữ liệu
+                </Text>
+                <Text
+                  className="text-blue-600 text-lg underline"
+                  onPress={() => refetch()}
+                >
+                  Nhấn để thử lại
+                </Text>
+              </View>
+            )}
+          </>
         }
 
         contentContainerStyle={{
-          paddingTop: 16,
           paddingBottom: 40,
+          flexGrow: 1, 
         }}
         showsVerticalScrollIndicator={false}
       />
-
-      {/* Skeleton overlay khi loading lần đầu hoặc refetch */}
-      {(isLoading || isRefetching) && suppliers.length === 0 && (
-        <View className="absolute inset-0 bg-white pt-4">
-          {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-            <SupplierSkeleton key={`refresh-skeleton-${i}`} />
-          ))}
-        </View>
-      )}
-
-      {/* Error state - có nút thử lại */}
-      {(isError || isRefetchError) && (
-        <View className="absolute inset-0 bg-white justify-center items-center px-8">
-          <Text className="text-red-600 text-center text-lg font-medium mb-6">
-            Không thể tải dữ liệu
-          </Text>
-          <Text
-            className="text-blue-600 text-lg underline"
-            onPress={() => refetch()}
-          >
-            Nhấn để thử lại
-          </Text>
-        </View>
-      )}
     </SafeAreaView>
   );
 }

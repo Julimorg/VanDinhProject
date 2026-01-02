@@ -2,11 +2,11 @@ import { ExpoConfig, ConfigContext } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "VanDinhaPP",
+  name: "VanDinhApp",
   slug: "Mobile",
   version: "1.0.0",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  icon: "./assets/logo.jpg",
   scheme: "mobile",
   userInterfaceStyle: "automatic",
   newArchEnabled: true,

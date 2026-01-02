@@ -1,12 +1,14 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
-import  {
+import Animated, {
   useSharedValue,
-  useAnimatedStyle,
   withTiming,
+  useAnimatedReaction,
+  runOnJS,
 } from 'react-native-reanimated';
 import { homeData } from '@/Data/home-data';
+
+const AnimatedText = Animated.createAnimatedComponent(Text);
 
 export function StatsSection() {
   return (
@@ -32,27 +34,37 @@ function AnimatedStatItem({
   label: string;
 }) {
   const animatedValue = useSharedValue(0);
+  const [displayNumber, setDisplayNumber] = useState('0');
 
   const targetNumber = parseInt(value.replace(/[^\d]/g, ''), 10) || 0;
-  const suffix = value.replace(/\d/g, '');
-
+  const suffix = value.replace(/[\d]/g, '').trim();
 
   useEffect(() => {
-    animatedValue.value = withTiming(targetNumber, { duration: 2200 });
+    animatedValue.value = withTiming(targetNumber, {
+      duration: 2200,
+    });
   }, [animatedValue, targetNumber]);
 
-
-  useAnimatedStyle(() => {
-    return {};
-  }, [animatedValue]);
+  useAnimatedReaction(
+    () => animatedValue.value,
+    (currentValue) => {
+      const formatted = Math.floor(currentValue).toLocaleString('en-US');
+      runOnJS(setDisplayNumber)(formatted);
+    }
+  );
 
   return (
     <View className="items-center mb-10 min-w-[120px]">
-      <Text className="text-black text-5xl font-bold">
-        {Math.floor(animatedValue.value)}
-        <Text className="text-black text-4xl font-bold">{suffix}</Text>
-      </Text>
-      <Text className="text-muted text-sm text-center mt-2">{label}</Text>
+      <View className="flex-row items-end">
+        {/* Số đếm animated */}
+        <Text className="text-5xl font-bold text-black">{displayNumber}</Text>
+        {/* Suffix cố định */}
+        {suffix ? (
+          <Text className="text-4xl font-bold text-black ml-1">{suffix}</Text>
+        ) : null}
+      </View>
+
+      <Text className="text-gray-500 text-sm text-center mt-2">{label}</Text>
     </View>
   );
 }
