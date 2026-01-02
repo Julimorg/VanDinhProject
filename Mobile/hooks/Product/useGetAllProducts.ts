@@ -1,7 +1,4 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
-import { IApiResponsePagination } from "@/Interface/IApiResponsePagination";
-import { IApiResponse } from "@/Interface/IApiResponse";
-import { IGetAllProductResponse } from "@/Interface/Product/IGetAllProducts";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { docApi } from "@/Api/docApi";
 import { QueryKeys } from "@/constants/query-key";
 
@@ -11,68 +8,65 @@ type ProductsQueryParams = {
   supplierName?: string;
   minPrice?: number;
   maxPrice?: number;
-  page?: number;
   size?: number;
   sort?: string;
 };
 
-type UseProductsOptions = Omit<
-  UseQueryOptions<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>, unknown>,
-  "queryKey" | "queryFn"
->;
-
-export const useGetAllProducts = (
-  params: ProductsQueryParams = {},
-  options?: UseProductsOptions
-) => {
+export const useGetAllProducts = (params: ProductsQueryParams = {}) => {
   const {
     keyword,
     categoryName,
     supplierName,
     minPrice,
     maxPrice,
-    page = 1,
     size = 5,
     sort = "createAt,desc",
   } = params;
 
+  //? Clean params - chỉ giữ những giá trị có thực
   const cleanParams = {
-    keyword,
-    categoryName,
-    supplierName,
-    minPrice: minPrice !== undefined ? minPrice : undefined,
-    maxPrice: maxPrice !== undefined ? maxPrice : undefined,
-    page,
+    ...(keyword && { keyword }),
+    ...(categoryName && { categoryName }),
+    ...(supplierName && { supplierName }),
+    ...(minPrice !== undefined && minPrice !== null && { minPrice }),
+    ...(maxPrice !== undefined && maxPrice !== null && { maxPrice }),
     size,
     sort,
   };
-  // Trong useGetAllProducts.ts
-  console.log("🔍 Params gửi API:", cleanParams);
-  console.log("🔗 URL đầy đủ:", `/public/get-products?${new URLSearchParams({
-    page: cleanParams.page.toString(),
-    size: cleanParams.size.toString(),
-    sort: cleanParams.sort,
-    ...(cleanParams.keyword && { keyword: cleanParams.keyword }),
-    ...(cleanParams.categoryName && { categoryName: cleanParams.categoryName }),
-    ...(cleanParams.supplierName && { supplierName: cleanParams.supplierName }),
-    ...(cleanParams.minPrice != null && { minPrice: cleanParams.minPrice.toString() }),
-    ...(cleanParams.maxPrice != null && { maxPrice: cleanParams.maxPrice.toString() }),
-  }).toString()}`);
-  
-  return useQuery({
-    ...options,
-    queryKey: [QueryKeys.GET_ALL_PRODUCT, cleanParams],
-    queryFn: () => docApi.GetAllProducts({
-      keyword,
-      categoryName,
-      supplierName,
-      minPrice,
-      maxPrice,
-      page,
-      size,
-      sort,
-    }),
-    enabled: true,
 
+  console.log(" Clean Params:", cleanParams);
+
+  return useInfiniteQuery({
+    queryKey: [QueryKeys.GET_ALL_PRODUCT, cleanParams],
+    queryFn: ({ pageParam = 0 }) => {
+      console.log(`📄 Fetching page ${pageParam} with params:`, cleanParams);
+      return docApi.GetAllProducts({
+        ...cleanParams,
+        page: pageParam, 
+      });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => {
+
+      const pagination = lastPage?.data?.page;
+      
+      if (!pagination) {
+        console.log("No pagination info found");
+        return undefined;
+      }
+
+      const currentPage = pagination.number;
+      const totalPages = pagination.totalPages;
+
+      console.log(`Pagination: page ${currentPage + 1}/${totalPages}`);
+
+      if (currentPage + 1 < totalPages) {
+        console.log(`Has next page: ${currentPage + 1}`);
+        return currentPage + 1;
+      }
+      
+      console.log("No more pages");
+      return undefined;
+    },
   });
 };

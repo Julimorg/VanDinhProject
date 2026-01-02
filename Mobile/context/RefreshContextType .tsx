@@ -1,8 +1,10 @@
+
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 interface RefreshContextType {
   refreshApp: () => Promise<void>;
   isRefreshing: boolean;
+  // Bạn có thể thêm refetch functions riêng nếu cần
 }
 
 const RefreshContext = createContext<RefreshContextType | undefined>(undefined);
@@ -13,15 +15,16 @@ export function RefreshProvider({ children }: { children: React.ReactNode }) {
   const refreshApp = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      // TODO: Thêm các API calls để reload data
-      await Promise.all([
-        // fetchCompanyData(),
-        // fetchProductsData(),
-        // fetchUserProfile(),
-        // ... thêm các fetch functions khác
-      ]);
-      
-      console.log('App refreshed successfully');
+      // Ở đây bạn sẽ gọi các refetch từ các query chính của app
+      // Ví dụ: refetch supplier, product, profile, cart...
+      // Tạm thời log để test
+      console.log('Đang refresh toàn bộ app...');
+
+      // TODO: Sau này thêm:
+      // await queryClient.refetchQueries({ queryKey: ['suppliers'] });
+      // await queryClient.refetchQueries({ queryKey: ['products'] });
+      // await queryClient.invalidateQueries(...);
+
     } catch (error) {
       console.error('Refresh error:', error);
     } finally {
