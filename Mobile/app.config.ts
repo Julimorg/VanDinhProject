@@ -4,7 +4,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
   name: "VanDinhApp",
   slug: "Mobile",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/logo.jpg",
   scheme: "mobile",
@@ -22,7 +22,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
-    package: "com.anonymous.Mobile",
+    package: "com.vandinh.paint",
+    versionCode:3,
   },
   web: {
     output: "static",
