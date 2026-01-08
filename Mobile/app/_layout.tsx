@@ -24,6 +24,7 @@ export default function RootLayout() {
     <RefreshProvider>
       <GluestackUIProvider>
         <QueryProvider>
+          <Toast />
           {/* <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}> */}
           <Stack>
             <Stack.Screen name="welcome" options={{ headerShown: false }} />
@@ -32,13 +33,14 @@ export default function RootLayout() {
               name="modal"
               options={{ presentation: "modal", title: "Modal" }}
             />
-            <Stack.Screen name="ProductDetail" options={{ headerShown: false }} />
-
+            <Stack.Screen
+              name="ProductDetail"
+              options={{ headerShown: false }}
+            />
           </Stack>
           <StatusBar style="auto" />
           {/* </ThemeProvider> */}
         </QueryProvider>
-        <Toast />
       </GluestackUIProvider>
     </RefreshProvider>
   );

@@ -1,34 +1,13 @@
 version: '3.9'
-services:
-  postgres:
-    image: postgres:15
-    container_name: postgres_db
-    environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - 5433:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
 
+services:
   app:
     build: .
-    container_name: spring_app
-    depends_on:
-      - postgres
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_SSL: disable
-      TZ: Asia/Ho_Chi_Minh
-    command: ["postgres", "-c", "timezone=Asia/Ho_Chi_Minh"]
+    # hoặc image: your-spring-app:latest nếu đã build/push
     ports:
-      - "8080:8080"
-    restart: always
-
-volumes:
-  pgdata:
+      - "8080:8080"  # host:container, thay nếu cần
+    env_file:
+      - ./.env      # Load tất cả env từ file .env vào container
+    restart: unless-stopped
+    # depends_on: nếu có DB khác (ví dụ mysql/postgres)
+    # healthcheck: nếu cần
