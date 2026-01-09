@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useWebSocketService } from '../Hook/useWebSocket';
 import { useAuthStore } from '@/Store/IAuth';
 import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
-import { PUBLIC_API_RAW } from '@/Utils/env_dev_handler';
+import { AWS_API_RAW } from '@/Utils/env_dev_handler';
 import { toast } from 'react-toastify';
 import { WS_CHANNELS } from '@/Constant/websocket-channels';
 
@@ -11,7 +11,7 @@ const GlobalWebSocketListener = () => {
   const updateUserStatus = useOnlineStatusStore((state) => state.updateUserStatus);
   const clearAll = useOnlineStatusStore((state) => state.clearAll);
 
-  const PUBLIC_API = PUBLIC_API_RAW;
+  const PUBLIC_API = AWS_API_RAW;
   const { connect, subscribe, disconnect, isConnected } = useWebSocketService(
     PUBLIC_API + '/ws',
     () => {

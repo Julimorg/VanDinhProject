@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { useWebSocketService } from "../Hook/useWebSocket";
 import { useNotificationStore } from "../Middleware/useNotificationStore";
-import { PUBLIC_API_RAW } from "../Utils/env_dev_handler";
+import { AWS_API_RAW } from "../Utils/env_dev_handler";
 import { useAuthStore } from "../Middleware/useAuthStoreWithLocal";
 
 const GlobalWebSocketListener = () => {
   const { id: userId, accessToken } = useAuthStore();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
-  const PUBLIC_API = PUBLIC_API_RAW;
+  const PUBLIC_API = AWS_API_RAW;
   const { connect, subscribe, disconnect } = useWebSocketService(
     `${PUBLIC_API}/ws`,
     () => {
