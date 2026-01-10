@@ -42,6 +42,7 @@ const UserManagementView: React.FC = () => {
 
   const { data, isLoading, error } = useUsers({
     status: statusFilter,
+    role: roleFilter,
     page: pageInfo.number,
     size: pageInfo.size,
     keyword: debouncedSearch,

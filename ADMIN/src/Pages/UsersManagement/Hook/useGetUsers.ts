@@ -8,6 +8,7 @@ import { IApiResponse } from "@/Interface/IApiResponse";
 
 type UsersQueryParams = {
   status?: string;
+  role?: string;
   page?: number;
   size?: number;
   sort?: string;
@@ -23,12 +24,12 @@ export const useUsers = (
   params: UsersQueryParams = {},
   options?: UseUsersOptions
 ) => {
-  const { status, page = 0, size = 5, sort = "createAt,desc", keyword } = params;
+  const { status, role, page = 0, size = 5, sort = "createAt,desc", keyword } = params;
 
   return useQuery({
     ...options,
-    queryKey: [QueryKeys.GET_USERS, { status, page, size, sort, keyword }],
-    queryFn: () => docApi.GetAllUsers({ status, page, size, sort, keyword }),
+    queryKey: [QueryKeys.GET_USERS, { status, role, page, size, sort, keyword }],
+    queryFn: () => docApi.GetAllUsers({ status, role, page, size, sort, keyword }),
     enabled: true, 
   });
 };

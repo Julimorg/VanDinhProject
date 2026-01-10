@@ -49,13 +49,14 @@ public class UserController {
             //?          size = 10
             //?          sort = createAt, asc
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String role,
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetUserRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(userService.getUser(status, keyword, pageable))
+                .data(userService.getUser(status, role, keyword, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

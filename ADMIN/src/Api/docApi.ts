@@ -102,18 +102,20 @@ export const docApi = {
   GetAllUsers: async (
     params: {
       status?: string;
+      role?: string;
       page?: number;
       size?: number;
       sort?: string;
       keyword?: string;
     } = {}
   ): Promise<IApiResponse<IApiResponsePagination<IUsersResponse>>> => {
-    const { status, page = 1, size = 5, sort = 'createAt,desc', keyword } = params;
+    const { status, role, page = 1, size = 5, sort = 'createAt,desc', keyword } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
       sort,
       ...(status && status !== 'all' && { status }),
+      ...(role && role !== 'all' && { role }),
       ...(keyword && { keyword }),
     });
 

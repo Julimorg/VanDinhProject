@@ -56,8 +56,21 @@ public class UserByAdminSpecification {
         };
     }
 
+    public static Specification<User> roleFilter(String userRole){
+        return((root, query, criteriaBuilder) -> {
+            if(userRole == null || userRole.isEmpty()){
+                return criteriaBuilder.conjunction();
+            }
+            return criteriaBuilder.or(
+                    criteriaBuilder
+                            .like(criteriaBuilder
+                                    .lower(root.get("roles").get("name")), "%" + userRole.toLowerCase() + "%")
+            );
+        });
+    }
 
-    public static Specification<User> searchUserByAdmin(String keyword, String status){
+
+    public static Specification<User> searchUserByAdmin(String keyword, String status, String role){
         return (root, query, cb) -> {
             //? sử dụng distinct để tránh các record trùng lặp khi Join
             //? Tương đương SELECT DISTINCT trong SQL
@@ -67,7 +80,8 @@ public class UserByAdminSpecification {
             //? SQL tương ứng: WHERE (...) AND (...)
             return Specification.allOf(
                     hasKeyword(keyword),
-                    statusFilter(status)
+                    statusFilter(status),
+                    roleFilter(role)
             ).toPredicate(root, query, cb);
         };
     }

@@ -58,16 +58,16 @@ public class UserService {
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public Page<GetUserRes> getUser(String status, String keyword, Pageable pageable){
-        Specification<User> spec = UserByAdminSpecification.searchUserByAdmin(keyword, status);
+    public Page<GetUserRes> getUser(String status, String role, String keyword, Pageable pageable){
+        Specification<User> spec = UserByAdminSpecification.searchUserByAdmin(keyword, status, role);
         return userRepository.findAll(spec, pageable)
                 .map(user -> userMapper.toGetUser(user));
 
     }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
-    public Page<SearchByAdminRes> searchUserByAdmin(String keyword, String status, Pageable pageable){
-        Specification<User> spec = UserByAdminSpecification.searchUserByAdmin(keyword, status);
+    public Page<SearchByAdminRes> searchUserByAdmin(String keyword, String role, String status, Pageable pageable){
+        Specification<User> spec = UserByAdminSpecification.searchUserByAdmin(keyword, status, role);
         Page<User> userPage = userRepository.findAll(spec, pageable);
         return  userPage.map(user -> userMapper.toUserSearchResByAdmin(user));
     }
