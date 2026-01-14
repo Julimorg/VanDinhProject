@@ -48,6 +48,8 @@ const UserManagementView: React.FC = () => {
     keyword: debouncedSearch,
   });
 
+  console.log(data?.data?.content);
+
   const { mutate: deleteUser, isPending: isDeleting } = useDeleteUser({
     onSuccess: () => {
       setDeleteModalVisible(false);

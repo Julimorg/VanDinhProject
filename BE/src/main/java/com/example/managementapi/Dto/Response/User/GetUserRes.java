@@ -15,6 +15,11 @@ import java.util.Set;
 public class GetUserRes {
     private String id;
     private String userName;
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String userAddress;
+    private LocalDate userDob;
     private String email;
     private String userImg;
     private String status;

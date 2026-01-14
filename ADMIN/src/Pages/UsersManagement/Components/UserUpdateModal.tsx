@@ -5,6 +5,7 @@ import { UploadOutlined } from '@ant-design/icons';
 import { useUpdateUser } from '../Hook/useUpdateUser';
 import { IUpdateUserRequest } from '@/Interface/Users/IUpdateUser';
 import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
 
 interface UserModalProps {
   visible: boolean;
@@ -17,18 +18,21 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
 
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser(user?.id || '', {
     onSuccess: () => {
-      message.success('Cập nhật người dùng thành công!');
+      toast.success('Cập nhật người dùng thành công!');
       onCancel();
     },
     onError: (error) => {
-      message.error('Cập nhật thất bại: ' + (error as Error).message);
+      toast.error('Cập nhật thất bại: ' + (error as Error).message);
     },
   });
 
   //? Prefill form với đầy đủ dữ liệu user khi modal mở
   React.useEffect(() => {
+    console.log('[UserModal] useEffect triggered', { visible, user });
+
     if (visible && user) {
       const fullUser = user as any; 
+      console.log('[UserModal] fullUser raw:', fullUser);
       const initialValues = {
         firstName: fullUser.firstName || '',
         lastName: fullUser.lastName || '',
@@ -41,7 +45,12 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
         roles: fullUser.roles?.map((role: any) => role.name) || [], 
         userImg: fullUser.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: fullUser.userImg }] : [],
       };
+
+      console.log('[UserModal] initialValues:', initialValues);
       form.setFieldsValue(initialValues);
+      console.log('[UserModal] form values after set:',
+      form.getFieldsValue(true)
+    );
     }
   }, [visible, user, form]);
 
