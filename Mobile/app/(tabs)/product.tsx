@@ -2,7 +2,7 @@ import { FilterButton } from "@/components/Product/FilterButton";
 import { FilterSidebar } from "@/components/Product/FilterSidebar";
 import { ProductCard } from "@/components/Product/ProductCard";
 import { SearchBar } from "@/components/Product/SearchBar";
-import { ProductSkeleton } from "@/components/Product/ProductSkeleton"; 
+import { ProductSkeleton } from "@/components/Product/ProductSkeleton";
 import { useGetAllProducts } from "@/hooks/Product/useGetAllProducts";
 import { useDebounce } from "@/hooks/useDebounce";
 import React, { useState, useCallback, useMemo } from "react";
@@ -20,7 +20,7 @@ import { useRefresh } from "@/context/RefreshContextType ";
 
 export default function ProductScreen() {
   const { refreshApp } = useRefresh();
-
+  const flatListRef = React.useRef<FlatList>(null);
   const [keyword, setKeyword] = useState("");
   const [filterVisible, setFilterVisible] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -32,8 +32,8 @@ export default function ProductScreen() {
     const cleanKeyword = debouncedKeyword.trim();
     return {
       keyword: cleanKeyword || undefined,
-      categoryName: selectedCategory || undefined, // Đã đúng - truyền text
-      supplierName: selectedSupplier || undefined, // Đã đúng - truyền text
+      categoryName: selectedCategory || undefined,
+      supplierName: selectedSupplier || undefined,
       size: 5,
       sort: "createAt,desc",
     };
@@ -52,7 +52,7 @@ export default function ProductScreen() {
 
   const allProducts = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page?.data?.content || []);
+    return data.pages.flatMap((page) => page?.data?.content || []);
   }, [data]);
 
   React.useEffect(() => {
@@ -62,11 +62,11 @@ export default function ProductScreen() {
     console.log("Filter params:", params);
     console.log("Total products loaded:", allProducts.length);
     console.log("Total pages fetched:", data?.pages?.length || 0);
-    
+
     if (data?.pages) {
       const lastPage = data.pages[data.pages.length - 1];
       const pagination = lastPage?.data?.page;
-      
+
       if (pagination) {
         console.log("Pagination info:", {
           currentPage: pagination.number,
@@ -78,7 +78,14 @@ export default function ProductScreen() {
       }
     }
     console.log("===============================\n");
-  }, [data, params, allProducts.length, hasNextPage, keyword, debouncedKeyword]);
+  }, [
+    data,
+    params,
+    allProducts.length,
+    hasNextPage,
+    keyword,
+    debouncedKeyword,
+  ]);
 
   const handleLoadMore = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -90,11 +97,7 @@ export default function ProductScreen() {
   const handleRefresh = useCallback(async () => {
     console.log("🔄 Refreshing products...");
     try {
-      // Refetch cả products và app data cùng lúc
-      await Promise.all([
-        refetch(),
-        refreshApp()
-      ]);
+      await Promise.all([refetch(), refreshApp()]);
       console.log("✅ Refresh thành công!");
     } catch (error) {
       console.error("❌ Lỗi refresh:", error);
@@ -104,6 +107,10 @@ export default function ProductScreen() {
   const handleViewDetail = useCallback((productId: string) => {
     console.log("👁 View product detail:", productId);
     // TODO: navigation.navigate("ProductDetail", { id: productId });
+  }, []);
+
+  const handleScrollToTop = useCallback(() => {
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, []);
 
   const handleRetry = useCallback(() => {
@@ -130,7 +137,7 @@ export default function ProductScreen() {
 
   const renderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
-    
+
     return (
       <View className="py-8 items-center">
         <ActivityIndicator size="large" color="#3B82F6" />
@@ -141,10 +148,14 @@ export default function ProductScreen() {
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
-    
-    const hasActiveFilters = !!(keyword || selectedCategory || selectedSupplier);
+
+    const hasActiveFilters = !!(
+      keyword ||
+      selectedCategory ||
+      selectedSupplier
+    );
     const isSearching = keyword.trim() !== debouncedKeyword.trim();
-    
+
     if (isSearching) {
       return (
         <View className="py-20 items-center px-6">
@@ -153,35 +164,46 @@ export default function ProductScreen() {
         </View>
       );
     }
-    
+
     return (
       <View className="py-20 items-center px-6">
-        <Ionicons name="search" size={64} color="#9CA3AF" />
-        <Text className="text-gray-500 text-lg mt-4 font-medium">
+        <View className="bg-gray-100 w-24 h-24 rounded-full items-center justify-center mb-6">
+          <Ionicons name="search" size={48} color="#9CA3AF" />
+        </View>
+        <Text className="text-gray-800 text-xl font-bold">
           Không tìm thấy sản phẩm
         </Text>
+        <Text className="text-gray-500 text-base mt-2 text-center px-4">
+          {hasActiveFilters
+            ? "Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm"
+            : "Chưa có sản phẩm nào trong danh sách"}
+        </Text>
         {hasActiveFilters && (
-          <>
-            <Text className="text-gray-400 text-sm mt-2 text-center">
-              Thử xóa bộ lọc hoặc tìm kiếm từ khóa khác
+          <TouchableOpacity
+            onPress={handleResetFilters}
+            className="mt-6 bg-blue-600 px-8 py-3.5 rounded-full flex-row items-center shadow-sm"
+            activeOpacity={0.8}
+          >
+            <Ionicons name="refresh" size={18} color="#FFF" />
+            <Text className="text-white font-semibold ml-2 text-base">
+              Xóa bộ lọc
             </Text>
-            <TouchableOpacity
-              onPress={handleResetFilters}
-              className="mt-6 bg-gray-100 px-6 py-3 rounded-xl"
-              activeOpacity={0.7}
-            >
-              <Text className="text-gray-700 font-semibold">Xóa tất cả bộ lọc</Text>
-            </TouchableOpacity>
-          </>
+          </TouchableOpacity>
         )}
       </View>
     );
-  }, [isLoading, keyword, debouncedKeyword, selectedCategory, selectedSupplier, handleResetFilters]);
+  }, [
+    isLoading,
+    keyword,
+    debouncedKeyword,
+    selectedCategory,
+    selectedSupplier,
+    handleResetFilters,
+  ]);
 
-  // Skeleton loading khi initial load
   const renderHeader = useCallback(() => {
     if (!isLoading) return null;
-    
+
     return (
       <View className="px-2">
         <ProductSkeleton count={6} />
@@ -189,51 +211,129 @@ export default function ProductScreen() {
     );
   }, [isLoading]);
 
-  const renderItem = useCallback(({ item }: { item: any }) => (
-    <ProductCard
-      product={item}
-      onPress={() => handleViewDetail(item.productId)}
-    />
-  ), [handleViewDetail]);
+  const renderItem = useCallback(
+    ({ item }: { item: any }) => (
+      <ProductCard
+        product={item}
+        onPress={() => handleViewDetail(item.productId)}
+      />
+    ),
+    [handleViewDetail]
+  );
 
-  const keyExtractor = useCallback((item: any, index: number) => 
-    `${item.productId}-${index}`, 
-  []);
+  const keyExtractor = useCallback(
+    (item: any, index: number) => `${item.productId}-${index}`,
+    []
+  );
 
+  // Enhanced Error Screen
   if (fetchError && !isLoading && allProducts.length === 0) {
+    const errorMessage = (fetchError as any)?.message || "";
+    const isNetworkError =
+      errorMessage.toLowerCase().includes("network") ||
+      errorMessage.toLowerCase().includes("internet") ||
+      errorMessage.toLowerCase().includes("connection");
+
     return (
-      <SafeAreaView className="flex-1 bg-gray-50 items-center justify-center px-8">
-        <Ionicons name="alert-circle" size={64} color="#EF4444" />
-        <Text className="text-xl font-semibold text-red-600 mt-4 text-center">
-          Không thể tải sản phẩm
-        </Text>
-        <Text className="text-gray-500 mt-2 text-center">
-          {(fetchError as any)?.message || "Vui lòng kiểm tra kết nối mạng"}
-        </Text>
-        <TouchableOpacity
-          onPress={handleRetry}
-          className="mt-8 bg-blue-600 px-8 py-4 rounded-xl flex-row items-center shadow-lg"
-          activeOpacity={0.8}
-        >
-          <Ionicons name="refresh" size={20} color="#FFF" />
-          <Text className="text-white font-semibold ml-2 text-base">
-            Thử lại
+      <SafeAreaView className="flex-1 bg-gradient-to-b from-gray-50 to-white">
+        <View className="flex-1 items-center justify-center px-8">
+          {/* Icon với animation pulse effect */}
+          <View className="bg-red-50 w-28 h-28 rounded-full items-center justify-center mb-8 shadow-sm">
+            <View className="bg-red-100 w-20 h-20 rounded-full items-center justify-center">
+              <Ionicons
+                name={isNetworkError ? "cloud-offline" : "alert-circle"}
+                size={48}
+                color="#EF4444"
+              />
+            </View>
+          </View>
+
+          {/* Title */}
+          <Text className="text-gray-900 text-2xl font-bold text-center mb-3">
+            {isNetworkError ? "Mất kết nối" : "Không thể tải sản phẩm"}
           </Text>
-        </TouchableOpacity>
+
+          {/* Description */}
+          <Text className="text-gray-500 text-base text-center leading-6 mb-2">
+            {isNetworkError
+              ? "Vui lòng kiểm tra kết nối mạng và thử lại"
+              : "Đã có lỗi xảy ra khi tải danh sách sản phẩm"}
+          </Text>
+
+          {/* Technical error details (collapsible) */}
+          {!isNetworkError && errorMessage && (
+            <View className="bg-red-50 px-4 py-3 rounded-xl mt-3 max-w-full">
+              <Text
+                className="text-red-600 text-xs text-center"
+                numberOfLines={2}
+              >
+                {errorMessage}
+              </Text>
+            </View>
+          )}
+
+          {/* Action Buttons */}
+          <View className="mt-10 w-full max-w-xs">
+            {/* Primary Action - Retry */}
+            <TouchableOpacity
+              onPress={handleRetry}
+              className="bg-blue-600 px-8 py-4 rounded-xl flex-row items-center justify-center shadow-lg mb-3"
+              activeOpacity={0.8}
+            >
+              <Ionicons name="refresh" size={22} color="#FFF" />
+              <Text className="text-white font-bold ml-2.5 text-base">
+                Thử lại
+              </Text>
+            </TouchableOpacity>
+
+            {/* Secondary Action - Reset filters */}
+            {(selectedCategory || selectedSupplier || keyword) && (
+              <TouchableOpacity
+                onPress={handleResetFilters}
+                className="bg-gray-100 px-8 py-4 rounded-xl flex-row items-center justify-center"
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name="close-circle-outline"
+                  size={22}
+                  color="#6B7280"
+                />
+                <Text className="text-gray-700 font-semibold ml-2.5 text-base">
+                  Xóa bộ lọc
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Help text */}
+          <View className="mt-8 flex-row items-center">
+            <Ionicons
+              name="information-circle-outline"
+              size={16}
+              color="#9CA3AF"
+            />
+            <Text className="text-gray-400 text-sm ml-1.5">
+              Vẫn gặp vấn đề? Liên hệ hỗ trợ
+            </Text>
+          </View>
+        </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50" edges={["top"]}>
       {/* HEADER SECTION */}
       <View className="bg-white shadow-sm">
-        <SearchBar 
-          keyword={keyword} 
+        <SearchBar
+          keyword={keyword}
           onChangeKeyword={setKeyword}
-          isSearching={keyword.trim() !== debouncedKeyword.trim() || (isFetching && keyword.length > 0)}
+          isSearching={
+            keyword.trim() !== debouncedKeyword.trim() ||
+            (isFetching && keyword.length > 0)
+          }
         />
-        <FilterButton 
+        <FilterButton
           onPress={handleOpenFilter}
           hasActiveFilters={!!(selectedCategory || selectedSupplier)}
         />
@@ -245,9 +345,14 @@ export default function ProductScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center flex-1">
               <Ionicons name="funnel" size={16} color="#3B82F6" />
-              <Text className="text-blue-600 text-sm ml-2 flex-1" numberOfLines={1}>
+              <Text
+                className="text-blue-600 text-sm ml-2 flex-1"
+                numberOfLines={1}
+              >
                 {debouncedKeyword && `Tìm: "${debouncedKeyword}"`}
-                {debouncedKeyword && (selectedCategory || selectedSupplier) && " • "}
+                {debouncedKeyword &&
+                  (selectedCategory || selectedSupplier) &&
+                  " • "}
                 {selectedCategory && `Danh mục: ${selectedCategory}`}
                 {selectedCategory && selectedSupplier && " • "}
                 {selectedSupplier && `NCC: ${selectedSupplier}`}
@@ -264,29 +369,32 @@ export default function ProductScreen() {
         </View>
       )}
 
-      {/* PRODUCTS LIST - FlatList có RefreshControl built-in */}
+      {/* PRODUCTS LIST */}
       <FlatList
+        ref={flatListRef}
         data={allProducts}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         numColumns={2}
         columnWrapperClassName="justify-between px-2"
-        contentContainerClassName="pb-8 pt-4"
+        contentContainerClassName="pb-32 pt-4 bg-gray-50"
         showsVerticalScrollIndicator={false}
-        
-        // Empty & Loading states
+        className="flex-1 bg-gray-50"
+        // Fix over-scroll và bottom inset
+        bounces={true}
+        overScrollMode="auto"
+        contentInsetAdjustmentBehavior="automatic"
+        automaticallyAdjustContentInsets={false}
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={renderFooter}
-        
-        // Infinite scroll
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        
-        // Pull to refresh - KHÔNG CẦN RefreshableLayout wrapper
         refreshControl={
-          <RefreshControl 
-            refreshing={isFetching && !isFetchingNextPage && allProducts.length > 0} 
+          <RefreshControl
+            refreshing={
+              isFetching && !isFetchingNextPage && allProducts.length > 0
+            }
             onRefresh={handleRefresh}
             colors={["#3B82F6"]}
             tintColor="#3B82F6"
@@ -294,15 +402,11 @@ export default function ProductScreen() {
             titleColor="#666666"
           />
         }
-        
-        // Performance optimizations
         removeClippedSubviews={true}
         maxToRenderPerBatch={10}
         updateCellsBatchingPeriod={50}
         initialNumToRender={10}
         windowSize={10}
-        
-        // Error boundary
         onScrollToIndexFailed={(info) => {
           console.warn("Scroll to index failed:", info);
         }}
@@ -319,17 +423,15 @@ export default function ProductScreen() {
       />
 
       {/* FLOATING "SCROLL TO TOP" BUTTON */}
-      {allProducts.length > 20 && (
+      {/* {allProducts.length > 20 && (
         <TouchableOpacity
           className="absolute bottom-8 right-4 bg-blue-600 w-14 h-14 rounded-full items-center justify-center shadow-lg"
           activeOpacity={0.8}
-          onPress={() => {
-            console.log("Scroll to top");
-          }}
+          onPress={handleScrollToTop}
         >
           <Ionicons name="arrow-up" size={24} color="#FFF" />
         </TouchableOpacity>
-      )}
+      )} */}
     </SafeAreaView>
   );
 }
