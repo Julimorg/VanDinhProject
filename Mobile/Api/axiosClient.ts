@@ -5,7 +5,7 @@ import Toast from 'react-native-toast-message';
 
 
 const axiosClient = axios.create({
-  baseURL: "http://13.250.65.227:8080/api/v1",
+  baseURL: "https://api.van-dinh.net/api/v1",
   timeout: 10000, 
   headers: {
     'Content-Type': 'application/json',

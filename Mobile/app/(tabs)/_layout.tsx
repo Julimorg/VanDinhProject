@@ -25,6 +25,7 @@ export default function TabLayout() {
           // Nếu muốn haptic khi nhấn tab
           ...(Platform.OS === "ios" && { tabBarButton: HapticTab }),
         }}
+       
       >
         <Tabs.Screen
           name="index"
