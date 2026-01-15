@@ -22,25 +22,26 @@ public class OrderItem {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String orderItemId;
 
-    @Column(nullable = false)
+    @Column
     private String productId;
 
-    @Column(nullable = false)
+    @Column
     private String productName;
 
-    @Column(nullable = false)
+    @Column
     private String productCode;
 
     @ElementCollection
     private List<String> productImage;
 
     private String productVolume;
+
     private String productUnit;
 
-    @Column(nullable = false)
+    @Column
     private BigDecimal productPrice;
 
-    private double discount;
+    private Double discount;
 
     private String colorName;
 
@@ -48,7 +49,7 @@ public class OrderItem {
 
     private int quantity;
 
-    @Column(nullable = false)
+    @Column
     private BigDecimal price;
 
     @CreationTimestamp

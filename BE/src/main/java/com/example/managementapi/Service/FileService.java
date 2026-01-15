@@ -271,14 +271,18 @@ public class FileService {
             StringBuilder itemsDetail = new StringBuilder();
             for (int i = 0; i < order.getOrderItems().size(); i++) {
                 OrderItem item = order.getOrderItems().get(i);
-                String productName = item.getProduct() != null && item.getProduct().getProductName() != null
-                        ? item.getProduct().getProductName() : "Sản phẩm đã xóa";
+
+                String productName = item.getProductName() != null
+                        ? item.getProductName()
+                        : "Sản phẩm không xác định";
+
                 itemsDetail.append("• ").append(productName)
                         .append(" - ")
                         .append(item.getQuantity())
                         .append(" x ")
                         .append(String.format("%,d", item.getPrice().longValue()))
                         .append(" ₫");
+
                 if (i < order.getOrderItems().size() - 1) {
                     itemsDetail.append("\n");
                 }
