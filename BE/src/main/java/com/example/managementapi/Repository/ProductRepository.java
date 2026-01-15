@@ -17,10 +17,6 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
 
     List<Product> findByProductQuantityLessThan(int quantity);
 
-    //List<Product> searchProduct(String product);
-//    @Query("SELECT p.productId AS productId, p.productName AS productName " +
-//            "FROM Product p WHERE LOWER(p.productName) LIKE LOWER(CONCAT('%', :keyword, '%')) ")
-//    Page<SearchProductRes> searchProducts(String keyword, Pageable pageable);
-
+    Product findByProductId(String productId);
 
 }

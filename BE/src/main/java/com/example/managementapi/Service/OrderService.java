@@ -139,13 +139,26 @@ public class OrderService {
                 .build();
 
         List<OrderItem> orderItems = cart.getCartItems().stream()
-                .map(cartItem -> OrderItem.builder()
-                        .order(order)
-                        .product(cartItem.getProduct())
-                        .quantity(cartItem.getQuantity())
-                        .price(cartItem.getProduct().getProductPrice())
-                        .createAt(cartItem.getCreateAt())
-                        .build())
+                .map(cartItem -> {
+                    Product product = cartItem.getProduct();
+
+                    return OrderItem.builder()
+                            .order(order)
+                            .productId(product.getProductId())
+                            .productName(product.getProductName())
+                            .productCode(product.getProductCode())
+                            .productImage(new ArrayList<>(product.getProductImage()))
+                            .productVolume(product.getProductVolume())
+                            .productUnit(product.getProductUnit())
+                            .productPrice(product.getProductPrice())
+                            .discount(product.getDiscount())
+                            .colorName(product.getColor().getColorName())
+                            .categoryName(product.getCategory().getCategoryName())
+                            .quantity(cartItem.getQuantity())
+                            .price(product.getProductPrice().multiply(BigDecimal.valueOf(cartItem.getQuantity())))
+                            .createAt(LocalDateTime.now())
+                            .build();
+                })
                 .toList();
 
         Payment payment = Payment.builder()
@@ -328,23 +341,22 @@ public class OrderService {
 
             order.setApprovedBy(user.getUserName());
 
-            order.setApprovedBy(user.getUserName());
-
             order.setCompleteAt(LocalDateTime.now());
 
             orderRepository.save(order);
 
             for (OrderItem orderItem : orderItemsList) {
-                Product product = orderItem.getProduct();
-                if (product == null) {
+                String productId = orderItem.getProductId();
+                Product getProduct = productRepository.findByProductId(productId);
+                if (getProduct == null) {
                     throw new RuntimeException("Product not found for order item");
                 }
-                int newQuantity = product.getProductQuantity() - orderItem.getQuantity();
+                int newQuantity = getProduct.getProductQuantity()  - orderItem.getQuantity();
                 if (newQuantity < 0) {
-                    throw new RuntimeException("Insufficient product quantity for " + product.getProductName());
+                    throw new RuntimeException("Insufficient product quantity for " + orderItem.getProductName());
                 }
-                product.setProductQuantity(newQuantity);
-                productRepository.save(product);
+                getProduct.setProductQuantity(newQuantity);
+                productRepository.save(getProduct);
             }
 
             if(cart != null){
@@ -367,7 +379,6 @@ public class OrderService {
                         .notifications(noti)
                         .userId(user.getId())
                         .isRead(false)
-//                    .deliveredAt(LocalDateTime.now())
                         .status(UserNotifactionStatus.PENDING)
                         .sendChannel(UserNotifactionSendChannel.WEB)
                         .build();
@@ -500,8 +511,17 @@ public class OrderService {
 
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
-                    .product(product)
-                    .quantity(itemReq.getQuantity())
+                    .productId(product.getProductId())
+                    .productName(product.getProductName())
+                    .productCode(product.getProductCode())
+                    .productImage(new ArrayList<>(product.getProductImage()))
+                    .productVolume(product.getProductVolume())
+                    .productUnit(product.getProductUnit())
+                    .productPrice(product.getProductPrice())
+                    .discount(product.getDiscount())
+                    .colorName(product.getColor().getColorName())
+                    .categoryName(product.getCategory().getCategoryName())
+                    .quantity(product.getProductQuantity())
                     .price(product.getProductPrice())
                     .createAt(LocalDateTime.now())
                     .build();

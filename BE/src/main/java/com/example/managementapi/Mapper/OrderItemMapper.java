@@ -17,28 +17,18 @@ import java.util.List;
 public interface OrderItemMapper {
 
     //** ===============================   GET RESPONSE   ===========================
-    @Mapping(source = "product.productName", target = "productName")
-    @Mapping(source = "product.productImage", target = "productImage")
-    @Mapping(source = "product.productVolume", target = "productVolume")
-    @Mapping(source = "product.productUnit", target = "productUnit")
-    @Mapping(source = "product.productCode", target = "productCode")
-    @Mapping(source = "product.productQuantity", target = "productQuantity")
-    @Mapping(source = "product.productPrice", target = "productPrice")
-    @Mapping(source = "product.color.colorName", target = "colorName")
-    @Mapping(source = "product.category.categoryName", target = "categoryName")
+//    @Mapping(source = "product.productName", target = "productName")
+//    @Mapping(source = "product.productImage", target = "productImage")
+//    @Mapping(source = "product.productVolume", target = "productVolume")
+//    @Mapping(source = "product.productUnit", target = "productUnit")
+//    @Mapping(source = "product.productCode", target = "productCode")
+//    @Mapping(source = "product.productQuantity", target = "productQuantity")
+//    @Mapping(source = "product.productPrice", target = "productPrice")
+//    @Mapping(source = "product.color.colorName", target = "colorName")
+//    @Mapping(source = "product.category.categoryName", target = "categoryName")
     SearchOrderItemResponse toSearchOrderItemResponse(OrderItem orderItemn);
     //** ===============================   POST RESPONSE   ===========================
 
-    @Mapping(source = "product.productId", target = "productId")
-    @Mapping(source = "product.productName", target = "productName")
-    @Mapping(source = "product.productImage", target = "productImage")
-    @Mapping(source = "product.productVolume", target = "productVolume")
-    @Mapping(source = "product.productUnit", target = "productUnit")
-    @Mapping(source = "product.productCode", target = "productCode")
-    @Mapping(source = "product.productQuantity", target = "productQuantity")
-    @Mapping(source = "product.productPrice", target = "productPrice")
-    @Mapping(source = "product.color.colorName", target = "colorName")
-    @Mapping(source = "product.category.categoryName", target = "categoryName")
     CreateOrderItemRes toOrderItemRes(OrderItem orderItem);
 
 
