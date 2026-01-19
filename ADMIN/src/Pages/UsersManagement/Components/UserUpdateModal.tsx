@@ -28,29 +28,21 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
 
   //? Prefill form với đầy đủ dữ liệu user khi modal mở
   React.useEffect(() => {
-    console.log('[UserModal] useEffect triggered', { visible, user });
-
     if (visible && user) {
-      const fullUser = user as any; 
-      console.log('[UserModal] fullUser raw:', fullUser);
+      const fullUser = user as any;
       const initialValues = {
         firstName: fullUser.firstName || '',
         lastName: fullUser.lastName || '',
         userName: fullUser.userName || '',
         email: fullUser.email || '',
         phone: fullUser.phone || '',
-        userDob: fullUser.userDob ? dayjs(fullUser.userDob) : null, 
+        userDob: fullUser.userDob ? dayjs(fullUser.userDob) : null,
         userAddress: fullUser.userAddress || '',
         status: fullUser.status || 'ACTIVE',
-        roles: fullUser.roles?.map((role: any) => role.name) || [], 
+        roles: fullUser.roles?.map((role: any) => role.name) || [],
         userImg: fullUser.userImg ? [{ uid: '-1', name: 'avatar.png', status: 'done', url: fullUser.userImg }] : [],
       };
-
-      console.log('[UserModal] initialValues:', initialValues);
       form.setFieldsValue(initialValues);
-      console.log('[UserModal] form values after set:',
-      form.getFieldsValue(true)
-    );
     }
   }, [visible, user, form]);
 
@@ -73,12 +65,12 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
     if (values.userImg && values.userImg.length > 0) {
       const newFile = values.userImg.find((file: any) => file.originFileObj);
       if (newFile) {
-        values.userImg = newFile.originFileObj; 
+        values.userImg = newFile.originFileObj;
       } else {
         values.userImg = undefined;
       }
     } else {
-      delete values.userImg; 
+      delete values.userImg;
     }
 
     // console.log('Form values:', values); 
@@ -139,7 +131,7 @@ const UserModal: React.FC<UserModalProps> = ({ visible, onCancel, user }) => {
               if (!isLt5M) {
                 message.error('Ảnh không được vượt quá 5MB!');
               }
-              return false; 
+              return false;
             }}
             maxCount={1}
             accept="image/*"
