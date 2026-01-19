@@ -55,7 +55,8 @@ public class CategoryService {
         }
         else {
             log.info("No image provided for Category: {}", request.getCategoryName());
-            throw new RuntimeException("Image is empty!");
+            imgUrl = "https://placehold.net/default.png";
+//            throw new RuntimeException("Image is empty!");
         }
 
         Category category = categoryMapper.toCategory(request);

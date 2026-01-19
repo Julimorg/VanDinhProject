@@ -69,7 +69,6 @@ const CreateCategoryModal: React.FC<CreateCategoryModalProps> = ({ open, onCance
           label="Hình ảnh danh mục"
           valuePropName="fileList"
           getValueFromEvent={(e) => (Array.isArray(e) ? e : e?.fileList)}
-          rules={[{ required: true, message: 'Vui lòng chọn hình ảnh!' }]}
         >
           <Upload.Dragger
             name="categoryImage"
