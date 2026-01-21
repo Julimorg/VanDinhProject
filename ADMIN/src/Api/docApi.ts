@@ -635,28 +635,34 @@ export const docApi = {
       return res.data;
    },
 
-   GetAllNotifications: async(
-      userId: string,
-      params: 
-      {
-        isRead?: string,
-        page?: number,
-        size?: number,
-        sort?: string,
-      } = {}
-    ): Promise<IApiResponse<IApiResponsePagination<IGetAllNotifications>>> => {
-      const { isRead = 'false', page = 1, size = 5, sort = 'deliveredAt, desc' } = params;
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        size: size.toString(),
-        sort,
-        ...(isRead && { isRead }),
-      });
+   GetAllNotifications: async (
+    userId: string,
+    params: {
+      isRead?: boolean;
+      page?: number;
+      size?: number;
+      sort?: string;
+    } = {}
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllNotifications>>> => {
 
-      const url = `/notification/system-all/${userId}?${queryParams.toString()}`;
-      const res = await axiosClient.get(url);
-      return res.data;
-   },
+    const {
+      isRead,
+      page = 0,
+      size = 5,
+      sort = 'deliveredAt,desc',
+    } = params;
+
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(typeof isRead === 'boolean' && { isRead: isRead.toString() }),
+    });
+
+    const url = `/notification/system-all/${userId}?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
 
    GetMyNotification: async (userId: string): Promise<IApiResponse<IGetNotificationResponse>> => {

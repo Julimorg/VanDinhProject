@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAuthStore } from '@/Store/IAuth';
 import { useMarkAllNotificationsAsRead } from '@/Pages/Dashboard/Header/Hook/useMarkAllNotificationsAsRead';
 import dayjs from 'dayjs';
@@ -11,7 +11,7 @@ import { Card, List, Skeleton, Space, Tag, Typography, message } from 'antd';
 import NotificationHeader from './Components/NotificationHeader';
 import NotificationFilters from './Components/NotificationFilter';
 import NotificationEmpty from './Components/NotificationEmpty';
-import NotificationPagination from './Components/NotificationPagination';
+//import NotificationPagination from './Components/NotificationPagination';
 import { toast } from 'react-toastify';
 import CommonPagination from '@/Components/Pagination/Pagination';
 
@@ -24,26 +24,46 @@ const { Text } = Typography;
 const ViewAllNotificationsPage: React.FC = () => {
   const userId = useAuthStore((state) => state.id);
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
-  const [page, setPage] = useState<number>(0); 
+  const [page, setPage] = useState<number>(0);
   const [size, setSize] = useState<number>(10);
 
   // Convert filter to isRead parameter
-  const getIsReadParam = (): string | undefined => {
-    if (filter === 'unread') return 'false';
-    if (filter === 'read') return 'true';
-    return undefined;
-  };
+
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page,
+      size,
+      sort: 'deliveredAt,desc',
+    };
+
+    if (filter === 'read') params.isRead = true;
+    if (filter === 'unread') params.isRead = false;
+
+    return params;
+  }, [filter, page, size]);
+
 
   const { data, isLoading, refetch } = useGetAllNotifications(
     userId || '',
-    { 
-      isRead: getIsReadParam(),
-      page, 
-      size, 
-      sort: 'deliveredAt,desc' 
-    },
+    queryParams,
     { enabled: !!userId }
   );
+
+  const { data: unreadRes } = useGetAllNotifications(
+    userId || '',
+    { isRead: false, page: 0, size: 1 },
+    {
+      enabled: !!userId,
+      staleTime: 60_000,
+    }
+  );
+
+  const { data: allRes } = useGetAllNotifications(
+    userId || '',
+    { page: 0, size: 1 },
+    { enabled: !!userId, staleTime: 60_000 }
+  );
+
 
   const { mutate: markAllAsRead, isPending: isMarkingAll } = useMarkAllNotificationsAsRead();
 
@@ -52,6 +72,9 @@ const ViewAllNotificationsPage: React.FC = () => {
     : [];
   const pagination = data?.data?.page;
 
+  const totalAll = allRes?.data?.page.totalElements ?? 0;
+  const totalUnread = unreadRes?.data?.page.totalElements ?? 0;
+  const totalRead = Math.max(totalAll - totalUnread, 0);
 
   const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -162,9 +185,9 @@ const ViewAllNotificationsPage: React.FC = () => {
           <NotificationFilters
             filter={filter}
             setFilter={handleFilterChange}
-            allCount={notifications.length}
-            unreadCount={unreadCount}
-            readCount={notifications.length - unreadCount}
+            allCount={totalAll}
+            unreadCount={totalUnread}
+            readCount={totalRead}
           />
 
           {/* Danh sách thông báo hoặc skeleton hoặc empty */}
@@ -183,8 +206,8 @@ const ViewAllNotificationsPage: React.FC = () => {
                   <Card
                     key={item.userNotificationId}
                     className={`mb-4 transition-all ${isUnread
-                        ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-md'
-                        : 'bg-white opacity-70 border-l-4 border-l-gray-300'
+                      ? 'bg-blue-50 border-l-4 border-l-blue-500 shadow-md'
+                      : 'bg-white opacity-70 border-l-4 border-l-gray-300'
                       }`}
                     hoverable
                   >

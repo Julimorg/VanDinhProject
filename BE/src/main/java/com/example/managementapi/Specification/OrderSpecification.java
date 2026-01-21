@@ -39,6 +39,7 @@ public class OrderSpecification {
             }
 
             return criteriaBuilder.or(criteriaBuilder.like(criteriaBuilder.lower(root.get("orderCode")), "%" + keyword.toLowerCase() + "%"),
+                    criteriaBuilder.like(criteriaBuilder.lower(root.get("user").get("userName")), "%" + keyword.toLowerCase() + "%"),
                     criteriaBuilder.like(criteriaBuilder.lower(root.get("shipAddress")), "%" + keyword.toLowerCase() + "%"));
         };
     }

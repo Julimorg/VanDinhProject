@@ -1,5 +1,5 @@
 export type NotificationsQueryParams = {
-  isRead?: string;
+  isRead?: boolean;
   page?: number;
   size?: number;
   sort?: string;

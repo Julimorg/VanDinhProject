@@ -14,16 +14,19 @@ type UseGetAllNotificationOptions = Omit<
 >;
 
 export const useGetAllNotifications = (
-  userId: string,
+  userId: string | undefined,
   params: NotificationsQueryParams = {},
   options?: UseGetAllNotificationOptions
 ) => {
-  const { isRead = 'false', page = 0, size = 5, sort = "deliveredAt,desc" } = params;
+  const { isRead, page = 0, size = 5, sort = "deliveredAt,desc" } = params;
 
   return useQuery({
     ...options,
-    queryKey: [QueryKeys.GET_ALL_NOTIFICATIONS, { isRead, page, size, sort }],
-    queryFn: () => docApi.GetAllNotifications(userId, { isRead, page, size, sort }),
-    enabled: true, 
+    queryKey: [QueryKeys.GET_ALL_NOTIFICATIONS, userId, isRead ?? 'all', page, size, sort ],
+    queryFn: () => docApi.GetAllNotifications(userId!, { isRead, page, size, sort }),
+    // enabled: true, 
+    enabled: !!userId,
+    staleTime: 30_000,
+    ...options,
   });
 };

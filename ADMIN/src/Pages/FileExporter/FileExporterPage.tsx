@@ -34,7 +34,7 @@ const FileExporterPage: React.FC = () => {
   const { data, isLoading, error } = useUsers({
     page: pageInfo.number,
     size: pageInfo.size,
-    search: debouncedSearch,
+    keyword: debouncedSearch,
   });
 
   const users = useMemo(() => (data?.data?.content || []) as IUsersResponse[], [data]);
