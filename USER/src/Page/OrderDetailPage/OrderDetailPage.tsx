@@ -43,7 +43,7 @@ const OrderDetailPage: React.FC = () => {
   }
 
   const order = data.data;
-  const statusConfig = getStatusConfig(order.status);
+  const statusConfig = getStatusConfig(order.status.toLowerCase());
   const items = order.items || [];
   const totalFromItems = items.reduce((sum, item) => sum + (item.productPrice * item.quantity), 0);
 

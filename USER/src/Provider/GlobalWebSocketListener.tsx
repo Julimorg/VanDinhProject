@@ -9,6 +9,7 @@ const GlobalWebSocketListener = () => {
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   const PUBLIC_API = AWS_API_RAW;
+  console.log(`${AWS_API_RAW}/ws`);
   const { connect, subscribe, disconnect } = useWebSocketService(
     `${PUBLIC_API}/ws`,
     () => {

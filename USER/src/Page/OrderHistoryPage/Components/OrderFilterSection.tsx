@@ -38,7 +38,7 @@ const OrderFilterSection: React.FC<OrderFilterSectionProps> = ({
           <Select.Option value="all">Tất cả</Select.Option>
           <Select.Option value="pending">Chờ duyệt</Select.Option>
           <Select.Option value="approved">Đã duyệt</Select.Option>
-          <Select.Option value="cancelled">Đã hủy</Select.Option>
+          <Select.Option value="canceled">Đã hủy</Select.Option>
         </Select>
       </div>
     </div>

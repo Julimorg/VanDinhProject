@@ -19,7 +19,7 @@ interface OrderCardProps {
 
 const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   const navigate = useNavigate();
-  const statusConfig = getStatusConfig(order.orderStatus);
+  const statusConfig = getStatusConfig(order.orderStatus.toLowerCase());
 
   const handleViewDetail = () => {
     navigate(`/order-detail/${order.orderId}`, { state: { order } });

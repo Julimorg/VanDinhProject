@@ -24,7 +24,7 @@ export const getStatusConfig = (status: string): StatusConfig => {
       text: 'Chờ duyệt',
       borderColor: '#fef3c7'
     },
-    'cancelled': {
+    'canceled': {
       color: '#dc2626',
       bgColor: '#fef2f2',
       icon: <CloseCircleOutlined />,

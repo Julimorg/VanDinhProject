@@ -56,7 +56,7 @@ axiosClient.interceptors.request.use(
     const token = useAuthStore.getState().accessToken;
 
     const publicEndpoints = [
-      '/auth/log-in',
+      '/api/v1/auth/log-in',
       '/auth/sign-up',
       '/auth/refresh-token',
       '/auth/forgot-password',

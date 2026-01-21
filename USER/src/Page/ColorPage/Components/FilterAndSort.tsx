@@ -48,7 +48,7 @@ const SupplierAndSortFilter: React.FC<SupplierAndSortFilterProps> = ({
           disabled={isSupplierLoading}
         >
           {suppliers.map((supplier) => (
-            <Option key={supplier.supplierId} value={supplier.supplierId}>
+            <Option key={supplier.supplierId} value={supplier.supplierName}>
               {supplier.supplierName}
             </Option>
           ))}
