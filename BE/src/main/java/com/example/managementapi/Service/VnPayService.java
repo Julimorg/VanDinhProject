@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -36,13 +37,19 @@ public class VnPayService {
 
     private final VNPAYConfig vnPayConfig;
 
+    @Transactional
     public String createOrder(HttpServletRequest request, String orderId) throws UnsupportedEncodingException {
 
+        log.info("Creating NEW payment URL for order: {}", orderId);
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
         Payment payment = order.getPayment();
+
+        if (payment.getPaymentStatus() == PaymentMethodStatus.Paid) {
+            throw new RuntimeException("Order already paid");
+        }
 
         BigDecimal amount = order.getOrderAmount();
         BigDecimal vnpAmount = amount.multiply(BigDecimal.valueOf(100));
@@ -52,8 +59,7 @@ public class VnPayService {
         String vnp_Version = VNPAYConfig.vnp_Version;
         String vnp_Command = VNPAYConfig.vnp_Command;
 
-
-        Map vnp_Params = new HashMap<>();
+        Map<String, String> vnp_Params = new HashMap<>();
         vnp_Params.put("vnp_Version", vnp_Version);
         vnp_Params.put("vnp_Command", vnp_Command);
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
@@ -61,86 +67,62 @@ public class VnPayService {
         vnp_Params.put("vnp_CurrCode", "VND");
         vnp_Params.put("vnp_BankCode", "NCB");
         vnp_Params.put("vnp_Locale", "vn");
-        vnp_Params.put("vnp_TxnRef", orderId);
+
+        String txnRef = orderId + "_" + System.currentTimeMillis();
+        vnp_Params.put("vnp_TxnRef", txnRef);
         vnp_Params.put("vnp_OrderInfo", "Thanh toan don hang " + orderId);
         vnp_Params.put("vnp_OrderType", "other");
         vnp_Params.put("vnp_ReturnUrl", VNPAYConfig.vnp_ReturnUrl);
         vnp_Params.put("vnp_IpAddr", vnp_IpAddr);
 
-//        String bank_code = req.getParameter("bankcode");
+        // ✅ FIX: Dùng Etc/GMT+7 hoặc thêm 7 giờ vào UTC
+        // Cách 1: Dùng TimeZone.getTimeZone("Etc/GMT+7") - Đảo ngược
+        // Cách 2: Lấy thời gian hiện tại của VN theo cách khác
 
-//        if (bank_code != null && !bank_code.isEmpty()) {
-//            vnp_Params.put("vnp_BankCode", bank_code);
-//        }
-
-
-//        String locate = req.getParameter("language");
-//        if (locate != null && !locate.isEmpty()) {
-//            vnp_Params.put("vnp_Locale", locate);
-//        } else {
-//            vnp_Params.put("vnp_Locale", "vn");
-//        }
-
-//        ! Bỏ config DateTime này
-//        Calendar cld = Calendar.getInstance(TimeZone.getTimeZone("Etc/GMT+7"));
-//
-//        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-//        String vnp_CreateDate = formatter.format(cld.getTime());
-
-//      ! Thay thế config DateTime phía trên
-        ZoneId zoneId = ZoneId.of("Asia/Ho_Chi_Minh");
-        LocalDateTime now = LocalDateTime.now(zoneId);
-
+        // ✅ Cách an toàn nhất
+        ZonedDateTime nowVN = ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        String vnp_CreateDate = now.format(formatter);
+
+        String vnp_CreateDate = nowVN.format(formatter);
         vnp_Params.put("vnp_CreateDate", vnp_CreateDate);
 
-
-        String vnp_ExpireDate =  now.plusMinutes(15).format(formatter);
-        //Add Params of 2.1.0 Version
+        ZonedDateTime expireVN = nowVN.plusMinutes(15);
+        String vnp_ExpireDate = expireVN.format(formatter);
         vnp_Params.put("vnp_ExpireDate", vnp_ExpireDate);
-        //Billing
-//        vnp_Params.put("vnp_Bill_Mobile", req.getParameter("txt_billing_mobile"));
-//        vnp_Params.put("vnp_Bill_Email", req.getParameter("txt_billing_email"));
-//        String fullName = (req.getParameter("txt_billing_fullname")).trim();
-//        if (fullName != null && !fullName.isEmpty()) {
-//            int idx = fullName.indexOf(' ');
-//            String firstName = fullName.substring(0, idx);
-//            String lastName = fullName.substring(fullName.lastIndexOf(' ') + 1);
-//            vnp_Params.put("vnp_Bill_FirstName", firstName);
-//            vnp_Params.put("vnp_Bill_LastName", lastName);
-//
-//        }
-//        vnp_Params.put("vnp_Bill_Address", req.getParameter("txt_inv_addr1"));
-//        vnp_Params.put("vnp_Bill_City", req.getParameter("txt_bill_city"));
-//        vnp_Params.put("vnp_Bill_Country", req.getParameter("txt_bill_country"));
-//        if (req.getParameter("txt_bill_state") != null && !req.getParameter("txt_bill_state").isEmpty()) {
-//            vnp_Params.put("vnp_Bill_State", req.getParameter("txt_bill_state"));
-//        }
-//        // Invoice
-//        vnp_Params.put("vnp_Inv_Phone", req.getParameter("txt_inv_mobile"));
-//        vnp_Params.put("vnp_Inv_Email", req.getParameter("txt_inv_email"));
-//        vnp_Params.put("vnp_Inv_Customer", req.getParameter("txt_inv_customer"));
-//        vnp_Params.put("vnp_Inv_Address", req.getParameter("txt_inv_addr1"));
-//        vnp_Params.put("vnp_Inv_Company", req.getParameter("txt_inv_company"));
-//        vnp_Params.put("vnp_Inv_Taxcode", req.getParameter("txt_inv_taxcode"));
-//        vnp_Params.put("vnp_Inv_Type", req.getParameter("cbo_inv_type"));
 
-        //Build data to hash and querystring
-        List fieldNames = new ArrayList(vnp_Params.keySet());
+// Log để kiểm tra
+        log.info("Vietnam Time: {}", nowVN);
+        log.info("CreateDate: {}", vnp_CreateDate);
+        log.info("ExpireDate: {}", vnp_ExpireDate);
+
+        // ✅ Log chi tiết để debug
+        log.info("System current millis: {}", System.currentTimeMillis());
+//        log.info("Calendar time: {}", cld.getTime());
+        log.info("Timezone ID: {}", TimeZone.getTimeZone("GMT+7").getID());
+        log.info("Timezone offset: {} hours", TimeZone.getTimeZone("GMT+7").getRawOffset() / 3600000);
+        log.info("Creating VNPAY order - OrderID: {}, Amount: {}, CreateDate: {}, ExpireDate: {}",
+                orderId, vnpAmount, vnp_CreateDate, vnp_ExpireDate);
+        log.info("=== VNPAY Payment Request ===");
+        log.info("OrderID: {}", orderId);
+        log.info("Amount: {}", amount);
+        log.info("TxnRef: {}", txnRef);
+        log.info("CreateDate: {}", vnp_CreateDate);
+        log.info("ExpireDate: {}", vnp_ExpireDate);
+        log.info("Current Server Time: {}", LocalDateTime.now());
+        log.info("============================");
+
+        List<String> fieldNames = new ArrayList<>(vnp_Params.keySet());
         Collections.sort(fieldNames);
         StringBuilder hashData = new StringBuilder();
         StringBuilder query = new StringBuilder();
-        Iterator itr = fieldNames.iterator();
+        Iterator<String> itr = fieldNames.iterator();
         while (itr.hasNext()) {
-            String fieldName = (String) itr.next();
-            String fieldValue = (String) vnp_Params.get(fieldName);
+            String fieldName = itr.next();
+            String fieldValue = vnp_Params.get(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
                 hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                //Build query
                 query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
                 query.append('=');
                 query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
@@ -150,19 +132,15 @@ public class VnPayService {
                 }
             }
         }
+
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPAYConfig.hmacSHA512(VNPAYConfig.vnp_HashSecret, hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        return  VNPAYConfig.vnp_PayUrl + "?" + queryUrl;
-//
-//        com.google.gson.JsonObject job = new JsonObject();
-//        job.addProperty("code", "00");
-//        job.addProperty("message", "success");
-//        job.addProperty("data", paymentUrl);
-//        Gson gson = new Gson();
-//        resp.getWriter().write(gson.toJson(job));
 
+        String paymentUrl = VNPAYConfig.vnp_PayUrl + "?" + queryUrl;
+        log.info("VNPAY Payment URL: {}", paymentUrl);
 
+        return paymentUrl;
     }
 
     public Map<String, String> handleReturn(HttpServletRequest request) {
