@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Card, Badge, Empty, Button, Segmented, Pagination } from 'antd';
-import { BellOutlined, CheckOutlined, MailOutlined } from '@ant-design/icons';
+import { BellOutlined, CheckCircleOutlined, CheckOutlined, MailOutlined } from '@ant-design/icons';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useGetAllNotifications } from './Hook/useGetAllNotifications';
 import dayjs from 'dayjs';
@@ -36,6 +36,12 @@ const NotificationPage: React.FC = () => {
 
   const { data, isLoading } = useGetAllNotifications(userId, queryParams);
 
+  const { data: allRes } = useGetAllNotifications(
+    userId,
+    { page: 0, size: 1 },
+    { staleTime: 60_000 }
+  );
+
   const { data: unreadRes } = useGetAllNotifications(
     userId,
     { isRead: false, page: 0, size: 1 },
@@ -55,7 +61,7 @@ const NotificationPage: React.FC = () => {
     }));
   }, [data?.data?.content]);
 
-  const totalAll = data?.data?.page.totalElements ?? 0;
+  const totalAll = allRes?.data?.page.totalElements ?? 0;
   const totalUnread = unreadRes?.data?.page.totalElements ?? 0;
   const totalRead = Math.max(totalAll - totalUnread, 0);
 
@@ -174,9 +180,22 @@ const NotificationPage: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold">{n.title}</h3>
-                      <span className={`text-xs px-2 py-1 rounded ${getTypeColor(n.type)}`}>
-                        {getTypeLabel(n.type)}
-                      </span>
+
+                      <div className="flex items-center gap-2">
+                        {/* Type badge */}
+                        <span className={`text-xs px-2 py-1 rounded ${getTypeColor(n.type)}`}>
+                          {getTypeLabel(n.type)}
+                        </span>
+
+                        {/* Mark as read icon */}
+                        {!n.read && (
+                          <CheckCircleOutlined
+                            title="Đánh dấu đã đọc"
+                            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                            onClick={() => handleMarkOneRead(n.id)}
+                          />
+                        )}
+                      </div>
                     </div>
 
                     <p className="text-sm text-gray-600 mt-1">{n.description}</p>

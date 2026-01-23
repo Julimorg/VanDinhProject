@@ -1,6 +1,6 @@
 import React from 'react';
-import { Badge, Dropdown, Button, type MenuProps, Spin } from 'antd';
-import { BellOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Badge, Dropdown, Button, type MenuProps } from 'antd';
+import { BellOutlined } from '@ant-design/icons';
 import type { NotificationType } from '../../../Interface/Notification/INotification';
 
 interface NotificationsDropdownProps {
@@ -23,19 +23,22 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   loading = false,
   refetch,
 }) => {
-  const loadingIcon = (
-    <LoadingOutlined style={{ fontSize: 24 }} spin />
-  );
-  const loadingMenuItems: MenuProps['items'] = [
-    {
-      key: 'loading',
+  const [openLoading, setOpenLoading] = React.useState(false);
+  const isShowLoading = loading || openLoading;
+  const loadingMenuItems: MenuProps['items'] = Array.from({ length: 4 }).map(
+    (_, index) => ({
+      key: `loading-${index}`,
       label: (
-        <div className="flex items-center justify-center py-8">
-          <Spin indicator={loadingIcon} />
+        <div className="px-4 py-3">
+          <div className="animate-pulse space-y-2">
+            <div className="h-3 bg-gray-200 rounded w-3/4" />
+            <div className="h-2 bg-gray-200 rounded w-full" />
+            <div className="h-2 bg-gray-200 rounded w-1/2" />
+          </div>
         </div>
       ),
-    },
-  ];
+    })
+  );
   const notificationMenuItems: MenuProps['items'] = [
     {
       type: 'group',
@@ -46,12 +49,12 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
             <span className="font-semibold text-gray-900">Thông báo</span>
             <span
               className={`text-sm select-none ${loading || unreadCount === 0
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-blue-600 hover:text-blue-800 cursor-pointer'
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-blue-600 hover:text-blue-800 cursor-pointer'
                 }`}
               onClick={(e) => {
                 e.stopPropagation();
-                if (loading || unreadCount === 0){ 
+                if (loading || unreadCount === 0) {
                   return;
                 }
                 onMarkAllRead();
@@ -99,34 +102,47 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
       onClick: () => navigate('/notifications'),
     },
   ];
-  const menuItems = loading ? loadingMenuItems : notificationMenuItems;
   const dropdownWidth = isMobile ? 'w-[calc(100vw-2rem)] max-w-[360px]' : 'min-w-[360px] max-w-[400px]';
   const offset: [number, number] = isMobile ? [0, 0] : [0, 0];
-
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Dropdown
-      menu={{ items: menuItems }}
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+
+        if (nextOpen) {
+          setOpenLoading(true);
+          Promise.resolve(refetch()).finally(() => {
+            setOpenLoading(false);
+          });
+        }
+      }}
+      menu={{ items: isShowLoading ? loadingMenuItems : notificationMenuItems }}
       trigger={['click']}
       placement="bottomRight"
       overlayClassName="notification-dropdown"
-      onOpenChange={(open) => {
-        if (open) {
-          refetch();
-        }
-      }}
+      getPopupContainer={(triggerNode) =>
+        triggerNode.parentElement ?? document.body
+      }
       dropdownRender={(menu) => (
         <div className={`bg-white rounded-xl shadow-lg border border-gray-200 ${dropdownWidth}`}>
           {menu}
         </div>
       )}
     >
+
+
       <Button
         type="text"
         className="h-10 px-3 hover:bg-gray-100 rounded-lg transition-colors"
       >
-        <Badge count={unreadCount} size="small" offset={offset}>
-          <BellOutlined className="text-lg text-gray-700" />
+        <Badge count={isShowLoading ? 0 : unreadCount} size="small" offset={offset}>
+          <BellOutlined
+            className={`text-lg ${isShowLoading ? 'text-gray-400 animate-pulse' : 'text-gray-700'
+              }`}
+          />
         </Badge>
       </Button>
     </Dropdown>

@@ -31,10 +31,12 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
 
   const notifications: IGetNotificationResponse[] = useMemo(() => {
     if (!data?.data) return [];
-    if (Array.isArray(data.data)) {
-      return data.data;
-    }
-    return [data.data];
+
+    const list = Array.isArray(data.data) ? data.data : [data.data];
+
+    return [...list].sort(
+      (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
+    );
   }, [data]);
 
   const unreadNotifications = notifications.filter(n => !n.isRead);
@@ -60,7 +62,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
         );
       });
 
-      
+
     }
   };
 
