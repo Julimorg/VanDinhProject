@@ -1,0 +1,15 @@
+export type IGetProductNewArrival = {
+    productId: string,
+    productName: string,
+    productImage: string[],
+    productVolume: string,
+    productUnit: string,
+    productQuantity: number,
+    productPrice: number,
+    supplierName: string,
+    colorName: string,
+    categoryName: string,
+    productCode: string,
+    createAt: string,
+    updateAt: string,
+}[];

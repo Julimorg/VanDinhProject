@@ -122,6 +122,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   }, [accessToken, setCartCount]);
 
   const navItems = [
+    { key: 'dashboard', label: 'Trang Chủ', path: '/dashboard' },
     { key: 'products', label: 'Sản phẩm', path: '/products' },
     { key: 'suppliers', label: 'Nhà Cung Cấp', path: '/suppliers' },
     { key: 'colors', label: 'Mã Màu', path: '/colors' },
