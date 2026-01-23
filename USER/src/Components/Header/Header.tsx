@@ -13,6 +13,7 @@ import type { NotificationType } from '../../Interface/Notification/INotificatio
 import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
+import { useGetUnreadNotificationCount } from './Hook/useGetUnreadCount';
 
 interface HeaderProps {
   isMobile: boolean;
@@ -27,7 +28,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const cartCount = useCartStore((state) => state.cartCount);
 
   const notifications = useNotificationStore((state) => state.notifications);
-  const unreadCount = useNotificationStore((state) => state.unreadCount);
+  const { data: unreadRes } = useGetUnreadNotificationCount(userId || undefined);
+  const { refetch: refetchUnreadCount } = useGetUnreadNotificationCount(userId || undefined);
 
   const shouldFetch = !!(userId && accessToken);
 
@@ -58,6 +60,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
           onSuccess: () => {
             toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
             refetch();
+            refetchUnreadCount(); 
           },
           onError: (err: Error) => {
             toast.error(`Đánh dấu thất bại: ${err?.message || 'Vui lòng thử lại!'}`);
@@ -90,12 +93,13 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     notifications.forEach((n) => map.set(n.id, n));
 
     return Array.from(map.values())
-      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
       .slice(0, 5);
   }, [apiNotifications, notifications]);
 
-  const finalUnreadCount =
-    notifications.length > 0 ? unreadCount : apiNotifications.filter((n) => !n.read).length;
+  //const finalUnreadCount = notifications.length > 0 ? unreadCount : apiNotifications.filter((n) => !n.read).length;
+
+  const finalUnreadCount = unreadRes?.data ?? 0;
+
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -169,9 +173,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -207,7 +210,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
-                onOpen={() => {}}
+                onOpen={() => { }}
                 onMarkAllRead={handleMarkAllRead}
                 loading={isLoading}
                 refetch={refetch}
@@ -245,7 +248,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 unreadCount={finalUnreadCount}
                 navigate={navigate}
                 isMobile={isMobile}
-                onOpen={() => {}}
+                onOpen={() => { }}
                 onMarkAllRead={handleMarkAllRead}
                 loading={isLoading}
                 refetch={refetch}

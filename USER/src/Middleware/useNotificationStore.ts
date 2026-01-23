@@ -4,7 +4,6 @@ import type { NotificationType } from "../Interface/Notification/INotification";
 
 interface NotificationStore {
   notifications: NotificationType[];
-  unreadCount: number;
 
   addNotification: (notif: NotificationType) => void;
   markAllAsRead: () => void;
@@ -13,23 +12,24 @@ interface NotificationStore {
 
 export const useNotificationStore = create<NotificationStore>((set) => ({
   notifications: [],
-  unreadCount: 0,
 
   addNotification: (notif) =>
-    set((state) => ({
-      notifications: [notif, ...state.notifications],
-      unreadCount: state.unreadCount + 1,
-    })),
+    set((state) => {
+      // tránh duplicate
+      if (state.notifications.some((n) => n.id === notif.id)) {
+        return state;
+      }
+      return { notifications: [notif, ...state.notifications] };
+    }),
 
   markAllAsRead: () =>
     set((state) => ({
       notifications: state.notifications.map((n) => ({ ...n, read: true })),
-      unreadCount: 0,
     })),
 
   setNotifications: (list) =>
     set(() => ({
       notifications: list,
-      unreadCount: list.filter((n) => !n.read).length,
     })),
 }));
+

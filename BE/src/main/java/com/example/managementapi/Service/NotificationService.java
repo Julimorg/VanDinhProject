@@ -79,10 +79,19 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("User not Found!"));
 
         return userNotiRepo
-                .findTop5ByUserIdOrderByDeliveredAtDesc(userId)
+                .findTop5ByUserIdOrderByDeliveredAtDesc(    userId)
                 .stream()
                 .map(user -> notificationMapper.toGetSystemTopFiveNotifications(user))
                 .toList();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public int getCountNotiMarkIsReadFalse(String userId) {
+
+        userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not Found!"));
+
+        return userNotiRepo.countByUserIdAndIsReadFalse(userId);
     }
 
     public Page<GetSystemAllNotificationsRes> getSystemAllNotifications(String userId, String isRead, Pageable pageable){

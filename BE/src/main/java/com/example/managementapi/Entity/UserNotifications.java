@@ -33,6 +33,8 @@ public class UserNotifications {
 
     private LocalDateTime deliveredAt;
 
+    private LocalDateTime createAt;
+
     private LocalDateTime clickedAt;
 
     @Enumerated(EnumType.STRING)

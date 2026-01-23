@@ -2,7 +2,7 @@
 export const COOKIE_EXPIRE = import.meta.env.VITE_COOKIE_DEV_EXPIRE;
 export const PUBLIC_API = import.meta.env.VITE_DEV_API_URL;
 export const AWS_API = import.meta.env.VITE_AWS_API;
-export const AWS_API_RAW = import.meta.env.VITE_AWS_API_RAW;  
+export const AWS_API_RAW = import.meta.env.VITE_AWS_RAW;  
 export const LOCAL_API = import.meta.env.VITE_DEV_LOCAL;
 export const LOCAL_API_RAW = import.meta.env.VITE_DEV_LOCAL;
 export const PUBLIC_API_RAW = import.meta.env.VITE_DEV_API_RAW;

@@ -29,6 +29,9 @@ public class OrderItem {
     private String productName;
 
     @Column
+    private int productQuantity;
+
+    @Column
     private String productCode;
 
     @ElementCollection

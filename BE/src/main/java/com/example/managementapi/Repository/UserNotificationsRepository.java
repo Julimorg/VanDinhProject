@@ -22,6 +22,8 @@ public interface UserNotificationsRepository extends JpaRepository<UserNotificat
 
     List<UserNotifications> findTop5ByUserIdOrderByDeliveredAtDesc(String userId);
 
+    int countByUserIdAndIsReadFalse(String userId);
+
     Page<UserNotifications> findAllByUserId(String userId, Pageable pageable);
 
 }

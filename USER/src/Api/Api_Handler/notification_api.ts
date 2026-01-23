@@ -12,6 +12,12 @@ export const notification_api = {
     return res.data;
   },
 
+  GetUnreadCount: async (userId: string): Promise<IApiResponse<number>> => {
+    const url = `/notification/unread-count/${userId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   GetAllNotifications: async (
     userId: string,
     params: {
@@ -25,7 +31,7 @@ export const notification_api = {
       isRead,
       page = 0,
       size = 10,
-      sort = 'deliveredAt,desc'
+      sort = 'deliveredAt,asc'
     } = params;
 
     const queryParams = new URLSearchParams({

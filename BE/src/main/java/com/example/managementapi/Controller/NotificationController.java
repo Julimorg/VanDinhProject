@@ -89,12 +89,22 @@ public class NotificationController {
     public ApiResponse<Page<GetSystemAllNotificationsRes>> getSystemAllNotifications(
             @PathVariable String userId,
             @RequestParam(required = false) String isRead,
-            @PageableDefault(size = 10, sort = "deliveredAt", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(size = 10, sort = "deliveredAt", direction = Sort.Direction.ASC ) Pageable pageable) {
 
         return ApiResponse.<Page<GetSystemAllNotificationsRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Send Successfully!")
                 .data(notificationService.getSystemAllNotifications(userId, isRead, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/unread-count/{userId}")
+    public ApiResponse<Integer> getCountNotiMarkIsReadFalse(@PathVariable String userId){
+        return ApiResponse.<Integer>builder()
+                .status_code(HttpStatus.OK.value())
+                .message("Send Successfully!")
+                .data(notificationService.getCountNotiMarkIsReadFalse(userId))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

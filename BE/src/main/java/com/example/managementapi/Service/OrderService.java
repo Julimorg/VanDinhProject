@@ -150,6 +150,7 @@ public class OrderService {
                             .productImage(new ArrayList<>(product.getProductImage()))
                             .productVolume(product.getProductVolume())
                             .productUnit(product.getProductUnit())
+                            .productQuantity(product.getProductQuantity())
                             .productPrice(product.getProductPrice())
                             .discount(product.getDiscount())
                             .colorName(product.getColor().getColorName())
