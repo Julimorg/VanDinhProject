@@ -21,6 +21,7 @@ import com.example.managementapi.Specification.ProductSpecification;
 import com.example.managementapi.Util.FileUpLoadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springdoc.core.converters.models.Sort;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -50,7 +51,7 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     private final CloudinaryService cloudinaryService;
-    
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public List<GetProductSelectionRes> getProductSelection(String keyword,
@@ -70,8 +71,17 @@ public class ProductService {
                 .map(productMapper::toGetProductSelection)
                 .toList();
     }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public List<ProductNewArrivalRes> getProductNewArrival(){
+        var products = productRepository.findTop10ByOrderByCreateAtDesc();
 
-    //Tạo product
+        return products
+                .stream()
+                .map(product -> productMapper.toGetProductNewArrivalRes(product))
+                .toList();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateProductRes createProduct(CreateProductReq request){
         if(productRepository.existsByProductName(request.getProductName())){
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
@@ -152,6 +162,7 @@ public class ProductService {
     //Get list productc
     //Note: get thủ công cho supplier
     // Check xem findALl xem co lay them nhung thang ENtity ko lien quan ko
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public Page<GetProductsRes> getProducts(String keyword,
                                             String categoryName,
                                             String supplierName,
@@ -170,6 +181,7 @@ public class ProductService {
     }
 
     //Get 1 product
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public ProductRes getProduct(String id){
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -191,6 +203,7 @@ public class ProductService {
         return response;
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateProductRes updateProduct(String id, UpdateProductReq request){
 
 
@@ -242,6 +255,7 @@ public class ProductService {
         return response;
 
     }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
 
     public UpdateProductQuantityRes updateProductQuantity(String id, UpdateProductQuantityReq request){
         if (request.getProductQuantity() < 0) {
@@ -255,6 +269,7 @@ public class ProductService {
         return productMapper.toUpdateProductQuantityRes(productRepository.save(product));
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteProduct(String id){
         productRepository.deleteById(id);
     }

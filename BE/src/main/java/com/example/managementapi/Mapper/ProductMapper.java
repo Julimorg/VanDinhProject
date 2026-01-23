@@ -14,6 +14,8 @@ public interface ProductMapper {
 
     //* =========================== GET MAPPER ===========================
 
+    ProductNewArrivalRes toGetProductNewArrivalRes(Product product);
+
     @Mapping(target = "productImage", ignore = true)
     Product toProduct(CreateProductReq request);
 

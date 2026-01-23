@@ -9,6 +9,7 @@ import com.example.managementapi.Dto.Response.Product.*;
 import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Service.ProductService;
 import com.example.managementapi.Util.QRGenerateUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,10 +25,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("api/v1/products")
 public class ProductController {
-    @Autowired
-    private ProductService productService;
+
+    private final ProductService productService;
 
 
     @GetMapping("/select-products")
@@ -42,6 +44,16 @@ public class ProductController {
                 .status_code(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
                 .data(productService.getProductSelection(keyword, categoryName, supplierName, minPrice, maxPrice))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/new-arrival")
+    ApiResponse<List<ProductNewArrivalRes>> getProductNewArrival(){
+        return ApiResponse.<List<ProductNewArrivalRes>>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(productService.getProductNewArrival())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
