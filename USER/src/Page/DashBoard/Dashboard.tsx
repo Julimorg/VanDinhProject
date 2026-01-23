@@ -1,155 +1,138 @@
-import React from 'react';
-import { Row, Col, Card, Carousel, Typography, Button } from 'antd';
-import { ShoppingCartOutlined, EyeOutlined } from '@ant-design/icons';
-
+import React, { useState, useEffect } from 'react';
+import { Row, Typography, message } from 'antd';
+import { useNavigate } from 'react-router-dom';
+import { useGetProductNewArrival } from './Hooks/useGetProductNewArrival';
+import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
+import { useCartStore } from '../../Middleware/useCartStore';
+import { useGetAllCarts } from '../CartPage/Hook/useGetAllCarts';
+import { useAddProductToCart } from '../ProductPage/Hook/useAddProductToCart';
+import type { IGetProductNewArrival } from '../../Interface/Product/IGetProductNewArrival';
+import BannerCarousel from './Components/BannerCarousel';
+import ProductCardNewArrival from './Components/ProductCardNewArrival';
+import AddToCartModal from '../ProductPage/Components/AddToCartModel';
+import ProductSkeletonLoading from './Components/ProductSkeletonLoading';
 
 const { Title, Text } = Typography;
 
-interface Product {
-  id: number;
-  name: string;
-  price: string;
-  image: string;
-  description: string;
-  isNew: boolean;
-}
+const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { data, isLoading } = useGetProductNewArrival();
+  const newProducts = data?.data ?? [];
 
-// Mock data sản phẩm sơn mới
-const newProducts: Product[] = [
-  {
-    id: 1,
-    name: 'Sơn Dulux Weathershield',
-    price: '250.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=Dulux+Weathershield', 
-    description: 'Sơn ngoại thất chống thấm cao cấp',
-    isNew: true,
-  },
-  {
-    id: 2,
-    name: 'Sơn Jotun Majestic',
-    price: '180.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=Jotun+Majestic',
-    description: 'Sơn nội thất bóng mịn, dễ lau chùi',
-    isNew: true,
-  },
-  {
-    id: 3,
-    name: 'Sơn Nippon Vinilex',
-    price: '150.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=Nippon+Vinilex',
-    description: 'Sơn đa năng cho tường và trần',
-    isNew: true,
-  },
-  {
-    id: 4,
-    name: 'Sơn Kova CT-11A',
-    price: '120.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=Kova+CT-11A',
-    description: 'Sơn chống kiềm hóa giá rẻ',
-    isNew: true,
-  },
-  {
-    id: 5,
-    name: 'Sơn 911 Maxima',
-    price: '200.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=911+Maxima',
-    description: 'Sơn cao cấp chống nấm mốc',
-    isNew: true,
-  },
-  {
-    id: 6,
-    name: 'Sơn TOA 2222',
-    price: '160.000 ₫',
-    image: 'https://via.placeholder.com/300x200?text=TOA+2222',
-    description: 'Sơn bóng cao cấp cho nội thất',
-    isNew: true,
-  },
-];
+  const { id: userId } = useAuthStore();
+  const { data: cartData, refetch: refetchCart } = useGetAllCarts(userId ?? '');
+  const setCartCount = useCartStore((state) => state.setCartCount);
 
-// Component ProductCard
-const ProductCard: React.FC<{ product: Product }> = ({ product }) => (
-  <Col xs={24} sm={12} md={8} lg={6}>
-    <Card
-      hoverable
-      cover={<img alt={product.name} src={product.image} style={{ height: 200, objectFit: 'cover' }} />}
-      className="h-full transition-all duration-300 hover:shadow-lg"
-    >
-      {product.isNew && <div className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs">Mới</div>}
-      <Card.Meta
-        title={<Text strong className="text-lg">{product.name}</Text>}
-        description={<Text type="secondary" className="text-sm line-clamp-2">{product.description}</Text>}
-      />
-      <div className="flex justify-between items-center mt-2">
-        <Text strong className="text-xl text-green-600">{product.price}</Text>
-        <div className="flex gap-1">
-          <Button type="link" icon={<EyeOutlined />} size="small" onClick={() => { /* Xem chi tiết */ }} />
-          <Button type="link" icon={<ShoppingCartOutlined />} size="small" onClick={() => { /* Thêm giỏ */ }} />
-        </div>
-      </div>
-    </Card>
-  </Col>
-);
+  useEffect(() => {
+    if (cartData?.data?.items) {
+      const count = cartData.data.items.reduce((sum, item) => sum + item.product.productQuantity, 0);
+      setCartCount(count);
+    }
+  }, [cartData, setCartCount]);
 
-// Component BannerCarousel (Swiper mượt mà, to rõ)
-const BannerCarousel: React.FC = () => {
-  const banners = [
-    'https://via.placeholder.com/1200x400?text=Khuyến+mãi+Sơn+Dulux+-+Giảm+20%', // Banner 1
-    'https://via.placeholder.com/1200x400?text=Sản+phẩm+Mới+Nhất+2025', // Banner 2
-    'https://via.placeholder.com/1200x400?text=Nhà+Cung+Cấp+Uy+Tín', // Banner 3
-  ];
+  const addProductToCartMutation = useAddProductToCart(userId ?? '');
+
+  const [addingProduct, setAddingProduct] = useState<{
+    visible: boolean;
+    productName?: string;
+    status: 'loading' | 'success';
+  }>({
+    visible: false,
+    status: 'loading',
+  });
+
+  const handleAddToCart = (product: IGetProductNewArrival[0], quantity: number) => {
+    if (!userId) {
+      message.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      return;
+    }
+
+    setAddingProduct({
+      visible: true,
+      productName: product.productName,
+      status: 'loading',
+    });
+
+    addProductToCartMutation.mutate(
+      { productId: product.productId, quantity },
+      {
+        onSuccess: () => {
+          setAddingProduct((prev) => ({
+            ...prev,
+            status: 'success',
+          }));
+          refetchCart();
+
+          setTimeout(() => {
+            setAddingProduct({
+              visible: false,
+              status: 'loading',
+            });
+          }, 1000);
+        },
+        onError: (err) => {
+          setAddingProduct({
+            visible: false,
+            status: 'loading',
+          });
+          message.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
+        }
+      }
+    );
+  };
+
+  const handleViewDetail = (productId: string) => navigate(`/products/${productId}`);
 
   return (
-    <div className="w-full mb-8">
-      <Carousel
-        autoplay
-        dots={true}
-        pauseOnDotsHover
-        effect="fade"
-        className="rounded-xl overflow-hidden shadow-lg"
-        style={{ height: '400px' }} // To và rõ ràng hơn
-      >
-        {banners.map((src, index) => (
-          <div key={index} className="w-full h-full">
-            <img
-              src={src}
-              alt={`Banner ${index + 1}`}
-              className="w-full h-full object-cover"
-              style={{ minHeight: '400px' }}
-            />
-          </div>
-        ))}
-      </Carousel>
+    <div className="flex-1 bg-gray-50/70 min-h-screen pb-16">
+      {/* Banner */}
+      <BannerCarousel />
+
+      {/* Title - tăng padding để thoáng */}
+      <div className="px-6 md:px-10 lg:px-16 py-12 text-center">
+        <Title level={2} className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          Sản Phẩm Mới Nhất
+        </Title>
+        <Text className="text-xl text-gray-600 block max-w-3xl mx-auto">
+          Khám phá những dòng sơn mới nhất, màu sắc xu hướng và chất lượng vượt trội 2025
+        </Text>
+      </div>
+
+      {/* Product Grid - tăng gutter và padding để thoáng đãng hơn */}
+      {isLoading ? (
+        <div className="px-6 md:px-10 lg:px-16 py-8">
+          <Row gutter={[24, 32]}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductSkeletonLoading key={i} />
+            ))}
+          </Row>
+        </div>
+      ) : newProducts.length === 0 ? (
+        <div className="text-center py-20">
+          <Text className="text-xl text-gray-600">Chưa có sản phẩm mới nào</Text>
+        </div>
+      ) : (
+        <div className="px-6 md:px-10 lg:px-16">
+          <Row gutter={[24, 32]}>
+            {newProducts.map((product) => (
+              <ProductCardNewArrival
+                key={product.productId}
+                product={product}
+                onViewDetail={handleViewDetail}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
+          </Row>
+        </div>
+      )}
+
+      <AddToCartModal
+        visible={addingProduct.visible}
+        productName={addingProduct.productName}
+        status={addingProduct.status}
+      />
     </div>
   );
 };
-
-function Dashboard() {
-  return (
-    <div className="flex-1 bg-gray-50 min-h-screen">
-      {/* Header */}
-     {/* <Header isMobile/> */}
-      {/* Banner Carousel */}
-      <BannerCarousel />
-
-      {/* Tiêu đề */}
-      <div className="px-6 py-4 text-center">
-        <Title level={2} className="text-3xl font-bold text-gray-800 mb-2">
-          Sản phẩm mới
-        </Title>
-        <Text className="text-gray-600">Khám phá những sản phẩm sơn chất lượng cao nhất</Text>
-      </div>
-
-      {/* Grid Sản phẩm New Arrival - Responsive */}
-      <Row gutter={[16, 16]} className="px-6 mb-8">
-        {newProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </Row>
-
-      {/* Footer */}
-      {/* <Footer /> */}
-    </div>
-  );
-}
 
 export default Dashboard;

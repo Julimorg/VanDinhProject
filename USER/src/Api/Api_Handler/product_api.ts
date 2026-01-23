@@ -1,10 +1,17 @@
 import type { IApiResponse } from "../../Interface/IApiResponse";
 import type { IApiResponsePagination } from "../../Interface/IApiResponsePagination";
 import type { IGetAllProductResponse } from "../../Interface/Product/IGetAllProducts";
+import type { IGetProductNewArrival } from "../../Interface/Product/IGetProductNewArrival";
 import type { IGetProductDetailResponse } from "../../Interface/Product/IGetProductsDetail";
 import axiosClient from "../Axios/axiosClient";
 
 export const product_api = {
+    GetProductNewArrvial: async(): Promise<IApiResponse<IGetProductNewArrival>> => {
+      const url = '/products/new-arrival';
+      const res = await axiosClient.get(url);
+      return res.data;
+    },
+
     GetAllProducts: async (
     params: {
       keyword?: string,

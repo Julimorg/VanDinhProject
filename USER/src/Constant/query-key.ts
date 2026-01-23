@@ -10,5 +10,6 @@ export const QueryKeys = {
     GET_CATEGORY_SELECTION : ' Get Categories Selection',
     GET_VIETNAM_PROVINCES: 'Vietnam-Provinces',
     GET_VIETNAM_DISTRICT: 'VietNam-Districts',
-    GET_VIETNAM_WARDS: 'Vietnam-Wards'
+    GET_VIETNAM_WARDS: 'Vietnam-Wards',
+    GET_PRODUCT_NEW_ARRIVAL: 'Product new Arrival'
 }
