@@ -60,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
           onSuccess: () => {
             toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
             refetch();
-            refetchUnreadCount(); 
+            refetchUnreadCount();
           },
           onError: (err: Error) => {
             toast.error(`Đánh dấu thất bại: ${err?.message || 'Vui lòng thử lại!'}`);
@@ -97,8 +97,10 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   }, [apiNotifications, notifications]);
 
   //const finalUnreadCount = notifications.length > 0 ? unreadCount : apiNotifications.filter((n) => !n.read).length;
-
-  const finalUnreadCount = unreadRes?.data ?? 0;
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const setUnreadCount = useNotificationStore((s) => s.setUnreadCount);
+  //const finalUnreadCount = unreadRes?.data ?? 0;
+  const finalUnreadCount = unreadCount;
 
 
   useEffect(() => {
@@ -124,6 +126,12 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
       setCartCount(0);
     }
   }, [accessToken, setCartCount]);
+
+  useEffect(() => {
+    if (unreadRes?.data !== undefined) {
+      setUnreadCount(unreadRes.data);
+    }
+  }, [unreadRes?.data, setUnreadCount]);
 
   const navItems = [
     { key: 'dashboard', label: 'Trang Chủ', path: '/dashboard' },
