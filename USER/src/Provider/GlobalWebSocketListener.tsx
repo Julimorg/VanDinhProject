@@ -13,18 +13,6 @@ const GlobalWebSocketListener = () => {
   const { connect, subscribe, disconnect } = useWebSocketService(
     `${PUBLIC_API}/ws`,
     () => {
-      subscribe("/user/queue/notifications", (msg) => {
-        console.log("Private Notification received:", msg);
-        addNotification({
-          id: msg.userNotificationId,
-          title: msg.title,
-          description: msg.message,
-          time: msg.createdAt,
-          read: false,
-          type: msg.type,
-        });
-      });
-
       subscribe("/topic/public-notifications", (msg) => {
         console.log("Public Notification received:", msg);
         addNotification({
@@ -37,17 +25,29 @@ const GlobalWebSocketListener = () => {
         });
       });
 
-      subscribe("/topic/admin-broadcast", (msg) => {
-        console.log("Public Notification received:", msg);
-        addNotification({
-          id: msg.notificationId,
-          title: msg.title,
-          description: msg.message,
-          time: msg.createdAt,
-          read: false,
-          type: msg.type,
-        });
-      });
+      // subscribe("/user/queue/notifications", (msg) => {
+      //   console.log("Private Notification received:", msg);
+      //   addNotification({
+      //     id: msg.userNotificationId,
+      //     title: msg.title,
+      //     description: msg.message,
+      //     time: msg.createdAt,
+      //     read: false,
+      //     type: msg.type,
+      //   });
+      // });
+
+      // subscribe("/topic/admin-broadcast", (msg) => {
+      //   console.log("Public Notification received:", msg);
+      //   addNotification({
+      //     id: msg.notificationId,
+      //     title: msg.title,
+      //     description: msg.message,
+      //     time: msg.createdAt,
+      //     read: false,
+      //     type: msg.type,
+      //   });
+      // });
 
     },
     (error) => {

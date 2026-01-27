@@ -236,7 +236,7 @@ public class OrderService {
 
             Notifications noti = notificationsRepository.save(Notifications.builder()
                     .title("Order Confirmation!")
-                    .message("User has successfully confirm their order!")
+                    .message(user.getUserName()+" has successfully confirm their order!")
                     .type("Order!")
                     .createBy(user.getUserName())
                     .build());
