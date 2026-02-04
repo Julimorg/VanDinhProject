@@ -1,22 +1,30 @@
 package com.example.managementapi.Service;
 
+import com.example.managementapi.Dto.Request.Product.ProductCsvReq;
 import com.example.managementapi.Entity.Order;
 import com.example.managementapi.Entity.OrderItem;
 import com.example.managementapi.Component.MethodConverter;
+import com.example.managementapi.Entity.Product;
+import com.example.managementapi.Repository.CategoryRepository;
+import com.example.managementapi.Repository.ColorRepository;
+import com.example.managementapi.Repository.ProductRepository;
+import com.example.managementapi.Repository.SupplierRepository;
+import com.opencsv.CSVWriter;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +34,236 @@ public class FileService {
     private final MethodConverter methodConverter;
 
     private static final DateTimeFormatter DISPLAY_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+    private final ProductRepository productRepository;
+    private final SupplierRepository supplierRepository;
+    private final ColorRepository colorRepository;
+    private final CategoryRepository categoryRepository;
+
+    // Import products từ CSV
+    public List<Product> importProductsFromCsv(MultipartFile file) {
+        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+
+            CsvToBean<ProductCsvReq> csvToBean = new CsvToBeanBuilder<ProductCsvReq>(reader)
+                    .withType(ProductCsvReq.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            List<ProductCsvReq> productCsvList = csvToBean.parse();
+            List<Product> products = new ArrayList<>();
+
+            for (ProductCsvReq dto : productCsvList) {
+                Product product = convertCsvDtoToEntity(dto);
+                if (product != null) {
+                    products.add(product);
+                }
+            }
+
+            return productRepository.saveAll(products);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi đọc CSV file: " + e.getMessage(), e);
+        }
+    }
+
+
+    // Export products ra CSV dạng Base64
+    public Map<String, Object> exportProductsToCsvBase64() {
+        List<Product> products = productRepository.findAll();
+        return convertToBase64Response(products, "products_export");
+    }
+
+    // Export theo điều kiện dạng Base64
+    public Map<String, Object> exportProductsByCriteriaBase64(List<Product> products) {
+        return convertToBase64Response(products, "products_filtered");
+    }
+
+    // Tạo template CSV dạng Base64
+    public Map<String, Object> generateCsvTemplateBase64() {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             CSVWriter writer = new CSVWriter(new OutputStreamWriter(out))) {
+
+            String[] header = {
+                    "Product Name", "Description", "Images", "Volume", "Unit",
+                    "Product Code", "Quantity", "Discount", "Price",
+                    "Supplier ID", "Color ID", "Category ID"
+            };
+            writer.writeNext(header);
+
+            // Dòng mẫu
+            String[] example = {
+                    "Sản phẩm mẫu", "Mô tả sản phẩm", "image1.jpg;image2.jpg",
+                    "500", "ml", "SP001", "100", "10.5", "150000",
+                    "supplier-id-here", "color-id-here", "category-id-here"
+            };
+            writer.writeNext(example);
+
+            writer.flush();
+
+            String base64 = Base64.getEncoder().encodeToString(out.toByteArray());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("file_name", "product_import_template.csv");
+            response.put("file_content_base64", base64);
+            response.put("file_size", out.size());
+            response.put("mime_type", "text/csv");
+
+            return response;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi tạo template: " + e.getMessage(), e);
+        }
+    }
+
+    // Validate CSV file
+    public Map<String, Object> validateCsvFile(MultipartFile file) {
+        Map<String, Object> result = new HashMap<>();
+        List<String> errors = new ArrayList<>();
+
+        try (Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+
+            CsvToBean<ProductCsvReq> csvToBean = new CsvToBeanBuilder<ProductCsvReq>(reader)
+                    .withType(ProductCsvReq.class)
+                    .withIgnoreLeadingWhiteSpace(true)
+                    .build();
+
+            List<ProductCsvReq> productCsvList = csvToBean.parse();
+
+            for (int i = 0; i < productCsvList.size(); i++) {
+                ProductCsvReq dto = productCsvList.get(i);
+                int row = i + 2;
+
+                if (dto.getProductName() == null || dto.getProductName().trim().isEmpty()) {
+                    errors.add("Dòng " + row + ": Tên sản phẩm không được trống");
+                }
+
+                if (dto.getProductPrice() == null || dto.getProductPrice().doubleValue() <= 0) {
+                    errors.add("Dòng " + row + ": Giá sản phẩm phải lớn hơn 0");
+                }
+
+                if (dto.getProductQuantity() < 0) {
+                    errors.add("Dòng " + row + ": Số lượng không được âm");
+                }
+
+                if (dto.getSupplierId() != null && !supplierRepository.existsById(dto.getSupplierId())) {
+                    errors.add("Dòng " + row + ": Supplier ID không tồn tại");
+                }
+
+                if (dto.getColorId() != null && !colorRepository.existsById(dto.getColorId())) {
+                    errors.add("Dòng " + row + ": Color ID không tồn tại");
+                }
+
+                if (dto.getCategoryId() != null && !categoryRepository.existsById(dto.getCategoryId())) {
+                    errors.add("Dòng " + row + ": Category ID không tồn tại");
+                }
+            }
+
+            result.put("is_valid", errors.isEmpty());
+            result.put("total_rows", productCsvList.size());
+            result.put("errors", errors);
+            result.put("error_count", errors.size());
+
+        } catch (Exception e) {
+            result.put("is_valid", false);
+            result.put("errors", Arrays.asList("Lỗi khi đọc file: " + e.getMessage()));
+        }
+
+        return result;
+    }
+
+    // Private helper methods
+
+    private Map<String, Object> convertToBase64Response(List<Product> products, String filePrefix) {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             CSVWriter writer = new CSVWriter(new OutputStreamWriter(out))) {
+
+            // Header
+            String[] header = {
+                    "Product ID", "Product Name", "Description", "Images",
+                    "Volume", "Unit", "Product Code", "Quantity", "Discount", "Price",
+                    "Supplier ID", "Supplier Name", "Color ID", "Color Name",
+                    "Category ID", "Category Name", "Created At", "Updated At"
+            };
+            writer.writeNext(header);
+
+            // Data
+            for (Product product : products) {
+                String[] data = {
+                        product.getProductId(),
+                        product.getProductName(),
+                        product.getProductDescription(),
+                        product.getProductImage() != null ? String.join(";", product.getProductImage()) : "",
+                        product.getProductVolume(),
+                        product.getProductUnit(),
+                        product.getProductCode(),
+                        String.valueOf(product.getProductQuantity()),
+                        String.valueOf(product.getDiscount()),
+                        product.getProductPrice() != null ? product.getProductPrice().toString() : "0",
+                        product.getSupplier() != null ? product.getSupplier().getSupplierId() : "",
+                        product.getSupplier() != null ? product.getSupplier().getSupplierName() : "",
+                        product.getColor() != null ? product.getColor().getColorId() : "",
+                        product.getColor() != null ? product.getColor().getColorName() : "",
+                        product.getCategory() != null ? product.getCategory().getCategoryId() : "",
+                        product.getCategory() != null ? product.getCategory().getCategoryName() : "",
+                        product.getCreateAt() != null ? product.getCreateAt().toString() : "",
+                        product.getUpdateAt() != null ? product.getUpdateAt().toString() : ""
+                };
+                writer.writeNext(data);
+            }
+
+            writer.flush();
+
+            String base64 = Base64.getEncoder().encodeToString(out.toByteArray());
+            String filename = filePrefix + "_" +
+                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss")) +
+                    ".csv";
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("file_name", filename);
+            response.put("file_content_base64", base64);
+            response.put("total_records", products.size());
+            response.put("file_size", out.size());
+            response.put("mime_type", "text/csv");
+
+            return response;
+
+        } catch (IOException e) {
+            throw new RuntimeException("Lỗi khi ghi CSV: " + e.getMessage(), e);
+        }
+    }
+
+    private Product convertCsvDtoToEntity(ProductCsvReq dto) {
+        Product product = new Product();
+        product.setProductName(dto.getProductName());
+        product.setProductDescription(dto.getProductDescription());
+
+        if (dto.getProductImages() != null && !dto.getProductImages().isEmpty()) {
+            List<String> images = Arrays.asList(dto.getProductImages().split(";"));
+            product.setProductImage(images);
+        }
+
+        product.setProductVolume(dto.getProductVolume());
+        product.setProductUnit(dto.getProductUnit());
+        product.setProductCode(dto.getProductCode());
+        product.setProductQuantity(dto.getProductQuantity());
+        product.setDiscount(dto.getDiscount());
+        product.setProductPrice(dto.getProductPrice());
+
+        if (dto.getSupplierId() != null) {
+            supplierRepository.findById(dto.getSupplierId()).ifPresent(product::setSupplier);
+        }
+
+        if (dto.getColorId() != null) {
+            colorRepository.findById(dto.getColorId()).ifPresent(product::setColor);
+        }
+
+        if (dto.getCategoryId() != null) {
+            categoryRepository.findById(dto.getCategoryId()).ifPresent(product::setCategory);
+        }
+
+        return product;
+    }
+
 
     public byte[] generateExcelReport(List<Order> orders, String fromDateStr, String toDateStr) throws IOException {
 
