@@ -20,4 +20,9 @@ public interface ProductRepository extends JpaRepository<Product, String>, JpaSp
     Product findByProductId(String productId);
 
     List<Product> findTop10ByOrderByCreateAtDesc();
+
+    List<Product> findByCategoryCategoryId(String categoryId);
+
+    List<Product> findBySupplierSupplierId(String supplierId);
+
 }

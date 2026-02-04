@@ -42,7 +42,9 @@ public class FileExportController {
 
         return new ResponseEntity<>(excelBytes, headers, HttpStatus.OK);
     }
-    @PostMapping("/import")
+
+    // Upload và import CSV
+    @PostMapping("/products/csv/import")
     public ApiResponse<Map<String, Object>> importProducts(
             @RequestParam("file") MultipartFile file) {
 
@@ -92,7 +94,7 @@ public class FileExportController {
     }
 
     // Download tất cả products ra CSV (trả về base64)
-    @GetMapping("/export")
+    @GetMapping("/products/csv/export")
     public ApiResponse<Map<String, Object>> exportAllProducts() {
         try {
             Map<String, Object> exportData = fileService.exportProductsToCsvBase64();
@@ -114,8 +116,80 @@ public class FileExportController {
         }
     }
 
+    // Export products theo category
+    @GetMapping("/products/csvexport/category/{categoryId}")
+    public ApiResponse<Map<String, Object>> exportProductsByCategory(
+            @PathVariable String categoryId) {
+        try {
+            List<Product> products = fileService.getProductsByCategory(categoryId);
+
+            if (products.isEmpty()) {
+                return ApiResponse.<Map<String, Object>>builder()
+                        .status_code(HttpStatus.NOT_FOUND.value())
+                        .message("Không tìm thấy sản phẩm nào trong category này!")
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+            }
+
+            Map<String, Object> exportData = fileService.exportProductsByCriteriaBase64(products);
+            exportData.put("category_id", categoryId);
+
+            return ApiResponse.<Map<String, Object>>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Export CSV theo category thành công!")
+                    .data(exportData)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .status_code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Lỗi khi export CSV theo category: " + e.getMessage())
+                    .data(null)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        }
+    }
+
+    // Export products theo supplier
+    @GetMapping("/products/csv/export/supplier/{supplierId}")
+    public ApiResponse<Map<String, Object>> exportProductsBySupplier(
+            @PathVariable String supplierId) {
+        try {
+            List<Product> products = fileService.getProductsBySupplier(supplierId);
+
+            if (products.isEmpty()) {
+                return ApiResponse.<Map<String, Object>>builder()
+                        .status_code(HttpStatus.NOT_FOUND.value())
+                        .message("Không tìm thấy sản phẩm nào của supplier này!")
+                        .data(null)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+            }
+
+            Map<String, Object> exportData = fileService.exportProductsByCriteriaBase64(products);
+            exportData.put("supplier_id", supplierId);
+
+            return ApiResponse.<Map<String, Object>>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Export CSV theo supplier thành công!")
+                    .data(exportData)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.<Map<String, Object>>builder()
+                    .status_code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Lỗi khi export CSV theo supplier: " + e.getMessage())
+                    .data(null)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        }
+    }
+
     // Get template CSV để import
-    @GetMapping("/template")
+    @GetMapping("/products/csv/template")
     public ApiResponse<Map<String, Object>> downloadTemplate() {
         try {
             Map<String, Object> templateData = fileService.generateCsvTemplateBase64();
@@ -138,7 +212,7 @@ public class FileExportController {
     }
 
     // Validate CSV trước khi import
-    @PostMapping("/validate")
+    @PostMapping("/products/csv/validate")
     public ApiResponse<Map<String, Object>> validateCsv(
             @RequestParam("file") MultipartFile file) {
 
@@ -182,6 +256,29 @@ public class FileExportController {
         }
     }
 
+    // Lấy danh sách products đã import gần đây
+    @GetMapping("/products/csv/recent-imports")
+    public ApiResponse<List<Product>> getRecentImports(
+            @RequestParam(defaultValue = "10") int limit) {
+        try {
+            List<Product> recentProducts = fileService.getRecentImportedProducts(limit);
+
+            return ApiResponse.<List<Product>>builder()
+                    .status_code(HttpStatus.OK.value())
+                    .message("Lấy danh sách products thành công!")
+                    .data(recentProducts)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.<List<Product>>builder()
+                    .status_code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Lỗi khi lấy danh sách: " + e.getMessage())
+                    .data(null)
+                    .timestamp(LocalDateTime.now())
+                    .build();
+        }
+    }
 //    @PostMapping("/excel-file")
 //    public ApiResponse<byte[]> exportExcelFileByGetOrdersFromUserAndDateRange(@RequestBody ExportFileReq req) throws IOException {
 //

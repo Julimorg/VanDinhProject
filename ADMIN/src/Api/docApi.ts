@@ -46,6 +46,7 @@ import { ISendNotificationsRequest, ISendNotificationsResponse } from '@/Interfa
 import { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from '@/Interface/Notification/IMarkNotificationAsRead';
 import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
 import { IUpdateProductQuantityRequest, IUpdateProductQuantityResponse } from '@/Interface/Product/IUpdateProductQuantity';
+import { ICsvImportResponse, ICsvValidateResponse, ICsvTemplateResponse, ICsvExportResponse, IRecentImportsResponse } from '@/Interface/File/ICvs';
 
 
 export const docApi = {
@@ -683,7 +684,68 @@ export const docApi = {
     return res.data;
   },
 
-  //* ======================================================== Export Excel  ======================================================== */
+  //* ======================================================== File Management  ======================================================== */
+
+  ImportProductsCsv: async (file: File): Promise<ICsvImportResponse> => {
+    const url = `/file/products/csv/import`;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  },
+   
+  ValidateProductsCsv: async (file: File): Promise<ICsvValidateResponse> => {
+    const url = `/file/products/csv/validate`;
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const res = await axiosClient.post(url, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return res.data;
+  },
+
+  // Download CSV template
+  DownloadCsvTemplate: async (): Promise<ICsvTemplateResponse> => {
+    const url = `/file/products/csv/template`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  // Export all products to CSV
+  ExportAllProductsCsv: async (): Promise<ICsvExportResponse> => {
+    const url = `/file/products/csv/export`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  // Export products by category
+  ExportProductsByCategory: async (categoryId: string): Promise<ICsvExportResponse> => {
+    const url = `/file/products/csv/export/category/${categoryId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  // Export products by supplier
+  ExportProductsBySupplier: async (supplierId: string): Promise<ICsvExportResponse> => {
+    const url = `/file/products/csv/export/supplier/${supplierId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  // Get recent imports
+  GetRecentImports: async (limit: number = 10): Promise<IRecentImportsResponse> => {
+    const url = `/file/products/csv/recent-imports?limit=${limit}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
   ExportUsersExcel: async (body: IExportExcelFileRequest): Promise<Blob> => {
     const url = `/file/excel-file`;

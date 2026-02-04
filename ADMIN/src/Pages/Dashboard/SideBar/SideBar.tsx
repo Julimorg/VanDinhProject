@@ -14,7 +14,8 @@ import {
   KeyOutlined,
   DotChartOutlined,
   FileSyncOutlined,
-  NotificationOutlined
+  NotificationOutlined,
+  FileOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -95,9 +96,20 @@ const Sidebar: React.FC<SidebarProps> = ({ collapsed, setCollapsed, isMobile, dr
     },
     {
       key: 'file',
-      icon: <FileSyncOutlined />,
-      label: 'Xuất File',
-      path: '/file-exporter'
+      icon: <FileOutlined />,
+      label: 'Tệp tin',
+      children: [
+        { key: 'order-file-exporter',
+           label: 'Xuất File Đơn Hàng',
+            path: '/file-exporter'
+        },
+        { key: 'product-importer', 
+          label: 'Nhập kho sản phẩm ',
+           path: '/product-file-import' 
+        },
+        { key: 'shipping', label: 'Vận Chuyển', path: '/settings/shipping' },
+        { key: 'notifications', label: 'Thông Báo', path: '/settings/notifications' },
+      ],
     },
     {
       key: 'notifications',

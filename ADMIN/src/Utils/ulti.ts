@@ -87,3 +87,81 @@ export const buildFormData = (data: Record<string, any>): FormData => {
   });
   return formData;
 };
+
+/**
+ * Download CSV file from base64 string
+ * @param base64String - Base64 encoded file content
+ * @param fileName - Name of the file to download
+ */
+export const downloadCsvFromBase64 = (base64String: string, fileName: string): void => {
+  try {
+    // Decode base64 to binary string
+    const binaryString = atob(base64String);
+    
+    // Convert binary string to byte array
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Create Blob from byte array
+    const blob = new Blob([bytes], { type: 'text/csv;charset=utf-8;' });
+    
+    // Create download URL
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    
+    // Trigger download
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Error downloading CSV file:', error);
+    throw new Error('Failed to download CSV file');
+  }
+};
+
+/**
+ * Format file size to readable string
+ * @param bytes - File size in bytes
+ * @returns Formatted file size string
+ */
+export const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+};
+
+/**
+ * Validate CSV file before upload
+ * @param file - File to validate
+ * @returns Validation result
+ */
+export const validateCsvFile = (file: File): { valid: boolean; error?: string } => {
+  // Check file type
+  if (!file.name.endsWith('.csv')) {
+    return { valid: false, error: 'Chỉ chấp nhận file CSV!' };
+  }
+  
+  // Check file size (max 10MB)
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  if (file.size > maxSize) {
+    return { valid: false, error: 'File vượt quá kích thước cho phép (10MB)!' };
+  }
+  
+  // Check if file is empty
+  if (file.size === 0) {
+    return { valid: false, error: 'File CSV trống!' };
+  }
+  
+  return { valid: true };
+};

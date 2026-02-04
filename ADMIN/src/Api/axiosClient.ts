@@ -5,7 +5,7 @@ import { useAuthStore } from '@/Store/IAuth';
 import { AWS_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: AWS_API,
+  baseURL: "http://localhost:8080/api/v1/",
   headers: {
     'Content-Type': 'application/json',
   },
