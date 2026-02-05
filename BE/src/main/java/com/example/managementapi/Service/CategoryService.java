@@ -13,7 +13,6 @@ import com.example.managementapi.Specification.CategorySpecification;
 import com.example.managementapi.Util.FileUpLoadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,6 +32,8 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
 
     private final CloudinaryService cloudinaryService;
+
+    private final ElasticSearchService elasticSearchService;
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
@@ -62,6 +63,7 @@ public class CategoryService {
         Category category = categoryMapper.toCategory(request);
         category.setCategoryImage(imgUrl);
         category = categoryRepository.save(category);
+        elasticSearchService.saveCategory(category);
 
         return categoryMapper.toCreateCategoryRes(category);
     }
@@ -84,6 +86,7 @@ public class CategoryService {
         categoryMapper.updateCategory(category, request);
 
         category = categoryRepository.save(category);
+        elasticSearchService.saveCategory(category);
 
         return categoryMapper.toUpdateCategoryRes(category);
     }
@@ -110,6 +113,7 @@ public class CategoryService {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteCategory(String id){
+        elasticSearchService.delete("C_"+id);
         categoryRepository.deleteById(id);
     }
 }
