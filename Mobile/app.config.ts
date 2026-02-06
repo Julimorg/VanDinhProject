@@ -23,7 +23,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     edgeToEdgeEnabled: true,
     predictiveBackGestureEnabled: false,
     package: "com.vandinh.paint",
-    versionCode:5,
+    versionCode:6,
   },
   web: {
     output: "static",

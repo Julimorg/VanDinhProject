@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {  Col, Card, Typography, Button, Tag, Rate, message } from 'antd';
+import { Col, Card, Typography, Button, Tag, Rate, message } from 'antd';
 import { ShoppingCartOutlined, EyeOutlined, HeartOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import type { IGetProductNewArrival } from '../../../Interface/Product/IGetProductNewArrival';
 import { useProductCardUtils } from '../../../Hook/useProductCardUltis';
@@ -29,172 +29,158 @@ const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({ product, 
     }
   };
 
-
   return (
-    <Col xs={12} sm={12} md={8} lg={6} xl={4}>
+    <Col xs={12} sm={12} md={8} lg={6} xl={4} xxl={3}>
       <Card
         hoverable
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className="group relative overflow-hidden rounded-xl shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 h-full"
+        className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 h-full flex flex-col"
+        bodyStyle={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}
         cover={
-          <div className="relative overflow-hidden h-56 md:h-64">
+          <div className="relative overflow-hidden aspect-[4/3] md:aspect-square">
             <img
               alt={product.productName}
               src={mainImage}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            <div className="absolute top-3 left-3 flex flex-col gap-2">
-              <Tag color="red" className="text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+            {/* Badges top-left */}
+            <div className="absolute top-2 left-2 flex flex-col gap-1">
+              <Tag color="red" className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
                 MỚI
               </Tag>
+              {utils.stockBadge && (
+                <Tag className={`text-[10px] px-1.5 py-0.5 rounded-full shadow-sm ${utils.stockBadge.className}`}>
+                  {utils.stockBadge.text}
+                </Tag>
+              )}
             </div>
 
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            {/* Wishlist button */}
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <Button
                 shape="circle"
                 icon={<HeartOutlined />}
-                className="bg-white/80 backdrop-blur-sm border-none shadow-md hover:bg-red-50"
+                size="small"
+                className="bg-white/90 backdrop-blur-sm border-none shadow hover:bg-red-50"
               />
             </div>
 
-            {utils.stockBadge && (
-              <div className={`absolute top-3 left-3 ${utils.stockBadge.className}`}>
-                {utils.stockBadge.text}
-              </div>
-            )}
-
-            <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-white/90 text-gray-800 shadow-sm line-clamp-1 max-w-[9rem]">
-                {product.categoryName}
-              </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-900/80 text-white shadow-sm line-clamp-1 max-w-[9rem]">
-                Màu: {product.colorName}
-              </span>
+            {/* Color & Category tags top-right */}
+            <div className="absolute top-2 right-2 flex flex-col items-end gap-1 opacity-90">
+              {product.colorName && (
+                <Tag className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/90 text-gray-800 shadow-sm">
+                  Màu: {product.colorName}
+                </Tag>
+              )}
+              <Tag className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-800/80 text-white shadow-sm">
+                {product.categoryName || 'Sơn nội thất'}
+              </Tag>
             </div>
 
+            {/* Out of stock overlay */}
             {utils.isOutOfStock && (
-              <div className="absolute inset-0 bg-white/90 flex items-center justify-center backdrop-blur-sm">
-                <span className="text-gray-900 text-base font-semibold">Tạm hết hàng</span>
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                <span className="text-white font-medium text-sm">Hết hàng</span>
               </div>
             )}
 
+            {/* Quick view button bottom */}
             <div
-              className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3 transition-opacity duration-300 ${
+              className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-opacity duration-300 ${
                 isHovered && utils.canAddToCart ? 'opacity-100' : 'opacity-0'
               }`}
             >
               <Button
+                size="small"
                 icon={<EyeOutlined />}
                 onClick={() => onViewDetail(product.productId)}
                 block
-                size="small"
-                className="bg-white/95 hover:bg-white border-0 font-medium"
+                className="bg-white/95 hover:bg-white text-black font-medium text-xs"
               >
-                Xem nhanh
+                Xem chi tiết
               </Button>
             </div>
           </div>
         }
-        bodyStyle={{ padding: '16px 12px' }}
       >
-        <div className="space-y-2">
-          <div className="flex justify-between items-center text-xs text-gray-500">
-            <span>{product.categoryName || 'Sơn nội thất'}</span>
-            <span className="font-mono">{product.productCode}</span>
-          </div>
-
-          <Typography.Title level={5} className="text-base md:text-lg font-semibold line-clamp-2 h-12 md:h-14 mb-1">
+        <div className="flex flex-col flex-1 space-y-1.5">
+          {/* Name */}
+          <Typography.Title
+            level={5}
+            className="text-sm md:text-base font-semibold line-clamp-2 mb-0 h-10 md:h-12"
+          >
             {product.productName}
           </Typography.Title>
 
-          <div className="flex items-center gap-2 text-sm">
-            {product.colorName && (
-              <div className="flex items-center gap-1.5">
-                <div
-                  className="w-4 h-4 rounded-full border border-gray-300"
-                  style={{
-                    backgroundColor: product.colorName.toLowerCase().includes('trắng') ? '#fff' : '#e63946',
-                  }}
-                />
-                <span>{product.colorName}</span>
-              </div>
-            )}
-            <Typography.Text type="secondary">• {product.productVolume} {product.productUnit}</Typography.Text>
+          {/* Code & Volume */}
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>{product.productCode}</span>
+            <span>
+              {product.productVolume} {product.productUnit}
+            </span>
           </div>
 
-          <div className="flex justify-between items-end mt-3">
+          {/* Price & Rating */}
+          <div className="flex items-end justify-between mt-1">
             <div>
-              <Typography.Text strong className="text-xl md:text-2xl text-green-700 block">
+              <Typography.Text strong className="text-base md:text-lg text-green-700 block">
                 {formatPrice(product.productPrice)}
               </Typography.Text>
               {product.productQuantity < 10 && product.productQuantity > 0 && (
                 <Typography.Text type="danger" className="text-xs">
-                  Chỉ còn {product.productQuantity} sản phẩm
+                  Còn {product.productQuantity}
                 </Typography.Text>
               )}
             </div>
-
-            <Rate disabled defaultValue={4.5} count={5} className="text-sm" />
+            <Rate disabled defaultValue={4.5} count={5} className="text-xs" />
           </div>
 
-          {!utils.isOutOfStock && (
-            <div className="mb-2">
-              <p className="text-[11px] text-gray-500 line-clamp-2">
-                {utils.availabilityMessage}
-              </p>
-            </div>
-          )}
-
-          <div className="border-t border-gray-100 mb-3"></div>
-
-          <div className="mt-auto space-y-2">
+          {/* Quantity selector & Buttons */}
+          <div className="mt-auto pt-2 space-y-2">
             {utils.canAddToCart && (
               <div className="flex items-center justify-center gap-2">
-                <span className="text-xs text-gray-600 font-medium whitespace-nowrap">Số lượng:</span>
-                <div className="flex items-center border border-gray-300 rounded-full overflow-hidden bg-gray-50">
+                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden bg-white text-xs">
                   <button
                     onClick={() => handleQuantity(quantity - 1)}
                     disabled={quantity <= 1}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2 py-1 hover:bg-gray-100 disabled:opacity-40"
                   >
-                    <MinusOutlined className="text-[10px]" />
+                    <MinusOutlined />
                   </button>
-                  <input
-                    type="text"
-                    value={quantity}
-                    onChange={(e) => handleQuantity(parseInt(e.target.value) || 1)}
-                    className="w-10 h-8 text-center font-semibold text-xs focus:outline-none bg-transparent"
-                  />
+                  <span className="px-3 py-1 font-medium min-w-[32px] text-center">
+                    {quantity}
+                  </span>
                   <button
                     onClick={() => handleQuantity(quantity + 1)}
                     disabled={quantity >= utils.maxOrderQuantity}
-                    className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    className="px-2 py-1 hover:bg-gray-100 disabled:opacity-40"
                   >
-                    <PlusOutlined className="text-[10px]" />
+                    <PlusOutlined />
                   </button>
                 </div>
               </div>
             )}
 
-            <div className="flex gap-2 pt-1">
+            <div className="flex gap-1.5">
               <Button
-                type="default"
+                size="small"
                 icon={<EyeOutlined />}
                 onClick={() => onViewDetail(product.productId)}
-                className="flex-1 h-9 font-medium text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+                className="flex-1 text-xs border-gray-300 hover:border-gray-400"
               >
                 Chi tiết
               </Button>
               <Button
                 type="primary"
+                size="small"
                 icon={<ShoppingCartOutlined />}
                 onClick={() => onAddToCart(product, quantity)}
                 disabled={!utils.canAddToCart}
-                className="flex-1 h-9 font-semibold text-xs bg-gray-900 hover:bg-gray-800 border-0 disabled:bg-gray-300"
+                className="flex-1 text-xs bg-gray-900 hover:bg-gray-800"
               >
-                Thêm vào giỏ
+                Thêm giỏ
               </Button>
             </div>
           </div>

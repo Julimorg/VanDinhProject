@@ -6,6 +6,7 @@ import org.aspectj.weaver.ast.Or;
 import org.springframework.data.jpa.domain.Specification;
 
 public class OrderSpecification {
+
     //Filter: status,
     //Search: order code, ship address,
     //sort: creat at, complete at, order amount, quantity
