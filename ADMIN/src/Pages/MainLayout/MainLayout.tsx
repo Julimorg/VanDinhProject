@@ -4,8 +4,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from '../Dashboard/SideBar/SideBar';
 import Header from '../Dashboard/Header/Header';
 
-
-
 const { Content } = Layout;
 
 const MainLayout = () => {
@@ -29,25 +27,21 @@ const MainLayout = () => {
 
   return (
     <Layout className="min-h-screen">
-      <Sidebar 
-        collapsed={collapsed} 
+      <Sidebar
+        collapsed={collapsed}
         setCollapsed={setCollapsed}
         isMobile={isMobile}
         drawerVisible={drawerVisible}
         setDrawerVisible={setDrawerVisible}
       />
-      
-      <Layout 
+
+      <Layout
         className="transition-all duration-200"
-        style={{ marginLeft: isMobile ? 0 : (collapsed ? 80 : 256) }}
+        style={{ marginLeft: isMobile ? 0 : collapsed ? 80 : 256 }}
       >
-        <Header 
-          isMobile={isMobile}
-          setDrawerVisible={setDrawerVisible}
-        />
-        
+        <Header isMobile={isMobile} setDrawerVisible={setDrawerVisible} />
+
         <Content className="m-6 min-h-[calc(100vh-112px)]">
-       
           <Outlet />
         </Content>
       </Layout>

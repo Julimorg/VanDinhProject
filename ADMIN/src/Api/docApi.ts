@@ -726,26 +726,6 @@ export const docApi = {
     return res.data;
   },
 
-  // Export products by category
-  ExportProductsByCategory: async (categoryId: string): Promise<ICsvExportResponse> => {
-    const url = `/file/products/csv/export/category/${categoryId}`;
-    const res = await axiosClient.get(url);
-    return res.data;
-  },
-
-  // Export products by supplier
-  ExportProductsBySupplier: async (supplierId: string): Promise<ICsvExportResponse> => {
-    const url = `/file/products/csv/export/supplier/${supplierId}`;
-    const res = await axiosClient.get(url);
-    return res.data;
-  },
-
-  // Get recent imports
-  GetRecentImports: async (limit: number = 10): Promise<IRecentImportsResponse> => {
-    const url = `/file/products/csv/recent-imports?limit=${limit}`;
-    const res = await axiosClient.get(url);
-    return res.data;
-  },
 
   ExportUsersExcel: async (body: IExportExcelFileRequest): Promise<Blob> => {
     const url = `/file/excel-file`;

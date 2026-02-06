@@ -13,7 +13,7 @@ const GlobalWebSocketListener = () => {
 
   const PUBLIC_API = AWS_API_RAW;
   const { connect, subscribe, disconnect, isConnected } = useWebSocketService(
-    'http://localhost:8080/ws',
+     AWS_API_RAW + '/ws',
     () => {
       console.log('WebSocket Connected - Setting up subscriptions...');
       toast.success('Kết nối realtime thành công!');
