@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +48,7 @@ public class ElasticSearchService {
         publisher.publishEvent(new ReindexEvent.ReindexSearchAllEvent());
     }
 
+    // =============== Lưu hoặc update data mới vào elasticsearch ==============================
     private SearchAllDocument mapCategory(Category category) {
         return SearchAllDocument.builder()
                 .id("C_" + category.getCategoryId())
@@ -121,21 +123,91 @@ public class ElasticSearchService {
         }
     }
 
+    // =============== Xóa data khỏi es ==============================
     public void delete(String id) {
         searchAllDocumentRepository.deleteById(id);
     }
 
+    // =============== Sync data từ db vào es (chỉ gọi lần đầu) ==============================
     @Transactional(readOnly = true)
     public void reindexAll() {
         log.info("Start reindex search_all index");
+        int pageSize = 500;
 
-        List<SearchAllDocument> docs = new ArrayList<>();
+        // Reindex từng loại theo batch
+        reindexProducts(pageSize);
+        reindexCategories(pageSize);
+        reindexSuppliers(pageSize);
 
-        productRepository.findAll().forEach(p -> docs.add(mapProduct(p)));
-        categoryRepository.findAll().forEach(c -> docs.add(mapCategory(c)));
-        supplierRepository.findAll().forEach(s -> docs.add(mapSupplier(s)));
+        try {
+            elasticsearchClient.indices().refresh(r -> r.index("search_all"));
+        } catch (Exception e) {
+            log.error("Refresh index failed", e);
+        }
 
-        try{
+        log.info("Finish reindex search_all index");
+    }
+
+    private void reindexProducts(int pageSize) {
+        int page = 0;
+        Page<Product> batch;
+
+        do {
+            batch = productRepository.findAll(PageRequest.of(page, pageSize));
+            if (batch.isEmpty()) break;
+
+            List<SearchAllDocument> docs = batch.getContent()
+                    .stream()
+                    .map(this::mapProduct)
+                    .toList();
+
+            bulkIndex(docs);
+            log.info("Reindex products page {}/{}", page + 1, batch.getTotalPages());
+            page++;
+
+        } while (batch.hasNext());
+    }
+
+    private void reindexCategories(int pageSize) {
+        int page = 0;
+        Page<Category> batch;
+
+        do {
+            batch = categoryRepository.findAll(PageRequest.of(page, pageSize));
+            if (batch.isEmpty()) break;
+
+            List<SearchAllDocument> docs = batch.getContent()
+                    .stream()
+                    .map(this::mapCategory)
+                    .toList();
+
+            bulkIndex(docs);
+            page++;
+
+        } while (batch.hasNext());
+    }
+
+    private void reindexSuppliers(int pageSize) {
+        int page = 0;
+        Page<Supplier> batch;
+
+        do {
+            batch = supplierRepository.findAll(PageRequest.of(page, pageSize));
+            if (batch.isEmpty()) break;
+
+            List<SearchAllDocument> docs = batch.getContent()
+                    .stream()
+                    .map(this::mapSupplier)
+                    .toList();
+
+            bulkIndex(docs);
+            page++;
+
+        } while (batch.hasNext());
+    }
+
+    private void bulkIndex(List<SearchAllDocument> docs) {
+        try {
             elasticsearchClient.bulk(b -> {
                 docs.forEach(doc ->
                         b.operations(op -> op
@@ -148,14 +220,12 @@ public class ElasticSearchService {
                 );
                 return b;
             });
-            elasticsearchClient.indices().refresh(r -> r.index("search_all"));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            log.error("Bulk index failed", e);
         }
-
-        log.info("Finish reindex search_all index");
     }
 
+    // =============== Global search ==============================
     public Page<SearchAllRes> searchAll(String keyword, Pageable pageable) {
         try {
 
@@ -165,10 +235,22 @@ public class ElasticSearchService {
                                     .from((int) pageable.getOffset())
                                     .size(pageable.getPageSize())
                                     .query(q -> q
-                                            .multiMatch(m -> m
-                                                    .query(keyword)
-                                                    .fields("name")
-                                                    .fuzziness("AUTO")
+                                            .bool(b -> b
+                                                    .should(sh -> sh
+                                                            .matchPhrasePrefix(m -> m
+                                                                    .field("name")
+                                                                    .query(keyword)
+                                                            )
+                                                    )
+                                                    .should(sh -> sh
+                                                            .multiMatch(m -> m
+                                                                    .query(keyword)
+                                                                    .fields("name")
+                                                                    .fuzziness("AUTO")
+                                                            )
+                                                    )
+                                                    .minimumShouldMatch("1")
+                                                    
                                             )
                                     ),
                             SearchAllDocument.class
@@ -184,6 +266,7 @@ public class ElasticSearchService {
                                 .type(doc.getType())
                                 .entityId(doc.getEntityId())
                                 .name(doc.getName())
+                                .image(doc.getImage())
                                 .score(hit.score() != null ? hit.score() : 0f)
                                 .build();
                     })
@@ -202,6 +285,6 @@ public class ElasticSearchService {
         }
     }
 
-    //Tối ưu lại sau, tạo index riêng để read, write, cập nhật version index tránh downtime
+    //Tối ưu lại sau: tạo index riêng để read, write, cập nhật version index tránh downtime
 
 }

@@ -13,5 +13,6 @@ public class SearchAllRes {
     private String type;
     private String entityId;
     private String name;
+    private String image;
     private double score;
 }
