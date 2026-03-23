@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,5 +16,7 @@ public class SearchAllRes {
     private String entityId;
     private String name;
     private String image;
+    private BigDecimal price;
     private double score;
+
 }

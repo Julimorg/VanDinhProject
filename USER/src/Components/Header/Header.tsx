@@ -14,6 +14,8 @@ import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 import { useGetUnreadNotificationCount } from './Hook/useGetUnreadCount';
+import SearchBar from './Components/SearchDropdown';
+import HeaderSearch from './Components/SearchDropdown';
 
 interface HeaderProps {
   isMobile: boolean;
@@ -102,6 +104,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   //const finalUnreadCount = unreadRes?.data ?? 0;
   const finalUnreadCount = unreadCount;
 
+  //Elasticsearch
+
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -187,9 +191,15 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <BrandLogo />
-
+            {/* Search Bar */}
+            <div className="flex-1 flex justify-end md:justify-center items-center mr-2 md:mr-0">
+              <div className="flex-1 flex justify-end md:justify-center items-center mr-2 md:mr-0">
+              {/* Đã gỡ bỏ dữ liệu giả, HeaderSearch giờ tự quản lý fetch data */}
+              <HeaderSearch /> 
+            </div>
+            </div>
             {/* Desktop Menu */}
-            <nav className="hidden md:flex items-center gap-8 mx-8">
+            <nav className="hidden md:flex items-center gap-6 mx-2">
               {navItems.map((item) => (
                 <button
                   key={item.key}
@@ -200,6 +210,8 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
                 </button>
               ))}
             </nav>
+
+            
 
             {/* Desktop Right Section */}
             <div className="hidden md:flex items-center gap-2">

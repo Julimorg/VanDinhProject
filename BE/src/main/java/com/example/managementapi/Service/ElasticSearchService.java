@@ -55,6 +55,7 @@ public class ElasticSearchService {
                 .type("CATEGORY")
                 .entityId(category.getCategoryId())
                 .name(category.getCategoryName())
+                .image(category.getCategoryImage())
                 .build();
     }
 
@@ -77,6 +78,7 @@ public class ElasticSearchService {
                 .id("S_" + supplier.getSupplierId())
                 .type("SUPPLIER")
                 .entityId(supplier.getSupplierId())
+                .image(supplier.getSupplierImg())
                 .name(supplier.getSupplierName())
                 .build();
     }
@@ -106,6 +108,7 @@ public class ElasticSearchService {
                 .entityId(product.getProductId())
                 .name(product.getProductName())
                 .image(image)
+                .price(product.getProductPrice())
                 .build();
     }
 
@@ -267,6 +270,7 @@ public class ElasticSearchService {
                                 .entityId(doc.getEntityId())
                                 .name(doc.getName())
                                 .image(doc.getImage())
+                                .price(doc.getPrice())
                                 .score(hit.score() != null ? hit.score() : 0f)
                                 .build();
                     })
