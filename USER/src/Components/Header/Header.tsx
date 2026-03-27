@@ -14,7 +14,6 @@ import { useMarkNotificationAsRead } from './Hook/useMarkNotificationAsRead';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 import { useGetUnreadNotificationCount } from './Hook/useGetUnreadCount';
-import SearchBar from './Components/SearchDropdown';
 import HeaderSearch from './Components/SearchDropdown';
 
 interface HeaderProps {
