@@ -1,24 +1,19 @@
 package com.example.managementapi.Controller;
 
-import com.cloudinary.Api;
 import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Product.CreateProductReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductQuantityReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Product.*;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Service.ProductService;
 import com.example.managementapi.Util.QRGenerateUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
