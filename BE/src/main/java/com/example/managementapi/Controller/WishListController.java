@@ -34,6 +34,18 @@ public class WishListController {
                 .build();
     }
 
+    @GetMapping("/{userId}/check/{productId}")
+    public ApiResponse<Boolean> isWishList(
+            @PathVariable String userId,
+            @PathVariable String productId) {
+        return ApiResponse.<Boolean>builder()
+                .status_code(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(wishListService.isInWishlist(userId, productId))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
     @PostMapping("/{userId}/{productId}")
     public ApiResponse<AddWishListRes>addWishList(
             @PathVariable String userId,
@@ -45,4 +57,6 @@ public class WishListController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+
 }

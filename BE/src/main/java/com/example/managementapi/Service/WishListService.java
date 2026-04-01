@@ -80,4 +80,11 @@ public class WishListService {
                 .map(wishList -> wishListMapper
                         .toWishlistResponse(wishList));
     }
+
+    public boolean isInWishlist(String userId, String productId) {
+        return wishListRepo.existsByUserIdAndProductProductId(userId, productId);
+    }
+
+    // TODO
+    // MAKING A TRACKING FAVOR PRODUCT FOR USER
 }
