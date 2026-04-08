@@ -1,4 +1,4 @@
-# Stage 1: Build với Maven (caching tốt cho dependencies)
+    # Stage 1: Build với Maven (caching tốt cho dependencies)
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 

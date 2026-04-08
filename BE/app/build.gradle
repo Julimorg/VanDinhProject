@@ -1,8 +1,10 @@
 plugins {
     id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
 }
 
 dependencies {
+    // ==================== Project Modules ====================
     implementation project(':shared')
     implementation project(':user')
     implementation project(':product')
@@ -10,19 +12,59 @@ dependencies {
     implementation project(':payment')
     implementation project(':notification')
 
+    // ==================== Spring Boot Starters ====================
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
 
+    // ==================== Third-party Libraries (có version) ====================
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'com.sendgrid:sendgrid-java:4.9.3'
+    implementation 'com.opencsv:opencsv:5.9'
+    implementation 'commons-io:commons-io:2.17.0'
+    implementation 'com.cloudinary:cloudinary-http5:2.2.0'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
+    implementation 'org.apache.poi:poi:5.3.0'
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.40'
+    implementation 'com.google.zxing:core:3.5.3'
+    implementation 'com.google.zxing:javase:3.5.3'
+    implementation 'co.elastic.clients:elasticsearch-java:8.17.0'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.6.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.0'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Dotenv
+    implementation 'io.github.cdimascio:dotenv-java:3.0.0'
+    implementation 'me.paulschwarz:spring-dotenv:3.0.0'
+
+    // Runtime
     runtimeOnly 'com.mysql:mysql-connector-j'
-    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'org.springframework.boot:spring-boot-devtools'
 
+    // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'com.h2database:h2'
+    testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
 }
 
 bootJar {
-    archiveFileName = 'ecommerce.jar'
+    archiveFileName = 'vandinh-ecommerce.jar'
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
