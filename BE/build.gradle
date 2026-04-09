@@ -1,0 +1,62 @@
+// ============================================================
+// ROOT build.gradle
+// apply false = khai báo plugin nhưng KHÔNG apply vào root
+// ============================================================
+plugins {
+    id 'java'
+    id 'org.springframework.boot'            version "${springBootVersion}"            apply false
+    id 'io.spring.dependency-management'     version "${springDependencyManagementVersion}" apply false
+}
+
+// Config áp dụng cho TẤT CẢ subproject
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    group   = rootProject.group
+    version = rootProject.version
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(javaVersion as int)
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // BOM imports — quản lý version tập trung, không cần ghi version
+    // trong từng module khi dùng Spring managed dependency
+    // ----------------------------------------------------------------
+    dependencyManagement {
+        imports {
+            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+            mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // Dependencies có trong MỌI module
+    // ----------------------------------------------------------------
+    dependencies {
+        // Lombok — phải TRƯỚC mapstruct processor
+        compileOnly         "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+        // Test
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testCompileOnly     "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+}
