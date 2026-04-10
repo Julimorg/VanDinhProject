@@ -1,62 +1,128 @@
-// ============================================================
-// ROOT build.gradle
-// apply false = khai báo plugin nhưng KHÔNG apply vào root
-// ============================================================
 plugins {
     id 'java'
-    id 'org.springframework.boot'            version "${springBootVersion}"            apply false
-    id 'io.spring.dependency-management'     version "${springDependencyManagementVersion}" apply false
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
-// Config áp dụng cho TẤT CẢ subproject
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'io.spring.dependency-management'
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
 
-    group   = rootProject.group
-    version = rootProject.version
-
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(javaVersion as int)
-        }
-    }
-
-    // ----------------------------------------------------------------
-    // BOM imports — quản lý version tập trung, không cần ghi version
-    // trong từng module khi dùng Spring managed dependency
-    // ----------------------------------------------------------------
-    dependencyManagement {
-        imports {
-            mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
-            mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
-        }
-    }
-
-    // ----------------------------------------------------------------
-    // Dependencies có trong MỌI module
-    // ----------------------------------------------------------------
-    dependencies {
-        // Lombok — phải TRƯỚC mapstruct processor
-        compileOnly         "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-        annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-        // Test
-        testImplementation 'org.springframework.boot:spring-boot-starter-test'
-        testCompileOnly     "org.projectlombok:lombok:${lombokVersion}"
-        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    tasks.withType(JavaCompile).configureEach {
-        options.encoding = 'UTF-8'
-    }
-
-    test {
-        useJUnitPlatform()
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    set('springModulithVersion', '1.4.1')
+//    set('snippetsDir', file("build/generated-snippets"))
+}
+
+dependencies {
+    // Spring Boot Starters
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+    // Spring Modulith
+    implementation 'org.springframework.modulith:spring-modulith-starter-core'
+    implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
+
+    // Flyway
+    implementation 'org.flywaydb:flyway-core'
+
+    // Security
+    implementation 'org.springframework.security:spring-security-crypto'
+
+    // MapStruct
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+
+    // Lombok
+    annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    // OpenAPI / Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
+
+    // JWT
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.30.1'
+
+    // Email
+    implementation 'com.sendgrid:sendgrid-java:4.9.3'
+
+    // CSV
+    implementation 'com.opencsv:opencsv:5.9'
+
+    // Dotenv
+    implementation 'io.github.cdimascio:dotenv-java:3.0.2'
+    implementation 'me.paulschwarz:spring-dotenv:3.0.0'
+
+    // Cloudinary
+    implementation 'com.cloudinary:cloudinary-http45:1.39.0'
+
+    // Apache POI (Excel)
+    implementation 'org.apache.poi:poi:5.3.0'
+    implementation 'org.apache.poi:poi-ooxml:5.3.0'
+
+    // QR Code
+    implementation 'com.google.zxing:core:3.4.1'
+    implementation 'com.google.zxing:javase:3.4.1'
+
+    // Commons IO
+    implementation 'commons-io:commons-io:2.20.0'
+
+    // Elasticsearch
+    implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // Database
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'com.mysql:mysql-connector-j:8.3.0'
+
+    // Dev Tools
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+//    testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testRuntimeOnly 'com.h2database:h2'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.modulith:spring-modulith-bom:${springModulithVersion}"
+    }
+}
+
+// AsciiDoctor (Spring REST Docs)
+//asciidoctor {
+//    inputs.dir snippetsDir
+//    dependsOn test
+//}
+
+test {
+//    outputs.dir snippetsDir
+    useJUnitPlatform()
+}
+
+//bootJar {
+//    dependsOn asciidoctor
+//}
