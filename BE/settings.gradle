@@ -4,22 +4,22 @@
 
 rootProject.name = 'management-api'
 
-//// Entry point
-//include ':app'
-//
-//// Shared libraries
-//include ':shared:common'
-//include ':shared:security'
-//include ':shared:persistence'
-//include ':shared:messaging'
-//include ':shared:api-docs'
-//
-//// Feature modules
-//include ':feature:auth'
-//include ':feature:user'
-//include ':feature:product'
-//include ':feature:notification'    // mail + sendgrid + thymeleaf
-//include ':feature:storage'         // cloudinary + file upload
-//include ':feature:search'          // elasticsearch
-//include ':feature:report'          // POI + CSV exports
-//include ':feature:qrcode'          // ZXing
+// Entry point
+include ':app'
+
+// Shared libraries
+include ':shared:common'
+include ':shared:security'
+include ':shared:persistence'
+include ':shared:messaging'
+include ':shared:api-docs'
+
+// Feature modules
+include ':feature:auth'
+include ':feature:user'
+include ':feature:product'
+include ':feature:notification'
+include ':feature:storage'
+include ':feature:search'
+include ':feature:report'
+include ':feature:qrcode'

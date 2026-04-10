@@ -1,0 +1,7 @@
+dependencies {
+    implementation project(':shared:common')
+    implementation project(':shared:security')
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'com.cloudinary:cloudinary-http45:1.39.0'
+    implementation 'commons-io:commons-io:2.20.0'
+}
