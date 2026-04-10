@@ -1,0 +1,57 @@
+{
+  "groups": [
+    {
+      "name": "mail",
+      "type": "com.example.managementapi.Configuration.MailPropertiesConfiguration",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration"
+    },
+    {
+      "name": "mail.mailgun",
+      "type": "com.example.managementapi.Configuration.MailPropertiesConfiguration$Mailgun",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration",
+      "sourceMethod": "public com.example.managementapi.Configuration.MailPropertiesConfiguration.Mailgun getMailgun() "
+    },
+    {
+      "name": "mail.sendgrid",
+      "type": "com.example.managementapi.Configuration.MailPropertiesConfiguration$Sendgrid",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration",
+      "sourceMethod": "public com.example.managementapi.Configuration.MailPropertiesConfiguration.Sendgrid getSendgrid() "
+    }
+  ],
+  "properties": [
+    {
+      "name": "mail.from-email",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration"
+    },
+    {
+      "name": "mail.from-name",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration"
+    },
+    {
+      "name": "mail.mailgun.api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration$Mailgun"
+    },
+    {
+      "name": "mail.mailgun.domain",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration$Mailgun"
+    },
+    {
+      "name": "mail.provider",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration"
+    },
+    {
+      "name": "mail.sendgrid.api-key",
+      "type": "java.lang.String",
+      "sourceType": "com.example.managementapi.Configuration.MailPropertiesConfiguration$Sendgrid"
+    }
+  ],
+  "hints": [],
+  "ignored": {
+    "properties": []
+  }
+}

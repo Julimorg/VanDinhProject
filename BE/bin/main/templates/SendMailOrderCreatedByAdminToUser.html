@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xác nhận đơn hàng</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f6f6f6;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #1a73e8;
+            padding: 20px;
+            text-align: center;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 500;
+        }
+        .content {
+            padding: 30px;
+        }
+        .content h2 {
+            font-size: 20px;
+            color: #202124;
+            margin-top: 0;
+        }
+        .content p {
+            font-size: 16px;
+            color: #444;
+        }
+        .order-details {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .order-details p {
+            margin: 8px 0;
+            font-size: 14px;
+        }
+        .order-items {
+            margin: 20px 0;
+        }
+        .order-items ul {
+            list-style: none;
+            padding: 0;
+        }
+        .order-items li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            background-color: #f6f6f6;
+            font-size: 12px;
+            color: #666;
+        }
+        .footer a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Xác nhận đơn hàng</h1>
+    </div>
+    <div class="content">
+        <h2>Xin chào <span th:text="${customerName}"></span>,</h2>
+        <p>Cảm ơn bạn đã đặt hàng tại <b><span th:text="${companyName}"></span></b>.
+            Đơn hàng của bạn đã được <b>Admin</b> tạo thành công. Dưới đây là chi tiết đơn hàng:</p>
+
+        <div class="order-details">
+            <p><b>Mã đơn hàng:</b> <span th:text="${orderCode}"></span></p>
+            <p><b>Ngày tạo:</b> <span th:text="${#temporals.format(createAt, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p><b>Trạng thái:</b> <span th:text="${status}"></span></p>
+            <p><b>Tổng tiền:</b> <span th:text="${amount}"></span> VND</p>
+        </div>
+
+        <div class="order-items">
+            <h3>Chi tiết sản phẩm:</h3>
+            <ul>
+                <li th:each="item : ${orderItems}">
+                    <span th:text="${item.product.productName}"></span> -
+                    Số lượng: <span th:text="${item.quantity}"></span> -
+                    Giá: <span th:text="${item.price}"></span> VND
+                </li>
+            </ul>
+        </div>
+
+        <!-- Đoạn thay cho button -->
+        <p>Cảm ơn bạn đã mua hàng tại <b><span th:text="${companyName}"></span></b>!</p>
+        <p>Nếu có bất kỳ thắc mắc nào, vui lòng liên hệ:
+            <span th:text="${supportEmail}"></span> -
+            <span th:text="${hotline}"></span></p>
+        <p>Website: <a th:href="${website}" th:text="${website}"></a></p>
+    </div>
+
+    <div class="footer">
+        <p>Email này được gửi tự động, vui lòng không phản hồi trực tiếp.</p>
+        <p>© <span th:text="${companyName}"></span> - All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

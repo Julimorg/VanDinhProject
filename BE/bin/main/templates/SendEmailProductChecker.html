@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Sản Phẩm Sắp Hết Hàng</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0;">
+<table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: 20px auto;">
+    <!-- Header -->
+    <tr>
+        <td style="background-color: #1e40af; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1 style="color: #ffffff; font-size: 24px; margin: 0;">Thông Báo Sản Phẩm Sắp Hết Hàng</h1>
+            <p style="color: #e5e7eb; font-size: 14px; margin: 5px 0;">Hệ Thống Quản Lý Kho - [Tên Công Ty]</p>
+        </td>
+    </tr>
+    <!-- Content -->
+    <tr>
+        <td style="padding: 20px;">
+            <p style="color: #1f2937; font-size: 16px; margin: 0 0 15px;">Kính gửi Quản trị viên,</p>
+            <p style="color: #1f2937; font-size: 14px; line-height: 1.6;">Chúng tôi nhận thấy một sản phẩm trong kho hiện đang có số lượng thấp. Vui lòng kiểm tra và bổ sung hàng hóa để đảm bảo đáp ứng nhu cầu khách hàng.</p>
+
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin: 20px 0;">
+                <tr>
+                    <td style="padding: 10px 0;">
+                        <h2 style="color: #1f2937; font-size: 18px; margin: 0;" th:text="${product.productName}">Tên sản phẩm</h2>
+                        <p style="color: #6b7280; font-size: 14px; margin: 5px 0;" th:text="'Mã: ' + ${product.productCode}">Mã sản phẩm</p>
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px 0;">
+                        <p style="color: #1f2937; font-size: 14px; margin: 5px 0;"><strong>Số lượng hiện tại:</strong> <span th:text="${product.productQuantity}">Số lượng</span></p>
+                        <p style="color: #1f2937; font-size: 14px; margin: 5px 0;"><strong>Ngưỡng tối thiểu: 10</strong></p>
+                    </td>
+                </tr>
+            </table>
+
+            <div style="background-color: #fef2f2; padding: 10px; border-radius: 4px; margin: 15px 0;">
+                <p style="color: #991b1b; font-size: 14px; margin: 0;"><strong>Cảnh báo:</strong> Số lượng sản phẩm đang dưới ngưỡng tối thiểu. Vui lòng hành động ngay!</p>
+            </div>
+
+            <p style="color: #1f2937; font-size: 14px; margin: 15px 0;"><strong>Thông điệp bổ sung:</strong> <span th:text="${message} ?: 'Không có thông điệp'">Không có thông điệp</span></p>
+
+            <p style="text-align: center; margin: 20px 0;">
+                <a href="http://localhost:8080/inventory" style="display: inline-block; padding: 10px 20px; background-color: #1e40af; color: #ffffff; text-decoration: none; border-radius: 4px; font-size: 14px;">Xem Kho Hàng</a>
+            </p>
+        </td>
+    </tr>
+    <!-- Footer -->
+    <tr>
+        <td style="background-color: #f9fafb; padding: 15px; text-align: center; border-radius: 0 0 8px 8px;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">Trân trọng,<br>Hệ Thống Quản Lý Kho - [Tên Công Ty]</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">Liên hệ: <a href="mailto:support@company.com" style="color: #1e40af; text-decoration: none;">support@company.com</a> | (+84) 123 456 789</p>
+            <p style="color: #6b7280; font-size: 12px; margin: 5px 0;">© 2025 [Tên Công Ty]. All rights reserved.</p>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
