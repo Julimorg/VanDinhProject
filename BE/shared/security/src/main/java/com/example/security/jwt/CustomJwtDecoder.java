@@ -1,7 +1,7 @@
-package com.example.security.contract;
+package com.example.security.jwt;
 
 
-import com.example.security.config.TokenIntrospector;
+import com.example.security.contract.TokenIntrospector;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +33,7 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     // Inject interface — implementation nằm ở feature:auth
-    private final TokenIntrospector tokenIntrospector;
+        private final TokenIntrospector tokenIntrospector;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
 

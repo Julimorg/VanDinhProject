@@ -1,4 +1,4 @@
-package com.example.security.jwt;
+package com.example.security.config;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.response.ApiResponse;

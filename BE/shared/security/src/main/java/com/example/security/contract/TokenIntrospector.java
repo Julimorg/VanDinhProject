@@ -1,4 +1,4 @@
-package com.example.security.config;
+package com.example.security.contract;
 
 /**
  * Interface này được định nghĩa ở :shared:security nhưng IMPLEMENT ở :feature:auth.
