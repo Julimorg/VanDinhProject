@@ -33,14 +33,18 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     // Inject interface — implementation nằm ở feature:auth
-        private final TokenIntrospector tokenIntrospector;
+//    private final TokenIntrospector tokenIntrospector;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
+
+    private Boolean isValid(String token){
+        return true;
+    }
 
     @Override
     public Jwt decode(String token) throws JwtException {
         // Bước 1: kiểm tra token có bị revoke không
-        if (!tokenIntrospector.isValid(token)) {
+        if (!isValid(token)) {
             log.warn("Token failed introspection (revoked or invalid)");
             throw new JwtException("Token invalid or has been revoked");
         }

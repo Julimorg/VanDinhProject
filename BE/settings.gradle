@@ -14,6 +14,7 @@ include ':shared:persistence'
 include ':shared:messaging'
 include ':shared:api-docs'
 
+
 // Feature modules
 include ':feature:auth'
 include ':feature:user'
@@ -23,3 +24,9 @@ include ':feature:storage'
 include ':feature:search'
 include ':feature:report'
 include ':feature:qrcode'
+include ':feature:order'
+include ':feature:cart'
+include ':feature:color'
+include ':feature:supplier'
+include ':feature:wishlist'
+include ':feature:category'

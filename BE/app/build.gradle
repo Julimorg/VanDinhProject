@@ -13,6 +13,12 @@ dependencies {
     implementation project(':feature:search')
     implementation project(':feature:report')
     implementation project(':feature:qrcode')
+    implementation project(':feature:order')
+    implementation project(':feature:cart')
+    implementation project(':feature:supplier')
+    implementation project(':feature:color')
+    implementation project(':feature:wishlist')
+    implementation project(':feature:category')
 
     implementation project(':shared:security')
     implementation project(':shared:api-docs')
