@@ -11,6 +11,7 @@ public enum ErrorCode {
     UNAUTHENTICATED("Unauthenticated! Please Login To Continue!", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED("Wrong Password or UserName! Please Check Again!", HttpStatus.UNAUTHORIZED),
     BANNED("You have been banned!", HttpStatus.FORBIDDEN),
+    INVALID_TOKEN("Invalid Token!", HttpStatus.UNAUTHORIZED),
 
     // ======================= USER =======================
     USER_EXISTED("User Existed", HttpStatus.BAD_REQUEST),
@@ -22,6 +23,9 @@ public enum ErrorCode {
     PHONE_INVALID("Invalid Phone Number", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED("User Not Existed", HttpStatus.BAD_REQUEST),
     EMAIl_EXISTED("Email Existed", HttpStatus.BAD_REQUEST),
+
+    // ======================= ROLE =======================
+    ROLE_NOT_FOUND("Role Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= PRODUCT =======================
     PRODUCT_EXISTED("Product Existed", HttpStatus.BAD_REQUEST),

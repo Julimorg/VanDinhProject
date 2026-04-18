@@ -23,6 +23,7 @@ dependencies {
     implementation project(':shared:security')
     implementation project(':shared:api-docs')
     implementation project(':shared:messaging')
+    implementation project(':shared:persistence')
 
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.modulith:spring-modulith-starter-core'
