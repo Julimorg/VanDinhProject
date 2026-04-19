@@ -8,6 +8,7 @@ import com.example.persistence.entity.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
+
 public interface AuthMapper {
 
     LoginRes toLoginRes(User user);

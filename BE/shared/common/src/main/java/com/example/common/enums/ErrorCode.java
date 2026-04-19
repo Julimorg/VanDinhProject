@@ -12,6 +12,12 @@ public enum ErrorCode {
     UNAUTHORIZED("Wrong Password or UserName! Please Check Again!", HttpStatus.UNAUTHORIZED),
     BANNED("You have been banned!", HttpStatus.FORBIDDEN),
     INVALID_TOKEN("Invalid Token!", HttpStatus.UNAUTHORIZED),
+    PASSWORD_MISMATCH("Password MissMatch!", HttpStatus.UNAUTHORIZED),
+
+    // ======================= EMAIL =======================
+    EMAIL_SEND_FAILED("Email Send Failed!", HttpStatus.BAD_REQUEST),
+    INVALID_OTP("Invalid OTP!", HttpStatus.BAD_REQUEST),
+    OTP_EXPIRED("OTP Expired!", HttpStatus.BAD_REQUEST),
 
     // ======================= USER =======================
     USER_EXISTED("User Existed", HttpStatus.BAD_REQUEST),
@@ -23,6 +29,7 @@ public enum ErrorCode {
     PHONE_INVALID("Invalid Phone Number", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED("User Not Existed", HttpStatus.BAD_REQUEST),
     EMAIl_EXISTED("Email Existed", HttpStatus.BAD_REQUEST),
+    EMAIL_NOT_FOUND("Email Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= ROLE =======================
     ROLE_NOT_FOUND("Role Not Found", HttpStatus.NOT_FOUND),
