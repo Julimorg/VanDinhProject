@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông báo hủy đơn hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #dc3545;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .order-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .order-info h3 {
+            margin-top: 0;
+            color: #dc3545;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .details-table th, .details-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .details-table th {
+            background-color: #e9ecef;
+            font-weight: bold;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .status.PENDING { background-color: #fff3cd; color: #856404; }
+        .status.PROCESSING { background-color: #d1ecf1; color: #0c5460; }
+        .status.SHIPPED { background-color: #d4edda; color: #155724; }
+        .status.DELIVERED { background-color: #d4edda; color: #155724; }
+        .status.APPROVED { background-color: #d4edda; color: #155724; }
+        .status.CANCELED { background-color: #f8d7da; color: #721c24; }
+        .footer {
+            background-color: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+            }
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Thông báo hủy đơn hàng</h1>
+    </div>
+    <div class="content">
+        <p class="greeting">Kính gửi Quý khách,</p>
+
+        <p>Chúng tôi rất tiếc phải thông báo rằng đơn hàng của quý khách đã bị <strong>hủy</strong>. Dưới đây là thông tin chi tiết về đơn hàng:</p>
+
+        <div class="order-info">
+            <h3>Thông tin đơn hàng</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Mã đơn hàng:</th>
+                    <td th:text="${orderCode}">#ORDER123</td>
+                </tr>
+                <tr>
+                    <th>Ngày đặt hàng:</th>
+                    <td th:text="${createAt}">12/09/2025</td>
+                </tr>
+                <tr>
+                    <th>Tình trạng hiện tại:</th>
+                    <td>
+                        <div class="status CANCELED" th:text="'Đã hủy'">Đã hủy</div>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Tổng tiền:</th>
+                    <td th:text="${amount} + ' VNĐ'">100.000 VNĐ</td>
+                </tr>
+                <tr>
+                    <th>Phương thức thanh toán:</th>
+                    <td th:text="${paymentMethod.toString()}">COD</td>
+                </tr>
+                <tr>
+                    <th>Trạng thái thanh toán:</th>
+                    <td th:text="${paymentStatus}">Chưa thanh toán</td>
+                </tr>
+            </table>
+        </div>
+
+        <h3>Chi tiết đơn hàng</h3>
+        <div th:if="${orderItems != null}" th:each="item : ${orderItems}">
+            <p>
+                <strong th:text="${item.product.productName}">Sản phẩm</strong>
+                - Số lượng: <span th:text="${item.quantity}">1</span>
+                - Giá: <span th:text="${item.product.productPrice} + ' VNĐ'">100.000 VNĐ</span>
+                <span th:if="${item.product.discount > 0}">
+                    - Giảm giá: <span th:text="${item.product.discount} + '%'">0%</span>
+                </span>
+            </p>
+        </div>
+        <p th:if="${orderItems == null}">Chi tiết đơn hàng sẽ được hiển thị ở đây.</p>
+
+        <div class="order-info">
+            <h3>Thông tin khách hàng</h3>
+            <table class="details-table">
+                <tr>
+                    <th>Email:</th>
+                    <td th:text="${email}">customer@example.com</td>
+                </tr>
+                <tr>
+                    <th>Số điện thoại:</th>
+                    <td th:text="${phone}">0123 456 789</td>
+                </tr>
+                <tr>
+                    <th>Địa chỉ khách hàng:</th>
+                    <td th:text="${userAddress}">123 Đường ABC, Quận 1, TP. HCM</td>
+                </tr>
+            </table>
+        </div>
+
+        <p>Nếu quý khách có bất kỳ câu hỏi nào hoặc cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi qua email <a th:href="'mailto:support@company.com'" th:text="'support@company.com'">support@company.com</a> hoặc số điện thoại <span th:text="'0123 456 789'">0123 456 789</span>.</p>
+
+        <a th:href="'#'" class="btn" th:if="${orderId != null}">Xem chi tiết đơn hàng</a>
+    </div>
+    <div class="footer">
+        <p>Trân trọng,<br>
+            <strong th:text="'Tên Công Ty'">Tên Công Ty</strong><br>
+            <a th:href="'www.company.com'" th:text="'www.company.com'">www.company.com</a></p>
+    </div>
+</div>
+</body>
+</html>

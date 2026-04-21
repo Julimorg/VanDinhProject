@@ -2,8 +2,6 @@ package com.example.common.util;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.managementapi.Enum.ErrorCode;
-import com.example.managementapi.Exception.AppException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -17,7 +15,7 @@ import java.util.regex.Pattern;
 @UtilityClass
 @Slf4j
 public class FileUpLoadUtil {
-
+ 
     //? Check size của File --> MAX = 2MB
     public static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
