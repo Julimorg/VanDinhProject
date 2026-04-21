@@ -18,6 +18,7 @@ public enum ErrorCode {
     EMAIL_SEND_FAILED("Email Send Failed!", HttpStatus.BAD_REQUEST),
     INVALID_OTP("Invalid OTP!", HttpStatus.BAD_REQUEST),
     OTP_EXPIRED("OTP Expired!", HttpStatus.BAD_REQUEST),
+    EMAIL_EXISTED("Email Existed!", HttpStatus.BAD_REQUEST),
 
     // ======================= USER =======================
     USER_EXISTED("User Existed", HttpStatus.BAD_REQUEST),

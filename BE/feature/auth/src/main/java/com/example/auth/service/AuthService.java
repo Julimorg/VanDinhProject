@@ -9,6 +9,7 @@ import com.example.auth.domain.dto.response.LoginRes;
 import com.example.auth.domain.dto.response.RefreshRes;
 import com.example.auth.domain.dto.response.SignUpUserRes;
 import com.example.auth.domain.mapper.AuthMapper;
+import com.example.auth.repository.AuthRepository;
 import com.example.auth.repository.InvalidatedTokenRepository;
 import com.example.common.enums.ErrorCode;
 import com.example.common.enums.Status;
@@ -38,6 +39,8 @@ public class AuthService {
     private final RoleRepository roleRepository;
 
     private final InvalidatedTokenRepository invalidatedTokenRepository;
+
+    private final AuthRepository authRepository;
 
     private final AuthMapper authMapper;
 

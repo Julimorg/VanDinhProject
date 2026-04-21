@@ -2,6 +2,8 @@ package com.example.common.util;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
+import com.example.common.service.CloudinaryService;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
@@ -19,7 +21,6 @@ public class FileUpLoadUtil {
     //? Check size của File --> MAX = 2MB
     public static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
-
     //? Check định dạng file img theo kiểu pattern regex
     //? Có 2 kiểu check
     //?  (?i)^(jpg|jpeg|png|gif|bmp|webp)$  --> Ko quan tâm đến tên file ( chỉ kiểu tra các đuôi file jpg, jpeg, ...)
@@ -30,7 +31,6 @@ public class FileUpLoadUtil {
 
     //? Config tên file / %s_%s --> IMG_2025-03-12
     public static final String FILE_NAME_FORMAT = "%s_%s";
-
 
     //? Function check phần mở rộng file có valid không
     public static boolean isAllowedExtension(final String extension, final String pattern) {

@@ -1,6 +1,7 @@
 package com.example.common.service;
 
 import com.cloudinary.Cloudinary;
+import com.example.common.dto.cloudinary.response.CloudinaryRes;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

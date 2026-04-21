@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: vandinh-ecommerce
+  profiles:
+    active: dev
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/vandinh_ecommerce?createDatabaseIfNotExist=true
+    username: root
+    password: password
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+server:
+  port: 8080
+
+# other config ...

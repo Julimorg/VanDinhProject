@@ -1,5 +1,6 @@
 package com.example.auth.service;
 
+import com.example.auth.repository.AuthRepository;
 import com.example.auth.repository.ForgotPasswordRepository;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
@@ -27,9 +28,15 @@ public class ForgotPassService {
     private static final int OTP_MAX = 999_999;
 
     private final UserRepository userRepository;
+
+    private final AuthRepository authRepository;
+
     private final ForgotPasswordRepository forgotPasswordRepository;
+
     private final PasswordEncoder passwordEncoder;
+
     private final MailService mailService;
+
     private final GenerateOtp generateOtp;
 
     @Transactional
