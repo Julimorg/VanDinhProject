@@ -23,6 +23,10 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class ForgotPassService {
 
+    /*TODO - Refactor changePassword()
+    * -- su dung updatePassword trong AuthRepo thay vi dung save() don thuan
+    * */
+
     private static final long OTP_EXPIRY_MS = 5 * 60 * 1000L;
     private static final int OTP_MIN = 100_000;
     private static final int OTP_MAX = 999_999;
