@@ -20,7 +20,15 @@ public enum SuccessCode {
     GET_MY_PROFILE("Get My Profile Successfully!", HttpStatus.OK),
     CREATE_USER("Create User Successfully!", HttpStatus.OK),
     UPDATE_MY_PROFILE("Update Profile Successfully!", HttpStatus.OK),
-    UPDATE_USER_PROFILE("Update User Profile Successfully!", HttpStatus.OK);
+    UPDATE_USER_PROFILE("Update User Profile Successfully!", HttpStatus.OK),
+
+    // ======================= SUPPLIER =======================
+    GET_SUPPLIER_SELECTION("Successfully!", HttpStatus.OK),
+    GET_SUPPLIER("Get Supplier Successfully!", HttpStatus.OK),
+    GET_SUPPLIER_DETAIL("Get Supplier Detail Successfully!", HttpStatus.OK),
+    CREATE_SUPPLIER("Create Supplier Successfully!", HttpStatus.OK),
+    UPDATE_SUPPLIER("Update Supplier Successfully!", HttpStatus.OK),
+    DELETE_SUPPLIER("Delete Supplier Successfully!", HttpStatus.OK);
 
     private final String message;
     private final HttpStatusCode statusCode;

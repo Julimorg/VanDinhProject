@@ -1,0 +1,116 @@
+package com.example.service;
+
+import com.example.common.dto.supplier.request.CreateSupplierReq;
+import com.example.common.dto.supplier.request.UpdateSupplierReq;
+import com.example.common.dto.supplier.response.*;
+import com.example.common.service.FileUploadService;
+import com.example.config.SupplierSpecification;
+import com.example.mapper.SupplierMapper;
+import com.example.persistence.entity.Supplier;
+import com.example.repository.SupplierRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class SupplierService {
+
+    private final SupplierRepository supplierRepository;
+
+    private final SupplierMapper supplierMapper;
+
+    private final FileUploadService fileUploadService;
+
+    /* TODO ELASTIC-SEARCH
+    * Nhớ config elastic search cho supplier
+    * */
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public List<GetSupplierSelectionRes> getSupplierSelection(){
+        return supplierRepository.findAll()
+                .stream()
+                .map(supplier -> supplierMapper.toGetSuppliersSelection(supplier))
+                .toList();
+    }
+
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
+    public Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable){
+
+        Specification<Supplier> spec = SupplierSpecification
+                .from(SupplierSpecification
+                        .SupplierFilter
+                        .keywordOnly(keyword));
+
+        return supplierRepository.findAll(spec,pageable)
+                .map(supplier -> supplierMapper.toGetSuppliers(supplier));
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
+    public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
+
+        return supplierMapper.toGetSupplierDetailRes(supplierRepository
+                .findById(supplierId)
+                .orElseThrow(() -> new RuntimeException("Supplier not found")));
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public CreateSupplierRes createSupplier(CreateSupplierReq request){
+
+
+        var supplier = supplierMapper.toCreateSupplierReq(request);
+
+        supplier.setSupplierImg(fileUploadService
+                .uploadImageIfPresent(
+                        request.getSupplierImg(),
+                        supplier.getSupplierName())
+        );
+
+        supplier = supplierRepository.save(supplier);
+
+//        elasticSearchService.saveSupplier(supplier);
+
+        return supplierMapper.toCreateSupplierRes(supplier);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public UpdateSupplierRes updateSupplier(String supplierId, UpdateSupplierReq request){
+
+        Supplier supplier = supplierRepository.findById(supplierId).orElseThrow(()
+                -> new RuntimeException("Supplier not found"));
+
+        supplierMapper.toUpdateSupplierReq(supplier, request);
+
+        supplier.setSupplierImg(fileUploadService
+                .uploadImageIfPresent(
+                        request.getSupplierImg(),
+                        supplier.getSupplierName())
+        );
+
+        supplier = supplierRepository.save(supplier);
+//        elasticSearchService.saveSupplier(supplier);
+
+        return supplierMapper.toUpdateSupplierRes(supplier);
+
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public void deleteSupplier(String supplier_id){
+
+        if(!supplierRepository.existsById(supplier_id)){
+            throw new RuntimeException("Supplier not found");
+        }
+
+        supplierRepository.deleteById(supplier_id);
+//        elasticSearchService.delete("S_" + supplier_id);
+    }
+
+}
