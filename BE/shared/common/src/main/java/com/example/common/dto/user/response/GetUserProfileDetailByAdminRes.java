@@ -7,13 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateUserRes {
+public class GetUserProfileDetailByAdminRes {
     private String id;
     private String firstName;
     private String lastName;
@@ -26,7 +27,10 @@ public class CreateUserRes {
 
     private String status;
 
-    private List<GetUserRoleRes> roles;
+    private Set<GetUserRoleRes> roles;
+
+//    private List<OrderInGetUserDetailByAdminRes> orders;
 
     private LocalDateTime createAt;
+    private LocalDateTime updateAt;
 }

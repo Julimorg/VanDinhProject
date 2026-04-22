@@ -1,6 +1,5 @@
 package com.example.persistence.entity;
 
-import com.example.common.enums.Status;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;

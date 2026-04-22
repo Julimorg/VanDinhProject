@@ -1,9 +1,9 @@
 package com.example.user.service;
 
 import com.example.common.dto.user.request.CreateUserReq;
-import com.example.common.dto.user.response.CreateUserRes;
-import com.example.common.dto.user.response.GetMyProfileDetailRes;
-import com.example.common.dto.user.response.GetUserProfileRes;
+import com.example.common.dto.user.request.UpdateMyProfileReq;
+import com.example.common.dto.user.request.UpdateUserByAdminReq;
+import com.example.common.dto.user.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.enums.Status;
 import com.example.common.exception.AppException;
@@ -15,7 +15,6 @@ import com.example.user.config.UserSpecification;
 import com.example.user.domain.mapper.UserMapper;
 import com.example.user.repository.RoleRepository;
 import com.example.user.repository.UserRepository;
-import com.example.common.dto.user.response.GetUserRes;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,8 +23,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -48,6 +47,22 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 
+    private CloudinaryService  cloudinaryService;
+
+
+    // ----------------------------------------------------------------
+    // GET
+    // ----------------------------------------------------------------
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public List<GetUserSelectionRes> getUserSelection(){
+        return userRepository.findAll()
+                .stream()
+                .map(user -> userMapper.toGetUserSelection(user))
+                .toList();
+    }
+
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
     public Page<GetUserRes> getUsersByAdmin(String keyword,
                                             String status,
@@ -60,15 +75,25 @@ public class UserService {
         return userRepository.findAll(spec, pageable).map(userMapper::toGetUser);
     }
 
+
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
-    public GetMyProfileDetailRes getProfileDetail(String userId) {
+    public GetMyProfileDetailRes getMyProfile(String userId) {
         User user = findUserOrThrow(userId);
         return userMapper.toGetProfileDetailRes(user);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN')")
+    public GetUserProfileDetailByAdminRes getUserProfileByAdmin(String userId) {
+        User user = findUserOrThrow(userId);
+        return userMapper.toGetUserProfileDetailByAdminRes(user);
+    }
+
+
+    // ----------------------------------------------------------------
+    // CREATE
+    // ----------------------------------------------------------------
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-
     public CreateUserRes createUser(CreateUserReq req) {
 
         if (userRepository.existsByUserName(req.getUserName())) {
@@ -94,6 +119,64 @@ public class UserService {
 
         return userMapper.toCreateUserRes(userRepository.save(user));
     }
+
+    // ----------------------------------------------------------------
+    // Update
+    // ----------------------------------------------------------------
+
+    @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_STAFF')")
+    public UpdateMyProfileRes updateMyProfile(String userId, UpdateMyProfileReq request) {
+        User user = findUserOrThrow(userId);
+
+        // FIX: monolith dùng existsByUserName(request.getEmail()) — sai method
+        if (!user.getEmail().equals(request.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+
+        String newImgUrl = fileUploadService.uploadImageIfPresent(request.getUserImg(), request.getUserName());
+        if (newImgUrl != null) user.setUserImg(newImgUrl);
+
+        userMapper.toUpdateMyProfile(user, request);
+        return userMapper.toUpdateMyProfileRes(userRepository.save(user));
+    }
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public UpdateUserByAdminRes updateUserByAdmin(String userId, UpdateUserByAdminReq request) {
+        User user = findUserOrThrow(userId);
+
+        // Check trùng username — chỉ check nếu username thực sự thay đổi
+        if (!user.getUserName().equals(request.getUserName())
+                && userRepository.existsByUserName(request.getUserName())) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
+
+        // Check trùng email — chỉ check nếu email thực sự thay đổi
+        if (!user.getEmail().equals(request.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
+            throw new AppException(ErrorCode.EMAIL_EXISTED);
+        }
+
+        String newImgUrl = fileUploadService.uploadImageIfPresent(request.getUserImg(), request.getUserName());
+        if (newImgUrl != null) user.setUserImg(newImgUrl);
+
+        userMapper.toUpdateUserByAdmin(user, request);
+
+        return userMapper.toUpdateUseByAdminRes(userRepository.save(user));
+    }
+
+    // ----------------------------------------------------------------
+    // Delete
+    // ----------------------------------------------------------------
+
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void deleteUser(String userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new AppException(ErrorCode.USER_NOT_EXISTED);
+        }
+        userRepository.deleteById(userId);
+    }
+
 
 
 }

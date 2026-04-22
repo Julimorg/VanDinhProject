@@ -1,3 +1,9 @@
+
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
 dependencies {
     implementation project(':shared:common')
 

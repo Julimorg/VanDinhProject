@@ -1,4 +1,4 @@
-package com.example.common.enums;
+package com.example.persistence.enums;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
