@@ -1,7 +1,6 @@
 package com.example.auth.service;
-
-import com.example.common.enums.TokenType;
 import com.example.persistence.entity.User;
+import com.example.persistence.enumTable.TokenType;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;

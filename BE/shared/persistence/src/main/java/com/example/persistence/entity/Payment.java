@@ -1,8 +1,9 @@
 package com.example.persistence.entity;
 
 
-import com.example.common.enums.PaymentMethod;
-import com.example.common.enums.PaymentMethodStatus;
+
+import com.example.persistence.enumTable.PaymentMethod;
+import com.example.persistence.enumTable.PaymentMethodStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

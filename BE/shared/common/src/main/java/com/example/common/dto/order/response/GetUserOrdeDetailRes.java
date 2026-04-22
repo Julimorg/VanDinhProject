@@ -1,6 +1,6 @@
 package com.example.common.dto.order.response;
 
-import com.example.common.enums.OrderStatus;
+import com.example.persistence.enumTable.OrderStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

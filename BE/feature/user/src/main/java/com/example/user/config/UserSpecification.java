@@ -1,7 +1,8 @@
 package com.example.user.config;
 
-import com.example.common.enums.Status;
+
 import com.example.persistence.entity.User;
+import com.example.persistence.enumTable.Status;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;

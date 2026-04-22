@@ -12,11 +12,11 @@ import com.example.auth.domain.mapper.AuthMapper;
 import com.example.auth.repository.AuthRepository;
 import com.example.auth.repository.InvalidatedTokenRepository;
 import com.example.common.enums.ErrorCode;
-import com.example.common.enums.Status;
 import com.example.common.exception.AppException;
 import com.example.persistence.entity.InvalidatedToken;
 import com.example.persistence.entity.Role;
 import com.example.persistence.entity.User;
+import com.example.persistence.enumTable.Status;
 import com.example.user.repository.RoleRepository;
 import com.example.user.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
@@ -79,9 +79,9 @@ public class AuthService {
     public LoginRes login(LoginReq req) {
 
         User user = userRepository.findByUserName(req.getUsername())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_EXISTED));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-        if ( user.getStatus() == Status.ACTIVE) {
+        if ( user.getStatus() == Status.INACTIVE) {
             throw new AppException(ErrorCode.BANNED);
         }
 
@@ -89,7 +89,14 @@ public class AuthService {
             throw new AppException(ErrorCode.UNAUTHORIZED);
         }
 
-        return authMapper.toLoginRes(user);
+        LoginRes loginRes=  authMapper.toLoginRes(user);
+
+        loginRes.setAccessToken(jwtService.generateAccessToken(user));
+        loginRes.setRefreshToken(jwtService.generateRefreshToken(user));
+        loginRes.setAuthenticated(true);
+
+        return loginRes;
+
     }
 
     public SignUpUserRes  signUp(SignUpReq req) {

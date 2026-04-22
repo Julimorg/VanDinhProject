@@ -1,11 +1,11 @@
 package com.example.common.util;
 
-import com.example.common.enums.ErrorCode;
+
 import com.example.common.exception.AppException;
-import com.example.common.service.CloudinaryService;
-import lombok.RequiredArgsConstructor;
+import com.example.common.enums.ErrorCode;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
+
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.web.multipart.MultipartFile;
 

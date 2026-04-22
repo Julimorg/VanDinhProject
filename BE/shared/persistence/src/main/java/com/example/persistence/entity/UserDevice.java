@@ -2,7 +2,7 @@ package com.example.persistence.entity;
 
 
 
-import com.example.common.enums.DeviceType;
+import com.example.persistence.enumTable.DeviceType;
 import jakarta.persistence.*;
 import lombok.*;
 

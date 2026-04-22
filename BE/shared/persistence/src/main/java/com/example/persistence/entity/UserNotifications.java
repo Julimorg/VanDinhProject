@@ -1,9 +1,6 @@
 package com.example.persistence.entity;
-
-
-
-import com.example.common.enums.UserNotifactionSendChannel;
-import com.example.common.enums.UserNotifactionStatus;
+import com.example.persistence.enumTable.UserNotifactionSendChannel;
+import com.example.persistence.enumTable.UserNotifactionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

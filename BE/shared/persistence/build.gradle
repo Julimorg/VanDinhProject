@@ -5,7 +5,6 @@ plugins {
 }
 
 dependencies {
-    implementation project(':shared:common')
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
@@ -13,6 +12,7 @@ dependencies {
 //    implementation 'org.flywaydb:flyway-core'
 //
 //    runtimeOnly 'org.flywaydb:flyway-postgresql'
+    api 'org.springframework.boot:spring-boot-starter-web'
     runtimeOnly 'org.postgresql:postgresql'
 
 }

@@ -1,7 +1,8 @@
 package com.example.persistence.entity;
 
 
-import com.example.common.enums.OrderStatus;
+
+import com.example.persistence.enumTable.OrderStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
