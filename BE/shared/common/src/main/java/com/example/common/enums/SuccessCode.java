@@ -28,7 +28,16 @@ public enum SuccessCode {
     GET_SUPPLIER_DETAIL("Get Supplier Detail Successfully!", HttpStatus.OK),
     CREATE_SUPPLIER("Create Supplier Successfully!", HttpStatus.OK),
     UPDATE_SUPPLIER("Update Supplier Successfully!", HttpStatus.OK),
-    DELETE_SUPPLIER("Delete Supplier Successfully!", HttpStatus.OK);
+    DELETE_SUPPLIER("Delete Supplier Successfully!", HttpStatus.OK),
+
+    // ======================= CATEGORY =======================
+    CREATE_CATEGORY("Create Category Successfully! ", HttpStatus.OK),
+    UPDATE_CATEGORY("Update Category Successfully! ", HttpStatus.OK),
+    GET_CATEGORY_SELECTION("Get Category Selection Successfully! ", HttpStatus.OK),
+    GET_CATEGORY_DETAIL("Get Category Detail Successfully! ", HttpStatus.OK),
+    GET_CATEGORY("Get Category Successfully! ", HttpStatus.OK),
+    DELETE_CATEGORY("Delete Category Successfully! ", HttpStatus.OK);
+
 
     private final String message;
     private final HttpStatusCode statusCode;

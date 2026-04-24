@@ -19,6 +19,8 @@ public interface SupplierMapper {
 
     GetSupplierDetailRes toGetSupplierDetailRes(Supplier supplier);
 
+    Supplier toGetSupplierFindById(Supplier supplier);
+
     //* =========================== CREATE MAPPER ===========================
 
     @Mapping(target = "colors", ignore = true)
@@ -28,6 +30,8 @@ public interface SupplierMapper {
     CreateSupplierRes toCreateSupplierRes(Supplier supplier);
 
     Supplier toConfigSupplierInternalDto(Supplier supplier);
+
+
 
     //* =========================== UPDATE MAPPER ===========================
 

@@ -51,6 +51,7 @@ public enum ErrorCode {
     // ======================= CATEGORY =======================
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED("Category Existed", HttpStatus.BAD_REQUEST),
+    CATEGORY_NOT_FOUND("Category Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= CLOUDINARY =======================
     IMG_OVER_SIZE("Your Image is over size!", HttpStatus.BAD_REQUEST),

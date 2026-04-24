@@ -5,7 +5,8 @@ import com.example.common.dto.color.request.CreateColorReq;
 import com.example.common.dto.color.request.UpdateColorReq;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.supplier.SupplierInteralService;
+import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.interfaces.supplier.SupplierInternalService;
 import com.example.common.service.CloudinaryService;
 import com.example.common.service.FileUploadService;
 import com.example.config.ColorSpecification;
@@ -34,7 +35,7 @@ public class ColorService {
 
     private final CloudinaryService  cloudinaryService;
 
-    private final SupplierInteralService supplierInternalService;
+    private final SupplierInternalService supplierInternalService;
     private final FileUploadService fileUploadService;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")

@@ -18,6 +18,8 @@ public interface ColorMapper {
 
     SupplierInColorDetailRes toSupplierInColorDetailRes(Supplier supplier);
 
+    Color toGetColorByIdWithInterface(Color color);
+
     @Mapping(source = "colorId", target = "colorId")
     @Mapping(source = "colorName", target = "colorName")
     GetColorDetailRes toGetColorDetailRes(Color color);

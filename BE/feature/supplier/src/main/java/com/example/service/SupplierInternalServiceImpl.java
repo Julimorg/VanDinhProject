@@ -2,7 +2,7 @@ package com.example.service;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.supplier.SupplierInteralService;
+import com.example.common.interfaces.supplier.SupplierInternalService;
 import com.example.mapper.SupplierMapper;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.SupplierRepository;
@@ -10,10 +10,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SupplierInternalServiceImpl implements SupplierInteralService {
+public class SupplierInternalServiceImpl implements SupplierInternalService {
 
     private final SupplierRepository supplierRepository;
 
