@@ -1,5 +1,6 @@
 package com.example.mapper;
 
+import com.example.common.dto.color.SupplierInternalDto;
 import com.example.common.dto.supplier.request.CreateSupplierReq;
 import com.example.common.dto.supplier.request.UpdateSupplierReq;
 import com.example.common.dto.supplier.response.*;
@@ -25,7 +26,9 @@ public interface SupplierMapper {
     Supplier toCreateSupplierReq(CreateSupplierReq request);
 
     CreateSupplierRes toCreateSupplierRes(Supplier supplier);
-//
+
+    Supplier toConfigSupplierInternalDto(Supplier supplier);
+
     //* =========================== UPDATE MAPPER ===========================
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

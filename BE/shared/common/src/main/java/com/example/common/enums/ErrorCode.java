@@ -42,9 +42,11 @@ public enum ErrorCode {
 
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
+    SUPPLIER_NOT_FOUND("Supplier Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= COLOR =======================
     COLOR_NOT_EXISTED("Color Not Existed", HttpStatus.BAD_REQUEST),
+    COLOR_NOT_FOUND("Color Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= CATEGORY =======================
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
