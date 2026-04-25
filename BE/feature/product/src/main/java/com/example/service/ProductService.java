@@ -1,15 +1,16 @@
 package com.example.service;
 
 import com.example.common.dto.product.request.CreateProductReq;
-import com.example.common.dto.product.response.CreateProductRes;
-import com.example.common.dto.product.response.GetProductsRes;
-import com.example.common.dto.product.response.ProductNewArrivalRes;
+import com.example.common.dto.product.request.UpdateProductQuantityReq;
+import com.example.common.dto.product.request.UpdateProductReq;
+import com.example.common.dto.product.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.category.CategoryInternalService;
 import com.example.common.interfaces.color.ColorInternalService;
 import com.example.common.interfaces.supplier.SupplierInternalService;
 import com.example.common.service.FileUploadService;
+import com.example.config.ProductSpecification;
 import com.example.mapper.ProductMapper;
 import com.example.persistence.entity.Category;
 import com.example.persistence.entity.Color;
@@ -19,6 +20,9 @@ import com.example.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hibernate.internal.util.collections.ArrayHelper.forEach;
 
 @Service
 @Slf4j
@@ -55,29 +58,74 @@ public class ProductService {
                 .toList();
     }
 
-//    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
-//    public Page<GetProductsRes> getProducts(String keyword,
-//                                            String categoryName,
-//                                            String supplierName,
-//                                            Double minPrice,
-//                                            Double maxPrice,
-//                                            Pageable pageable) {
-//        Specification<Product> specification = ProductSpecification.searchFilterForProduct(
-//                keyword,
-//                categoryName,
-//                supplierName,
-//                minPrice,
-//                maxPrice
-//        );
-//
-//        return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
-//    }
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public List<GetProductSelectionRes> getProductSelection(String keyword,
+                                                            String categoryName,
+                                                            String supplierName,
+                                                            Double minPrice,
+                                                            Double maxPrice) {
+        Specification<Product> specification = ProductSpecification.from(
+                ProductSpecification.ProductFilter.full(
+                        keyword,
+                        categoryName,
+                        supplierName,
+                        minPrice,
+                        maxPrice
+                )
+        );
+        return productRepository.findAll(specification)
+                .stream()
+                .map(productMapper::toGetProductSelection)
+                .toList();
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public Page<GetProductsRes> getProducts(String keyword,
+                                            String categoryName,
+                                            String supplierName,
+                                            Double minPrice,
+                                            Double maxPrice,
+                                            Pageable pageable) {
+        Specification<Product> specification = ProductSpecification.from(
+                ProductSpecification.ProductFilter.full(
+                        keyword,
+                        categoryName,
+                        supplierName,
+                        minPrice,
+                        maxPrice
+                )
+        );
+
+        return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
+    public ProductRes getProductById(String id){
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        ProductRes response = productMapper.toProductResponse(product);
+
+        if (product.getSupplier() != null) {
+            response.setSupplierName(product.getSupplier().getSupplierName());
+        }
+
+        if(product.getColor() != null){
+            response.setColorName(product.getColor().getColorName());
+        }
+
+        if(product.getCategory() != null){
+            response.setCategoryName(product.getCategory().getCategoryName());
+        }
+
+        return response;
+    }
 
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public CreateProductRes createProduct(CreateProductReq request){
+    public CreateProductRes createProduct(CreateProductReq request) {
 
-        if(productRepository.existsByProductName(request.getProductName())){
+        if (productRepository.existsByProductName(request.getProductName())) {
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
         }
 
@@ -90,21 +138,21 @@ public class ProductService {
             product.setSupplier(supplier);
         }
 
-        if(request.getColorId() != null){
+        if (request.getColorId() != null) {
             Color color = colorInternalService
                     .getColorById(request
                             .getColorId());
             product.setColor(color);
         }
 
-        if(request.getCategoryId() != null){
-            Category category =  categoryInternalService
+        if (request.getCategoryId() != null) {
+            Category category = categoryInternalService
                     .getCategory(request
                             .getCategoryId());
             product.setCategory(category);
         }
 
-        if(request.getProductQuantity() > 10000000){
+        if (request.getProductQuantity() > 10000000) {
             throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
         }
 
@@ -129,7 +177,55 @@ public class ProductService {
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
         //Có thể dùng @Mapper để trả về supplierName, colorName, categoryName trong Mapper thay vì set trong service
-        if(savedProduct.getSupplier() != null){
+        if (savedProduct.getSupplier() != null) {
+            response.setSupplierName(savedProduct.getSupplier().getSupplierName());
+        }
+
+        if (savedProduct.getColor() != null) {
+            response.setColorName(savedProduct.getColor().getColorName());
+        }
+
+        if (savedProduct.getCategory() != null) {
+            response.setCategoryName(savedProduct.getCategory().getCategoryName());
+        }
+
+        return response;
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public UpdateProductRes updateProduct(String productId,
+                                          UpdateProductReq request){
+
+
+        Product product = productRepository
+                .findById(productId)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+        MultipartFile[] images = request.getProductImage();
+
+        List<String> imageUrls = new ArrayList<>();
+
+        for (MultipartFile file : request.getProductImage()) {
+            String url = fileUploadService.uploadImageIfPresent(file, request.getProductName());
+            if (url != null) {
+                imageUrls.add(url);
+            }
+        }
+
+        productMapper.updateProduct(product, request);
+
+        product.setProductImage(imageUrls);
+
+        Product savedProduct = productRepository.save(product);
+
+        // TODO
+        //   CONFIG ELASTICSEARCH
+        //   elasticSearchService.saveProduct(savedProduct);
+
+        UpdateProductRes response = productMapper.toUpdateProductRes(savedProduct);
+
+        if (savedProduct.getSupplier() != null) {
             response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
 
@@ -142,10 +238,30 @@ public class ProductService {
         }
 
         return response;
-//        product.setName(request.getName());
-//        product.setDescription(request.getDescription());
-//        product.setPrice(request.getPrice());
-//        product.setStatus(request.getStatus());
-//        product.setQuantity(request.getQuantity());
+
+    }
+
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+
+    public UpdateProductQuantityRes updateProductQuantity(String id,
+                                                          UpdateProductQuantityReq request){
+        if (request.getProductQuantity() < 0) {
+            throw new IllegalArgumentException("Quantity must be equal or higher than 0");
+        }
+
+        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+
+        productMapper.updateProductQuantity(product, request);
+
+        return productMapper.toUpdateProductQuantityRes(productRepository.save(product));
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public void deleteProduct(String id){
+        productRepository.deleteById(id);
+        // TODO
+        //  CONFIG ELASTICSEARCH
+        //  elasticSearchService.delete("P_" + id);
     }
 }

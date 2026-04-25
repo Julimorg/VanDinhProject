@@ -39,6 +39,7 @@ public enum ErrorCode {
     // ======================= PRODUCT =======================
     PRODUCT_EXISTED("Product Existed", HttpStatus.BAD_REQUEST),
     PRODUCT_EXCEED_LIMIT("Product Quantity is too high", HttpStatus.BAD_REQUEST),
+    PRODUCT_NOT_FOUND("Product Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
