@@ -25,6 +25,8 @@ public interface ProductMapper {
     @Mapping(source = "category.categoryName", target = "categoryName")
     GetProductsRes toGetProductsResponses(Product products);
 
+    Product toGetProductByIdWithInterface(Product product);
+
     //* =========================== CREATE MAPPER ===========================
 
     CreateProductRes toCreateProductResponse(Product product);

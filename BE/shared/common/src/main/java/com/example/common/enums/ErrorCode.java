@@ -32,6 +32,7 @@ public enum ErrorCode {
     USER_NOT_EXISTED("User Not Existed", HttpStatus.BAD_REQUEST),
     EMAIl_EXISTED("Email Existed", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_FOUND("Email Not Found", HttpStatus.NOT_FOUND),
+    USER_NOT_FOUND("User Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= ROLE =======================
     ROLE_NOT_FOUND("Role Not Found", HttpStatus.NOT_FOUND),
@@ -40,6 +41,7 @@ public enum ErrorCode {
     PRODUCT_EXISTED("Product Existed", HttpStatus.BAD_REQUEST),
     PRODUCT_EXCEED_LIMIT("Product Quantity is too high", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND("Product Not Found", HttpStatus.NOT_FOUND),
+    PRODUCT_NOT_EXIST("Product Not Exist", HttpStatus.BAD_REQUEST),
 
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
@@ -53,6 +55,9 @@ public enum ErrorCode {
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED("Category Existed", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND("Category Not Found", HttpStatus.NOT_FOUND),
+
+    // ======================= CART =======================
+    CART_ITEM_NOT_FOUND("Cart Item Not Found", HttpStatus.BAD_REQUEST),
 
     // ======================= CLOUDINARY =======================
     IMG_OVER_SIZE("Your Image is over size!", HttpStatus.BAD_REQUEST),

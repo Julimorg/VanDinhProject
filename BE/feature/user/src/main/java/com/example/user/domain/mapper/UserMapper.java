@@ -26,6 +26,8 @@ public interface UserMapper {
 
     GetMyProfileDetailRes toGetProfileDetailRes(User user);
 
+    User toGetUserByIdWithInterface(User user);
+
     //* =========================== POST MAPPER ===========================
 //
 //    @Mapping(target = "userImg", ignore = true)

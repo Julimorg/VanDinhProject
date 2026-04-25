@@ -46,7 +46,16 @@ public enum SuccessCode {
     UPDATE_PRODUCT("Update Product Successfully!", HttpStatus.OK),
     GET_PRODUCT_DETAIL("Get Product Detail Successfully!", HttpStatus.OK),
     UPDATE_PRODUCT_QUANTITY("Update Product Quantity Successfully!", HttpStatus.OK),
-    DELETE_PRODUCT("Delete Product Successfully!", HttpStatus.OK);
+    DELETE_PRODUCT("Delete Product Successfully!", HttpStatus.OK),
+
+
+    // ======================= PRODUCT =======================
+    GET_CART("Successfully!", HttpStatus.OK),
+    ADD_PRODUCT_TO_CART("Add Product to Cart Successfully!", HttpStatus.OK),
+    UPDATE_CART("Update Cart Successfully!", HttpStatus.OK),
+    DELETE_CART(" Delete Cart Successfully!", HttpStatus.OK);
+
+
     private final String message;
     private final HttpStatusCode statusCode;
 

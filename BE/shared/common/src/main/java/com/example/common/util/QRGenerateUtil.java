@@ -45,7 +45,7 @@ public class QRGenerateUtil {
                 //mã hóa thông tin vào matrix, hàm encode sẽ mã hóa thành những định dạng khác nhau
                 BitMatrix bitMatrix = writer.encode(data, BarcodeFormat.QR_CODE, width, height, hints);
 
-                BufferedImage bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix);
+                BufferedImage bufferedImage = atrixToImageWriter.toBufferedImage(bitMatrix);
                 ImageIO.write(bufferedImage, "png", os);
 
                 result.append("data:image/png;base64,");
