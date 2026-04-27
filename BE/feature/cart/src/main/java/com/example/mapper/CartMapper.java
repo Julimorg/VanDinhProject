@@ -10,7 +10,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface CartMapper {
 
-    @Mapping(source = "user.userId",  target = "userId")
+    Cart toGetCartByIdWithInterface( Cart cart);
+
+//    @Mapping(source = "user.userId",  target = "userId")
     @Mapping(source = "createAt",     target = "createdAt")
     @Mapping(source = "updateAt",     target = "updatedAt")
     @Mapping(source = "cartItems",    target = "items")
@@ -27,10 +29,10 @@ public interface CartMapper {
     @Mapping(source = "product.productVolume",          target = "productVolume")
     @Mapping(source = "product.productUnit",            target = "productUnit")
     @Mapping(source = "product.productCode",            target = "productCode")
-    @Mapping(source = "quantity",                       target = "productQuantity")  // ✅ cartItem.quantity
+    @Mapping(source = "quantity",                       target = "productQuantity")
     @Mapping(source = "product.discount",               target = "discount")
     @Mapping(source = "product.productPrice",           target = "productPrice")
-    @Mapping(source = "product.color.colorCode",        target = "colorName")        // ✅ colorCode → colorName
+    @Mapping(source = "product.color.colorCode",        target = "colorName")
     @Mapping(source = "product.category.categoryName",  target = "categoryName")
     ProductForCartItem toProductForCartItem(CartItem cartItem);
 

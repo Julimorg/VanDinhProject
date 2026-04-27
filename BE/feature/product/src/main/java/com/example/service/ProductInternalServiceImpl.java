@@ -27,6 +27,11 @@ public class ProductInternalServiceImpl implements ProductInternalService {
     }
 
     @Override
+    public void saveProductData(Product product) {
+        productRepository.save(product);
+    }
+
+    @Override
     public Product getProductById(String productId) {
 
         validateProductExistById(productId);

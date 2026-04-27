@@ -1,7 +1,13 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
 dependencies {
+    api 'org.springframework.boot:spring-boot-starter-websocket'
+    api 'org.springframework.boot:spring-boot-starter-mail'
+    api 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
     implementation project(':shared:common')
     implementation project(':shared:persistence')
-    implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    implementation 'org.springframework.boot:spring-boot-starter-mail'
-    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 }

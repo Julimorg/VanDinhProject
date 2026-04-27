@@ -30,5 +30,4 @@ include ':feature:color'
 include ':feature:supplier'
 include ':feature:wishlist'
 include ':feature:category'
-
 include 'feature:payment'

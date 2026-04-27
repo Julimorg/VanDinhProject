@@ -42,6 +42,7 @@ public enum ErrorCode {
     PRODUCT_EXCEED_LIMIT("Product Quantity is too high", HttpStatus.BAD_REQUEST),
     PRODUCT_NOT_FOUND("Product Not Found", HttpStatus.NOT_FOUND),
     PRODUCT_NOT_EXIST("Product Not Exist", HttpStatus.BAD_REQUEST),
+    PRODUCT_OUT_OF_STOCK("Product out of Stock!",  HttpStatus.BAD_REQUEST),
 
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
@@ -58,6 +59,24 @@ public enum ErrorCode {
 
     // ======================= CART =======================
     CART_ITEM_NOT_FOUND("Cart Item Not Found", HttpStatus.BAD_REQUEST),
+    CART_NOT_EXISTED("Cart Item Not Existed", HttpStatus.BAD_REQUEST),
+    CART_NOT_FOUND("Cart Not Found", HttpStatus.NOT_FOUND),
+    CART_EMPTY("Cart Empty", HttpStatus.BAD_REQUEST),
+    INVALID_CART_TOTAL("Invalid Cart Total", HttpStatus.BAD_REQUEST),
+
+    // ======================= ORDER =======================
+    ORDER_NOT_FOUND("Order Not Found", HttpStatus.NOT_FOUND),
+    ORDER_NOT_BELONG_TO_USER("Order Not Belong To User", HttpStatus.BAD_REQUEST),
+    UNSUPPORTED_ORDER_STATUS("Unsupported Order Status", HttpStatus.BAD_REQUEST),
+    INSUFFICIENT_STOCK("Insufficient Stock", HttpStatus.BAD_REQUEST),
+
+    // ======================= NOTIFICATION =======================
+    NOTIFICATION_NOT_FOUND("Notification Not Found", HttpStatus.NOT_FOUND),
+    USER_ID_REQUIRED("User Id Required", HttpStatus.BAD_REQUEST),
+    NOTIFICATION_CONTENT_REQUIRED("Notification Content Required", HttpStatus.BAD_REQUEST),
+
+    // ======================= PAYMENT =======================
+    PAYMENT_NOT_FOUND("Payment Not Found", HttpStatus.NOT_FOUND),
 
     // ======================= CLOUDINARY =======================
     IMG_OVER_SIZE("Your Image is over size!", HttpStatus.BAD_REQUEST),

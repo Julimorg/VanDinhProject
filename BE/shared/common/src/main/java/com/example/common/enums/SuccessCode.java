@@ -53,7 +53,21 @@ public enum SuccessCode {
     GET_CART("Successfully!", HttpStatus.OK),
     ADD_PRODUCT_TO_CART("Add Product to Cart Successfully!", HttpStatus.OK),
     UPDATE_CART("Update Cart Successfully!", HttpStatus.OK),
-    DELETE_CART(" Delete Cart Successfully!", HttpStatus.OK);
+    DELETE_CART(" Delete Cart Successfully!", HttpStatus.OK),
+
+    // ======================= NOTIFICATION =======================
+    GET_USER_ONLINE("Successfully!", HttpStatus.OK),
+    SEND_TO_USER_SUCCESSFULLY("Send To User Successfully!", HttpStatus.OK),
+    GET_TOP_FIVE_NOTIFICATIONS(" Successfully!", HttpStatus.OK),
+    GET_ALL_NOTIFICATIONS("Get All Notifications Successfully!", HttpStatus.OK),
+    GET_UNREAD_NOTIFICATIONS("Get Unread Notifications Successfully!", HttpStatus.OK),
+    MARK_AS_READ("Mark as Read Successfully!", HttpStatus.OK),
+    SEND_TO_ADMIN("Send To Admin Successfully!", HttpStatus.OK),
+
+
+    // ======================= ORDER =======================
+    APPROVE_ORDER("Approve Order Successfully!", HttpStatus.OK),
+    CANCELED_ORDER("Cancel Order Successfully!", HttpStatus.OK);
 
 
     private final String message;

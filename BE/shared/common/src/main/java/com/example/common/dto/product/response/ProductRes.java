@@ -1,6 +1,4 @@
 package com.example.common.dto.product.response;
-
-import com.example.managementapi.Entity.Supplier;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -8,7 +8,10 @@ import com.example.user.domain.mapper.UserMapper;
 import com.example.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,6 +30,11 @@ public class UserInternalServiceImpl implements UserInternalService {
     }
 
     @Override
+    public List<User> findAllByRoles_NameIn(List<String> roles) {
+        return userRepository.findDistinctByRoles_NameIn(roles);
+    }
+
+    @Override
     public User getUserById(String userId) {
 
         validateUserExists(userId);
@@ -36,4 +44,11 @@ public class UserInternalServiceImpl implements UserInternalService {
 
         return userMapper.toGetUserByIdWithInterface(user);
     }
+
+    @Override
+    public Page<User> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable);
+    }
+
+
 }

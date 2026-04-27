@@ -1,8 +1,4 @@
 package com.example.common.dto.cart.response;
-
-
-import com.example.managementapi.Entity.User;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
