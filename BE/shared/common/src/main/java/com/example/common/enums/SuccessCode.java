@@ -67,8 +67,14 @@ public enum SuccessCode {
 
     // ======================= ORDER =======================
     APPROVE_ORDER("Approve Order Successfully!", HttpStatus.OK),
-    CANCELED_ORDER("Cancel Order Successfully!", HttpStatus.OK);
-
+    CANCELED_ORDER("Cancel Order Successfully!", HttpStatus.OK),
+    GET_USER_ORDER("Get User Order Successfully! ", HttpStatus.OK),
+    GET_ALL_ORDER("Get All Order Successfully! ", HttpStatus.OK),
+    GET_ORDER_DETAIL("Get Order Detail Successfully! ", HttpStatus.OK),
+    CREATE_ORDER("Create Order Successfully! ", HttpStatus.OK),
+    UPDATE_ORDER("Update Order Successfully! ", HttpStatus.OK),
+    UPDATE_ORDER_BY_ADMIN("Update Order By Admin Successfully! ", HttpStatus.OK),
+    UPDATE_ORDER_ITEM("Update Order Item Successfully! ", HttpStatus.OK);
 
     private final String message;
     private final HttpStatusCode statusCode;

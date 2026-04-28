@@ -1,10 +1,4 @@
 package com.example.common.dto.order.response;
-
-import com.example.managementapi.Entity.Order;
-import com.example.managementapi.Entity.Product;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

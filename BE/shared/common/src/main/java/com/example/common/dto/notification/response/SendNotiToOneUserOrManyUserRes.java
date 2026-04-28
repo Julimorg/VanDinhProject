@@ -1,9 +1,4 @@
 package com.example.common.dto.notification.response;
-
-import com.example.managementapi.Enum.UserNotifactionSendChannel;
-import com.example.managementapi.Enum.UserNotifactionStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

@@ -1,8 +1,6 @@
 package com.example.common.dto.order.response;
-
-
-import com.example.managementapi.Enum.OrderStatus;
-import com.example.managementapi.Enum.PaymentMethod;
+import com.example.persistence.enumTable.OrderStatus;
+import com.example.persistence.enumTable.PaymentMethod;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

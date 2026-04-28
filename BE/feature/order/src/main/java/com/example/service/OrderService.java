@@ -1,7 +1,5 @@
 package com.example.service;
-import com.example.common.dto.order.request.ApproveOrderReq;
-import com.example.common.dto.order.request.UpdateOrderByAdminRequest;
-import com.example.common.dto.order.request.UpdateOrderReq;
+import com.example.common.dto.order.request.*;
 import com.example.common.dto.order.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.enums.SuccessCode;
@@ -11,6 +9,7 @@ import com.example.common.interfaces.payment.PaymentInternalService;
 import com.example.common.interfaces.products.ProductInternalService;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.common.util.GenerateRandomCode;
+import com.example.common.util.MethodConverter;
 import com.example.config.OrderSpecification;
 import com.example.mapper.OrderMapper;
 import com.example.persistence.entity.*;
@@ -26,8 +25,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,8 @@ public class OrderService {
     private final OrderMapper  orderMapper;
 
     private final OrderRepository orderRepository;
+
+    private final MethodConverter methodConverter;
 
     private final UserInternalService userInternalService;
 
@@ -381,6 +385,123 @@ public class OrderService {
 
         orderRepository.save(order);
         return orderMapper.toUpdateOrderByAdminResponse(order);
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public CreateOrderResponse createOrderByAdmin(String adminUserId,
+                                                  CreateOrderRequest request) throws MessagingException {
+
+        User adminUser = userInternalService.getUserById(adminUserId);
+
+        User customer = (request.getId() != null)
+                ? userInternalService.getUserById(adminUserId)
+                : adminUser;
+
+        Order order = orderMapper.toOrder(request);
+        order.setCreateAt(LocalDateTime.now());
+        order.setOrderStatus(OrderStatus.Pending);
+        order.setOrderCode(generateRandomCode.generateOrderCode());
+        order.setCreateBy(adminUser.getUserName());
+        order.setUser(customer);
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        int totalQuantity = 0;
+
+        for (GetProductQuantityRequest itemReq : request.getOrderItems()) {
+
+            Product product = productInternalService.getProductById(itemReq.getProductId());
+
+            if (itemReq.getQuantity() > product.getProductQuantity()) {
+                throw new RuntimeException(ErrorCode.INSUFFICIENT_STOCK.getMessage()
+                        + product.getProductName());
+            }
+
+            BigDecimal itemPrice = product.getProductPrice()
+                    .multiply(BigDecimal.valueOf(itemReq.getQuantity()));
+
+            OrderItem orderItem = OrderItem.builder()
+                    .order(order)
+                    .productId(product.getProductId())
+                    .productName(product.getProductName())
+                    .productCode(product.getProductCode())
+                    .productImage(new ArrayList<>(product.getProductImage()))
+                    .productVolume(product.getProductVolume())
+                    .productUnit(product.getProductUnit())
+                    .productPrice(product.getProductPrice())
+                    .discount(product.getDiscount())
+                    .colorName(product.getColor().getColorName())
+                    .categoryName(product.getCategory().getCategoryName())
+                    .quantity(itemReq.getQuantity())
+                    .price(itemPrice)
+                    .createAt(LocalDateTime.now())
+                    .build();
+
+            orderItems.add(orderItem);
+            totalAmount = totalAmount.add(itemPrice);
+            totalQuantity += itemReq.getQuantity();
+
+
+        }
+
+        order.setOrderItems(orderItems);
+        order.setTotal_quantity(totalQuantity);
+        order.setOrderAmount(totalAmount);
+
+        Payment payment = new Payment();
+        payment.setPaymentMethod(request.getPaymentMethod());
+        payment.setOrder(order);
+        order.setPayment(payment);
+        order.setShipAddress(request.getShipAddress());
+
+        Order savedOrder = orderRepository.save(order);
+
+        CreateOrderResponse response = orderMapper.toCreateOrderResponse(savedOrder);
+        response.setFirstName(customer.getFirstName());
+
+//        emailService.sendOrderCreatedByAdminEmail(
+//                customer.getEmail(),
+//                customer.getFirstName(),
+//                savedOrder.getOrderCode(),
+//                savedOrder.getCreateAt(),
+//                savedOrder.getOrderStatus().name(),
+//                savedOrder.getOrderAmount(),
+//                savedOrder.getOrderItems(),
+//                "Tên công ty ABC",
+//                "support@abc.com",
+//                "0123-456-789",
+//                "https://abc.com"
+//        );
+
+        return response;
+    }
+
+//    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+//    public byte[] exportExcelFileByGetOrdersFromUserAndDateRange(ExportFileReq req) throws IOException {
+//
+//        userInternalService.getUserById(req.getUserId());
+//
+//
+//        LocalDate startDate = methodConverter.parseDate(req.getStartDate());
+//        LocalDate endDate = methodConverter.parseDate(req.getEndDate());
+//
+//        List<Order> orders = orderRepository.findOrdersByUserAndDateRange(
+//                req.getUserId(),
+//                startDate.atStartOfDay(),
+//                endDate.plusDays(1).atStartOfDay()
+//        );
+//
+//        return fileService.generateExcelReport(orders, req.getStartDate(), req.getEndDate());
+//    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF')")
+    public void deleteOrder(String id) {
+        if (!orderRepository.existsById(id)) {
+            throw new AppException(ErrorCode.ORDER_NOT_FOUND);
+        }
+        orderRepository.deleteById(id);
     }
 
 }

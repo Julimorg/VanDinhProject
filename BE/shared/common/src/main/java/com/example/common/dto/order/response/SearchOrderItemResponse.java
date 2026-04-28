@@ -1,6 +1,4 @@
 package com.example.common.dto.order.response;
-
-import com.example.managementapi.Dto.Response.Product.ProductForCartItem;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

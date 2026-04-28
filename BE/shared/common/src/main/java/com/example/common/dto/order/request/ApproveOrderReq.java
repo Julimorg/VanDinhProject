@@ -1,7 +1,5 @@
 package com.example.common.dto.order.request;
-
-
-import com.example.managementapi.Enum.OrderStatus;
+import com.example.persistence.enumTable.OrderStatus;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

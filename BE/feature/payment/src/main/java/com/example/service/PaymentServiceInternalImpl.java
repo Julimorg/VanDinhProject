@@ -28,7 +28,7 @@ public class PaymentServiceInternalImpl implements PaymentInternalService {
                                     PaymentMethodStatus status) {
 
         Payment payment = paymentRepository
-                .findByOrder_id(orderId)
+                .findByOrder_OrderId(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
 
         payment.setPaymentStatus(status);
@@ -43,7 +43,7 @@ public class PaymentServiceInternalImpl implements PaymentInternalService {
                                     PaymentMethodStatus status) {
 
         Payment payment = paymentRepository
-                .findByOrder_id(orderId)
+                .findByOrder_OrderId(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.PAYMENT_NOT_FOUND));
 
         payment.setPaymentMethod(method);

@@ -69,7 +69,7 @@ public enum ErrorCode {
     ORDER_NOT_BELONG_TO_USER("Order Not Belong To User", HttpStatus.BAD_REQUEST),
     UNSUPPORTED_ORDER_STATUS("Unsupported Order Status", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_STOCK("Insufficient Stock", HttpStatus.BAD_REQUEST),
-
+    ORDER_ITEM_NOT_FOUND(" Order Item Not Found", HttpStatus.NOT_FOUND),
     // ======================= NOTIFICATION =======================
     NOTIFICATION_NOT_FOUND("Notification Not Found", HttpStatus.NOT_FOUND),
     USER_ID_REQUIRED("User Id Required", HttpStatus.BAD_REQUEST),

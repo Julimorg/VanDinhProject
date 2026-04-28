@@ -1,8 +1,8 @@
 package com.example.notification.mapper;
 
-import com.example.common.dto.notification.response.GetUserIsOnline;
+import com.example.common.dto.notification.request.MarkNotificationAsReadReq;
+import com.example.common.dto.notification.response.*;
 
-import com.example.common.dto.notification.response.MarkNotificationAsReadRes;
 import com.example.persistence.entity.User;
 import com.example.persistence.entity.UserDevice;
 import com.example.persistence.entity.UserNotifications;

@@ -1,19 +1,16 @@
 package com.example.mapper;
-
-
-import com.example.managementapi.Dto.Request.OrderItem.UpdateOrderItemByAdminRequest;
-import com.example.managementapi.Dto.Response.Order.CreateOrderItemRes;
-import com.example.managementapi.Dto.Response.Order.SearchOrderItemResponse;
-import com.example.managementapi.Dto.Response.Order.UpdateOrderItemByAdminResponse;
-import com.example.managementapi.Entity.Order;
-import com.example.managementapi.Entity.OrderItem;
+import com.example.common.dto.order.request.UpdateOrderItemByAdminRequest;
+import com.example.common.dto.order.response.CreateOrderItemRes;
+import com.example.common.dto.order.response.SearchOrderItemResponse;
+import com.example.common.dto.order.response.UpdateOrderItemByAdminResponse;
+import com.example.persistence.entity.OrderItem;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {ProductMapper.class})
+@Mapper(componentModel = "spring")
 public interface OrderItemMapper {
 
     //** ===============================   GET RESPONSE   ===========================

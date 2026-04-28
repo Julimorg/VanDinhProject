@@ -94,10 +94,10 @@ public interface OrderMapper {
 
 
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-//    OrderInGetUserDetailByAdminRes toOrderInGetUserDetailByAdminRes(Order order);
+    OrderInGetUserDetailByAdminRes toOrderInGetUserDetailByAdminRes(Order order);
 
     @Mapping(source = "payment.paymentMethod", target = "paymentMethod")
-//    OrderInGetUserDetailRes toOrderInGetUserDetailRes(Order order);
+    OrderInGetUserDetailRes toOrderInGetUserDetailRes(Order order);
 
     @Mapping(target = "orderItems", ignore = true)
     @Mapping(target = "orderAmount", ignore = true)

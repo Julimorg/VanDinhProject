@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,13 @@ public class ProductInternalServiceImpl implements ProductInternalService {
 
     @Override
     public void saveProductData(Product product) {
+
         productRepository.save(product);
+    }
+
+    @Override
+    public List<Product> saveAllProductData(List<Product> products) {
+       return productRepository.saveAll(products);
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class UpdateOrderByAdminRequest {
     private String shipAddress;
-    private List<UpdateOrderItemByAdminRequest> orderItems;
+//    private List<UpdateOrderItemByAdminRequest> orderItems;
     private PaymentMethod paymentMethod;
     private String id;
 }

@@ -11,7 +11,6 @@ import java.util.List;
         componentModel = "spring",
         nullValueMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT
 )
-
 public interface NotificationMapper {
 
     // ======================== GET ======================
