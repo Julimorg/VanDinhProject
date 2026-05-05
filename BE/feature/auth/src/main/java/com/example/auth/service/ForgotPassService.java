@@ -1,8 +1,8 @@
 package com.example.auth.service;
-
-import com.example.auth.domain.dto.request.ChangePasswordReq;
 import com.example.auth.repository.AuthRepository;
 import com.example.auth.repository.ForgotPasswordRepository;
+import com.example.common.dto.auth.request.ChangePasswordReq;
+import com.example.common.dto.auth.request.VerifyOtp;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.util.GenerateOtp;
@@ -83,11 +83,12 @@ public class ForgotPassService {
         }
     }
 
-    public void verifyOtp(String email, int otp) {
+    public void verifyOtp(String email, VerifyOtp otpReq) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.EMAIL_NOT_FOUND));
 
-        ForgotPassword forgotPassword = forgotPasswordRepository.findByOtpAndUser(otp, user)
+        ForgotPassword forgotPassword = forgotPasswordRepository
+                .findByOtpAndUser(otpReq.getOtp(), user)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
 
         //? check ExpiryDate của OTP
@@ -103,7 +104,8 @@ public class ForgotPassService {
     }
 
     @Transactional
-    public void changePassword(ChangePasswordReq changePassword, String email) {
+    public void changePassword(ChangePasswordReq changePassword,
+                               String email) {
         if (!changePassword.getPassword().equals(changePassword.getNewPassword())) {
             throw new AppException(ErrorCode.PASSWORD_MISMATCH);
         }

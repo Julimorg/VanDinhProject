@@ -12,6 +12,11 @@ public enum SuccessCode {
     SIGN_UP_SUCCESSFULLY("SignUp Successfully!", HttpStatus.OK),
     LOG_OUT_SUCCESSFULLY("LogOut Successfully!", HttpStatus.OK),
     REFRESH_TOKEN_SUCCESSFULLY("Refresh Token Successfully!", HttpStatus.OK),
+    SEND_OTP("Send OTP Successfully!", HttpStatus.OK),
+    OTP_VERIFIED("OTP Verified!", HttpStatus.OK),
+
+
+
 
     // ======================= USER =======================
     GET_USER_SELECTION("Successfully!", HttpStatus.OK),

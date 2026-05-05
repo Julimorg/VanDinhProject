@@ -1,16 +1,15 @@
 package com.example.auth.service;
-
-import com.example.auth.domain.dto.request.IntrospectRequest;
-import com.example.auth.domain.dto.request.LogOutReq;
-import com.example.auth.domain.dto.request.LoginReq;
-import com.example.auth.domain.dto.request.SignUpReq;
-import com.example.auth.domain.dto.response.IntrospectResponse;
-import com.example.auth.domain.dto.response.LoginRes;
-import com.example.auth.domain.dto.response.RefreshRes;
-import com.example.auth.domain.dto.response.SignUpUserRes;
-import com.example.auth.domain.mapper.AuthMapper;
+import com.example.auth.mapper.AuthMapper;
 import com.example.auth.repository.AuthRepository;
 import com.example.auth.repository.InvalidatedTokenRepository;
+import com.example.common.dto.auth.request.IntrospectRequest;
+import com.example.common.dto.auth.request.LogOutReq;
+import com.example.common.dto.auth.request.LoginReq;
+import com.example.common.dto.auth.request.SignUpReq;
+import com.example.common.dto.auth.response.IntrospectResponse;
+import com.example.common.dto.auth.response.LoginRes;
+import com.example.common.dto.auth.response.RefreshRes;
+import com.example.common.dto.auth.response.SignUpUserRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.persistence.entity.InvalidatedToken;
@@ -99,7 +98,7 @@ public class AuthService {
 
     }
 
-    public SignUpUserRes  signUp(SignUpReq req) {
+    public SignUpUserRes signUp(SignUpReq req) {
         if (userRepository.existsByUserName(req.getUserName())) {
             throw new AppException(ErrorCode.USER_EXISTED);
         }

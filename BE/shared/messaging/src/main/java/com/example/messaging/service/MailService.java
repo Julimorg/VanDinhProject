@@ -33,7 +33,7 @@ public class MailService {
         send(
                 toEmail,
                 "OTP xác nhận - Quên mật khẩu",
-                "mail/otp",
+                "mail/sendEmailForm",
                 Map.of(
                         "otp",   otp,
                         "email", toEmail,
@@ -108,7 +108,10 @@ public class MailService {
      * @param templateName tên template (ví dụ: "mail/otp" → resources/templates/mail/otp.html)
      * @param variables    biến truyền vào template
      */
-    private void send(String to, String subject, String templateName, Map<String, Object> variables) {
+    private void send(String to,
+                      String subject,
+                      String templateName,
+                      Map<String, Object> variables) {
         try {
             String html = render(templateName, variables);
 
