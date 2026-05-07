@@ -8,10 +8,12 @@ import com.example.common.interfaces.cart.CartInternalService;
 import com.example.common.interfaces.payment.PaymentInternalService;
 import com.example.common.interfaces.products.ProductInternalService;
 import com.example.common.interfaces.user.UserInternalService;
+import com.example.common.util.EmailProperties;
 import com.example.common.util.GenerateRandomCode;
 import com.example.common.util.MethodConverter;
 import com.example.config.OrderSpecification;
 import com.example.mapper.OrderMapper;
+import com.example.messaging.service.MailService;
 import com.example.persistence.entity.*;
 import com.example.persistence.enumTable.*;
 import com.example.repository.OrderRepository;
@@ -19,7 +21,9 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -56,7 +60,11 @@ public class OrderService {
 
     private final ProductInternalService productInternalService;
 
+    private final MailService mailService;
+
     private final GenerateRandomCode generateRandomCode;
+
+    private final EmailProperties mailProperties;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF', 'ROLE_USER')")
     public Page<GetUserOrderRes> getUserOrderHistory(String userId,
@@ -118,8 +126,7 @@ public class OrderService {
 
         for (CartItem cartItem : cart.getCartItems()) {
             if (cartItem.getQuantity() > cartItem.getProduct().getProductQuantity()) {
-                throw new AppException(ErrorCode.PRODUCT_OUT_OF_STOCK);
-//                cartItem.getProduct().getProductName()
+                throw new RuntimeException(ErrorCode.PRODUCT_OUT_OF_STOCK + cartItem.getProduct().getProductName());
             }
         }
 
@@ -217,18 +224,20 @@ public class OrderService {
                             )
                     );
 
-            // TODO
-            //      --> Config Notification
-            //            for (User admin : admins) {
-            //                createAndSendNotification(
-            //                        "Order Confirmation!",
-            //                        user.getUserName() + " has successfully confirmed their order!",
-            //                        "Order!",
-            //                        user.getUserName(),
-            //                        admin.getId(),
-            //                        UserNotifactionStatus.DELIVERED
-            //                );
-            //            }
+                        for (User admin : admins) {
+                            // TODO
+                            //      --> Config Notification
+                            //            for (User admin : admins) {
+                            //                createAndSendNotification(
+                            //                        "Order Confirmation!",
+                            //                        user.getUserName() + " has successfully confirmed their order!",
+                            //                        "Order!",
+                            //                        user.getUserName(),
+                            //                        admin.getId(),
+                            //                        UserNotifactionStatus.DELIVERED
+                            //                );
+                            //            }
+                        }
         }
 
         if (request.getPaymentMethod() == PaymentMethod.VN_PAY) {
@@ -259,10 +268,14 @@ public class OrderService {
         UpdateOrderByUserRes response = orderMapper.toGetOrderResponse(userOrder);
         response.setPaymentUrl(paymentUrl);
 
-            //  TODO
-            //        emailService.sendOrderNotificationToAdmin(
-            //                adminEmail, response, storeName, orderManagementUrl, adminName, processingDeadline
-            //        );
+        mailService.sendConfirmOrderByUser(
+                mailProperties.getAdminEmail(),
+                response,
+                mailProperties.getStoreName(),
+                mailProperties.getOrderManagementUrl(),
+                mailProperties.getAdminName(),
+                mailProperties.getProcessingDeadline()
+        );
 
         return response;
     }
@@ -326,7 +339,7 @@ public class OrderService {
 //                UserNotifactionStatus.PENDING
 //        );
 
-//        emailService.sendOrderApprovedEmail(orderResponse);
+        mailService.sendOrderApprovedEmail(orderResponse);
 
         return SuccessCode.APPROVE_ORDER.getMessage();
     }
@@ -355,7 +368,8 @@ public class OrderService {
 //                UserNotifactionStatus.PENDING
 //        );
 //
-//        emailService.sendOrderCanceledEmail(orderResponse);
+        mailService.sendOrderCanceledEmail(orderResponse);
+
         return SuccessCode.CANCELED_ORDER.getMessage();
     }
 

@@ -54,7 +54,7 @@ public class ProductService {
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public List<GetProductSelectionRes> getProductSelection(String keyword,
+    public List< ProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
                                                             String supplierName,
                                                             Double minPrice,

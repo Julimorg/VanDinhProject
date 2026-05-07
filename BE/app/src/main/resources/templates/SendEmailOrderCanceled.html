@@ -147,13 +147,32 @@
         <h3>Chi tiết đơn hàng</h3>
         <div th:if="${orderItems != null}" th:each="item : ${orderItems}">
             <p>
-                <strong th:text="${item.product.productName}">Sản phẩm</strong>
-                - Số lượng: <span th:text="${item.quantity}">1</span>
-                - Giá: <span th:text="${item.product.productPrice} + ' VNĐ'">100.000 VNĐ</span>
-                <span th:if="${item.product.discount > 0}">
-                    - Giảm giá: <span th:text="${item.product.discount} + '%'">0%</span>
-                </span>
+                <img th:if="${item.productImage != null and !item.productImage.isEmpty()}"
+                     th:src="${item.productImage[0]}"
+                     alt="Ảnh sản phẩm"
+                     style="width:60px; height:60px; object-fit:cover; border-radius:5px; margin-right:10px; vertical-align:middle;"/>
+
+                <strong th:text="${item.productName}">Tên sản phẩm</strong><br/>
+
+                Mã SP: <span th:text="${item.productCode}">SP001</span><br/>
+
+                Số lượng: <span th:text="${item.quantity}">1</span><br/>
+
+                Đơn giá: <span th:text="${item.productPrice} + ' VNĐ'">100.000 VNĐ</span><br/>
+
+                <span th:if="${item.productVolume != null}">
+            Dung tích: <span th:text="${item.productVolume} + ' ' + ${item.productUnit}">500 ml</span><br/>
+        </span>
+
+                <span th:if="${item.colorName != null}">
+            Màu sắc: <span th:text="${item.colorName}">Đỏ</span><br/>
+        </span>
+
+                <span th:if="${item.categoryName != null}">
+            Danh mục: <span th:text="${item.categoryName}">Áo thun</span><br/>
+        </span>
             </p>
+            <hr style="border:none; border-top:1px solid #ddd;"/>
         </div>
         <p th:if="${orderItems == null}">Chi tiết đơn hàng sẽ được hiển thị ở đây.</p>
 

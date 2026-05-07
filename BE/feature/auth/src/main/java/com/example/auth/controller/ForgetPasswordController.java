@@ -19,7 +19,7 @@ public class ForgetPasswordController {
     private final ForgotPassService forgetPassService;
 
     @PostMapping("/verify-email/{email}")
-    public ApiResponse<String> verifyEmail(@PathVariable("email") String email) throws Exception {
+    public ApiResponse<String> verifyEmail(@PathVariable String email) throws Exception {
 
         forgetPassService.sendOtp(email);
 

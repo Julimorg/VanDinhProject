@@ -1,5 +1,6 @@
 package com.example.messaging.service;
 
+import com.example.common.dto.order.response.UpdateOrderByUserRes;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import org.thymeleaf.context.Context;
 import java.time.Year;
+import java.util.HashMap;
 import java.util.Map;
 
 import static jakarta.mail.Transport.send;
@@ -41,30 +43,82 @@ public class MailService {
                 )
         );
     }
-//
-//    // ----------------------------------------------------------------
-//    // Order emails
-//    // ----------------------------------------------------------------
-//
-//    @Async
-//    public void sendOrderApprovedEmail(OrderMailDto order) {
-//        send(
-//                order.email(),
-//                "Đơn hàng được phê duyệt #" + order.orderCode(),
-//                "mail/order-approved",
-//                buildOrderVariables(order)
-//        );
-//    }
-//
-//    @Async
-//    public void sendOrderCanceledEmail(OrderMailDto order) {
-//        send(
-//                order.email(),
-//                "Thông báo hủy đơn hàng #" + order.orderCode(),
-//                "mail/order-canceled",
-//                buildOrderVariables(order)
-//        );
-//    }
+
+    // ----------------------------------------------------------------
+    // Order emails
+    // ----------------------------------------------------------------
+
+    @Async
+    public void sendConfirmOrderByUser(String adminEmail,
+                                             UpdateOrderByUserRes order,
+                                             String storeName,
+                                             String orderManagementUrl,
+                                             String adminName,
+                                             String processingDeadline) {
+        send(
+                adminEmail,
+                "Thông Báo Đơn Hàng Mới Cần Xử Lý - " + order.getOrderCode(),
+                "SendEmailToAdminToHandleCartForUser",
+                Map.of(
+                        "adminName",          adminName,
+                        "order",              order,
+                        "storeName",          storeName,
+                        "orderManagementUrl", orderManagementUrl,
+                        "processingDeadline", processingDeadline
+                )
+        );
+    }
+
+
+    @Async
+    public void sendOrderApprovedEmail(UpdateOrderByUserRes order) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("orderId",       order.getOrderId());
+        variables.put("orderCode",     order.getOrderCode());
+        variables.put("email",         order.getEmail());
+        variables.put("phone",         order.getPhone());
+        variables.put("userAddress",   order.getUserAddress());
+        variables.put("shipAddress",   order.getShipAddress());
+        variables.put("status",        order.getStatus());
+        variables.put("amount",        order.getAmount());
+        variables.put("paymentMethod", order.getPaymentMethod());
+        variables.put("paymentStatus", order.getPaymentStatus());
+        variables.put("orderItems",    order.getOrderItems());
+        variables.put("createAt",      order.getCreateAt());
+        variables.put("completeAt",    order.getCompleteAt());
+
+        send(
+                order.getEmail(),
+                "Thông báo đơn hàng được phê duyệt #" + order.getOrderCode(),
+                "SendEmailOrderSuccessfullyForm",
+                variables
+        );
+    }
+
+    @Async
+    public void sendOrderCanceledEmail(UpdateOrderByUserRes order) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("orderId",       order.getOrderId());
+        variables.put("orderCode",     order.getOrderCode());
+        variables.put("email",         order.getEmail());
+        variables.put("phone",         order.getPhone());
+        variables.put("userAddress",   order.getUserAddress());
+        variables.put("shipAddress",   order.getShipAddress());
+        variables.put("status",        order.getStatus());
+        variables.put("amount",        order.getAmount());
+        variables.put("paymentMethod", order.getPaymentMethod());
+        variables.put("paymentStatus", order.getPaymentStatus());
+        variables.put("orderItems",    order.getOrderItems());
+        variables.put("createAt",      order.getCreateAt());
+        variables.put("completeAt",    order.getCompleteAt());
+
+        send(
+                order.getEmail(),
+                "Thông báo hủy đơn hàng #" + order.getOrderCode(),
+                "SendEmailOrderCanceled",
+                variables
+        );
+    }
 //
 //    @Async
 //    public void sendOrderCreatedByAdminEmail(OrderMailDto order) {
