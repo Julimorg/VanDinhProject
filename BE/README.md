@@ -5,48 +5,113 @@
 
 ## 1. BIG PICTURE — System WorkFlow
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         GRADLE BUILD                            │
-│                                                                 │
-│  settings.gradle → khai báo tất cả module                      │
-│  build.gradle (root) → config CHUNG cho mọi subproject         │
-│  gradle.properties → tập trung version numbers                 │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        /app module                              │
-│                                                                 │
-│  • Duy nhất có Spring Boot plugin → tạo executable JAR          │
-│  • Chứa Application.java (@SpringBootApplication)               │
-│  • Chứa application.properties / .env                           │
-│  • Import TẤT CẢ feature + shared modules                       │
-│  • KHÔNG viết business logic ở đây                              │
-└───────────────────────┬─────────────────────────────────────────┘
-                        │ depends on
-          ┌─────────────┼──────────────┐
-          ▼             ▼              ▼
-   :feature:auth  :feature:user  :feature:product  ...
-          │             │              │
-          └─────────────┼──────────────┘
-                        │ depends on
-          ┌─────────────┼──────────────┐
-          ▼             ▼              ▼
-   :shared:common  :shared:security  :shared:persistence  ...
-```
+![Module Structure Diagram](./docs/module-structure.svg)
+
+### Chú thích
+
+**Gradle Build** — Skeleton cho toàn bộ module system:
+- `settings.gradle` → khai báo tất cả module trong project
+- `build.gradle (root)` → config CHUNG cho mọi subproject (Java version, Lombok, dependency management)
+- `gradle.properties` → tập trung version numbers — tránh hardcode ở nhiều nơi
+
+**App Module (/app)** — Điểm khởi động duy nhất của application:
+- Duy nhất có Spring Boot plugin → tạo executable JAR
+- Chứa `Application.java` (`@SpringBootApplication`)
+- Chứa `application.properties` / `.env`
+- Import TẤT CẢ feature + shared modules
+- KHÔNG viết business logic ở đây
+
+> ⚠️ **Quan trọng**: Khi muốn thêm hoặc xóa bất kỳ module nào (feature hoặc shared), phải config trong `app/build.gradle`:
+>
+> ```groovy
+> plugins {
+>     id 'org.springframework.boot'
+> }
+> bootRun {
+>     workingDir = rootProject.projectDir
+> }
+> dependencies {
+>     implementation project(':feature:auth')
+>     implementation project(':feature:user')
+>     implementation project(':feature:product')
+>     implementation project(':feature:notification')
+>     implementation project(':feature:storage')
+>     implementation project(':feature:search')
+>     implementation project(':feature:report')
+>     implementation project(':feature:qrcode')
+>     implementation project(':feature:order')
+>     implementation project(':feature:cart')
+>     implementation project(':feature:supplier')
+>     implementation project(':feature:color')
+>     implementation project(':feature:wishlist')
+>     implementation project(':feature:category')
+>     implementation project(':feature:payment')
+>
+>     implementation project(':shared:security')
+>     implementation project(':shared:api-docs')
+>     implementation project(':shared:messaging')
+>     implementation project(':shared:persistence')
+>
+>     implementation 'org.springframework.boot:spring-boot-starter-security'
+>     implementation 'org.springframework.modulith:spring-modulith-starter-core'
+>     implementation 'org.springframework.modulith:spring-modulith-starter-jpa'
+>
+>     implementation 'io.github.cdimascio:dotenv-java:3.0.2'
+>     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
+>
+>     runtimeOnly    'org.postgresql:postgresql'
+>     runtimeOnly    'com.mysql:mysql-connector-j:8.3.0'
+>     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+>
+>     testImplementation 'org.springframework.modulith:spring-modulith-starter-test'
+>     testImplementation 'org.springframework.security:spring-security-test'
+>     testRuntimeOnly    'com.h2database:h2'
+> }
+> ```
+
+**Shared Module (/shared)** — Code dùng chung, không có business logic:
+
+| Module | Nội dung |
+|---|---|
+| `common` | `ApiResponse`, `BusinessException`, `BaseDTO`, Utils, **Port Interfaces** (xem mục 3.2) |
+| `security` | JWT, `SecurityConfig`, OAuth2 |
+| `persistence` | `BaseEntity`, `JpaAuditingConfig`, Flyway config |
+| `messaging` | `WebSocketConfig` |
+| `api-docs` | `SwaggerConfig`, OpenAPI |
+
+**Feature Module (/feature)** — Mỗi feature = 1 bounded context độc lập:
+
+| Module | Chức năng |
+|---|---|
+| `auth` | Register, login, refresh token |
+| `cart` | Giỏ hàng |
+| `category` | Danh mục sản phẩm |
+| `notification` | Email, SendGrid, Thymeleaf |
+| `order` | Đặt hàng, quản lý đơn |
+| `product` | Catalog sản phẩm |
+| `qrcode` | ZXing QR generation |
+| `search` | Elasticsearch |
+| `storage` | Cloudinary, file upload |
+| `supplier` | Nhà cung cấp |
+| `user` | Profile, address |
+| `wishlist` | Danh sách yêu thích |
 
 ### Dependency flow — CORE
 
 ```
-:app  -->  :feature:*  -->  :shared:*
-                    ↑
-         :feature có thể depend vào :feature khác
-         nhưng KHÔNG được tạo vòng tròn (circular)
+:app  -->  :shared:*  <--  :feature:*
+               ↑
+   Chiều phụ thuộc DUY NHẤT: feature depend vào shared, không ai depend vào feature
 
-ĐÚNG:   :feature:order  →  :feature:product  ✅
-SAI:    :feature:product → :feature:order    ❌ (circular)
-SAI:    :shared:common  → :feature:auth      ❌ (shared không được depend vào feature)
+⚠️ CÁC MODULE KHÔNG ĐƯỢC DEPEND LẪN NHAU:
+SAI:  :feature:order  →  :feature:product   ❌ (feature phụ thuộc feature)
+SAI:  :shared:common  →  :feature:auth      ❌ (shared không được depend vào feature)
+
+✅ ĐÚNG: Nếu :feature:order cần data của :feature:product
+   → Định nghĩa interface tại :shared:common  (ProductQueryPort)
+   → :feature:product   implement interface đó
+   → :feature:order     gọi interface — không biết implementation ở đâu
+   (xem chi tiết hướng dẫn tại mục 3.2)
 ```
 
 ---
@@ -68,7 +133,7 @@ BE/
 │       └── resources/application.properties
 │
 ├── shared/                      ← code dùng chung, không có business logic
-│   ├── common/                  ← ApiResponse, Exception, BaseDTO, Utils
+│   ├── common/                  ← ApiResponse, Exception, BaseDTO, Utils, Port Interfaces
 │   ├── security/                ← JWT, SecurityConfig, OAuth2
 │   ├── persistence/             ← BaseEntity, JpaAuditingConfig, Flyway
 │   ├── messaging/               ← WebSocketConfig
@@ -93,13 +158,9 @@ feature/auth/
     ├── main/
     │   ├── java/com/example/auth/
     │   │   ├── controller/       ← REST endpoints (@RestController)
-    │   │   ├── service/          ← interface
-    │   │   │   └── impl/         ← implementation (@Service)
+    │   │   ├── service/          ← implementation (@Service)
     │   │   ├── repository/       ← JPA repositories (@Repository)
-    │   │   └── domain/
-    │   │       ├── entity/       ← JPA entities (@Entity)
-    │   │       ├── dto/          ← Request/Response objects
-    │   │       └── mapper/       ← MapStruct mappers
+    │   │   └── mapper/           ← MapStruct mappers (@Mapper)
     │   └── resources/
     │       └── (nếu cần template, config riêng)
     └── test/
@@ -124,7 +185,141 @@ Ví dụ: thêm `ForgotPasswordService` vào `:feature:auth`
 3. Không cần config gì thêm — Spring Boot scan toàn bộ com.example.* từ Application.java
 ```
 
-### 3.2 Dùng class từ module khác
+### 3.2 Gọi data giữa các feature module — SOLID Interface Pattern
+
+> **Nguyên tắc**: Các feature module KHÔNG được depend trực tiếp lẫn nhau. Nếu `:feature:order`
+> cần data từ `:feature:product`, phải đi qua một interface định nghĩa ở `:shared:common`.
+> Đây là ứng dụng của **Dependency Inversion Principle (D trong SOLID)**.
+
+**KHÔNG làm (vi phạm nguyên tắc):**
+
+```groovy
+// feature/order/build.gradle
+implementation project(':feature:product')  // ❌ feature depend vào feature
+```
+
+```java
+// Trong OrderServiceImpl
+@Autowired
+private ProductRepository productRepository;  // ❌ vượt qua module boundary
+```
+
+**ĐÚNG — 4 bước theo DIP:**
+
+**Bước 1** — Định nghĩa Port Interface + DTO tại `:shared:common`
+
+```java
+// shared/common/src/main/java/com/example/common/port/ProductQueryPort.java
+package com.example.common.port;
+
+public interface ProductQueryPort {
+    ProductInfo findById(Long productId);
+    boolean existsById(Long productId);
+}
+```
+
+```java
+// shared/common/src/main/java/com/example/common/port/ProductInfo.java
+package com.example.common.port;
+
+import java.math.BigDecimal;
+
+public record ProductInfo(Long id, String name, BigDecimal price, Integer stock) {}
+```
+
+**Bước 2** — `:feature:product` implement interface
+
+```java
+// feature/product/src/main/java/com/example/product/adapter/ProductQueryAdapter.java
+package com.example.product.adapter;
+
+import com.example.common.port.ProductQueryPort;
+import com.example.common.port.ProductInfo;
+import com.example.product.repository.ProductRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class ProductQueryAdapter implements ProductQueryPort {
+
+    private final ProductRepository productRepository;
+
+    @Override
+    public ProductInfo findById(Long productId) {
+        return productRepository.findById(productId)
+            .map(p -> new ProductInfo(p.getId(), p.getName(), p.getPrice(), p.getStock()))
+            .orElseThrow(() -> new BusinessException("Product not found: " + productId));
+    }
+
+    @Override
+    public boolean existsById(Long productId) {
+        return productRepository.existsById(productId);
+    }
+}
+```
+
+**Bước 3** — `:feature:order` chỉ gọi interface, không biết implementation
+
+```java
+// feature/order/src/main/java/com/example/order/service/OrderServiceImpl.java
+package com.example.order.service;
+
+import com.example.common.port.ProductQueryPort;   // ← từ shared:common
+import com.example.common.port.ProductInfo;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+@Service
+@RequiredArgsConstructor
+public class OrderServiceImpl implements OrderService {
+
+    private final ProductQueryPort productQueryPort;  // ← inject interface, không biết ProductRepository
+
+    public OrderResponse createOrder(CreateOrderRequest request) {
+        ProductInfo product = productQueryPort.findById(request.getProductId());
+
+        if (product.stock() < request.getQuantity()) {
+            throw new BusinessException("Insufficient stock");
+        }
+        // ... tạo order logic ...
+    }
+}
+```
+
+**Bước 4** — Cấu hình `build.gradle`
+
+```groovy
+// feature/order/build.gradle
+dependencies {
+    implementation project(':shared:common')   // ✅ chỉ depend vào shared
+    // KHÔNG có ':feature:product'             // ✅ không biết product module
+}
+
+// feature/product/build.gradle
+dependencies {
+    implementation project(':shared:common')   // ✅ implement interface từ shared
+}
+```
+
+**Luồng hoạt động lúc runtime:**
+
+```
+:feature:order
+    │  inject ProductQueryPort (interface)
+    └──────────────────────────────────────────────────────────────┐
+                                                                   ▼
+                                                    :shared:common
+                                                    (ProductQueryPort — interface)
+                                                                   ▲
+                                                    :feature:product
+                                                    (ProductQueryAdapter — implements)
+
+Spring Boot tự inject ProductQueryAdapter vào OrderServiceImpl lúc runtime.
+:feature:order không biết gì về :feature:product module.
+```
+
+### 3.3 Dùng class từ module khác
 
 Ví dụ: `AuthServiceImpl` cần dùng `ApiResponse` từ `:shared:common`
 
@@ -141,9 +336,7 @@ Ví dụ: `AuthServiceImpl` cần dùng `ApiResponse` từ `:shared:common`
    import com.example.common.response.ApiResponse;
 ```
 
-### 3.3 Thêm thư viện bên ngoài (external library)
-
-Có 2 trường hợp:
+### 3.4 Thêm thư viện bên ngoài (external library)
 
 **Trường hợp A — Lib chỉ dùng trong 1 module:**
 ```groovy
@@ -172,6 +365,41 @@ implementation 'org.postgresql:postgresql'
 // Xem đầy đủ tại: https://docs.spring.io/spring-boot/docs/current/reference/html/dependency-versions.html
 ```
 
+**Trường hợp D — Lib ở shared module cần expose cho các module con (transitive):**
+
+Khi một lib được khai báo ở shared module và các feature module cần dùng trực tiếp
+các class/annotation của lib đó (ví dụ `@Entity`, `@Valid`), dùng `api` thay vì `implementation`:
+
+```groovy
+// shared/persistence/build.gradle
+dependencies {
+    // 'api' → expose ra ngoài, các module depend vào :shared:persistence
+    // sẽ tự động có starter-data-jpa trên compile classpath
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'    // ✅ transitive
+    api 'org.springframework.boot:spring-boot-starter-validation'   // ✅ transitive
+
+    // 'implementation' → chỉ dùng nội bộ, không expose
+    implementation 'org.flywaydb:flyway-core'
+}
+```
+
+Kết quả — feature module không cần khai báo lại:
+
+```groovy
+// feature/product/build.gradle
+dependencies {
+    implementation project(':shared:persistence')
+    // @Entity, @Repository, @Valid đều hoạt động — kế thừa từ :shared:persistence ✓
+    // Không cần thêm spring-boot-starter-data-jpa
+}
+```
+
+| | `implementation` | `api` |
+|---|---|---|
+| Visible với consumer | ❌ Không | ✅ Có (compile classpath) |
+| Build performance | Tốt hơn (ít recompile) | Kém hơn (cascade recompile) |
+| Dùng khi | Lib chỉ dùng nội bộ module | Lib là phần API public của module |
+
 ---
 
 ## 4. THÊM MODULE MỚI — TỪNG BƯỚC
@@ -189,17 +417,15 @@ include ':feature:cart'
 **Windows PowerShell:**
 ```powershell
 New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/controller
-New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/service/impl
+New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/service
 New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/repository
-New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/domain/entity
-New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/domain/dto
-New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/domain/mapper
+New-Item -ItemType Directory -Force -Path feature/cart/src/main/java/com/example/cart/mapper
 New-Item -ItemType Directory -Force -Path feature/cart/src/test/java/com/example/cart
 ```
 
 **Git Bash / WSL:**
 ```bash
-mkdir -p feature/cart/src/main/java/com/example/cart/{controller,service/impl,repository,domain/{entity,dto,mapper}}
+mkdir -p feature/cart/src/main/java/com/example/cart/{controller,service,repository,mapper}
 mkdir -p feature/cart/src/test/java/com/example/cart
 ```
 
@@ -209,8 +435,6 @@ dependencies {
     implementation project(':shared:common')
     implementation project(':shared:security')
     implementation project(':shared:persistence')
-    // Thêm nếu cart cần biết về product:
-    implementation project(':feature:product')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -249,7 +473,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
 
     // 2. Annotation processors — THỨ TỰ NÀY KHÔNG ĐƯỢC ĐỔI
-    annotationProcessor 'org.projectlombok:lombok'                       // [1] Lombok trước
+    annotationProcessor 'org.projectlombok:lombok'                          // [1] Lombok trước
     annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0' // [2] Bridge
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}" // [3] MapStruct sau
 
@@ -271,14 +495,13 @@ com.example.{module-name}.{layer}
 Ví dụ:
 com.example.auth.controller      ← AuthController.java
 com.example.auth.service         ← AuthService.java (interface)
-com.example.auth.service.impl    ← AuthServiceImpl.java
+com.example.auth.service         ← AuthServiceImpl.java (@Service)
 com.example.auth.repository      ← UserRepository.java
-com.example.auth.domain.entity   ← User.java
-com.example.auth.domain.dto      ← LoginRequest.java, LoginResponse.java
-com.example.auth.domain.mapper   ← UserMapper.java
+com.example.auth.mapper          ← UserMapper.java
 
 com.example.common.response      ← ApiResponse.java
 com.example.common.exception     ← BusinessException.java
+com.example.common.port          ← ProductQueryPort.java (cross-module interfaces)
 com.example.security.config      ← SecurityConfig.java
 com.example.security.jwt         ← JwtService.java
 com.example.persistence.entity   ← BaseEntity.java
@@ -435,7 +658,8 @@ Tất cả SQL đặt tập trung ở `:app` — không phân tán vào từng f
 □ Chạy ./gradlew projects → thấy module mới
 □ Chạy ./gradlew :feature:tenmodule:build → pass
 □ Đặt package đúng: com.example.tenmodule.*
-□ Viết code theo thứ tự: entity → repository → service interface → impl → controller
+□ Viết code theo thứ tự: entity → repository → service → controller
+□ Nếu cần gọi module khác → định nghĩa Port Interface ở shared:common trước
 □ Chạy ./gradlew :app:bootRun → verify app vẫn start được
 ```
 
@@ -485,5 +709,6 @@ Fix: Kiểm tra .env nằm ở BE/ (root project)
 ```
 Nguyên nhân: A depends B, B depends A
 Fix: Tìm class bị chia sẻ → chuyển vào :shared:common
+     Hoặc dùng Port Interface pattern (xem mục 3.2)
      Hoặc dùng event-driven (ApplicationEvent) thay vì direct dependency
 ```

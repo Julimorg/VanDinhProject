@@ -1,4 +1,4 @@
-plugins {
+ qplugins {
     id 'org.springframework.boot'
 }
 bootRun {
