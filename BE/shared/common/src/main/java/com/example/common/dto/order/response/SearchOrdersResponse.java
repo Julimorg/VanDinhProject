@@ -1,0 +1,39 @@
+package com.example.common.dto.order.response;
+import com.example.persistence.enumTable.OrderStatus;
+import com.example.persistence.enumTable.PaymentMethod;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class SearchOrdersResponse {
+    private String orderId;
+    private String orderCode;
+    private OrderStatus status;
+    private BigDecimal amount;
+
+    private String userId;
+    private String email;
+    private String phone;
+    private String userAddress;
+    private List<SearchOrderItemResponse> orderItems;
+    private String paymentId;
+    private PaymentMethod paymentMethod;
+    private String paymentStatus;
+
+    private LocalDateTime createAt;
+
+    private LocalDateTime updateAt;
+
+    private LocalDateTime deletedAt;
+
+    private LocalDateTime completeAt;
+}

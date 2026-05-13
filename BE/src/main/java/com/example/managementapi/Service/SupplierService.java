@@ -1,23 +1,17 @@
 package com.example.managementapi.Service;
 
 
-import com.example.managementapi.Dto.ApiResponse;
 import com.example.managementapi.Dto.Request.Supplier.CreateSupplierReq;
 import com.example.managementapi.Dto.Request.Supplier.UpdateSupplierReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
 import com.example.managementapi.Dto.Response.Supplier.*;
-import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Supplier;
-import com.example.managementapi.Enum.ErrorCode;
-import com.example.managementapi.Exception.AppException;
 import com.example.managementapi.Mapper.SupplierMapper;
-import com.example.managementapi.Repository.ColorRepository;
 import com.example.managementapi.Repository.SupplierRepository;
 import com.example.managementapi.Specification.SupplierSpecification;
 import com.example.managementapi.Util.FileUpLoadUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -37,6 +31,8 @@ public class SupplierService {
     private final SupplierMapper supplierMapper;
 
     private final CloudinaryService cloudinaryService;
+
+    private final ElasticSearchService elasticSearchService;
 
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
@@ -82,6 +78,8 @@ public class SupplierService {
 
        supplier = supplierRepository.save(supplier);
 
+       elasticSearchService.saveSupplier(supplier);
+
         return supplierMapper.toCreateSupplierRes(supplier);
     }
 
@@ -102,8 +100,10 @@ public class SupplierService {
 
         supplierMapper.toUpdateSupplierReq(supplier, request);
 
+        supplier = supplierRepository.save(supplier);
+        elasticSearchService.saveSupplier(supplier);
 
-        return supplierMapper.toUpdateSupplierRes(supplierRepository.save(supplier));
+        return supplierMapper.toUpdateSupplierRes(supplier);
 
     }
 
@@ -115,6 +115,7 @@ public class SupplierService {
         }
 
         supplierRepository.deleteById(supplier_id);
+        elasticSearchService.delete("S_" + supplier_id);
     }
 
 

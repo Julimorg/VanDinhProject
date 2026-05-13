@@ -1,0 +1,24 @@
+package com.example.common.dto.order.response;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreateOrderItemsResponse {
+    private String orderItemId;
+    private int quantity;
+    private BigDecimal price;
+    private LocalDateTime createAt;
+    private LocalDateTime updateAt;
+    private LocalDateTime deletedAt;
+
+}

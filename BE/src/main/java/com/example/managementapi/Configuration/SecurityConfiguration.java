@@ -79,7 +79,8 @@ public class SecurityConfiguration {
                 "http://127.0.0.1:5500",
                 "http://13.250.65.227:8080",
                 "https://van-dinh-store.vercel.app/",
-                "https://van-dinh-project.vercel.app"
+                "https://van-dinh-project.vercel.app",
+                "https://van-dinh.net/"
         ));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");

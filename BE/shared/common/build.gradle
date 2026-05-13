@@ -1,0 +1,25 @@
+plugins {
+    id 'java-library'
+    id 'io.spring.dependency-management'
+}
+
+dependencies {
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-validation'
+    api 'org.springframework.boot:spring-boot-starter-mail'
+    api 'org.mapstruct:mapstruct:1.5.5.Final'
+    api 'com.cloudinary:cloudinary-http5:2.3.0'
+    api 'com.opencsv:opencsv:5.9'
+    api 'com.google.zxing:core:3.5.3'
+    api 'com.google.zxing:javase:3.5.3'
+
+    implementation project(':shared:persistence')
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'commons-io:commons-io:2.15.1'
+
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+}

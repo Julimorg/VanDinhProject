@@ -25,17 +25,17 @@ const GlobalWebSocketListener = () => {
         });
       });
 
-      // subscribe("/user/queue/notifications", (msg) => {
-      //   console.log("Private Notification received:", msg);
-      //   addNotification({
-      //     id: msg.userNotificationId,
-      //     title: msg.title,
-      //     description: msg.message,
-      //     time: msg.createdAt,
-      //     read: false,
-      //     type: msg.type,
-      //   });
-      // });
+      subscribe("/user/queue/notifications", (msg) => {
+        console.log("Private Notification received:", msg);
+        addNotification({
+          id: msg.userNotificationId,
+          title: msg.title,
+          description: msg.message,
+          time: msg.createdAt,
+          read: false,
+          type: msg.type,
+        });
+      });
 
       // subscribe("/topic/admin-broadcast", (msg) => {
       //   console.log("Public Notification received:", msg);

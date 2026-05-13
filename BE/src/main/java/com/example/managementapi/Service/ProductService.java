@@ -5,7 +5,6 @@ import com.example.managementapi.Dto.Request.Product.UpdateProductQuantityReq;
 import com.example.managementapi.Dto.Request.Product.UpdateProductReq;
 import com.example.managementapi.Dto.Response.Cloudinary.CloudinaryRes;
 import com.example.managementapi.Dto.Response.Product.*;
-import com.example.managementapi.Dto.Response.Supplier.GetSupplierSelectionRes;
 import com.example.managementapi.Entity.Category;
 import com.example.managementapi.Entity.Color;
 import com.example.managementapi.Entity.Product;
@@ -19,11 +18,10 @@ import com.example.managementapi.Repository.ProductRepository;
 import com.example.managementapi.Repository.SupplierRepository;
 import com.example.managementapi.Specification.ProductSpecification;
 import com.example.managementapi.Util.FileUpLoadUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springdoc.core.converters.models.Sort;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -33,7 +31,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,9 +49,12 @@ public class ProductService {
 
     private final CloudinaryService cloudinaryService;
 
+    //private final ApplicationEventPublisher eventPublisher;
+    private final ElasticSearchService elasticSearchService;
+
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-    public List<GetProductSelectionRes> getProductSelection(String keyword,
+    public List< ProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
                                                             String supplierName,
                                                             Double minPrice,
@@ -81,6 +81,7 @@ public class ProductService {
                 .toList();
     }
 
+    @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateProductRes createProduct(CreateProductReq request){
         if(productRepository.existsByProductName(request.getProductName())){
@@ -135,6 +136,9 @@ public class ProductService {
         product.setProductImage(imgUrls);
 
         Product savedProduct = productRepository.save(product);
+
+        elasticSearchService.saveProduct(savedProduct);
+
 
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
@@ -203,6 +207,7 @@ public class ProductService {
         return response;
     }
 
+    @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateProductRes updateProduct(String id, UpdateProductReq request){
 
@@ -238,6 +243,8 @@ public class ProductService {
 
         Product savedProduct = productRepository.save(product);
 
+        elasticSearchService.saveProduct(savedProduct);
+
         UpdateProductRes response = productMapper.toUpdateProductRes(savedProduct);
 
         if (savedProduct.getSupplier() != null) {
@@ -269,10 +276,13 @@ public class ProductService {
         return productMapper.toUpdateProductQuantityRes(productRepository.save(product));
     }
 
+    @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteProduct(String id){
         productRepository.deleteById(id);
+        elasticSearchService.delete("P_" + id);
     }
+
 
 
 }

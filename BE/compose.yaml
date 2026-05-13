@@ -3,11 +3,25 @@ version: '3.9'
 services:
   app:
     build: .
-    # hoặc image: your-spring-app:latest nếu đã build/push
     ports:
-      - "8080:8080"  # host:container, thay nếu cần
+      - "8080:8080"
     env_file:
-      - ./.env      # Load tất cả env từ file .env vào container
+      - ./.env
     restart: unless-stopped
-    # depends_on: nếu có DB khác (ví dụ mysql/postgres)
-    # healthcheck: nếu cần
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    image: elasticsearch:8.18.1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
+volumes:
+  es_data:

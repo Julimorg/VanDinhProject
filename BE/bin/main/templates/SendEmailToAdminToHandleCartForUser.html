@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông Báo Đơn Hàng Mới</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #dc3545;
+            color: #ffffff;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .order-details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .order-details th, .order-details td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .order-details th {
+            background-color: #f8f8f8;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Thông Báo Đơn Hàng Mới</h1>
+    </div>
+    <div class="content">
+        <p>Kính gửi <span th:text="${adminName}">Đội ngũ Admin</span>,</p>
+        <p>Một đơn hàng mới vừa được ghi nhận trên hệ thống và cần được xử lý. Vui lòng kiểm tra và thực hiện các bước xử lý đơn hàng theo quy trình.</p>
+
+        <h3>Thông tin đơn hàng</h3>
+        <p><strong>Mã đơn hàng:</strong> <span th:text="${order.orderCode}">[Mã đơn hàng]</span></p>
+        <p><strong>Trạng thái:</strong> <span th:text="${order.status}">[Trạng thái]</span></p>
+        <p><strong>Ngày đặt hàng:</strong> <span th:text="${#temporals.format(order.createAt, 'dd/MM/yyyy HH:mm')}">[Ngày đặt hàng]</span></p>
+        <p><strong>ID khách hàng:</strong> <span th:text="${order.userId}">[ID khách hàng]</span></p>
+        <p><strong>Email khách hàng:</strong> <span th:text="${order.email}">[Email khách hàng]</span></p>
+        <p><strong>Số điện thoại:</strong> <span th:text="${order.phone}">[Số điện thoại]</span></p>
+        <p><strong>Địa chỉ giao hàng:</strong> <span th:text="${order.shipAddress}">[Địa chỉ giao hàng]</span></p>
+        <p><strong>Tổng tiền:</strong>
+            <span th:text="${#numbers.formatDecimal(order.amount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Tổng tiền]</span>
+        </p>
+        <p><strong>Phương thức thanh toán:</strong> <span th:text="${order.paymentMethod}">[Phương thức thanh toán]</span></p>
+        <p><strong>Trạng thái thanh toán:</strong> <span th:text="${order.paymentStatus}">[Trạng thái thanh toán]</span></p>
+
+        <table class="order-details">
+            <thead>
+            <tr>
+                <th>Sản phẩm</th>
+                <th>Số lượng</th>
+                <th>Đơn giá</th>
+                <th>Thành tiền</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${order.orderItems}">
+                <td th:text="${item.productName}">[Tên sản phẩm]</td>
+                <td th:text="${item.quantity}">[Số lượng]</td>
+                <td th:text="${#numbers.formatDecimal(item.productPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Đơn giá]</td>
+                <td th:text="${#numbers.formatDecimal(item.quantity * item.productPrice, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">[Thành tiền]</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <a th:href="${orderManagementUrl}" class="button">Xem và Xử Lý Đơn Hàng</a>
+
+        <p>Vui lòng xử lý đơn hàng trong vòng <span th:text="${processingDeadline}">[Thời hạn xử lý]</span> để đảm bảo tiến độ giao hàng.</p>
+
+        <p>Nếu cần thêm thông tin, vui lòng liên hệ với khách hàng qua email <span th:text="${order.email}">[Email khách hàng]</span> hoặc số điện thoại <span th:text="${order.phone}">[Số điện thoại khách hàng]</span>.</p>
+
+        <p>Trân trọng,<br><span th:text="${storeName}">[Tên cửa hàng]</span></p>
+    </div>
+    <div class="footer">
+        <p>© 2025 <span th:text="${storeName}">[Tên cửa hàng]</span>. All rights reserved.</p>
+        <p>Đây là email tự động, vui lòng không trả lời trực tiếp.</p>
+    </div>
+</div>
+</body>
+</html>
