@@ -5,7 +5,8 @@
 
 ## 1. BIG PICTURE — System WorkFlow
 
-![Module Structure Diagram](./docs/module-structure.svg)
+<img width="1821" height="1021" alt="VanDinh-BackEnd-ModuleStructure drawio" src="https://github.com/user-attachments/assets/268365ff-114c-46aa-9435-f792b94b7133" />
+
 
 ### Chú thích
 
