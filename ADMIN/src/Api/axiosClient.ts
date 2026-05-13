@@ -2,10 +2,10 @@ import axios from 'axios';
 import { docApi } from './docApi';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
-import { AWS_API, LOCAL_API } from '@/Utils/env_dev_handler';
+import { AWS_API, LOCAL_API, RENDER_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: LOCAL_API,
+  baseURL: RENDER_API,
   headers: {
     'Content-Type': 'application/json',
   },

@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { AWS_API } from '../../Utils/env_dev_handler';
+import { AWS_API, RENDER_API } from '../../Utils/env_dev_handler';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 import { auth_api_handler } from '../Api_Handler/auth_api';
 import { toast } from 'react-toastify';
@@ -23,7 +23,7 @@ interface ErrorResponse {
 // AXIOS INSTANCE
 // ============================================
 const axiosClient = axios.create({
-  baseURL: AWS_API,
+  baseURL: RENDER_API,
   headers: {
     'Content-Type': 'application/json',
   },
