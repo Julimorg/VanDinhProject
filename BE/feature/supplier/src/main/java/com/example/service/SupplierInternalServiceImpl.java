@@ -3,12 +3,15 @@ package com.example.service;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.dto.search.SupplierIndexData;
 import com.example.mapper.SupplierMapper;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -35,5 +38,18 @@ public class SupplierInternalServiceImpl implements SupplierInternalService {
                 .orElseThrow(() -> new AppException(ErrorCode.SUPPLIER_NOT_FOUND));
 
         return supplierMapper.toConfigSupplierInternalDto(supplier);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SupplierIndexData> fetchSuppliersForIndex() {
+        return supplierRepository.findAll()
+                .stream()
+                .map(s -> SupplierIndexData.builder()
+                        .id(s.getSupplierId())
+                        .name(s.getSupplierName())
+                        .image(s.getSupplierImg())
+                        .build())
+                .toList();
     }
 }
