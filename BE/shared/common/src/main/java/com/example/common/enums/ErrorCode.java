@@ -70,6 +70,12 @@ public enum ErrorCode {
     UNSUPPORTED_ORDER_STATUS("Unsupported Order Status", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_STOCK("Insufficient Stock", HttpStatus.BAD_REQUEST),
     ORDER_ITEM_NOT_FOUND(" Order Item Not Found", HttpStatus.NOT_FOUND),
+
+
+    // ======================= WISHLIST =======================
+    PRODUCT_EXISTED_IN_WISHLIST("Product is existed in WishList", HttpStatus.BAD_REQUEST),
+    PRODUCT_NONE_EXISTED_IN_WISHLIST("Product None Existed in WishList", HttpStatus.BAD_REQUEST),
+
     // ======================= NOTIFICATION =======================
     NOTIFICATION_NOT_FOUND("Notification Not Found", HttpStatus.NOT_FOUND),
     USER_ID_REQUIRED("User Id Required", HttpStatus.BAD_REQUEST),
