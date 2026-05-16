@@ -1,6 +1,7 @@
 export interface IGetOrderDetailResponse {
   orderId: string;
   orderCode: string;
+  userId: string;
   status: string; 
   amount: number;
   id: string; 
@@ -19,7 +20,12 @@ export interface IGetOrderDetailResponse {
 export interface IOrderItemDetail {
   orderItemId: string;
   productName: string; 
+  productImage: string[];
+  colorName: string;
+  productVolume: string;
+  categoryName: string;
   productPrice: number;
+  productUnit: string;
   productCode: string;
   productQuantity: number;
   quantity: number;

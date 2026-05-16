@@ -41,7 +41,7 @@ const MainLayout = () => {
       >
         <Header isMobile={isMobile} setDrawerVisible={setDrawerVisible} />
 
-        <Content className="m-6 min-h-[calc(100vh-112px)]">
+        <Content>
           <Outlet />
         </Content>
       </Layout>
