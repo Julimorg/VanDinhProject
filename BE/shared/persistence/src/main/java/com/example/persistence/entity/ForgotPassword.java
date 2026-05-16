@@ -3,6 +3,7 @@ package com.example.persistence.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Getter
@@ -22,7 +23,7 @@ public class ForgotPassword {
     private int otp;
 
     @Column(nullable = false)
-    private Date expirationTime;
+    private LocalDateTime expirationTime;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")

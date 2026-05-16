@@ -14,7 +14,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "UserDevice")
+@Table(name = "UserDevice", indexes = {
+        @Index(name = "idx_userdevice_user",        columnList = "userId"),
+        @Index(name = "idx_userdevice_token",       columnList = "deviceToken", unique = true)
+})
 public class UserDevice {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

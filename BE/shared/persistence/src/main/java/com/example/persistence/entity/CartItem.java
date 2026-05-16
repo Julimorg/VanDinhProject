@@ -17,7 +17,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "CartItem")
+@Table(name = "CartItem", indexes = {
+        @Index(name = "idx_cartitem_cart",    columnList = "cart_id"),
+        @Index(name = "idx_cartitem_product", columnList = "product_id")
+})
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

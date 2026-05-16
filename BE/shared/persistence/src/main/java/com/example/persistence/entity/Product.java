@@ -20,7 +20,12 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Product")
+@Table(name = "Product", indexes = {
+        @Index(name = "idx_product_category",  columnList = "category_id"),
+        @Index(name = "idx_product_supplier",  columnList = "supplier_id"),
+        @Index(name = "idx_product_color",     columnList = "color_id"),
+        @Index(name = "idx_product_name",      columnList = "productName")
+})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

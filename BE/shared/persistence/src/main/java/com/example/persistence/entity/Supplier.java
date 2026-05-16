@@ -1,6 +1,7 @@
 package com.example.persistence.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -16,15 +17,26 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Supplier")
+@Table(name = "Supplier", indexes = {
+        @Index(name = "idx_supplier_name", columnList = "supplierName"),
+})
 public class Supplier {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String supplierId;
+
     private String supplierName;
+
     private String supplierAddress;
+
+    @Column(unique = true)
     private String supplierPhone;
+
+    @Email
+    @Column(unique = true)
     private String supplierEmail;
+
+
     private String supplierImg;
 
     @CreationTimestamp

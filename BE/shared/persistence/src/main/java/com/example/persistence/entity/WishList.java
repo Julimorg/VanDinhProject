@@ -14,7 +14,16 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "WishList")
+@Table(
+        name = "WishList",
+        uniqueConstraints = @UniqueConstraint(
+                columnNames = {"user_id", "product_id"}
+        ),
+        indexes = {
+                @Index(name = "idx_wishlist_user",    columnList = "user_id"),
+                @Index(name = "idx_wishlist_product", columnList = "product_id")
+        }
+)
 public class WishList {
 
     @Id

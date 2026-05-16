@@ -16,7 +16,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "OrderItem")
+@Table(name = "OrderItem", indexes = {
+        @Index(name = "idx_orderitem_order", columnList = "order_id")
+})
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

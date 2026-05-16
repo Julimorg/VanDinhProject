@@ -19,7 +19,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Orders")
+@Table(name = "Orders", indexes = {
+        @Index(name = "idx_order_user",        columnList = "user_id"),
+        @Index(name = "idx_order_status",      columnList = "orderStatus"),
+        @Index(name = "idx_order_create",      columnList = "create_at"),
+        @Index(name = "idx_order_user_status", columnList = "user_id, orderStatus")
+})
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
