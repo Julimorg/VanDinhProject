@@ -4,6 +4,7 @@ import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.category.CategoryInternalService;
 import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.dto.search.CategoryIndexData;
 import com.example.mapper.CategoryMapper;
 import com.example.persistence.entity.Category;
 import com.example.persistence.entity.Supplier;
@@ -11,6 +12,8 @@ import com.example.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.List;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -38,5 +41,18 @@ public class CategoryInternalServiceImp implements CategoryInternalService {
 
 
         return categoryMapper.toGetCategoryByIdWithInterface(category);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryIndexData> fetchCategoriesForIndex() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(c -> CategoryIndexData.builder()
+                        .id(c.getCategoryId())
+                        .name(c.getCategoryName())
+                        .image(c.getCategoryImage())
+                        .build())
+                .toList();
     }
 }

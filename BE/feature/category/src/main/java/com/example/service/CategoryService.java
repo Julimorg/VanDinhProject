@@ -17,8 +17,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-
+import org.springframework.context.ApplicationEventPublisher;
 import java.util.List;
+import com.example.common.events.search.SearchIndexEvent;
+import com.example.common.events.search.SearchDeleteEvent;
 
 @Service
 @Slf4j
@@ -30,6 +32,8 @@ public class CategoryService {
     private final CategoryMapper categoryMapper;
 
     private final FileUploadService fileUploadService;
+
+    private final ApplicationEventPublisher publisher;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetCategoriesSelectionRes> getCategoriesSelection(){
@@ -79,6 +83,13 @@ public class CategoryService {
         //  TODO
         //  CONFIG ELASTICSEARCH !
         //  elasticSearchService.saveCategory(category);
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("C_" + category.getCategoryId())
+                .type("CATEGORY")
+                .entityId(category.getCategoryId())
+                .name(category.getCategoryName())
+                .image(category.getCategoryImage())
+                .build());
 
         return categoryMapper.toCreateCategoryRes(category);
     }
@@ -103,6 +114,13 @@ public class CategoryService {
         //  TODO
         //  CONFIG ELASTICSEARCH !
         //  elasticSearchService.saveCategory(category);
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("C_" + category.getCategoryId())
+                .type("CATEGORY")
+                .entityId(category.getCategoryId())
+                .name(category.getCategoryName())
+                .image(category.getCategoryImage())
+                .build());
 
         return categoryMapper.toUpdateCategoryRes(category);
     }
@@ -113,6 +131,7 @@ public class CategoryService {
         //  CONFIG ELASTICSEARCH !
         //  elasticSearchService.delete("C_"+id);
         categoryRepository.deleteById(id);
+        publisher.publishEvent(new SearchDeleteEvent("C_" + id));
     }
 
 }
