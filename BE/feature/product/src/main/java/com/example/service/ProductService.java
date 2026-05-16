@@ -26,6 +26,9 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.context.ApplicationEventPublisher;
+import com.example.common.events.search.SearchIndexEvent;
+import com.example.common.events.search.SearchDeleteEvent;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,8 @@ public class ProductService {
     private final CategoryInternalService categoryInternalService;
 
     private final FileUploadService fileUploadService;
+
+    private final ApplicationEventPublisher publisher;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<ProductNewArrivalRes> getProductNewArrival(){
@@ -174,6 +179,19 @@ public class ProductService {
         //  CONFIG ELASTICSEARCH
         //  elasticSearchService.saveProduct(savedProduct);
 
+        String image = (savedProduct.getProductImage() != null && !savedProduct.getProductImage().isEmpty())
+                ? savedProduct.getProductImage().getFirst()
+                : "https://placehold.net/default.png";
+
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("P_" + savedProduct.getProductId())
+                .type("PRODUCT")
+                .entityId(savedProduct.getProductId())
+                .name(savedProduct.getProductName())
+                .image(image)
+                .price(savedProduct.getProductPrice())
+                .build());
+
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
         //Có thể dùng @Mapper để trả về supplierName, colorName, categoryName trong Mapper thay vì set trong service
@@ -223,6 +241,19 @@ public class ProductService {
         //   CONFIG ELASTICSEARCH
         //   elasticSearchService.saveProduct(savedProduct);
 
+        String image = (savedProduct.getProductImage() != null && !savedProduct.getProductImage().isEmpty())
+                ? savedProduct.getProductImage().getFirst()
+                : "https://placehold.net/default.png";
+
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("P_" + savedProduct.getProductId())
+                .type("PRODUCT")
+                .entityId(savedProduct.getProductId())
+                .name(savedProduct.getProductName())
+                .image(image)
+                .price(savedProduct.getProductPrice())
+                .build());
+
         UpdateProductRes response = productMapper.toUpdateProductRes(savedProduct);
 
         if (savedProduct.getSupplier() != null) {
@@ -260,6 +291,7 @@ public class ProductService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteProduct(String id){
         productRepository.deleteById(id);
+        publisher.publishEvent(new SearchDeleteEvent("P_" + id));
         // TODO
         //  CONFIG ELASTICSEARCH
         //  elasticSearchService.delete("P_" + id);

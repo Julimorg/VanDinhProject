@@ -15,6 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
+import com.example.common.events.search.SearchIndexEvent;
+import com.example.common.events.search.SearchDeleteEvent;
 
 import java.util.List;
 
@@ -28,6 +31,8 @@ public class SupplierService {
     private final SupplierMapper supplierMapper;
 
     private final FileUploadService fileUploadService;
+
+    private final ApplicationEventPublisher publisher;
 
     /* TODO ELASTIC-SEARCH
     * Nhớ config elastic search cho supplier
@@ -77,6 +82,13 @@ public class SupplierService {
         supplier = supplierRepository.save(supplier);
 
 //        elasticSearchService.saveSupplier(supplier);
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("S_" + supplier.getSupplierId())
+                .type("SUPPLIER")
+                .entityId(supplier.getSupplierId())
+                .name(supplier.getSupplierName())
+                .image(supplier.getSupplierImg())
+                .build());
 
         return supplierMapper.toCreateSupplierRes(supplier);
     }
@@ -97,6 +109,13 @@ public class SupplierService {
 
         supplier = supplierRepository.save(supplier);
 //        elasticSearchService.saveSupplier(supplier);
+        publisher.publishEvent(SearchIndexEvent.builder()
+                .id("S_" + supplier.getSupplierId())
+                .type("SUPPLIER")
+                .entityId(supplier.getSupplierId())
+                .name(supplier.getSupplierName())
+                .image(supplier.getSupplierImg())
+                .build());
 
         return supplierMapper.toUpdateSupplierRes(supplier);
 
@@ -110,6 +129,7 @@ public class SupplierService {
         }
 
         supplierRepository.deleteById(supplier_id);
+        publisher.publishEvent(new SearchDeleteEvent("S_" + supplier_id));
 //        elasticSearchService.delete("S_" + supplier_id);
     }
 
