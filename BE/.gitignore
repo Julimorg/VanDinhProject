@@ -38,3 +38,10 @@ build/
 BE/.gradle/
 BE/build/
 BE/**/build/
+
+# Gradle
+.gradle/
+**/.gradle/
+
+.idea/
+*.iml

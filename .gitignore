@@ -1,2 +1,12 @@
 .idea
 yarn.lock
+
+BE/.gradle/
+BE/build/
+BE/**/build/
+
+.gradle/
+**/.gradle/
+
+.idea/
+*.iml
