@@ -12,7 +12,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "UserNotifications")
+@Table(name = "UserNotifications", indexes = {
+        @Index(name = "idx_usernotif_user",   columnList = "userId"),
+        @Index(name = "idx_usernotif_isread", columnList = "userId, isRead")
+})
 public class UserNotifications {
 
     @Id

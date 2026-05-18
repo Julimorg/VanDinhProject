@@ -19,7 +19,10 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Users")
+@Table(name = "Users", indexes = {
+        @Index(name = "idx_user_phone", columnList = "phone"),
+        @Index(name = "idx_user_status", columnList = "status")
+})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -68,9 +71,6 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private ForgotPassword forgotPassword;
-
-    @OneToMany(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Order> order = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WishList> wishlists = new ArrayList<>();

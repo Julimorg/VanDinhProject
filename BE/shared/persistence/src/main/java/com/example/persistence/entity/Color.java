@@ -15,15 +15,31 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Color")
+@Table(name = "Color", indexes = {
+        @Index(name = "idx_color_name", columnList = "colorName"),
+        @Index(name = "idx_color_code", columnList = "colorCode"),
+        @Index(name = "idx_color_hex_code", columnList = "hexCode"),
+})
 public class Color {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String colorId;
 
     private String colorName;
+    @Column(unique = true)
     private String colorCode;
-    private String colorDescription;
+
+    @Column(unique = true)
+    private String hexCode;
+
+    private String colorFamily;
+
+    private String colorCollection;
+
+    private String finishType;
+
+    private Boolean isActive;
+
     private String colorImg;
 
     @CreationTimestamp

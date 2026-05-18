@@ -1,5 +1,6 @@
 package com.example.persistence.entity;
 
+import com.example.persistence.enumTable.ProducType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import lombok.*;
@@ -20,20 +21,28 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Product")
+@Table(name = "Product", indexes = {
+        @Index(name = "idx_product_type" ,columnList = "product_type"),
+        @Index(name = "idx_product_category",  columnList = "category_id"),
+        @Index(name = "idx_product_supplier",  columnList = "supplier_id"),
+        @Index(name = "idx_product_color",     columnList = "color_id"),
+        @Index(name = "idx_product_name",      columnList = "productName")
+})
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String productId;
+
     private String productName;
+
     private String productDescription;
 
     @ElementCollection
     private List<String> productImage = new ArrayList<>();
-    private String productVolume;
-    private String productUnit;
-    private String productCode;
 
+    private String productUnit;
+
+    private String productCode;
 
     private int productQuantity;
 
@@ -43,8 +52,13 @@ public class Product {
 
     private LocalDateTime lastNotified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProducType productType;
+
     @CreationTimestamp
     private LocalDateTime createAt;
+
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
