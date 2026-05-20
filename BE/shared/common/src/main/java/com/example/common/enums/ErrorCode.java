@@ -43,6 +43,7 @@ public enum ErrorCode {
     PRODUCT_NOT_FOUND("Product Not Found", HttpStatus.NOT_FOUND),
     PRODUCT_NOT_EXIST("Product Not Exist", HttpStatus.BAD_REQUEST),
     PRODUCT_OUT_OF_STOCK("Product out of Stock!",  HttpStatus.BAD_REQUEST),
+    PRODUCT_CODE_DUPLICATED("Product Code Duplicated!",  HttpStatus.BAD_REQUEST),
 
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
@@ -51,6 +52,7 @@ public enum ErrorCode {
     // ======================= COLOR =======================
     COLOR_NOT_EXISTED("Color Not Existed", HttpStatus.BAD_REQUEST),
     COLOR_NOT_FOUND("Color Not Found", HttpStatus.NOT_FOUND),
+    COLOR_DOES_NOT_FIT_WITH_SUPPLIER("Color Does Not Fit With Supplier", HttpStatus.CONFLICT),
 
     // ======================= CATEGORY =======================
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
@@ -70,7 +72,6 @@ public enum ErrorCode {
     UNSUPPORTED_ORDER_STATUS("Unsupported Order Status", HttpStatus.BAD_REQUEST),
     INSUFFICIENT_STOCK("Insufficient Stock", HttpStatus.BAD_REQUEST),
     ORDER_ITEM_NOT_FOUND(" Order Item Not Found", HttpStatus.NOT_FOUND),
-
 
     // ======================= WISHLIST =======================
     PRODUCT_EXISTED_IN_WISHLIST("Product is existed in WishList", HttpStatus.BAD_REQUEST),

@@ -53,6 +53,8 @@ public class ProductService {
 
     private final ApplicationEventPublisher publisher;
 
+    private final ProductSelfTypeService productSelfTypeService;
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<ProductNewArrivalRes> getProductNewArrival(){
         var products = productRepository.findTop10ByOrderByCreateAtDesc();
@@ -115,10 +117,6 @@ public class ProductService {
             response.setSupplierName(product.getSupplier().getSupplierName());
         }
 
-        if(product.getColor() != null){
-            response.setColorName(product.getColor().getColorName());
-        }
-
         if(product.getCategory() != null){
             response.setCategoryName(product.getCategory().getCategoryName());
         }
@@ -126,15 +124,25 @@ public class ProductService {
         return response;
     }
 
+
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateProductRes createProduct(CreateProductReq request) {
+
+        if (request.getProductQuantity() > 10000000) {
+            throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
+        }
+
+        if (productRepository.existsByProductCode(request.getProductCode())) {
+            throw new RuntimeException(
+                    ErrorCode.PRODUCT_CODE_DUPLICATED + request.getProductCode());
+        }
 
         if (productRepository.existsByProductName(request.getProductName())) {
             throw new AppException(ErrorCode.PRODUCT_EXISTED);
         }
 
-        Product product = productMapper.toProduct(request);
+        Product product = productMapper.toCreateProduct(request);
 
         if (request.getSupplierId() != null) {
             Supplier supplier = supplierInternalService
@@ -143,24 +151,12 @@ public class ProductService {
             product.setSupplier(supplier);
         }
 
-        if (request.getColorId() != null) {
-            Color color = colorInternalService
-                    .getColorById(request
-                            .getColorId());
-            product.setColor(color);
-        }
-
         if (request.getCategoryId() != null) {
             Category category = categoryInternalService
                     .getCategory(request
                             .getCategoryId());
             product.setCategory(category);
         }
-
-        if (request.getProductQuantity() > 10000000) {
-            throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
-        }
-
 
         List<String> imageUrls = new ArrayList<>();
 
@@ -199,15 +195,15 @@ public class ProductService {
             response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
 
-        if (savedProduct.getColor() != null) {
-            response.setColorName(savedProduct.getColor().getColorName());
-        }
-
         if (savedProduct.getCategory() != null) {
             response.setCategoryName(savedProduct.getCategory().getCategoryName());
         }
 
-        return response;
+        return switch (request.getProductType()) {
+            case PAINT    -> productSelfTypeService.createPaintProduct(product, request);
+            case TOOL     -> productSelfTypeService.createToolProduct(product, request);
+            case CHEMICAL -> productSelfTypeService.createChemicalProduct(product, request);
+        };
     }
 
     @Transactional
@@ -260,10 +256,6 @@ public class ProductService {
             response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
 
-        if(savedProduct.getColor() != null){
-            response.setColorName(savedProduct.getColor().getColorName());
-        }
-
         if(savedProduct.getCategory() != null){
             response.setCategoryName(savedProduct.getCategory().getCategoryName());
         }
@@ -280,7 +272,9 @@ public class ProductService {
             throw new IllegalArgumentException("Quantity must be equal or higher than 0");
         }
 
-        Product product = productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
+        Product product = productRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
         productMapper.updateProductQuantity(product, request);
 

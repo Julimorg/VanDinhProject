@@ -4,18 +4,52 @@ import com.example.common.dto.product.request.CreateProductReq;
 import com.example.common.dto.product.request.UpdateProductQuantityReq;
 import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.*;
+import com.example.persistence.entity.ChemicalDetail;
+import com.example.persistence.entity.PaintDetail;
 import com.example.persistence.entity.Product;
+import com.example.persistence.entity.ToolDetail;
 import org.mapstruct.*;
 
-@Mapper(componentModel = "spring")
+@Mapper(
+        componentModel = "spring",
+        uses = {
+                PaintDetailMapper.class,
+                ToolDetailMapper.class,
+                ChemicalDetailMapper.class
+        }
+)
 public interface ProductMapper {
 
     //* =========================== GET MAPPER ===========================
 
+    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
+    @Mapping(target = "categoryName",  source = "product.category.categoryName")
+    @Mapping(target = "isLowStock",    expression = "java(product.getProductQuantity() <= product.getMinStockThreshold())")
+    @Mapping(target = "paintDetail",   source = "paintDetail")
+    @Mapping(target = "toolDetail",    ignore = true)
+    @Mapping(target = "chemicalDetail",ignore = true)
+    CreateProductRes toPaintResponse(Product product, PaintDetail paintDetail);
+
+    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
+    @Mapping(target = "categoryName",  source = "product.category.categoryName")
+    @Mapping(target = "isLowStock",    expression = "java(product.getProductQuantity() <= product.getMinStockThreshold())")
+    @Mapping(target = "paintDetail",   ignore = true)
+    @Mapping(target = "toolDetail",    source = "toolDetail")
+    @Mapping(target = "chemicalDetail",ignore = true)
+    CreateProductRes toToolResponse(Product product, ToolDetail toolDetail);
+
+    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
+    @Mapping(target = "categoryName",  source = "product.category.categoryName")
+    @Mapping(target = "isLowStock",    expression = "java(product.getProductQuantity() <= product.getMinStockThreshold())")
+    @Mapping(target = "paintDetail",   ignore = true)
+    @Mapping(target = "toolDetail",    ignore = true)
+    @Mapping(target = "chemicalDetail",source = "chemicalDetail")
+    CreateProductRes toChemicalResponse(Product product, ChemicalDetail chemicalDetail);
+
     ProductNewArrivalRes toGetProductNewArrivalRes(Product product);
 
     @Mapping(target = "productImage", ignore = true)
-    Product toProduct(CreateProductReq request);
+    Product toCreateProduct(CreateProductReq request);
 
     @Mapping(source = "color.colorCode", target = "colorCode")
     ProductRes toProductResponse(Product product);

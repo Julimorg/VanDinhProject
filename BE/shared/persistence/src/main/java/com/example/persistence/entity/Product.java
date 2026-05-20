@@ -1,6 +1,7 @@
 package com.example.persistence.entity;
 
 import com.example.persistence.enumTable.ProducType;
+import com.example.persistence.enumTable.ProductStatusType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
 import lombok.*;
@@ -25,7 +26,6 @@ import java.util.Set;
         @Index(name = "idx_product_type" ,columnList = "product_type"),
         @Index(name = "idx_product_category",  columnList = "category_id"),
         @Index(name = "idx_product_supplier",  columnList = "supplier_id"),
-        @Index(name = "idx_product_color",     columnList = "color_id"),
         @Index(name = "idx_product_name",      columnList = "productName")
 })
 public class Product {
@@ -40,8 +40,6 @@ public class Product {
     @ElementCollection
     private List<String> productImage = new ArrayList<>();
 
-    private String productUnit;
-
     private String productCode;
 
     private int productQuantity;
@@ -51,6 +49,10 @@ public class Product {
     private BigDecimal productPrice;
 
     private LocalDateTime lastNotified;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProductStatusType productStatusType;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -65,10 +67,6 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "color_id", nullable = false)
-    private Color color;
 
     @ManyToOne
     @JoinColumn(name = "category_id")

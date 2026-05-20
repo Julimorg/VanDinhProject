@@ -1,5 +1,6 @@
 package com.example.common.dto.product.response;
 
+import com.example.persistence.enumTable.ProducType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,18 +15,31 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CreateProductRes {
-    private String productId;
-    private String productName;
-    private String productDescription;
-    private List<String> productImage;
-    private String productVolume;
-    private String productUnit;
-    private String productCode;
-    private int productQuantity;
-    private double discount;
-    private BigDecimal productPrice;
-    private String supplierName;
-    private String colorName;
-    private String categoryName;
-    private LocalDateTime createAt;
+    private String        productId;
+
+    private String        productName;
+
+    private String        productCode;
+
+    private BigDecimal    productPrice;
+
+    private int           productQuantity;
+
+    private int           minStockThreshold;
+
+    private boolean       isLowStock;
+
+    private ProducType productType;
+
+    private List<String>  productImage;
+
+    private String        supplierName;
+
+    private String        categoryName;
+
+    private PaintDetailDto    paintDetail;
+
+    private ToolDetailDto     toolDetail;
+
+    private ChemicalDetailDto chemicalDetail;
 }

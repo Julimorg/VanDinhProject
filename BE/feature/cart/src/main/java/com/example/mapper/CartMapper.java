@@ -26,13 +26,13 @@ public interface CartMapper {
     @Mapping(source = "product.productId",              target = "productId")
     @Mapping(source = "product.productName",            target = "productName")
     @Mapping(source = "product.productImage",           target = "productImage")
-    @Mapping(source = "product.productVolume",          target = "productVolume")
-    @Mapping(source = "product.productUnit",            target = "productUnit")
+//    @Mapping(source = "product.productVolume",          target = "productVolume")
+//    @Mapping(source = "product.productUnit",            target = "productUnit")
     @Mapping(source = "product.productCode",            target = "productCode")
     @Mapping(source = "quantity",                       target = "productQuantity")
     @Mapping(source = "product.discount",               target = "discount")
     @Mapping(source = "product.productPrice",           target = "productPrice")
-    @Mapping(source = "product.color.colorCode",        target = "colorName")
+//    @Mapping(source = "product.color.colorCode",        target = "colorName")
     @Mapping(source = "product.category.categoryName",  target = "categoryName")
     ProductForCartItem toProductForCartItem(CartItem cartItem);
 

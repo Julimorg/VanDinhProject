@@ -34,7 +34,7 @@ public class ColorInternalServiceImpl implements ColorInternalService {
         validateColorExistById(colorId);
 
         Color color = colorRepository.findById(colorId)
-                .orElseThrow(() -> new AppException(ErrorCode.COLOR_NOT_FOUND));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.COLOR_NOT_FOUND + colorId));
         return colorMapper.toGetColorByIdWithInterface(color);
 
     }

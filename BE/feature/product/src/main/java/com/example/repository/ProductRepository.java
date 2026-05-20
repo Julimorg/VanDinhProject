@@ -11,8 +11,11 @@ import java.util.List;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, String>, JpaSpecificationExecutor<Product> {
+    
     boolean existsByProductName(String productName);
 
+    boolean existsByProductCode(String productCode);
+    
     List<Product> findByProductQuantityLessThan(int quantity);
 
     Product findByProductId(String productId);
