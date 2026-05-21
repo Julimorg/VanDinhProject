@@ -7,7 +7,7 @@ import org.springframework.data.elasticsearch.client.elc.ElasticsearchConfigurat
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.example.search.repository")
+//@EnableElasticsearchRepositories(basePackages = "com.example.search.repository")
 public class ElasticsearchConfig extends ElasticsearchConfiguration {
 
     @Value("${register.elasticsearch.username}")

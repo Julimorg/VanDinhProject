@@ -25,8 +25,6 @@ public class CreateProductRes {
 
     private int           productQuantity;
 
-    private int           minStockThreshold;
-
     private boolean       isLowStock;
 
     private ProducType productType;

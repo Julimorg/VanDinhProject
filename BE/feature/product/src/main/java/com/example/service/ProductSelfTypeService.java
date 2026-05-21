@@ -1,12 +1,15 @@
 package com.example.service;
 
 import com.example.common.dto.product.request.CreateProductReq;
+import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.CreateProductRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.color.ColorInternalService;
+import com.example.mapper.ChemicalDetailMapper;
 import com.example.mapper.PaintDetailMapper;
 import com.example.mapper.ProductMapper;
+import com.example.mapper.ToolDetailMapper;
 import com.example.persistence.entity.*;
 import com.example.repository.ChemicalDetailRepository;
 import com.example.repository.PaintDetailRepository;
@@ -28,8 +31,13 @@ public class ProductSelfTypeService {
 
     private final ChemicalDetailRepository chemicalDetailRepository;
 
+    private final PaintDetailMapper paintDetailMapper;
+
     private final ProductMapper productMapper;
 
+    private final ChemicalDetailMapper  chemicalDetailMapper;
+
+    private final ToolDetailMapper toolDetailMapper;
     public CreateProductRes createPaintProduct(Product product,
                                                CreateProductReq req) {
 
@@ -81,5 +89,45 @@ public class ProductSelfTypeService {
         chemicalDetailRepository.save(detail);
 
         return productMapper.toChemicalResponse(product, detail);
+    }
+
+    public void updateDetailByType(Product product, UpdateProductReq req) {
+        switch (product.getProductType()) {
+            case PAINT -> {
+                PaintDetail detail = paintDetailRepository.findById(product.getProductId())
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                if (req.getColorId() != null) {
+
+                    Color color = colorInternalService.getColorById(req.getColorId());
+
+                    if (!color.getSupplier().getSupplierId()
+                            .equals(product.getSupplier().getSupplierId())) {
+                        throw new AppException(ErrorCode.COLOR_DOES_NOT_FIT_WITH_SUPPLIER);
+                    }
+                    detail.setColor(color);
+                }
+
+                paintDetailMapper.updatePaintDetailEntity(detail, req);
+
+                paintDetailRepository.save(detail);
+            }
+            case TOOL -> {
+                ToolDetail detail = toolDetailRepository.findById(product.getProductId())
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                toolDetailMapper.updateToolDetailEntity(detail, req);
+
+                toolDetailRepository.save(detail);
+            }
+            case CHEMICAL -> {
+                ChemicalDetail detail = chemicalDetailRepository.findById(product.getProductId())
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                chemicalDetailMapper.updateChemicalDetailEntity(detail, req);
+
+                chemicalDetailRepository.save(detail);
+            }
+        }
     }
 }

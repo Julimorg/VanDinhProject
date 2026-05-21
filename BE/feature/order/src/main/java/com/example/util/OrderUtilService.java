@@ -30,11 +30,11 @@ public class OrderUtilService {
         orderItem.setProductName(product.getProductName());
         orderItem.setProductCode(product.getProductCode());
         orderItem.setProductImage(new ArrayList<>(product.getProductImage()));
-        orderItem.setProductVolume(product.getProductVolume());
-        orderItem.setProductUnit(product.getProductUnit());
+//        orderItem.setProductVolume(product.getProductVolume());
+//        orderItem.setProductUnit(product.getProductUnit());
         orderItem.setProductPrice(product.getProductPrice());
         orderItem.setDiscount(product.getDiscount());
-        orderItem.setColorName(product.getColor().getColorName());
+//        orderItem.setColorName(product.getColor().getColorName());
         orderItem.setCategoryName(product.getCategory().getCategoryName());
     }
 

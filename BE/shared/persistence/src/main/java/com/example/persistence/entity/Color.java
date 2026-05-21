@@ -53,5 +53,5 @@ public class Color {
 
 
     @OneToMany(mappedBy = "color", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<Product> products;
+    private List<PaintDetail> paintDetails;
 }

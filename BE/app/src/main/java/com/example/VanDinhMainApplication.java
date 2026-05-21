@@ -11,7 +11,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableAsync
 @SpringBootApplication(scanBasePackages = "com.example")
 @ConfigurationPropertiesScan
-
 public class VanDinhMainApplication {
     public static void main(String[] args) {
         SpringApplication.run(VanDinhMainApplication.class, args);

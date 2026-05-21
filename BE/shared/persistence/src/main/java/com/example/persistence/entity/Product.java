@@ -51,18 +51,12 @@ public class Product {
     private LocalDateTime lastNotified;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private ProductStatusType productStatusType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = true)
     private ProducType productType;
-
-    @CreationTimestamp
-    private LocalDateTime createAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updateAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
@@ -72,5 +66,11 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
+
+    @CreationTimestamp
+    private LocalDateTime createAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updateAt;
 
 }

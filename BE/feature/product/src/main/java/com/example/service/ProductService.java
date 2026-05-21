@@ -55,6 +55,8 @@ public class ProductService {
 
     private final ProductSelfTypeService productSelfTypeService;
 
+    private final ProductHelpClassService productHelpClassService;
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<ProductNewArrivalRes> getProductNewArrival(){
         var products = productRepository.findTop10ByOrderByCreateAtDesc();
@@ -129,8 +131,10 @@ public class ProductService {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateProductRes createProduct(CreateProductReq request) {
 
-        if (request.getProductQuantity() > 10000000) {
+        if (request.getProductQuantity() > 10000000 ) {
             throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
+        }else if( request.getProductQuantity() <= 0) {
+            throw new AppException(ErrorCode.PRODUCT_QUANTITY_CAN_NOT_BE_NEGATIVE);
         }
 
         if (productRepository.existsByProductCode(request.getProductCode())) {
@@ -144,19 +148,13 @@ public class ProductService {
 
         Product product = productMapper.toCreateProduct(request);
 
-        if (request.getSupplierId() != null) {
-            Supplier supplier = supplierInternalService
-                    .getSupplierById(request
-                            .getSupplierId());
-            product.setSupplier(supplier);
-        }
+        log.info("------------------------ Create product is here! ----------------------" );
 
-        if (request.getCategoryId() != null) {
-            Category category = categoryInternalService
-                    .getCategory(request
-                            .getCategoryId());
-            product.setCategory(category);
-        }
+        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
+                product.getProductId(),
+                request.getSupplierId(),
+                request.getCategoryId()
+                );
 
         List<String> imageUrls = new ArrayList<>();
 
@@ -190,7 +188,6 @@ public class ProductService {
 
         CreateProductRes response = productMapper.toCreateProductResponse(savedProduct);
 
-        //Có thể dùng @Mapper để trả về supplierName, colorName, categoryName trong Mapper thay vì set trong service
         if (savedProduct.getSupplier() != null) {
             response.setSupplierName(savedProduct.getSupplier().getSupplierName());
         }
@@ -211,25 +208,33 @@ public class ProductService {
     public UpdateProductRes updateProduct(String productId,
                                           UpdateProductReq request){
 
-
         Product product = productRepository
                 .findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        MultipartFile[] images = request.getProductImage();
-
-        List<String> imageUrls = new ArrayList<>();
-
-        for (MultipartFile file : request.getProductImage()) {
-            String url = fileUploadService.uploadImageIfPresent(file, request.getProductName());
-            if (url != null) {
-                imageUrls.add(url);
-            }
+        if (request.getProductQuantity() > 10000000 ) {
+            throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
+        }else if( request.getProductQuantity() <= 0) {
+            throw new AppException(ErrorCode.PRODUCT_QUANTITY_CAN_NOT_BE_NEGATIVE);
         }
 
         productMapper.updateProduct(product, request);
 
-        product.setProductImage(imageUrls);
+        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
+                product.getProductId(),
+                request.getSupplierId(),
+                request.getCategoryId()
+        );
+
+        List<String> imageUrls = productHelpClassService.uploadImages(request);
+
+        if (!imageUrls.isEmpty()) {
+            product.setProductImage(imageUrls);
+        }
+
+        productMapper.updateProduct(product, request);
+
+        productSelfTypeService.updateDetailByType(product, request);
 
         Product savedProduct = productRepository.save(product);
 
@@ -250,17 +255,7 @@ public class ProductService {
                 .price(savedProduct.getProductPrice())
                 .build());
 
-        UpdateProductRes response = productMapper.toUpdateProductRes(savedProduct);
-
-        if (savedProduct.getSupplier() != null) {
-            response.setSupplierName(savedProduct.getSupplier().getSupplierName());
-        }
-
-        if(savedProduct.getCategory() != null){
-            response.setCategoryName(savedProduct.getCategory().getCategoryName());
-        }
-
-        return response;
+        return productMapper.toUpdateProductRes(savedProduct);
 
     }
 
@@ -268,13 +263,14 @@ public class ProductService {
 
     public UpdateProductQuantityRes updateProductQuantity(String id,
                                                           UpdateProductQuantityReq request){
-        if (request.getProductQuantity() < 0) {
-            throw new IllegalArgumentException("Quantity must be equal or higher than 0");
-        }
-
         Product product = productRepository
                 .findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+
+        if (request.getProductQuantity() < 0) {
+            throw new RuntimeException(ErrorCode.PRODUCT_QUANTITY_CAN_NOT_BE_NEGATIVE + product.getProductName() );
+        }
 
         productMapper.updateProductQuantity(product, request);
 

@@ -17,8 +17,8 @@ public interface WishListMapper {
     @Mapping(source = "product.productPrice", target = "productPrice")
     @Mapping(source = "product.discount", target = "discount")
     @Mapping(source = "product.productImage", target = "productImage")
-    @Mapping(source = "product.productVolume", target = "productVolume")
-    @Mapping(source = "product.productUnit", target = "productUnit")
+//    @Mapping(source = "product.productVolume", target = "productVolume")
+//    @Mapping(source = "product.productUnit", target = "productUnit")
     @Mapping(source = "product.productQuantity", target = "productQuantity")
     @Mapping(source = "createAt", target = "createAt")
     GetWishList toWishlistResponse(WishList wishlist);
@@ -29,9 +29,9 @@ public interface WishListMapper {
     @Mapping(source = "product.productDescription", target = "productDescription")
     @Mapping(source = "product.productPrice", target = "productPrice")
     @Mapping(source = "product.discount", target = "discount")
-    @Mapping(source = "product.productImage", target = "productImage")
-    @Mapping(source = "product.productVolume", target = "productVolume")
-    @Mapping(source = "product.productUnit", target = "productUnit")
+//    @Mapping(source = "product.productImage", target = "productImage")
+//    @Mapping(source = "product.productVolume", target = "productVolume")
+//    @Mapping(source = "product.productUnit", target = "productUnit")
     @Mapping(source = "product.productQuantity", target = "productQuantity")
     @Mapping(source = "createAt", target = "createAt")
     AddWishListRes toAddWishListRes(WishList wishList);

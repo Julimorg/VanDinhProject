@@ -17,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Slf4j
@@ -51,7 +52,7 @@ public class ForgotPassService {
 
         int otp = generateOtp.generateOtp();
 
-        Date expiryTime = Date.from(Instant.now().plusMillis(OTP_EXPIRY_MS));
+        LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(5);
 
         //? Đoạn này rất quan trọng
         //? Mình phải check xem trong User đã có ForgotPass chưa?
@@ -94,7 +95,7 @@ public class ForgotPassService {
         //? check ExpiryDate của OTP
         //? Nếu ExpiryDate là 12:20 mà CurrentTime của User là 12:25
         //? if ( 12:20-(ExpiryDate) before 12:25-(CurrentTime) ) --> True --> OTP dã hết hạn
-        if (forgotPassword.getExpirationTime().before(Date.from(Instant.now()))) {
+        if (forgotPassword.getExpirationTime().isBefore(LocalDateTime.now())) {
             //? Cần phải delete đi OTP cũ
             //? Vì FP OneToOne với User, nên 1 user ko nên có quá nhiều mã OTP trong DB
             //? Nên cứ Expiry thì del nó đi cho đồng bộ relational

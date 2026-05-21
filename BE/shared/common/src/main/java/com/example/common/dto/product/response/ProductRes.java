@@ -1,4 +1,5 @@
 package com.example.common.dto.product.response;
+import com.example.persistence.enumTable.ProducType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,21 +15,36 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ProductRes {
-    private String productId;
-    private String productName;
-    private String productDescription;
-    private List<String> productImage;
-    private String productVolume;
-    private String productUnit;
-    private String productCode;
-    private int productQuantity;
-    private double discount;
-    @JsonFormat(shape = JsonFormat.Shape.STRING)
-    private BigDecimal productPrice;
-    private String supplierName;
-    private String colorName;
-    private String colorCode;
-    private String categoryName;
+    private String        productId;
+
+    private String        productName;
+
+    private String        productCode;
+
+    private BigDecimal    productPrice;
+
+    private int           productQuantity;
+
+    private int           minStockThreshold;
+
+    private boolean       isLowStock;
+
+    private ProducType productType;
+
+    private List<String>  productImage;
+
+    private String        supplierName;
+
+    private String        categoryName;
+
+    private PaintDetailDto    paintDetail;
+
+    private ToolDetailDto     toolDetail;
+
+    private ChemicalDetailDto chemicalDetail;
+
     private LocalDateTime createAt;
+
     private LocalDateTime updateAt;
+
 }

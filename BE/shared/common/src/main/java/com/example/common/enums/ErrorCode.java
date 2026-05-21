@@ -44,7 +44,7 @@ public enum ErrorCode {
     PRODUCT_NOT_EXIST("Product Not Exist", HttpStatus.BAD_REQUEST),
     PRODUCT_OUT_OF_STOCK("Product out of Stock!",  HttpStatus.BAD_REQUEST),
     PRODUCT_CODE_DUPLICATED("Product Code Duplicated!",  HttpStatus.BAD_REQUEST),
-
+    PRODUCT_QUANTITY_CAN_NOT_BE_NEGATIVE("Product Quantity Can Not Be Negative!",  HttpStatus.BAD_REQUEST),
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
     SUPPLIER_NOT_FOUND("Supplier Not Found", HttpStatus.NOT_FOUND),
