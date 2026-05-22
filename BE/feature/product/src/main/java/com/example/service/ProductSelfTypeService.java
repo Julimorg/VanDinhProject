@@ -14,9 +14,15 @@ import com.example.persistence.entity.*;
 import com.example.repository.ChemicalDetailRepository;
 import com.example.repository.PaintDetailRepository;
 import com.example.repository.ToolDetailRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -38,6 +44,21 @@ public class ProductSelfTypeService {
     private final ChemicalDetailMapper  chemicalDetailMapper;
 
     private final ToolDetailMapper toolDetailMapper;
+
+    private final ObjectMapper objectMapper;
+
+    private Map<String, Object> parseExtraSpecs(String extraSpecsJson) {
+        if (extraSpecsJson == null || extraSpecsJson.isBlank()) {
+            return new HashMap<>();
+        }
+        try {
+            return objectMapper.readValue(extraSpecsJson,
+                    new TypeReference<Map<String, Object>>() {});
+        } catch (JsonProcessingException e) {
+            throw new AppException(ErrorCode.INVALID_EXTRA_SPECSi);
+            // hoặc return new HashMap<>() nếu muốn bỏ qua lỗi parse
+        }
+    }
     public CreateProductRes createPaintProduct(Product product,
                                                CreateProductReq req) {
 
@@ -54,7 +75,7 @@ public class ProductSelfTypeService {
                 .color(color)
                 .surfaceType(req.getSurfaceType())
                 .volume(req.getVolume())
-                .extraSpecs(req.getExtraSpecs())
+                .extraSpecs(parseExtraSpecs(req.getExtraSpecs()))
                 .build();
 
         paintDetailRepository.save(detail);
@@ -68,7 +89,7 @@ public class ProductSelfTypeService {
                 .product(product)
                 .toolType(req.getToolType())
                 .size(req.getToolSize())
-                .extraSpecs(req.getExtraSpecs())
+                .extraSpecs(parseExtraSpecs(req.getExtraSpecs()))
                 .build();
 
         toolDetailRepository.save(detail);
@@ -83,7 +104,7 @@ public class ProductSelfTypeService {
                 .product(product)
                 .chemicalType(req.getChemicalType())
                 .volume(req.getChemicalVolume())
-                .extraSpecs(req.getExtraSpecs())
+                .extraSpecs(parseExtraSpecs(req.getExtraSpecs()))
                 .build();
 
         chemicalDetailRepository.save(detail);

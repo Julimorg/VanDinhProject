@@ -65,6 +65,6 @@ public class CreateProductReq {
     private String chemicalVolume;
 
     // ── Extra specs  ───────────
-    private Map<String, Object> extraSpecs = new HashMap<>();
+    private String extraSpecs;
 
 }

@@ -91,6 +91,7 @@ public enum ErrorCode {
     // ======================= UNKNOWN =======================
     UNKNOWN_ERROR("Unknown Error", HttpStatus.INTERNAL_SERVER_ERROR),
     WRONG_PATH("Wrong Path", HttpStatus.BAD_REQUEST),
+    INVALID_EXTRA_SPECSi("Invalid Extra Specs", HttpStatus.BAD_REQUEST),
     ;
 
     private final String message;

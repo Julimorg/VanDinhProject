@@ -8,13 +8,16 @@ import com.example.persistence.entity.Category;
 import com.example.persistence.entity.Product;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.ProductRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,6 +31,7 @@ public class ProductHelpClassService {
     private final ProductRepository productRepository;
 
     private final FileUploadService fileUploadService;
+
 
     public List<String> uploadImages(UpdateProductReq request){
 
@@ -45,23 +49,15 @@ public class ProductHelpClassService {
     }
 
 
-    public void checkSupplierCategoryAndSetThemIntoProduct(String productId,
+    public void checkSupplierCategoryAndSetThemIntoProduct(Product product,
                                                            String supplierId,
                                                            String categoryId){
 
-        Product product = productRepository.findByProductId(productId);
-
         if (supplierId != null){
-
-            log.info("Supplier Id is in: {}", supplierId);
 
             Supplier supplier = supplierInternalService.getSupplierById(supplierId);
 
-            log.info("Get Supplier ID: {}", supplier.getSupplierId());
-
             product.setSupplier(supplier);
-
-            log.info("===== Product Supplier : {} ", product.getSupplier());
         }
 
         if( categoryId != null){

@@ -148,26 +148,32 @@ public class ProductService {
 
         Product product = productMapper.toCreateProduct(request);
 
-        log.info("------------------------ Create product is here! ----------------------" );
-
-        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
-                product.getProductId(),
-                request.getSupplierId(),
-                request.getCategoryId()
-                );
-
         List<String> imageUrls = new ArrayList<>();
 
-        for (MultipartFile file : request.getProductImage()) {
-            String url = fileUploadService.uploadImageIfPresent(file, request.getProductName());
-            if (url != null) {
-                imageUrls.add(url);
+        if (request.getProductImage() != null && request.getProductImage().length > 0) {
+            for (MultipartFile file : request.getProductImage()) {
+                String url = fileUploadService
+                        .uploadImageIfPresent(
+                                file,
+                                request.getProductName()
+                        );
+                if (url != null) {
+                    imageUrls.add(url);
+                }
             }
         }
 
+        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
+                product,
+                request.getSupplierId(),
+                request.getCategoryId()
+        );
+
         product.setProductImage(imageUrls);
 
+
         Product savedProduct = productRepository.save(product);
+
 
         // TODO
         //  CONFIG ELASTICSEARCH
@@ -220,11 +226,6 @@ public class ProductService {
 
         productMapper.updateProduct(product, request);
 
-        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
-                product.getProductId(),
-                request.getSupplierId(),
-                request.getCategoryId()
-        );
 
         List<String> imageUrls = productHelpClassService.uploadImages(request);
 
@@ -235,6 +236,12 @@ public class ProductService {
         productMapper.updateProduct(product, request);
 
         productSelfTypeService.updateDetailByType(product, request);
+
+        productHelpClassService.checkSupplierCategoryAndSetThemIntoProduct(
+                product,
+                request.getSupplierId(),
+                request.getCategoryId()
+        );
 
         Product savedProduct = productRepository.save(product);
 
