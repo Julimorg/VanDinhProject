@@ -1,6 +1,13 @@
 # Multi-Module System Guide
 ## management-api — Spring Boot 3.5.4 + Gradle + Java 21
 
+## 📚 Infrastructure & Deploy
+
+Xem hướng dẫn setup server, network flow, và config tại:
+→ [docs/DEPLOYMENT_WORKFLOW.md](../docs/DEPLOYMENT_WORKFLOW.md)
+→ [docs/DEPLOYMENT_CONFIG.md](../docs/DEPLOYEMNT_CONFIG.md)
+
+
 ---
 
 ## 1. BIG PICTURE — System WorkFlow
