@@ -17,7 +17,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
     ports:
       - "9200:9200"
     volumes:
@@ -29,6 +29,8 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+    mem_limit: 512m
+    memswap_limit: 1g
 
 volumes:
   es_data:
