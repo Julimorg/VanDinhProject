@@ -15,6 +15,7 @@ import {
   DotChartOutlined,
   FileOutlined,
   NotificationOutlined,
+  OrderedListOutlined,
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 
@@ -108,6 +109,12 @@ const Sidebar: React.FC<SidebarProps> = ({
       icon: <DotChartOutlined />,
       label: 'Quản lý Chi Tiêu',
       onClick: () => navigate('/analytics'),
+    },
+    {
+      key: 'analytics',
+      icon: <OrderedListOutlined />,
+      label: 'Khong đếm tồn',
+      onClick: () => navigate('/inventory'),
     },
     {
       key: 'file',

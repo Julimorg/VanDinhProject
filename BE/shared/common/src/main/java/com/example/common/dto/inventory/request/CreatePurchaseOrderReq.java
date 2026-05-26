@@ -1,0 +1,23 @@
+package com.example.common.dto.inventory.request;
+
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CreatePurchaseOrderReq {
+
+     private String poCode;
+
+     private String supplierName;
+
+     private String note;
+
+     private String createdBy;
+
+}

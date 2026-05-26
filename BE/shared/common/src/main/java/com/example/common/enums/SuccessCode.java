@@ -79,7 +79,15 @@ public enum SuccessCode {
     CREATE_ORDER("Create Order Successfully! ", HttpStatus.OK),
     UPDATE_ORDER("Update Order Successfully! ", HttpStatus.OK),
     UPDATE_ORDER_BY_ADMIN("Update Order By Admin Successfully! ", HttpStatus.OK),
-    UPDATE_ORDER_ITEM("Update Order Item Successfully! ", HttpStatus.OK);
+    UPDATE_ORDER_ITEM("Update Order Item Successfully! ", HttpStatus.OK),
+
+    // ======================= INVENTORY =======================
+    GET_INVENTORY("Get Inventory Successfully! ", HttpStatus.OK),
+    CREATE_INVENTORY("Create Inventory Successfully! ", HttpStatus.OK),
+    DELETE_PURCHASE_ORDER("Delete Purchase Order Successfully! ", HttpStatus.OK),
+    EXPORT_PDF_FILE("Export PDF File Successfully!", HttpStatus.OK);
+
+
 
     private final String message;
     private final HttpStatusCode statusCode;

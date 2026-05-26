@@ -20,6 +20,7 @@ dependencies {
     implementation project(':feature:wishlist')
     implementation project(':feature:category')
     implementation project(':feature:payment')
+    implementation project(':feature:Inventory')
 
     implementation project(':shared:security')
     implementation project(':shared:api-docs')

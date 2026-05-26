@@ -82,6 +82,10 @@ public enum ErrorCode {
     USER_ID_REQUIRED("User Id Required", HttpStatus.BAD_REQUEST),
     NOTIFICATION_CONTENT_REQUIRED("Notification Content Required", HttpStatus.BAD_REQUEST),
 
+
+    // ======================= INVENTORY =======================
+    PURCHASE_ORDER_NOT_FOUND("Purchase Order Not Found", HttpStatus.NOT_FOUND),
+
     // ======================= PAYMENT =======================
     PAYMENT_NOT_FOUND("Payment Not Found", HttpStatus.NOT_FOUND),
 

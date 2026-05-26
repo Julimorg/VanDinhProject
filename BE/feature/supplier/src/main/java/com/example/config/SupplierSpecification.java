@@ -28,7 +28,7 @@ public class SupplierSpecification {
     }
 
 
-    /**
+    /*
      * Filter theo keyword — tìm theo tên / số điện thoại / email.
      */
     private static Specification<Supplier> hasKeyword(String keyword) {

@@ -13,9 +13,9 @@ dependencies {
     api 'com.opencsv:opencsv:5.9'
     api 'com.google.zxing:core:3.5.3'
     api 'com.google.zxing:javase:3.5.3'
-
+    api 'org.xhtmlrenderer:flying-saucer-pdf-openpdf:9.4.0'
     implementation project(':shared:persistence')
-
+    implementation 'com.itextpdf:html2pdf:5.0.1'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     implementation 'commons-io:commons-io:2.15.1'

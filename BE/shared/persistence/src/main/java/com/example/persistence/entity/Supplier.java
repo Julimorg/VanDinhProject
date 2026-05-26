@@ -18,7 +18,9 @@ import java.util.List;
 @AllArgsConstructor
 @Entity
 @Table(name = "Supplier", indexes = {
-        @Index(name = "idx_supplier_name", columnList = "supplierName"),
+        @Index(name = "idx_supplier_name",  columnList = "supplierName"),
+        @Index(name = "idx_supplier_phone", columnList = "supplierPhone"),
+        @Index(name = "idx_supplier_email", columnList = "supplierEmail"),
 })
 public class Supplier {
     @Id
