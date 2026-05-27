@@ -65,7 +65,7 @@ axiosClient.interceptors.response.use(
     if (originalRequest.url?.includes('/auth/refresh-token')) {
       // console.log('Refresh token API failed, clearing tokens');
       useAuthStore.getState().clearTokens();
-      window.location.href = '/login';
+      // window.location.href = '/login';
       return Promise.reject(error);
     }
 
@@ -153,7 +153,7 @@ axiosClient.interceptors.response.use(
         processQueue(refreshError, null);
         useAuthStore.getState().clearTokens();
         
-        window.location.href = '/login';
+        // window.location.href = '/login';
         
         return Promise.reject(refreshError);
       } finally {

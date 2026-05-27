@@ -18,6 +18,4 @@ public class CreatePurchaseOrderReq {
 
      private String note;
 
-     private String createdBy;
-
 }

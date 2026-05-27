@@ -2,10 +2,8 @@ package com.example.service;
 
 import com.example.common.dto.inventory.request.CreateItemInPurchaseOrderReq;
 import com.example.common.dto.inventory.request.CreatePurchaseOrderReq;
-import com.example.common.dto.inventory.response.CreateItemInPurchaseOrderRes;
-import com.example.common.dto.inventory.response.CreatePurchaseOrderRes;
-import com.example.common.dto.inventory.response.GetPurchaseOrderDetailRes;
-import com.example.common.dto.inventory.response.GetPurchaseOrderRes;
+import com.example.common.dto.inventory.request.UpdatePurchaseOrderReq;
+import com.example.common.dto.inventory.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.user.UserInternalService;
@@ -17,8 +15,7 @@ import com.example.persistence.enumTable.PurchaseOrderStatus;
 import com.example.repository.PurchaseOrderItemRepository;
 import com.example.repository.PurchaseOrderRepository;
 import com.example.repository.StockReturnRepository;
-//import com.example.security.Util.AuthUtil;
-import com.example.security.service.JwtClaimService;
+import com.example.security.contract.JwtServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +41,7 @@ public class InventoryService {
 
     private final UserInternalService  userInternalService;
 
-    private final JwtClaimService jwtClaimService;
+    private final JwtServiceInterface jwtClaimService;
 
     private final StockReturnRepository  stockReturnRepository;
 
@@ -109,7 +106,7 @@ public class InventoryService {
                 .poCode(req.getPoCode())
                 .supplierName(req.getSupplierName())
                 .note(req.getNote())
-                //TODO FIX CREATED BY
+                //TODO CONFIG EXTRACT USERNAME FROM TOKEN
                 .createdBy("Fong")
                 .status(PurchaseOrderStatus.DRAFTED)
                 .orderDate(LocalDateTime.now())
@@ -143,10 +140,6 @@ public class InventoryService {
 
         purchaseOrderItemRepository.saveAll(purchaseItemsOrder);
 
-        purchaseOrder.setStatus(PurchaseOrderStatus.RECEIVED);
-
-        purchaseOrder.setReceivedDate(LocalDateTime.now());
-
         purchaseOrder.getItems().addAll(purchaseItemsOrder);
 
         reCalculatePurchaseOrder(purchaseOrder);
@@ -170,6 +163,26 @@ public class InventoryService {
                 .orElseThrow(() -> new AppException(ErrorCode.PURCHASE_ORDER_NOT_FOUND));
 
         purchaseOrderItemRepository.deleteById(itemId);
+    }
+
+    public UpdatePurchaseOrderRes updatePurchaseOrder(String purchaseOrderId,
+                                                      UpdatePurchaseOrderReq req ){
+
+        PurchaseOrder purchaseOrder = purchaseOrderRepository
+                .findById(purchaseOrderId).orElseThrow(() -> new AppException(ErrorCode.PURCHASE_ORDER_NOT_FOUND));
+
+        purchaseOrderMapper.updatePurchaseOrderFromReq(req, purchaseOrder);
+
+        if ("RECEIVED".equals(req.getStatus())) {
+            purchaseOrder.setReceivedDate(LocalDateTime.now());
+        }
+
+        purchaseOrder.setUpdateAt(LocalDateTime.now());
+
+        PurchaseOrder saved = purchaseOrderRepository.save(purchaseOrder);
+
+        return purchaseOrderMapper.toUpdateRes(saved);
+
     }
 
     public void deletePurchaseById(String purchaseOrderId){

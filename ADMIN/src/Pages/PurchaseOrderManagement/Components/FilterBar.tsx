@@ -1,53 +1,31 @@
 import React from "react";
-import {
-  Input,
-  Select,
-  DatePicker,
-  Button,
-  Space,
-  Tooltip,
-} from "antd";
-import {
-  SearchOutlined,
-  FilterOutlined,
-  ReloadOutlined,
-} from "@ant-design/icons";
+import { Input, Select, DatePicker, Button, Space, Tooltip } from "antd";
+import { SearchOutlined, FilterOutlined, ReloadOutlined } from "@ant-design/icons";
 import dayjs, { Dayjs } from "dayjs";
-import { STATUS_CONFIG } from "../mockdata";
-import { PurchaseOrderFilterParams, PurchaseOrderStatus } from "../purchaseOrder";
+import { FilterParams, PurchaseOrderStatus } from "@/Types/inventory/purchaseOrderTypes";
+import { STATUS_CONFIG } from "@/Constant/inventory-contants";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-interface FilterBarProps {
-  params: PurchaseOrderFilterParams;
-  onSearch: (value: string) => void;
-  onStatusChange: (value: PurchaseOrderStatus | "") => void;
+interface Props {
+  params: FilterParams;
+  onSearch: (v: string) => void;
+  onStatusChange: (v: PurchaseOrderStatus | undefined) => void; 
   onDateRangeChange: (from?: string, to?: string) => void;
   onReset: () => void;
   total: number;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({
-  params,
-  onSearch,
-  onStatusChange,
-  onDateRangeChange,
-  onReset,
-  total,
-}) => {
-  const handleRangeChange = (
-    dates: [Dayjs | null, Dayjs | null] | null
-  ) => {
-    if (!dates || (!dates[0] && !dates[1])) {
-      onDateRangeChange(undefined, undefined);
-    } else {
-      onDateRangeChange(
-        dates[0]?.startOf("day").toISOString(),
-        dates[1]?.endOf("day").toISOString()
-      );
-    }
-  };
+
+const FilterBar: React.FC<Props> = ({ params, onSearch, onStatusChange, onDateRangeChange, onReset, total }) => {
+  const handleRangeChange = (dates: [Dayjs | null, Dayjs | null] | null) => {
+  if (!dates || (!dates[0] && !dates[1])) return onDateRangeChange(undefined, undefined);
+  onDateRangeChange(
+    dates[0]?.startOf("day").format("YYYY-MM-DDTHH:mm:ss"),
+dates[1]?.endOf("day").format("YYYY-MM-DDTHH:mm:ss")      
+  );
+};
 
   const rangeValue: [Dayjs, Dayjs] | undefined =
     params.orderDateFrom && params.orderDateTo
@@ -55,60 +33,47 @@ const FilterBar: React.FC<FilterBarProps> = ({
       : undefined;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
-      {/* Top row: search + reset */}
-      <div className="flex items-center gap-2">
+    <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #F1F5F9", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <Input
           allowClear
-          prefix={<SearchOutlined className="text-gray-400" />}
+          prefix={<SearchOutlined style={{ color: "#9CA3AF" }} />}
           placeholder="Tìm theo mã PO, nhà cung cấp, người tạo..."
-          className="flex-1 rounded-lg"
+          style={{ flex: 1, borderRadius: 8 }}
           value={params.search}
           onChange={(e) => onSearch(e.target.value)}
         />
         <Tooltip title="Đặt lại bộ lọc">
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={onReset}
-            className="flex-shrink-0"
-          />
+          <Button icon={<ReloadOutlined />} onClick={onReset} />
         </Tooltip>
       </div>
 
-      {/* Bottom row: filters */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-        <div className="flex items-center gap-1.5 text-gray-400 text-xs flex-shrink-0">
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#9CA3AF", fontSize: 12, flexShrink: 0 }}>
           <FilterOutlined />
           <span>Bộ lọc</span>
         </div>
-
-        {/* Date range */}
         <RangePicker
-          className="flex-1 min-w-0"
+          style={{ flex: 1, minWidth: 220 }}
           placeholder={["Từ ngày đặt hàng", "Đến ngày"]}
           format="DD/MM/YYYY"
           value={rangeValue as any}
           onChange={handleRangeChange as any}
           allowClear
         />
-
-        {/* Status */}
         <Select
           allowClear
           placeholder="Trạng thái"
-          className="w-full sm:w-44 flex-shrink-0"
-          value={params.status || undefined}
-          onChange={(val) => onStatusChange(val ?? "")}
+          style={{ width: 160, flexShrink: 0 }}
+          value={params.status ?? undefined}
+          onChange={(val) => onStatusChange(val as PurchaseOrderStatus | undefined)}
         >
           {Object.values(PurchaseOrderStatus).map((s) => {
             const cfg = STATUS_CONFIG[s];
             return (
               <Option key={s} value={s}>
                 <Space size={6}>
-                  <span
-                    className="inline-block w-2 h-2 rounded-full"
-                    style={{ background: cfg.dot }}
-                  />
+                  <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: cfg.dot }} />
                   {cfg.label}
                 </Space>
               </Option>
@@ -117,10 +82,8 @@ const FilterBar: React.FC<FilterBarProps> = ({
         </Select>
       </div>
 
-      {/* Result count */}
-      <p className="text-xs text-gray-400 leading-none">
-        Tìm thấy{" "}
-        <span className="font-semibold text-indigo-600">{total}</span> phiếu nhập kho
+      <p style={{ fontSize: 12, color: "#94A3B8", margin: 0 }}>
+        Tìm thấy <span style={{ fontWeight: 600, color: "#4F46E5" }}>{total}</span> phiếu nhập kho
       </p>
     </div>
   );

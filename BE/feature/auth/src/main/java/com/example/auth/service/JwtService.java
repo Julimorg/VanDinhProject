@@ -1,6 +1,7 @@
 package com.example.auth.service;
 import com.example.persistence.entity.User;
 import com.example.persistence.enumTable.TokenType;
+import com.example.security.contract.JwtServiceInterface;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -16,13 +17,14 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
-public class JwtService {
+public class JwtService implements JwtServiceInterface {
     @Value("${signer.key}")
     protected  String SIGNER_KEY;
 
@@ -41,15 +43,32 @@ public class JwtService {
         return buildToken(user, REFRESHABLE_DURATION, TokenType.REFRESH_TOKEN);
     }
 
-    public String extractUserId(String token) {
+    @Override
+    public String extractUserId(SignedJWT signedJWT) {
         try {
-            return SignedJWT.parse(token).getJWTClaimsSet().getAudience().getFirst();
+            return signedJWT
+                    .getJWTClaimsSet()
+                    .getAudience()
+                    .getFirst();
+
+        } catch (ParseException e) {
+
+            throw new RuntimeException("Cannot parse token", e);
+
+        }
+    }
+
+    @Override
+    public String extractJwtId(SignedJWT signedJWT) {
+        try{
+            return signedJWT.getJWTClaimsSet().getJWTID();
         } catch (ParseException e) {
             throw new RuntimeException("Cannot parse token", e);
         }
     }
 
-    public String extractUsername(String token) {
+    @Override
+    public String extractUserName(String token) {
         try {
             return SignedJWT.parse(token).getJWTClaimsSet().getSubject();
         } catch (ParseException e) {
@@ -57,15 +76,8 @@ public class JwtService {
         }
     }
 
-    public String extractJwtId(SignedJWT signedJWT) {
-        try {
-            return signedJWT.getJWTClaimsSet().getJWTID();
-        } catch (ParseException e) {
-            throw new RuntimeException("Cannot parse token", e);
-        }
-    }
-
-    public Date extractExpiry(SignedJWT signedJWT) {
+    @Override
+    public Date extractExpiration(SignedJWT signedJWT) {
         try {
             return signedJWT.getJWTClaimsSet().getExpirationTime();
         } catch (ParseException e) {
@@ -73,8 +85,8 @@ public class JwtService {
         }
     }
 
-
-    private String buildScope(User user) {
+    @Override
+    public String buildScope(User user) {
         StringJoiner joiner = new StringJoiner(" ");
 
         if (!CollectionUtils.isEmpty(user.getRoles())) {
@@ -89,8 +101,8 @@ public class JwtService {
         return joiner.toString();
     }
 
-    private String buildToken(User user, long expiryDate, TokenType tokenType){
-
+    @Override
+    public String buildToken(User user, long expiryDate, TokenType tokenType) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
@@ -114,7 +126,8 @@ public class JwtService {
         }
     }
 
-    public SignedJWT verifyAndParse(String token) throws ParseException, JOSEException {
+    @Override
+    public SignedJWT verifyAndParse(String token) throws JOSEException, ParseException {
         SignedJWT signedJWT = SignedJWT.parse(token);
 
         // Verify JWT Signature
@@ -129,5 +142,30 @@ public class JwtService {
         }
 
         return signedJWT;
+    }
+
+    @Override
+    public boolean isValid(String token) {
+        try {
+            SignedJWT signedJWT = SignedJWT.parse(token);
+            JWTClaimsSet claims = signedJWT.getJWTClaimsSet();
+
+            Date expiration = claims.getExpirationTime();
+
+            if(expiration == null || expiration.before(new Date())){
+                log.warn("Token expired at {}", expiration);
+
+                return false;
+            }
+
+            return true;
+
+        }catch(ParseException e) {
+
+            log.warn("Invalid token parsing: {}", e.getMessage());
+
+            return false;
+
+        }
     }
 }

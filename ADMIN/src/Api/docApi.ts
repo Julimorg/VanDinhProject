@@ -47,6 +47,8 @@ import { IMarkNotificationAsReadRequest, IMarkNotificationAsReadResponse } from 
 import { IGetUserOnlineStatus } from '@/Interface/Notification/IGetUserOnlineStatus';
 import { IUpdateProductQuantityRequest, IUpdateProductQuantityResponse } from '@/Interface/Product/IUpdateProductQuantity';
 import { ICsvImportResponse, ICsvValidateResponse, ICsvTemplateResponse, ICsvExportResponse, IRecentImportsResponse } from '@/Interface/File/ICvs';
+import { IGetPurchaseOrderResponse } from '@/Interface/Inventory/GetPurchaseOrder';
+import { ICreatePurchaseOrderRequest, ICreatePurchaseOrderResponse } from '@/Interface/Inventory/CreatePurchaseOrder';
 
 
 export const docApi = {
@@ -684,6 +686,52 @@ export const docApi = {
     return res.data;
   },
 
+  //* ======================================================== Inventory Management  ======================================================== */
+
+  CreatePurchaseOrder: async (body: ICreatePurchaseOrderRequest): Promise<IApiResponse<ICreatePurchaseOrderResponse>> => {
+    const url = `/inventory/create-purchase`;
+    const res = await axiosClient.post(url, body);
+    return res.data;
+  },
+
+  
+  GetPurchaseOrder: async(
+    params: {
+      keyword?: string,
+      status?: string,
+      orderDateFrom?: string,
+      orderDateTo?: string,
+      page?: number,
+      size?: number,
+      sort?: string,
+    } = {}
+  ): Promise<IApiResponse<IApiResponsePagination<IGetPurchaseOrderResponse>>> => {
+    const {
+      keyword,
+      status,
+      orderDateFrom,
+      orderDateTo,
+      page = 1,
+      size = 10,
+      sort = 'createAt, desc'
+    }
+    = params;
+    
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+      ...(status && { status }),
+      ...(orderDateFrom && { orderDateFrom }),
+      ...(orderDateTo && { orderDateTo }),
+    });
+
+    const url = `/inventory/get-history?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   //* ======================================================== File Management  ======================================================== */
 
   ImportProductsCsv: async (file: File): Promise<ICsvImportResponse> => {
@@ -736,5 +784,6 @@ export const docApi = {
   },
 
   
+
 
 }

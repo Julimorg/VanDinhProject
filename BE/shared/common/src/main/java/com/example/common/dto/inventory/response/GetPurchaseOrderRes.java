@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
@@ -27,9 +28,15 @@ public class GetPurchaseOrderRes {
 
     private String createdBy;
 
+    private BigDecimal totalPrice;
+
+    private int totalQuantity;
+
     private PurchaseOrderStatus status;
 
     private LocalDateTime orderDate;
+
+    private LocalDateTime receivedDate;
 
     private LocalDateTime createAt;
 

@@ -2,10 +2,8 @@ package com.example.controller;
 
 import com.example.common.dto.inventory.request.CreateItemInPurchaseOrderReq;
 import com.example.common.dto.inventory.request.CreatePurchaseOrderReq;
-import com.example.common.dto.inventory.response.CreateItemInPurchaseOrderRes;
-import com.example.common.dto.inventory.response.CreatePurchaseOrderRes;
-import com.example.common.dto.inventory.response.GetPurchaseOrderDetailRes;
-import com.example.common.dto.inventory.response.GetPurchaseOrderRes;
+import com.example.common.dto.inventory.request.UpdatePurchaseOrderReq;
+import com.example.common.dto.inventory.response.*;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
 import com.example.config.InventorySpecification;
@@ -100,6 +98,21 @@ public class InventoryController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
+
+    @PatchMapping("/update-purchase/{purchaseOrderId}")
+    public ApiResponse<UpdatePurchaseOrderRes> updatePurchaseOrder(
+            @PathVariable String purchaseOrderId,
+            @RequestBody UpdatePurchaseOrderReq req){
+
+        return ApiResponse.<UpdatePurchaseOrderRes>builder()
+                .status_code(SuccessCode.UPDATE_INVENTORY.getStatusCode().value())
+                .message(SuccessCode.UPDATE_INVENTORY.getMessage())
+                .data(inventoryService.updatePurchaseOrder(purchaseOrderId, req))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+    }
+
 
     @DeleteMapping("/delete-purchase/{purchaseOrderId}")
     public ApiResponse<Void> deletePurchaseOrder(@PathVariable String purchaseOrderId){

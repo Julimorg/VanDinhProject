@@ -85,8 +85,8 @@ public enum SuccessCode {
     GET_INVENTORY("Get Inventory Successfully! ", HttpStatus.OK),
     CREATE_INVENTORY("Create Inventory Successfully! ", HttpStatus.OK),
     DELETE_PURCHASE_ORDER("Delete Purchase Order Successfully! ", HttpStatus.OK),
-    EXPORT_PDF_FILE("Export PDF File Successfully!", HttpStatus.OK);
-
+    EXPORT_PDF_FILE("Export PDF File Successfully!", HttpStatus.OK),
+    UPDATE_INVENTORY("Update Inventory Successfully! ", HttpStatus.OK);
 
 
     private final String message;

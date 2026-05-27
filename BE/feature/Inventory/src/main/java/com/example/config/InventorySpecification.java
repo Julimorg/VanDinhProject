@@ -8,9 +8,13 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @UtilityClass
 public class InventorySpecification {
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     /**
     *
@@ -69,19 +73,21 @@ public class InventorySpecification {
     }
 
     //* FILTER Date
-    private Specification<PurchaseOrder> hasOrderDateBetween(
-            String from, String to) {
-
+    private Specification<PurchaseOrder> hasOrderDateBetween(String from, String to) {
         if (from == null && to == null) return noOp();
-        if (from == null)
-            return (root, query, cb)
-                    -> cb.lessThanOrEqualTo(root.get("orderDate"), to);
-        if (to == null)
-            return (root, query, cb)
-                    -> cb.greaterThanOrEqualTo(root.get("orderDate"), from);
 
-        return (root, query, cb)
-                -> cb.between(root.get("orderDate"), from, to);
+        LocalDateTime fromDate = (from != null) ? LocalDateTime.parse(from, FORMATTER) : null;
+        LocalDateTime toDate   = (to   != null) ? LocalDateTime.parse(to,   FORMATTER) : null;
+
+        if (fromDate == null)
+            return (root, query, cb) ->
+                    cb.lessThanOrEqualTo(root.get("orderDate"), toDate);
+        if (toDate == null)
+            return (root, query, cb) ->
+                    cb.greaterThanOrEqualTo(root.get("orderDate"), fromDate);
+
+        return (root, query, cb) ->
+                cb.between(root.get("orderDate"), fromDate, toDate);
     }
 
 }

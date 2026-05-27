@@ -1,44 +1,30 @@
 import React from "react";
-import { Skeleton, Empty } from "antd";
+import { Spin } from "antd";
+import SkeletonCard from "./SkeletonCard";
 import PurchaseOrderCard from "./PurchaseOrderCard";
-import { GetPurchaseOrderRes } from "../purchaseOrder";
+import { SKELETON_COUNT } from "@/Constant/inventory-contants";
+import { Order } from "@/Types/inventory/purchaseOrderTypes";
 
-interface PurchaseOrderGridProps {
-  orders: GetPurchaseOrderRes[];
+interface Props {
+  orders: Order[];
   loading: boolean;
-  onView?: (order: GetPurchaseOrderRes) => void;
-  onEdit?: (order: GetPurchaseOrderRes) => void;
+  isFetching: boolean;
+  onView: (o: Order) => void;
+  onEdit: (o: Order) => void;
 }
 
-const CardSkeleton: React.FC = () => (
-  <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-    <div className="h-1.5 bg-gray-100" />
-    <div className="p-4 pl-7 flex flex-col gap-3">
-      <div className="flex justify-between">
-        <Skeleton.Input active size="small" style={{ width: 120 }} />
-        <Skeleton.Button active size="small" style={{ width: 70 }} />
-      </div>
-      <div className="border-t border-dashed border-gray-100" />
-      <Skeleton active paragraph={{ rows: 3 }} title={false} />
-    </div>
-    <div className="bg-gray-50 border-t border-gray-100 px-4 py-3 flex justify-end gap-2">
-      <Skeleton.Button active size="small" style={{ width: 60 }} />
-      <Skeleton.Button active size="small" style={{ width: 60 }} />
-    </div>
-  </div>
-);
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+  gap: 16,
+};
 
-const PurchaseOrderGrid: React.FC<PurchaseOrderGridProps> = ({
-  orders,
-  loading,
-  onView,
-  onEdit,
-}) => {
+const PurchaseOrderGrid: React.FC<Props> = ({ orders, loading, isFetching, onView, onEdit }) => {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {Array.from({ length: 8 }).map((_, i) => (
-          <CardSkeleton key={i} />
+      <div style={gridStyle}>
+        {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+          <SkeletonCard key={i} />
         ))}
       </div>
     );
@@ -46,28 +32,26 @@ const PurchaseOrderGrid: React.FC<PurchaseOrderGridProps> = ({
 
   if (!orders.length) {
     return (
-      <div className="flex items-center justify-center py-24">
-        <Empty
-          description={
-            <span className="text-gray-400">
-              Không tìm thấy phiếu nhập kho nào
-            </span>
-          }
-        />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 0", color: "#94A3B8", gap: 8 }}>
+        <span style={{ fontSize: 40 }}>📭</span>
+        <p style={{ fontSize: 14, margin: 0 }}>Không tìm thấy phiếu nhập kho nào</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {orders.map((order) => (
-        <PurchaseOrderCard
-          key={order.purchaseOrderId}
-          order={order}
-          onView={onView}
-          onEdit={onEdit}
-        />
-      ))}
+    <div style={{ position: "relative" }}>
+      {/* Fetching overlay (paginate / filter) */}
+      {isFetching && (
+        <div style={{ position: "absolute", inset: 0, background: "rgba(244,245,247,0.6)", borderRadius: 8, zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Spin size="large" />
+        </div>
+      )}
+      <div style={gridStyle}>
+        {orders.map((order) => (
+          <PurchaseOrderCard key={order.purchaseOrderId} order={order} onView={onView} onEdit={onEdit} />
+        ))}
+      </div>
     </div>
   );
 };
