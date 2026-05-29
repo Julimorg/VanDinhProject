@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.common.dto.inventory.request.CreateItemInPurchaseOrderReq;
 import com.example.common.dto.inventory.request.CreatePurchaseOrderReq;
 import com.example.common.dto.inventory.request.UpdatePurchaseOrderReq;
+import com.example.common.dto.inventory.request.UpdatePurchaseOrderStatusReq;
 import com.example.common.dto.inventory.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
@@ -11,6 +12,7 @@ import com.example.config.InventorySpecification;
 import com.example.mapper.PurchaseOrderMapper;
 import com.example.persistence.entity.PurchaseOrder;
 import com.example.persistence.entity.PurchaseOrderItem;
+import com.example.persistence.entity.User;
 import com.example.persistence.enumTable.PurchaseOrderStatus;
 import com.example.repository.PurchaseOrderItemRepository;
 import com.example.repository.PurchaseOrderRepository;
@@ -18,11 +20,16 @@ import com.example.repository.StockReturnRepository;
 import com.example.security.contract.JwtServiceInterface;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -34,8 +41,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
 public class InventoryService {
-
-//    private final AuthUtil authUtil;
 
     private final PurchaseOrderMapper  purchaseOrderMapper;
 
@@ -50,6 +55,10 @@ public class InventoryService {
     private final PurchaseOrderItemRepository  purchaseOrderItemRepository;
 
     private final ExportPurchaseOrderPdfFile exportPurchaseOrderPdfFile;
+
+    private final JwtServiceInterface jwtService;
+
+    private final UserInternalService userService;
 
     private void reCalculatePurchaseOrder(PurchaseOrder purchaseOrder) {
 
@@ -99,15 +108,45 @@ public class InventoryService {
         return purchaseOrderMapper.toGetPurchaseOrderDetail(purchaseOrder);
     }
 
+    public GetPurchaseOrderRes updatePurchaseOrderStatus(String purchaseOrderId, UpdatePurchaseOrderStatusReq req) {
+
+        if (PurchaseOrderStatus.DRAFTED.equals(req.getStatus()))
+            throw new RuntimeException(ErrorCode.PURCHASE_STATUS_CHANGE.getMessage());
+
+        PurchaseOrder purchaseOrder = purchaseOrderRepository
+                .findById(purchaseOrderId)
+                .orElseThrow(() -> new AppException(ErrorCode.PURCHASE_ORDER_NOT_FOUND));
+
+        purchaseOrder.setStatus(req.getStatus());
+
+        return purchaseOrderMapper.toGetPurchaseOrder(purchaseOrderRepository.save(purchaseOrder));
+
+    }
+
     @Transactional
     public CreatePurchaseOrderRes createPurchaseOrder(CreatePurchaseOrderReq req){
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        String userId = "";
+
+        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
+            Jwt jwt = jwtAuth.getToken();
+            List<String> audiences = jwt.getAudience();
+             userId = audiences.getFirst();
+        }
+
+        User user = userService.getUserNameById(userId);
+
+        log.error("=== USER ID: {}", user.getId());
+        log.error("=== USER NAME: {}", user.getUserName());
 
         PurchaseOrder purchaseOrder = PurchaseOrder.builder()
                 .poCode(req.getPoCode())
                 .supplierName(req.getSupplierName())
                 .note(req.getNote())
                 //TODO CONFIG EXTRACT USERNAME FROM TOKEN
-                .createdBy("Fong")
+                .createdBy(user.getUserName())
                 .status(PurchaseOrderStatus.DRAFTED)
                 .orderDate(LocalDateTime.now())
                 .build();

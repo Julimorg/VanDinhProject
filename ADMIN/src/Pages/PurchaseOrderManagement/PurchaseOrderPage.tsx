@@ -10,11 +10,12 @@ import PurchaseOrderGrid from './Components/PurchaseOrderGrid';
 import CreatePurchaseOrderModal from './Components/CreatePurchaseOrderModal';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/Constant/query-key';
+import { useNavigate } from 'react-router-dom';
 
 const PurchaseOrderPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [params, setParams] = useState<FilterParams>(DEFAULT_PARAMS);
-
+  const navigate = useNavigate();
   const [openCreate, setOpenCreate] = useState(false);
 
   const { data, isLoading, isFetching } = useGetAllPurchaseOrders(
@@ -49,7 +50,9 @@ const PurchaseOrderPage: React.FC = () => {
   const changePage = useCallback((page: number) => setParams((p) => ({ ...p, page })), []);
   const resetFilter = useCallback(() => setParams(DEFAULT_PARAMS), []);
 
-  const handleView = (order: Order) => message.info(`Xem chi tiết: ${order.poCode}`);
+  const handleView = (order: Order) => {
+  navigate(`/inventory/${order.purchaseOrderId}`);
+};
   const handleEdit = (order: Order) => message.success(`Chỉnh sửa: ${order.poCode}`);
 
   return (

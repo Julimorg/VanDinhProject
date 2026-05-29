@@ -85,6 +85,7 @@ public enum ErrorCode {
 
     // ======================= INVENTORY =======================
     PURCHASE_ORDER_NOT_FOUND("Purchase Order Not Found", HttpStatus.NOT_FOUND),
+    PURCHASE_STATUS_CHANGE("Purchase Status Could Not Change Back ", HttpStatus.BAD_REQUEST),
 
     // ======================= PAYMENT =======================
     PAYMENT_NOT_FOUND("Payment Not Found", HttpStatus.NOT_FOUND),

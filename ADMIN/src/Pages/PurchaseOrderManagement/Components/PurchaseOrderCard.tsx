@@ -1,22 +1,24 @@
 import React from "react";
-import { Button } from "antd";
+import { Button, Popconfirm } from "antd";
 import {
   CalendarOutlined, UserOutlined, ShopOutlined,
-  FileTextOutlined, EyeOutlined, EditOutlined,
+  FileTextOutlined, EyeOutlined, DeleteOutlined,
 } from "@ant-design/icons";
 import { Order, PurchaseOrderStatus } from "@/Types/inventory/purchaseOrderTypes";
 import InfoRow from "./InforRows";
 import { STATUS_CONFIG } from "@/Constant/inventory-contants";
-import { formatDate, formatDateTime } from "@/Pages/PurchaseOrderDetailManagement/data";
+import { formatToVietnamTime } from "@/Utils/ulti";
+import { useDeletePurchaseOrder } from "../Hooks/useDeletePurchaseOrder";
+
 interface Props {
   order: Order;
   onView?: (o: Order) => void;
-  onEdit?: (o: Order) => void;
+  onDelete?: (o: Order) => void;  
 }
 
-const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onEdit }) => {
+const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onDelete }) => {
   const statusCfg = STATUS_CONFIG[order.status as PurchaseOrderStatus];
-
+  const { mutate: deletePO, isPending: isDeleting } = useDeletePurchaseOrder();
   return (
     <div
       className="transition-all duration-200 hover:-translate-y-1"
@@ -59,11 +61,11 @@ const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onEdit }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <InfoRow icon={<ShopOutlined />}     label="Nhà cung cấp"   value={order.supplierName} />
           <InfoRow icon={<UserOutlined />}     label="Tạo bởi"        value={order.createBy} />
-          <InfoRow icon={<CalendarOutlined />} label="Ngày đặt hàng"  value={formatDate(order.orderDate)} />
+          <InfoRow icon={<CalendarOutlined />} label="Ngày đặt hàng"  value={formatToVietnamTime(order.orderDate)} />
           <InfoRow
             icon={<CalendarOutlined style={{ color: "#C4C4A0" }} />}
             label="Ngày tạo"
-            value={formatDateTime(order.createdAt)}
+            value={formatToVietnamTime(order.createdAt)}
             muted
           />
         </div>
@@ -79,8 +81,32 @@ const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onEdit }) => {
 
       {/* Footer */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 18px", borderTop: "1px dashed #D1C97A", background: "rgba(0,0,0,0.018)" }}>
-        <Button icon={<EyeOutlined />} size="middle" onClick={() => onView?.(order)} style={{ flex: 1, borderColor: "#D1C97A", color: "#4B5563", background: "transparent" }}>Xem</Button>
-        <Button type="primary" icon={<EditOutlined />} size="middle" onClick={() => onEdit?.(order)} style={{ flex: 1, background: "#4F46E5", borderColor: "#4F46E5" }}>Sửa</Button>
+        <Button
+          icon={<EyeOutlined />}
+          size="middle"
+          onClick={() => onView?.(order)}
+          style={{ flex: 1, borderColor: "#D1C97A", color: "#4B5563", background: "transparent" }}
+        >
+          Xem
+        </Button>
+
+        <Popconfirm
+          title="Xoá phiếu nhập kho?"
+          description="Hành động này không thể hoàn tác. Phiếu sẽ bị xoá vĩnh viễn."
+          onConfirm={() => deletePO(order.purchaseOrderId)}
+          okText="Xoá"
+          cancelText="Huỷ"
+          okButtonProps={{ danger: true }}
+        >
+          <Button
+            danger
+            icon={<DeleteOutlined />}
+            size="middle"
+            style={{ flex: 1 }}
+          >
+            Xoá
+          </Button>
+        </Popconfirm>
       </div>
     </div>
   );

@@ -88,7 +88,6 @@ public enum SuccessCode {
     EXPORT_PDF_FILE("Export PDF File Successfully!", HttpStatus.OK),
     UPDATE_INVENTORY("Update Inventory Successfully! ", HttpStatus.OK);
 
-
     private final String message;
     private final HttpStatusCode statusCode;
 

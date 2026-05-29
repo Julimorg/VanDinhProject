@@ -28,4 +28,5 @@ GET_USER_ONLINE_STATUS: 'Get User Online Status',
 GET_PURCHASE_ORDERS: 'Get Purchase Orders',
 GET_PURCHASE_ORDER_DETAIL: 'Get Purchase Order Detail',
 GET_INVENTORY: 'Get Inventory',
+GET_PURCHASE_DETAIL: 'Get Purchase Detail',
 }

@@ -4,6 +4,12 @@ import {
   PlusOutlined, DeleteOutlined, ShoppingCartOutlined,
   CheckOutlined, InfoCircleOutlined, WarningOutlined,
 } from "@ant-design/icons";
+import { toast } from "react-toastify";
+import dayjs from "dayjs";
+import { ICreatePurchaseOrderItemRequest } from "@/Interface/Inventory/CreatePurchaseOrderItem";
+import { useQueryClient } from "@tanstack/react-query";
+import { QueryKeys } from "@/Constant/query-key";
+import { useCreatePurchaseOrderItems } from "../Hooks/useCreatePurchaseOrderItems";
 
 interface AddPurchaseItemForm {
   productName: string;
@@ -27,16 +33,40 @@ const EMPTY_ITEM = (): AddPurchaseItemForm => ({
 interface AddProductModalProps {
   open: boolean;
   onClose: () => void;
-  onConfirm: (items: AddPurchaseItemForm[]) => void;
+  purchaseOrderId: string;          
+  onSuccess?: () => void;           
 }
 
 const fmtVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
-const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConfirm }) => {
+const AddProductModal: React.FC<AddProductModalProps> = ({
+  open, onClose, purchaseOrderId, onSuccess,
+}) => {
   const [items, setItems] = useState<AddPurchaseItemForm[]>([EMPTY_ITEM()]);
   const [active, setActive] = useState(0);
   const [errors, setErrors] = useState<Record<number, Partial<Record<keyof AddPurchaseItemForm, string>>>>({});
+
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = useCreatePurchaseOrderItems(purchaseOrderId, {
+    onSuccess: (res) => {
+      toast.success(
+        `Thêm ${items.length} sản phẩm thành công! Mã phiếu: ${res.data.poCode}`,
+        { position: "top-right", autoClose: 3000 }
+      );
+    
+      queryClient.invalidateQueries({
+        queryKey: [QueryKeys.GET_PURCHASE_DETAIL, purchaseOrderId],
+      });
+      handleClose();
+      onSuccess?.();
+    },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message ?? "Thêm sản phẩm thất bại, vui lòng thử lại.";
+      toast.error(`${msg}`, { position: "top-right", autoClose: 4000 });
+    },
+  });
 
   const updateItem = (idx: number, field: keyof AddPurchaseItemForm, value: unknown) => {
     setItems(prev => prev.map((it, i) => i === idx ? { ...it, [field]: value } : it));
@@ -74,8 +104,23 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
 
   const handleConfirm = () => {
     if (!validate()) return;
-    onConfirm(items);
-    handleClose();
+
+    // map form → request body
+    const body: ICreatePurchaseOrderItemRequest[] = items.map((it) => ({
+      productName:     it.productName,
+      productCode:     it.productCode,
+      productVolume:   it.productVolume,
+      colorName:       it.colorName,
+      supplierName:    it.supplierName,
+      quantityOrdered: it.quantityOrdered!,
+      costPrice:       it.costPrice!,
+      expiryDate:      it.expiryDate
+        ? dayjs(it.expiryDate).format("YYYY-MM-DDTHH:mm:ss")
+        : "",
+      note:            it.note,
+    }));
+
+    mutate(body);
   };
 
   const handleClose = () => {
@@ -122,27 +167,25 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
             <strong style={{ color: "#059669" }}>{fmtVND(totalAmount)}</strong>
           </span>
           <div className="flex gap-2">
-            <Button onClick={handleClose}>Huỷ</Button>
-            <Button type="primary" icon={<CheckOutlined />} onClick={handleConfirm}
-              style={{ background: "#4F46E5", borderColor: "#4F46E5", fontWeight: 600 }}>
+            <Button onClick={handleClose} disabled={isPending}>Huỷ</Button>
+            <Button
+              type="primary"
+              icon={<CheckOutlined />}
+              onClick={handleConfirm}
+              loading={isPending}
+              style={{ background: "#4F46E5", borderColor: "#4F46E5", fontWeight: 600 }}
+            >
               Xác nhận thêm ({items.length})
             </Button>
           </div>
         </div>
       }
     >
-      {/* Split body */}
       <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "100%" }}>
 
-        {/* LEFT — product list */}
-        <div style={{
-          width: 270, flexShrink: 0, borderRight: "1px solid #F1F5F9",
-          display: "flex", flexDirection: "column", background: "#F8FAFC",
-        }}>
-          <div style={{
-            padding: "12px 16px 10px", borderBottom: "1px solid #F1F5F9",
-            display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0,
-          }}>
+        {/* LEFT */}
+        <div style={{ width: 270, flexShrink: 0, borderRight: "1px solid #F1F5F9", display: "flex", flexDirection: "column", background: "#F8FAFC" }}>
+          <div style={{ padding: "12px 16px 10px", borderBottom: "1px solid #F1F5F9", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
             <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", textTransform: "uppercase", letterSpacing: ".08em" }}>
               Danh sách ({items.length})
             </span>
@@ -153,7 +196,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
             )}
           </div>
 
-          {/* Scrollable list */}
           <div style={{ flex: 1, overflowY: "auto", padding: "10px 10px 0" }}>
             {items.map((it, idx) => {
               const hasErr = !!errors[idx];
@@ -171,21 +213,11 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
                     transition: "all .15s",
                   }}
                 >
-                  {/* number dot */}
-                  <div style={{
-                    width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
-                    background: hasErr ? "#EF4444" : isActive ? "#4F46E5" : "#E2E8F0",
-                    color: (hasErr || isActive) ? "#fff" : "#64748B",
-                    fontSize: 11, fontWeight: 700,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>{idx + 1}</div>
-                  {/* info */}
+                  <div style={{ width: 24, height: 24, borderRadius: "50%", flexShrink: 0, background: hasErr ? "#EF4444" : isActive ? "#4F46E5" : "#E2E8F0", color: (hasErr || isActive) ? "#fff" : "#64748B", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {idx + 1}
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 12, fontWeight: 600, color: it.productName ? "#1E293B" : "#94A3B8",
-                      fontStyle: it.productName ? "normal" : "italic",
-                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                    }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: it.productName ? "#1E293B" : "#94A3B8", fontStyle: it.productName ? "normal" : "italic", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {it.productName || "Chưa nhập tên"}
                     </div>
                     <div style={{ fontSize: 11, color: "#94A3B8", marginTop: 1 }}>
@@ -195,16 +227,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
                       {!it.quantityOrdered && !it.costPrice && <i>Chưa nhập</i>}
                     </div>
                   </div>
-                  {/* delete */}
                   {items.length > 1 && (
                     <button
                       onClick={e => { e.stopPropagation(); removePanel(idx); }}
-                      style={{
-                        width: 22, height: 22, borderRadius: 6, border: "none",
-                        background: "transparent", cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#CBD5E1", padding: 0, flexShrink: 0,
-                      }}
+                      style={{ width: 22, height: 22, borderRadius: 6, border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CBD5E1", padding: 0, flexShrink: 0 }}
                       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#FEE2E2"; (e.currentTarget as HTMLElement).style.color = "#EF4444"; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = "#CBD5E1"; }}
                     >
@@ -216,24 +242,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
             })}
           </div>
 
-          {/* Add more — bottom */}
           <button
             onClick={addPanel}
-            style={{
-              margin: 10, padding: "10px", borderRadius: 10, flexShrink: 0,
-              border: "1.5px dashed #C7D2FE", background: "transparent",
-              color: "#4F46E5", fontSize: 13, fontWeight: 500,
-              cursor: "pointer", fontFamily: "inherit",
-              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
-            }}
+            style={{ margin: 10, padding: "10px", borderRadius: 10, flexShrink: 0, border: "1.5px dashed #C7D2FE", background: "transparent", color: "#4F46E5", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}
           >
             <PlusOutlined /> Thêm sản phẩm
           </button>
         </div>
 
-        {/* RIGHT — form */}
+        {/* RIGHT */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
-          {/* form title */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>
               Sản phẩm {active + 1}
@@ -246,7 +264,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
             )}
           </div>
 
-          {/* Section 1 — product info */}
           <FormSection title="Thông tin sản phẩm">
             <div className="col-span-2">
               <FieldRow label="Tên sản phẩm" required error={errs.productName}>
@@ -273,7 +290,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
             </FieldRow>
           </FormSection>
 
-          {/* Section 2 — qty & price */}
           <FormSection title="Số lượng & Giá" cols={3}>
             <FieldRow label="Số lượng đặt" required error={errs.quantityOrdered}>
               <InputNumber min={1} placeholder="0" value={item.quantityOrdered}
@@ -289,24 +305,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ open, onClose, onConf
                 style={{ width: "100%", borderRadius: 8 }} addonAfter="₫" />
             </FieldRow>
             <FieldRow label="Thành tiền">
-              <div style={{
-                height: 32, padding: "0 11px", borderRadius: 8,
-                border: "1px solid #E2E8F0", background: "#F8FAFC",
-                display: "flex", alignItems: "center",
-                fontSize: 13, fontWeight: 700, color: "#059669",
-              }}>
-                {item.quantityOrdered && item.costPrice
-                  ? fmtVND(item.quantityOrdered * item.costPrice) : "—"}
+              <div style={{ height: 32, padding: "0 11px", borderRadius: 8, border: "1px solid #E2E8F0", background: "#F8FAFC", display: "flex", alignItems: "center", fontSize: 13, fontWeight: 700, color: "#059669" }}>
+                {item.quantityOrdered && item.costPrice ? fmtVND(item.quantityOrdered * item.costPrice) : "—"}
               </div>
             </FieldRow>
           </FormSection>
 
-          {/* Section 3 — other */}
           <FormSection title="Thông tin khác">
             <FieldRow label="Hạn sử dụng">
-              <DatePicker placeholder="Chọn ngày hết hạn" format="DD/MM/YYYY"
+              <DatePicker
+                placeholder="Chọn ngày hết hạn"
+                format="DD/MM/YYYY"
                 style={{ width: "100%", borderRadius: 8 }}
-                onChange={(_, ds) => updateItem(active, "expiryDate", ds || null)} />
+                value={item.expiryDate ? dayjs(item.expiryDate) : null}
+                onChange={(date) => updateItem(active, "expiryDate", date ? date.toISOString() : null)}
+              />
             </FieldRow>
             <div className="col-span-2">
               <FieldRow label="Ghi chú">

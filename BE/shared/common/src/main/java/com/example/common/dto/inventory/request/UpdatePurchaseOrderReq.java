@@ -17,6 +17,4 @@ public class UpdatePurchaseOrderReq {
 
     private String status;
 
-
-
 }

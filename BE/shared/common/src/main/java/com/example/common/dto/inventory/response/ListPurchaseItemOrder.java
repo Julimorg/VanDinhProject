@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class ListPurchaseItemOrder {
 
+    private String itemId;
+
     private String productId;
 
     private String productName;

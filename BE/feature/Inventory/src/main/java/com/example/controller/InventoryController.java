@@ -3,7 +3,9 @@ package com.example.controller;
 import com.example.common.dto.inventory.request.CreateItemInPurchaseOrderReq;
 import com.example.common.dto.inventory.request.CreatePurchaseOrderReq;
 import com.example.common.dto.inventory.request.UpdatePurchaseOrderReq;
+import com.example.common.dto.inventory.request.UpdatePurchaseOrderStatusReq;
 import com.example.common.dto.inventory.response.*;
+import com.example.common.enums.ErrorCode;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
 import com.example.config.InventorySpecification;
@@ -36,16 +38,15 @@ public class InventoryController {
 
     private final ExportPurchaseOrderPdfFile exportPurchaseOrderPdfFile;
 
-    @GetMapping("/{purchaseOrderId}/export-pdf")
-    public ResponseEntity<byte[]> exportPurchaseOrderPDF(@PathVariable String purchaseOrderId) {
-        GetPurchaseOrderDetailRes order = inventoryService.getPurchaseOrderDetail(purchaseOrderId);
-        byte[] pdf = exportPurchaseOrderPdfFile.export(order);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=\"phieu-nhap-kho-" + order.getPoCode() + ".pdf\"")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdf);
+    @GetMapping("/{purchaseOrderId}/export-pdf")
+    public ApiResponse<byte[]> exportPurchaseOrderFile(@PathVariable String purchaseOrderId) {
+
+        return ApiResponse.<byte[]>builder()
+                .status_code(SuccessCode.EXPORT_PDF_FILE.getStatusCode().value())
+                .message(SuccessCode.EXPORT_PDF_FILE.getMessage())
+                .data(inventoryService.exportPurchaseOrderPdfFile(purchaseOrderId))
+                .build();
     }
 
     @GetMapping("/{purchaseOrderId}")
@@ -72,6 +73,17 @@ public class InventoryController {
                 .message(SuccessCode.GET_INVENTORY.getMessage())
                 .data(inventoryService.getPurchaseOrder(
                         keyword,status, orderDateFrom, orderDateTo, pageable))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PatchMapping("/update-status/{id}")
+    public ApiResponse<GetPurchaseOrderRes> updatePurchaseOrderStatus(@PathVariable String id,
+                                                                      @RequestBody UpdatePurchaseOrderStatusReq req){
+        return ApiResponse.<GetPurchaseOrderRes>builder()
+                .status_code(SuccessCode.GET_INVENTORY.getStatusCode().value())
+                .message(SuccessCode.GET_INVENTORY.getMessage())
+                .data(inventoryService.updatePurchaseOrderStatus(id, req))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
