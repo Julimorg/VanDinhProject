@@ -46,6 +46,18 @@ public class UserInternalServiceImpl implements UserInternalService {
     }
 
     @Override
+    public User findByUserName(String userName) {
+        return userRepository
+                .findByUserName(userName)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Override
+    public User getUserNameById(String userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
+    @Override
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
     }

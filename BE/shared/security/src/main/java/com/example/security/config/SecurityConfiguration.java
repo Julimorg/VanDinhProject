@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -26,6 +27,8 @@ import java.util.List;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
+
+//    private final JwtAuthFilter  jwtAuthFilter;
 
     private final CustomJwtDecoder customJwtDecoder;
 
@@ -105,8 +108,7 @@ public class SecurityConfiguration {
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
 
-        // UserStatusFilter đăng ký ở feature:auth để tránh circular dependency
-        // httpSecurity.addFilterAfter(userStatusFilter, BearerTokenAuthenticationFilter.class);
+//         httpSecurity.addFilterAfter(jwtAuthFilter, BearerTokenAuthenticationFilter.class);
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
 

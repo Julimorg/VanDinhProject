@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+        }
+
+        * { font-family: 'DejaVu', sans-serif; font-size: 10pt; box-sizing: border-box; }
+        body { margin: 15mm 15mm 15mm 20mm; }
+
+        .header-left  { float: left;  width: 50%; }
+        .header-right { float: right; width: 50%; text-align: center; font-size: 9pt; }
+        .clearfix::after { content: ""; display: table; clear: both; }
+
+        h1 { text-align: center; font-size: 14pt; font-weight: bold; margin: 8px 0 4px 0; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        th, td { border: 1px solid #000; padding: 3px 4px; text-align: center; vertical-align: middle; }
+        td.left { text-align: left; }
+        th { font-weight: bold; background-color: #f0f0f0; font-size: 9pt; }
+        .number { text-align: right; }
+        .row-cong td { font-weight: bold; }
+
+        .sig-col { display: inline-block; width: 24%; text-align: center; vertical-align: top; }
+        .sig-title { font-weight: bold; }
+        .sig-sub { font-size: 8.5pt; font-style: italic; }
+        .sig-space { height: 40px; }
+        .sig-date { text-align: right; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="clearfix" style="margin-bottom: 8px;">
+    <div class="header-left">
+        <div>Đơn vị: ………………………………</div>
+        <div>Bộ phận: ……………………………</div>
+    </div>
+    <div class="header-right">
+        <div><strong>Mẫu số 01 - VT</strong></div>
+        <div>(Ban hành theo Thông tư số 133/2016/TT-BTC</div>
+        <div>ngày 26/8/2016 của Bộ Tài chính)</div>
+    </div>
+</div>
+
+<h1>PHIẾU NHẬP KHO</h1>
+
+<!-- Ngày / Số / Nợ Có -->
+<div class="clearfix" style="margin-bottom: 4px;">
+    <div style="float:left; width:55%;">
+        <span th:text="'Ngày ' + ${ngay} + ' tháng ' + ${thang} + ' năm ' + ${nam}"></span>
+        &nbsp;&nbsp;&nbsp;
+        Số: <strong th:text="${order.poCode}"></strong>
+    </div>
+    <div style="float:right; width:40%;">
+        <div>Nợ ………………………………</div>
+        <div>Có ………………………………</div>
+    </div>
+</div>
+
+<!-- Thông tin -->
+<div style="margin-bottom: 4px;">
+    <div>- Họ và tên người giao: <strong th:text="${order.supplierName}"></strong></div>
+    <div th:text="'- Theo PO số ' + ${order.poCode} + '  ngày ' + ${ngay} + ' tháng ' + ${thang} + ' năm ' + ${nam}"></div>
+    <div>Nhập tại kho: ………………………… địa điểm: …………………………………</div>
+</div>
+
+<!-- Bảng hàng hóa -->
+<table>
+    <thead>
+    <tr>
+        <th style="width:5%"  rowspan="2">STT</th>
+        <th style="width:28%" rowspan="2">Tên, nhãn hiệu, quy cách, phẩm chất vật tư, dụng cụ sản phẩm, hàng hóa</th>
+        <th style="width:9%"  rowspan="2">Mã số</th>
+        <th style="width:8%"  rowspan="2">Đơn vị tính</th>
+        <th colspan="2">Số lượng</th>
+        <th style="width:13%" rowspan="2">Đơn giá</th>
+        <th style="width:17%" rowspan="2">Thành tiền</th>
+    </tr>
+    <tr>
+        <th style="width:10%">Theo chứng từ</th>
+        <th style="width:10%">Thực nhập</th>
+    </tr>
+    <tr>
+        <th>A</th><th>B</th><th>C</th><th>D</th>
+        <th>1</th><th>2</th><th>3</th><th>4</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="item, stat : ${order.items}">
+        <td th:text="${stat.index + 1}"></td>
+        <td class="left">
+            <span th:text="${item.productName}"></span>
+            <span th:if="${item.colorName != null and !item.colorName.isEmpty()}"
+                  th:text="' - ' + ${item.colorName}"></span>
+            <span th:if="${item.productVolume != null and !item.productVolume.isEmpty()}"
+                  th:text="' (' + ${item.productVolume} + ')'"></span>
+        </td>
+        <td th:text="${item.productCode}"></td>
+        <td th:text="${item.productVolume}"></td>
+        <td class="number" th:text="${#numbers.formatInteger(item.quantityOrdered, 1, 'COMMA')}"></td>
+        <td class="number" th:text="${#numbers.formatInteger(item.quantityOrdered, 1, 'COMMA')}"></td>
+        <td class="number" th:text="${#numbers.formatDecimal(item.costPrice, 1, 'COMMA', 0, 'POINT')}"></td>
+        <td class="number" th:text="${#numbers.formatDecimal(item.costPrice * item.quantityOrdered, 1, 'COMMA', 0, 'POINT')}"></td>
+    </tr>
+    <!-- Dòng trống padding tối thiểu 3 rows -->
+    <tr th:each="i : ${#numbers.sequence(1, emptyRows)}" style="height: 20px;">
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr class="row-cong">
+        <td colspan="4">Cộng</td>
+        <td>x</td><td>x</td><td>x</td>
+        <td class="number" th:text="${#numbers.formatDecimal(order.totalPrice, 1, 'COMMA', 0, 'POINT')}"></td>
+    </tr>
+    </tfoot>
+</table>
+
+<!-- Footer -->
+<div style="margin-top: 6px;">
+    <div>- Tổng số tiền (viết bằng chữ): <span th:text="${totalInWords}"></span></div>
+    <div>- Số chứng từ gốc kèm theo: ………………………………………………………………</div>
+</div>
+
+<!-- Ký tên -->
+<div style="margin-top: 16px;">
+    <div class="sig-date">
+        Ngày <span th:text="${ngayKy}"></span>
+        tháng <span th:text="${thangKy}"></span>
+        năm <span th:text="${namKy}"></span>
+    </div>
+    <div class="clearfix">
+        <div class="sig-col">
+            <div class="sig-title">Người lập phiếu</div>
+            <div class="sig-sub">(Ký, họ tên)</div>
+            <div class="sig-space"></div>
+            <div th:text="${order.createdBy}"></div>
+        </div>
+        <div class="sig-col">
+            <div class="sig-title">Người giao hàng</div>
+            <div class="sig-sub">(Ký, họ tên)</div>
+            <div class="sig-space"></div>
+        </div>
+        <div class="sig-col">
+            <div class="sig-title">Thủ kho</div>
+            <div class="sig-sub">(Ký, họ tên)</div>
+            <div class="sig-space"></div>
+        </div>
+        <div class="sig-col">
+            <div class="sig-title">Kế toán trưởng</div>
+            <div class="sig-sub">(Ký, họ tên)</div>
+            <div class="sig-sub">(Hoặc bộ phận có nhu cầu nhập)</div>
+            <div class="sig-space"></div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

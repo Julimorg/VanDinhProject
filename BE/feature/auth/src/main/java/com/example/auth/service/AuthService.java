@@ -56,7 +56,7 @@ public class AuthService {
     private void blacklistToken(SignedJWT signedJWT) {
         InvalidatedToken invalidated = InvalidatedToken.builder()
                 .id(jwtService.extractJwtId(signedJWT))
-                .expiryDate(jwtService.extractExpiry(signedJWT))
+                .expiryDate(jwtService.extractExpiration(signedJWT))
                 .build();
         invalidatedTokenRepository.save(invalidated);
     }
@@ -141,11 +141,21 @@ public class AuthService {
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
             }
 
-            String username = signedJWT.getJWTClaimsSet().getSubject();
-            User user = userRepository.findByUserName(username)
+            String userId = signedJWT.getJWTClaimsSet().getAudience().getFirst();
+
+            String userrId = jwtService.extractUserId(signedJWT);
+
+            log.warn("USER ID GET CLAIMED IN JWT: {}", userrId);
+
+            User user = userRepository.findById(userrId)
                     .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
-            return authMapper.toRefreshRes(user);
+            var token = jwtService.generateAccessToken(user);
+
+            return RefreshRes.builder()
+                    .accessToken(token)
+                    .authenticated(true)
+                    .build();
 
         } catch (ParseException | JOSEException e) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);

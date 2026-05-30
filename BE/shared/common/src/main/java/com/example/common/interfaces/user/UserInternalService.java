@@ -13,5 +13,9 @@ public interface UserInternalService {
 
     User getUserById(String userId);
 
+    User findByUserName(String userName);
+
+    User getUserNameById(String userId);
+
     Page<User> getAllUsers(Pageable pageable);
 }

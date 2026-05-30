@@ -29,5 +29,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "src/types/electron.d.ts"]
+  "include": ["src/**/*", "src/Types/electron/electron.d.ts"]
 }

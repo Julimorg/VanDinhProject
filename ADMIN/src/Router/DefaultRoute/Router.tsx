@@ -22,6 +22,9 @@ import FileExporterPage from '@/Pages/FileExporter/FileExporterPage';
 import ViewAllNotificationsPage from '@/Pages/Notifications/ViewAllNotificationsPage';
 import SendNotificationPage from '@/Pages/Notifications/SendNotificationPage';
 import ProductCsvManager from '@/Pages/ProductFileIImporter/ProductFileImporter';
+import PurchaseOrderPage from '@/Pages/PurchaseOrderManagement/PurchaseOrderPage';
+import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
+// import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
 
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
@@ -87,6 +90,8 @@ const Router: React.FC = () => {
           <Route path="product-file-import" element={<ProductCsvManager />} />
           <Route path="notifications" element={<ViewAllNotificationsPage />} />
           <Route path="notifications/send" element={<SendNotificationPage />} />
+          <Route path="/inventory" element={<PurchaseOrderPage />} />
+          <Route path="inventory/:purchaseOrderId" element={<PurchaseOrderDetailPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

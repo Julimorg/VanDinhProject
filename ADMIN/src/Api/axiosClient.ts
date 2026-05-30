@@ -2,10 +2,10 @@ import axios from 'axios';
 import { docApi } from './docApi';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
-import { RENDER_API } from '@/Utils/env_dev_handler';
+import { LOCAL_API, RENDER_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: RENDER_API,
+  baseURL: LOCAL_API,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -65,7 +65,7 @@ axiosClient.interceptors.response.use(
     if (originalRequest.url?.includes('/auth/refresh-token')) {
       // console.log('Refresh token API failed, clearing tokens');
       useAuthStore.getState().clearTokens();
-      window.location.href = '/login';
+      // window.location.href = '/login';
       return Promise.reject(error);
     }
 
@@ -153,7 +153,7 @@ axiosClient.interceptors.response.use(
         processQueue(refreshError, null);
         useAuthStore.getState().clearTokens();
         
-        window.location.href = '/login';
+        // window.location.href = '/login';
         
         return Promise.reject(refreshError);
       } finally {

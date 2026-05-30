@@ -1,7 +1,9 @@
 package com.example.messaging.interceptor;
 
 import com.example.common.interfaces.user.UserPresenceInternalService;
-import com.example.common.security.TokenValidator;
+import com.example.security.contract.JwtServiceInterface;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jwt.SignedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -13,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.text.ParseException;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -20,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
-    private final TokenValidator tokenValidator;
+    private final JwtServiceInterface tokenValidator;
 
     private final UserPresenceInternalService  userPresenceInternalService;
 
@@ -39,14 +42,22 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         if (command == null) return message;
 
         return switch (command) {
-            case CONNECT    -> handleConnect(message, accessor);
+            case CONNECT    -> {
+                try {
+                    yield handleConnect(message, accessor);
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                } catch (JOSEException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             case DISCONNECT -> handleDisconnect(message, accessor);
             default         -> message;
         };
     }
 
 
-    private Message<?> handleConnect(Message<?> message, StompHeaderAccessor accessor) {
+    private Message<?> handleConnect(Message<?> message, StompHeaderAccessor accessor) throws ParseException, JOSEException {
         String authHeader = accessor.getFirstNativeHeader("Authorization");
 
         // 1. Check header tồn tại
@@ -64,7 +75,10 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         }
 
         // 3. Extract userId
-        String userId = tokenValidator.extractUserId(token);
+
+        SignedJWT signedJWT = tokenValidator.verifyAndParse(token);
+
+        String userId = tokenValidator.extractUserId(signedJWT);
         if (!StringUtils.hasText(userId)) {
             log.warn("WebSocket CONNECT rejected – cannot extract userId from token");
             return null;

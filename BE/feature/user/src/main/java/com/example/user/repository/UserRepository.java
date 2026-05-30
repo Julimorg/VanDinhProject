@@ -24,6 +24,7 @@ public interface UserRepository extends JpaRepository<User, String>, JpaSpecific
 
     List<User> findDistinctByRoles_NameIn(List<String> roles);
 
+    Optional<User> findUsersById(String userId);
 
 
 }
