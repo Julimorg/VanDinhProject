@@ -3,12 +3,19 @@ import { Button, Popconfirm } from "antd";
 import {
   CalendarOutlined, UserOutlined, ShopOutlined,
   FileTextOutlined, EyeOutlined, DeleteOutlined,
+  CalculatorOutlined,
+  ProductOutlined,
 } from "@ant-design/icons";
 import { Order, PurchaseOrderStatus } from "@/Types/inventory/purchaseOrderTypes";
 import InfoRow from "./InforRows";
 import { STATUS_CONFIG } from "@/Constant/inventory-contants";
-import { formatToVietnamTime } from "@/Utils/ulti";
+import { formatCurrency, formatToVietnamTime } from "@/Utils/ulti";
 import { useDeletePurchaseOrder } from "../Hooks/useDeletePurchaseOrder";
+import dayjs from "dayjs";
+
+const formatDate     = (val?: string) => val ? dayjs(val).format("DD/MM/YYYY") : "—";
+const formatDateTime = (val?: string) => val ? dayjs(val).format("DD/MM/YYYY HH:mm") : "—";
+
 
 interface Props {
   order: Order;
@@ -18,6 +25,7 @@ interface Props {
 
 const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onDelete }) => {
   const statusCfg = STATUS_CONFIG[order.status as PurchaseOrderStatus];
+  
   const { mutate: deletePO, isPending: isDeleting } = useDeletePurchaseOrder();
   return (
     <div
@@ -61,13 +69,16 @@ const PurchaseOrderCard: React.FC<Props> = ({ order, onView, onDelete }) => {
         <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
           <InfoRow icon={<ShopOutlined />}     label="Nhà cung cấp"   value={order.supplierName} />
           <InfoRow icon={<UserOutlined />}     label="Tạo bởi"        value={order.createBy} />
-          <InfoRow icon={<CalendarOutlined />} label="Ngày đặt hàng"  value={formatToVietnamTime(order.orderDate)} />
+          <InfoRow icon={<CalendarOutlined />} label="Ngày đặt hàng"  value={formatDate(order.orderDate)} />
           <InfoRow
             icon={<CalendarOutlined style={{ color: "#C4C4A0" }} />}
             label="Ngày tạo"
-            value={formatToVietnamTime(order.createdAt)}
+            value={formatDate(order.createdAt)}
             muted
           />
+          <InfoRow icon={<CalculatorOutlined />} label="Tổng giá tiền"  value={formatCurrency(order.totalPrice)} />
+          <InfoRow icon={<ProductOutlined />} label="Tổng số lượng"  value={order.totalQuantity?.toLocaleString('vi-VN')} />
+
         </div>
 
         {/* Note */}
