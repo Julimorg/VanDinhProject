@@ -1,5 +1,5 @@
 
-export const PUBLIC_API = import.meta.env.VITE_PUBLIC_API;
+export const PUBLIC_API = import.meta.env.VITE_PUBLICAPI;
 export const LOCAL_API = import.meta.env.VITE_LOCALHOST;
 export const AWS_API = import.meta.env.VITE_AWS_API;
 export const RENDER_API = import.meta.env.VITE_RENDER_HOST;
