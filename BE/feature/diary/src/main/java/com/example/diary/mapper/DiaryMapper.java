@@ -1,9 +1,8 @@
 package com.example.diary.mapper;
 
+import com.example.common.dto.diary.request.CreateDiaryReq;
 import com.example.common.dto.diary.request.UpdateDiaryRequest;
-import com.example.common.dto.diary.response.DiaryItemResponse;
-import com.example.common.dto.diary.response.DiaryResponse;
-import com.example.common.dto.diary.response.DiarySummaryResponse;
+import com.example.common.dto.diary.response.*;
 import com.example.persistence.entity.UserDiary;
 import com.example.persistence.entity.UserDiaryItem;
 import java.util.List;
@@ -15,14 +14,42 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 
 @Mapper(componentModel = "spring")
 public interface DiaryMapper {
+
+    CreateDiaryRes toCreateDiary(UserDiary userDiary);
+
+    GetDiaryRes toGetDiary(UserDiary diary);
+
+    GetListItemsDiary toOneDiaryItem(UserDiaryItem diaryItems);
+
+    List<GetListItemsDiary> toGetListItemsDiary(UserDiaryItem diaryItems);
+
+    @Mapping(source = "items", target = "items")
+    GetDiaryDetailRes toGetDiaryDetail(UserDiary diary);
+
     DiaryItemResponse toItemResponse(UserDiaryItem item);
 
     List<DiaryItemResponse> toItemResponseList(List<UserDiaryItem> items);
 
-    DiarySummaryResponse toSummaryResponse(UserDiary diary);
+
+    //** ===============================   CREATE RESPONSE   ===========================
+
+    @Mapping(source = "userDiary.id", target = "id")
+    @Mapping(source = "userDiary.diaryName", target = "diaryName")
+    @Mapping(source = "userDiary.totalQuantity", target = "totalQuantity")
+    @Mapping(source = "userDiary.totalAmount", target = "totalAmount")
+    @Mapping(source = "userDiary.createdAt", target = "createAt")
+    @Mapping(source = "userDiary.updateAt", target = "updateAt")
+    @Mapping(source = "items", target = "items")
+    CreateDiaryItemsRes toCreateItemRes(UserDiary userDiary, List<UserDiaryItem> items);
+
+    @Mapping(source = "createAt", target = "createAt")
+    @Mapping(source = "updateAt", target = "updateAt")
+    ListItemInUserDiaryAfterCreate toItemRes(UserDiaryItem item);
+
+    List<ListItemInUserDiaryAfterCreate> toListItemResponse(List<UserDiaryItem> items);
 
     @Mapping(target = "items", ignore = true)
-    DiaryResponse toResponse(UserDiary diary);
+    CreateDiaryRes toResponse(UserDiary diary);
 
     @BeanMapping(
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE

@@ -1,12 +1,14 @@
 package com.example.diary.controller;
 
+import com.example.common.dto.diary.request.CreateDiaryReq;
 import com.example.common.dto.diary.request.CreateDiaryRequest;
 import com.example.common.dto.diary.request.UpdateDiaryRequest;
-import com.example.common.dto.diary.response.DiaryResponse;
+import com.example.common.dto.diary.response.CreateDiaryRes;
 import com.example.common.dto.diary.response.DiarySummaryResponse;
+import com.example.common.dto.diary.response.GetDiaryRes;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
-import com.example.diary.service.DiaryService;
+import com.example.common.interfaces.diary.DiaryService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,10 +28,10 @@ public class DiaryController {
     private final DiaryService diaryService;
 
     @PostMapping
-    public ApiResponse<DiaryResponse> createDiary(
-        @Valid @RequestBody CreateDiaryRequest request
+    public ApiResponse<CreateDiaryRes> createDiary(
+        @Valid @RequestBody CreateDiaryReq request
     ) {
-        return ApiResponse.<DiaryResponse>builder()
+        return ApiResponse.<CreateDiaryRes>builder()
             .status_code(SuccessCode.CREATE_DIARY.getStatusCode().value())
             .message(SuccessCode.CREATE_DIARY.getMessage())
             .data(diaryService.createDiary(request))
@@ -38,21 +40,17 @@ public class DiaryController {
     }
 
     @GetMapping
-    public ApiResponse<Page<DiarySummaryResponse>> getDiaries(
+    public ApiResponse<Page<GetDiaryRes>> getDiaries(
         @RequestParam(required = false) String keyword,
-        @RequestParam(required = false) @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE
-        ) LocalDate fromDate,
-        @RequestParam(required = false) @DateTimeFormat(
-            iso = DateTimeFormat.ISO.DATE
-        ) LocalDate toDate,
+        @RequestParam(required = false) String fromDate,
+        @RequestParam(required = false) String toDate,
         @PageableDefault(
             size = 20,
             sort = "diaryDate",
             direction = Sort.Direction.DESC
         ) Pageable pageable
     ) {
-        return ApiResponse.<Page<DiarySummaryResponse>>builder()
+        return ApiResponse.<Page<GetDiaryRes>>builder()
             .status_code(SuccessCode.GET_DIARIES.getStatusCode().value())
             .message(SuccessCode.GET_DIARIES.getMessage())
             .data(diaryService.getDiaries(keyword, fromDate, toDate, pageable))
@@ -61,21 +59,21 @@ public class DiaryController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<DiaryResponse> getDiary(@PathVariable String id) {
-        return ApiResponse.<DiaryResponse>builder()
+    public ApiResponse<CreateDiaryRes> getDiary(@PathVariable String id) {
+        return ApiResponse.<CreateDiaryRes>builder()
             .status_code(SuccessCode.GET_DIARY.getStatusCode().value())
             .message(SuccessCode.GET_DIARY.getMessage())
-            .data(diaryService.getDiary(id))
+            .data(diaryService.getDiaryDetail(id))
             .timestamp(LocalDateTime.now())
             .build();
     }
 
     @PatchMapping("/{id}")
-    public ApiResponse<DiaryResponse> updateDiary(
+    public ApiResponse<CreateDiaryRes> updateDiary(
         @PathVariable String id,
         @Valid @RequestBody UpdateDiaryRequest request
     ) {
-        return ApiResponse.<DiaryResponse>builder()
+        return ApiResponse.<CreateDiaryRes>builder()
             .status_code(SuccessCode.UPDATE_DIARY.getStatusCode().value())
             .message(SuccessCode.UPDATE_DIARY.getMessage())
             .data(diaryService.updateDiary(id, request))

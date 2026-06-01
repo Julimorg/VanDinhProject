@@ -2,8 +2,12 @@ package com.example.persistence.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -34,15 +38,30 @@ public class UserDiaryItem {
     @Column(name = "product_name", nullable = false)
     private String productName;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal quantity;
+    @Column(name = "quantity" )
+    private int quantity;
+
+    @Column(name = "volume")
+    private String volume;
+
+    @Column(name = "color")
+    private String color;
 
     @Column(name = "unit_price", nullable = false, precision = 15, scale = 2)
-    private BigDecimal unitPrice;
+    private BigDecimal unitPrice = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal subtotal;
-
-    @Column(name = "item_note")
+    @Column(name = "item_note" , columnDefinition = "TEXT")
     private String itemNote;
+
+    @CreationTimestamp
+    @Column(name = "createAt")
+    private LocalDateTime createAt;
+
+    @UpdateTimestamp
+    @Column(name = "updateAt")
+    private LocalDateTime updateAt;
+
+
 }
+
+

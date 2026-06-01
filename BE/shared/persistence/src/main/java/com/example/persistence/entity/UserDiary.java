@@ -1,11 +1,13 @@
 package com.example.persistence.entity;
 
+import com.example.persistence.enumTable.DiaryStatus;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 @Getter
 @Setter
@@ -26,11 +28,21 @@ public class UserDiary {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    @Column(name = "diary_name", nullable = false)
+    private String diaryName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "diary_status", nullable = false)
+    private DiaryStatus diaryStatus;
+
     @Column(name = "diary_date", nullable = false)
     private LocalDate diaryDate;
 
     @Column(name = "total_amount", precision = 15, scale = 2)
-    private BigDecimal totalAmount;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+
+    @Column(name = "total_quantity")
+    private BigDecimal totalQuantity = BigDecimal.ZERO;
 
     @Column(columnDefinition = "TEXT")
     private String note;
@@ -39,6 +51,10 @@ public class UserDiary {
     private String createdBy;
 
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "update_at", nullable = false)
+    private LocalDateTime updateAt;
 }

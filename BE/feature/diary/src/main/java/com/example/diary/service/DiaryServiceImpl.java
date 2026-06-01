@@ -1,22 +1,29 @@
 package com.example.diary.service;
 
-import com.example.common.dto.diary.request.CreateDiaryRequest;
+import com.example.common.dto.diary.request.CreateDiaryItemsReq;
+import com.example.common.dto.diary.request.CreateDiaryReq;
 import com.example.common.dto.diary.request.DiaryItemRequest;
 import com.example.common.dto.diary.request.UpdateDiaryRequest;
-import com.example.common.dto.diary.response.DiaryResponse;
-import com.example.common.dto.diary.response.DiarySummaryResponse;
+import com.example.common.dto.diary.response.CreateDiaryItemsRes;
+import com.example.common.dto.diary.response.CreateDiaryRes;
+import com.example.common.dto.diary.response.GetDiaryDetailRes;
+import com.example.common.dto.diary.response.GetDiaryRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
+import com.example.common.interfaces.diary.DiaryService;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.diary.config.DiarySpecification;
 import com.example.diary.mapper.DiaryMapper;
 import com.example.diary.repository.UserDiaryItemRepository;
 import com.example.diary.repository.UserDiaryRepository;
+import com.example.persistence.entity.PurchaseOrder;
+import com.example.persistence.entity.PurchaseOrderItem;
 import com.example.persistence.entity.UserDiary;
 import com.example.persistence.entity.UserDiaryItem;
+import com.example.persistence.enumTable.DiaryStatus;
+import com.example.security.Util.UtilSecurityClass;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +31,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -37,154 +40,139 @@ import org.springframework.stereotype.Service;
 public class DiaryServiceImpl implements DiaryService {
 
     private final UserDiaryRepository diaryRepository;
+
     private final UserDiaryItemRepository itemRepository;
+
     private final DiaryMapper mapper;
+
     private final UserInternalService userInternalService;
 
-    // ── lấy username từ JWT ───────────────────────────────────────
-    private String getCurrentUsername() {
-        Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
-        String userId = "";
-        if (authentication instanceof JwtAuthenticationToken jwtAuth) {
-            Jwt jwt = jwtAuth.getToken();
-            userId = jwt.getAudience().getFirst();
+    private void reCalculateUserDiary(UserDiary userDiary,
+                                      List<UserDiaryItem> items) {
+        int totalQuantity = 0;
+        BigDecimal totalPrice = BigDecimal.ZERO;
+
+        for (UserDiaryItem item : items) {
+            totalQuantity += item.getQuantity();
+            totalPrice = totalPrice.add(
+                    item.getUnitPrice().multiply(BigDecimal.valueOf(item.getQuantity()))
+            );
         }
-        String userName = userInternalService
-            .getUserNameById(userId)
-            .getUserName();
-        log.info("=== USER ID: {}", userId);
-        log.info("=== USER NAME: {}", userName);
-        return userName;
+
+        userDiary.setTotalQuantity(BigDecimal.valueOf(totalQuantity));
+
+        userDiary.setTotalAmount(totalPrice);
     }
 
-    // ── build items + tính subtotal ───────────────────────────────
-    private List<UserDiaryItem> buildItems(
-        UserDiary diary,
-        List<DiaryItemRequest> requests
-    ) {
-        return requests
-            .stream()
-            .map(req ->
-                UserDiaryItem.builder()
-                    .diary(diary)
-                    .productId(req.productId())
-                    .productName(req.productName())
-                    .quantity(req.quantity())
-                    .unitPrice(req.unitPrice())
-                    .subtotal(req.quantity().multiply(req.unitPrice()))
-                    .itemNote(req.itemNote())
-                    .build()
-            )
-            .toList();
+    private UserDiary findDiaryOrThrow(String id) {
+        return diaryRepository
+                .findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.DIARY_NOT_FOUND));
     }
 
-    // ── tính total ────────────────────────────────────────────────
-    private BigDecimal calcTotal(List<UserDiaryItem> items) {
-        return items
-            .stream()
-            .map(UserDiaryItem::getSubtotal)
-            .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 
-    // ── assemble full response ────────────────────────────────────
-    private DiaryResponse buildDiaryResponse(
-        UserDiary diary,
-        List<UserDiaryItem> items
-    ) {
-        DiaryResponse response = mapper.toResponse(diary);
-        response.setItems(mapper.toItemResponseList(items));
-        return response;
-    }
-
-    // ── CREATE DIARY ──────────────────────────────────────────────
     @Override
-    @Transactional
-    public DiaryResponse createDiary(CreateDiaryRequest request) {
-        UserDiary diary = UserDiary.builder()
-            .diaryDate(request.diaryDate())
-            .note(request.note())
-            .createdBy(getCurrentUsername())
-            .build();
-
-        diary = diaryRepository.save(diary);
-
-        List<UserDiaryItem> items = buildItems(diary, request.items());
-        itemRepository.saveAll(items);
-
-        diary.setTotalAmount(calcTotal(items));
-        diary = diaryRepository.save(diary);
-
-        log.info(
-            "=== DIARY CREATED: id={}, createdBy={}",
-            diary.getId(),
-            diary.getCreatedBy()
-        );
-        return buildDiaryResponse(diary, items);
-    }
-
-    // ── GET DIARIES ───────────────────────────────────────────────
-    @Override
-    public Page<DiarySummaryResponse> getDiaries(
-        String keyword,
-        LocalDate fromDate,
-        LocalDate toDate,
-        Pageable pageable
+    public Page<GetDiaryRes> getDiaries(
+            String keyword,
+            String fromDate,
+            String toDate,
+            Pageable pageable
     ) {
         Specification<UserDiary> spec = DiarySpecification.from(
-            DiarySpecification.DiaryFilter.of(keyword, fromDate, toDate)
+                DiarySpecification.DiaryFilter.of(keyword, fromDate, toDate)
         );
         return diaryRepository
-            .findAll(spec, pageable)
-            .map(mapper::toSummaryResponse);
+                .findAll(spec, pageable)
+                .map(mapper::toGetDiary);
     }
 
-    // ── GET DIARY ─────────────────────────────────────────────────
     @Override
-    public DiaryResponse getDiary(String id) {
+    public GetDiaryDetailRes getDiaryDetail (String id) {
         UserDiary diary = findDiaryOrThrow(id);
-        List<UserDiaryItem> items = itemRepository.findByDiaryId(diary.getId());
-        return buildDiaryResponse(diary, items);
+        return mapper.toGetDiaryDetail(diary);
     }
 
-    // ── UPDATE DIARY ──────────────────────────────────────────────
-    @Override
+
     @Transactional
-    public DiaryResponse updateDiary(String id, UpdateDiaryRequest request) {
-        UserDiary diary = findDiaryOrThrow(id);
+    @Override
+    public CreateDiaryRes createDiary(CreateDiaryReq request) {
 
-        mapper.updateDiaryFromRequest(request, diary);
-
-        if (request.items() != null && !request.items().isEmpty()) {
-            itemRepository.deleteByDiaryId(diary.getId());
-            List<UserDiaryItem> items = buildItems(diary, request.items());
-            itemRepository.saveAll(items);
-            diary.setTotalAmount(calcTotal(items));
-            diary = diaryRepository.save(diary);
-            log.info("=== DIARY UPDATED: id={}", diary.getId());
-            return buildDiaryResponse(diary, items);
-        }
+        UserDiary diary = UserDiary.builder()
+                .diaryName(request.getDiaryName())
+                .diaryStatus(DiaryStatus.UNPAID)
+                .note(request.getNote())
+                .createdBy(UtilSecurityClass.getCurrentUsername())
+                .build();
 
         diary = diaryRepository.save(diary);
-        List<UserDiaryItem> items = itemRepository.findByDiaryId(diary.getId());
-        log.info("=== DIARY UPDATED: id={}", diary.getId());
-        return buildDiaryResponse(diary, items);
+        return mapper.toCreateDiary(diary);
     }
 
-    // ── DELETE DIARY ──────────────────────────────────────────────
+    @Override
+    public CreateDiaryItemsRes createDiaryItems(String diaryId,List<CreateDiaryItemsReq> request) {
+
+        UserDiary userDiary = findDiaryOrThrow(diaryId);
+
+        List<UserDiaryItem> items = request.stream()
+                .map(req ->  UserDiaryItem.builder()
+                        .diary(userDiary)
+                        .productName(req.getProductName())
+                        .quantity(req.getQuantity())
+                        .volume(req.getVolume())
+                        .color(req.getColor())
+                        .unitPrice(req.getUnitPrice())
+                        .itemNote(req.getItemNote())
+                        .build()
+                ).toList();
+
+        itemRepository.saveAll(items);
+
+        List<UserDiaryItem> allItems = itemRepository.findByDiaryId(diaryId);
+
+        reCalculateUserDiary(userDiary, allItems);
+
+        diaryRepository.save(userDiary);
+
+        return mapper.toCreateItemRes(userDiary,allItems);
+    }
+
+
+    @Override
+    @Transactional
+    public CreateDiaryRes updateDiary(String id, UpdateDiaryRequest request) {
+//        UserDiary diary = findDiaryOrThrow(id);
+//
+//        mapper.updateDiaryFromRequest(request, diary);
+//
+//        if (request.items() != null && !request.items().isEmpty()) {
+//            itemRepository.deleteByDiaryId(diary.getId());
+//            List<UserDiaryItem> items = buildItems(diary, request.items());
+//            itemRepository.saveAll(items);
+//            diary.setTotalAmount(calcTotal(items));
+//            diary = diaryRepository.save(diary);
+//            log.info("=== DIARY UPDATED: id={}", diary.getId());
+//            return buildDiaryResponse(diary, items);
+//        }
+//
+//        diary = diaryRepository.save(diary);
+//        List<UserDiaryItem> items = itemRepository.findByDiaryId(diary.getId());
+//        log.info("=== DIARY UPDATED: id={}", diary.getId());
+//        return buildDiaryResponse(diary, items);
+
+        return null;
+    }
+
     @Override
     @Transactional
     public void deleteDiary(String id) {
         findDiaryOrThrow(id);
         itemRepository.deleteByDiaryId(id);
         diaryRepository.deleteById(id);
-        log.info("=== DIARY DELETED: id={}", id);
     }
 
-    // ── helper ────────────────────────────────────────────────────
-    private UserDiary findDiaryOrThrow(String id) {
-        return diaryRepository
-            .findById(id)
-            .orElseThrow(() -> new AppException(ErrorCode.DIARY_NOT_FOUND));
+    @Override
+    public void deleteDiaryItem(String diaryId, String itemId) {
+
     }
+
 }
