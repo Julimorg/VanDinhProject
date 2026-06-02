@@ -105,11 +105,14 @@ public enum SuccessCode {
 
     // ======================= DIARY =======================
     CREATE_DIARY("Create Diary Successfully!", HttpStatus.CREATED),
+    CREATE_DIARY_ITEMS("Create Diary Items Successfully!", HttpStatus.CREATED),
     GET_DIARIES("Get Diaries Successfully!", HttpStatus.OK),
     GET_DIARY("Get Diary Successfully!", HttpStatus.OK),
     UPDATE_DIARY("Update Diary Successfully!", HttpStatus.OK),
-    DELETE_DIARY("Delete Diary Successfully!", HttpStatus.OK);
-
+    UPDATE_STATUS("Update Status Successfully!", HttpStatus.OK),
+    UPDATE_ITEM_DIARY("Update Item Diary Successfully!", HttpStatus.OK),
+    DELETE_DIARY("Delete Diary Successfully!", HttpStatus.OK),
+    DELETE_ITEM_DIARY("Delete Item Diary Successfully!", HttpStatus.OK);
     private final String message;
     private final HttpStatusCode statusCode;
 

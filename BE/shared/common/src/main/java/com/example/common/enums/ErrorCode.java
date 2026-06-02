@@ -129,6 +129,10 @@ public enum ErrorCode {
         HttpStatus.BAD_REQUEST
     ),
 
+    // ======================= DIARY =======================
+    DIARY_NOT_BELONG_TO_USER("Diary Not Belong To User", HttpStatus.NOT_FOUND),
+    DIARY_ITEMS_NOT_FOUND("Diary Items Not Found", HttpStatus.NOT_FOUND),
+
     // ======================= PAYMENT =======================
     PAYMENT_NOT_FOUND("Payment Not Found", HttpStatus.NOT_FOUND),
 

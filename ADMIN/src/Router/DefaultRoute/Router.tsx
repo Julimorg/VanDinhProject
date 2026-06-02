@@ -24,6 +24,8 @@ import SendNotificationPage from '@/Pages/Notifications/SendNotificationPage';
 import ProductCsvManager from '@/Pages/ProductFileIImporter/ProductFileImporter';
 import PurchaseOrderPage from '@/Pages/PurchaseOrderManagement/PurchaseOrderPage';
 import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
+import UserDiaryPage from '@/Pages/UserDiaryManagement/UserDiaryPage';
+import UserDiaryDetailPage from '@/Pages/UserDiaryDetailManagement/UserDiaryDetailPage';
 // import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
 
 const AuthorizedRoute: React.FC = () => {
@@ -52,6 +54,8 @@ const Router: React.FC = () => {
     <Routes>
       <Route element={<UnAuthorizedRoute />}>
         <Route path="/login" element={<Login />} />
+        <Route path="/diary" element={<UserDiaryPage />} />
+        <Route path="/diary-detail" element={<UserDiaryDetailPage />} />
       </Route>
 
       <Route element={<AuthorizedRoute />}>

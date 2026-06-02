@@ -15,7 +15,7 @@ import java.math.BigDecimal;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateDiaryItemsReq {
+public class UpdateItemsReq {
 
     @NotBlank(message = "Product Name Can Not Be Empty!")
     private String productName;

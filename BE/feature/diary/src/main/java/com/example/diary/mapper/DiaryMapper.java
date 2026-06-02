@@ -1,7 +1,9 @@
 package com.example.diary.mapper;
 
 import com.example.common.dto.diary.request.CreateDiaryReq;
+import com.example.common.dto.diary.request.UpdateDiaryReq;
 import com.example.common.dto.diary.request.UpdateDiaryRequest;
+import com.example.common.dto.diary.request.UpdateItemsReq;
 import com.example.common.dto.diary.response.*;
 import com.example.persistence.entity.UserDiary;
 import com.example.persistence.entity.UserDiaryItem;
@@ -51,15 +53,36 @@ public interface DiaryMapper {
     @Mapping(target = "items", ignore = true)
     CreateDiaryRes toResponse(UserDiary diary);
 
-    @BeanMapping(
-        nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE
-    )
+    //** ===============================   UPDATE RESPONSE   ===========================
+
+
+    @Mapping(source = "diaryStatus", target = "status")
+    @Mapping(source = "updateAt", target = "updateAt")
+    UpdateDiaryStatusRes toUpdateDiaryStatusRes(UserDiary diary);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "totalAmount", ignore = true)
-    void updateDiaryFromRequest(
-        UpdateDiaryRequest request,
-        @MappingTarget UserDiary diary
-    );
+    @Mapping(target = "totalQuantity", ignore = true)
+    @Mapping(target = "diaryStatus", ignore = true)
+    @Mapping(target = "diaryDate", ignore = true)
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "updateAt", ignore = true)
+    void updateDiaryFromRequest(UpdateDiaryReq request, @MappingTarget UserDiary diary);
+
+    UpdateDiaryRes toUpdateDiaryRes(UserDiary diary);
+
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "diary", ignore = true)
+    @Mapping(target = "productId", ignore = true)
+    @Mapping(target = "createAt", ignore = true)
+    @Mapping(target = "updateAt", ignore = true)
+    void updateItemFromRequest(UpdateItemsReq request,
+                               @MappingTarget UserDiaryItem item);
+
+    UpdateItemRes toUpdateItemRes(UserDiaryItem item);
 }
