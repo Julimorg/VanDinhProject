@@ -250,15 +250,9 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Override
-    public UpdateDiaryStatusRes updateDiaryStatus(String userId, String diaryId, UpdateDiaryStatusReq request) {
-
-        userInternalService.getUserById(userId);
+    public UpdateDiaryStatusRes updateDiaryStatus(String diaryId, UpdateDiaryStatusReq request) {
 
         UserDiary userDiary = findDiaryOrThrow(diaryId);
-
-        if (!userDiary.getUser().getId().equals(userId)) {
-            throw new AccessDeniedException(ErrorCode.DIARY_ITEMS_NOT_FOUND.getMessage());
-        }
 
         userDiary.setDiaryStatus(request.getDiaryStatus());
 
@@ -268,6 +262,7 @@ public class DiaryServiceImpl implements DiaryService {
 
         return mapper.toUpdateDiaryStatusRes(userDiary);
     }
+
 
     @Override
     @Transactional

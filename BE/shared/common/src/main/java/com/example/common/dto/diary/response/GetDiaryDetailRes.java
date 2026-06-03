@@ -36,6 +36,6 @@ public class GetDiaryDetailRes {
 
     private LocalDateTime createdAt;
 
-    private LocalDateTime updatedAt;
+    private LocalDateTime updateAt;
 
 }

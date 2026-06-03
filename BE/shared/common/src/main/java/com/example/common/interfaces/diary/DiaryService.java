@@ -28,8 +28,7 @@ public interface DiaryService {
                                UpdateItemsReq request);
 
     @Transactional
-    UpdateDiaryStatusRes updateDiaryStatus(String userId,
-                                           String diaryId,
+    UpdateDiaryStatusRes updateDiaryStatus(String diaryId,
                                            UpdateDiaryStatusReq request);
 
     Page<GetDiaryRes> getDiaries(

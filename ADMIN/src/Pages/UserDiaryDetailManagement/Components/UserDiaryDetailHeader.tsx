@@ -8,18 +8,20 @@ import {
   PrinterOutlined,
 } from '@ant-design/icons';
 import { DiaryStatus, STATUS_CONFIG } from '../diaryDetail';
+import { useUpdateDiaryStatus } from '../Hooks/useUpdateDiaryStatus';
+import { useExportDiaryExcelFile } from '../Hooks/useExportDiaryExcelFile';
 
 interface DiaryDetailHeaderProps {
+  userId: string;
   data: {
+    id: string;
     diaryName: string;
     diaryStatus: DiaryStatus;
     createdAt: string;
   };
   onBack?: () => void;
   onEdit?: () => void;
-  onMarkPaid?: () => void;
   onCancel?: () => void;
-  onPrint?: () => void;
 }
 
 const fmtDate = (iso: string) => {
@@ -29,14 +31,18 @@ const fmtDate = (iso: string) => {
 };
 
 const DiaryDetailHeader: React.FC<DiaryDetailHeaderProps> = ({
+  userId,
   data,
   onBack,
   onEdit,
-  onMarkPaid,
   onCancel,
-  onPrint,
 }) => {
   const sc = STATUS_CONFIG[data.diaryStatus] ?? STATUS_CONFIG[DiaryStatus.UNPAID];
+
+  const { mutate: markPaid, isPending: isPaying } = useUpdateDiaryStatus(data.id);
+  const { mutate: exportExcel, isPending: isExporting } = useExportDiaryExcelFile();
+
+  const isPaid = data.diaryStatus === DiaryStatus.PAID;
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,11 +59,13 @@ const DiaryDetailHeader: React.FC<DiaryDetailHeaderProps> = ({
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             icon={<PrinterOutlined />}
-            onClick={onPrint}
+            loading={isExporting}
+            onClick={() => exportExcel({ userId, diaryId: data.id })}
             style={{ borderColor: '#E2E8F0', color: '#64748B' }}
           >
             In phiếu
           </Button>
+
           <Button
             icon={<EditOutlined />}
             onClick={onEdit}
@@ -66,14 +74,17 @@ const DiaryDetailHeader: React.FC<DiaryDetailHeaderProps> = ({
             Chỉnh sửa
           </Button>
 
-          <Button
-            type="primary"
-            icon={<CheckCircleOutlined />}
-            onClick={onMarkPaid}
-            style={{ background: '#2D7D5B', borderColor: '#2D7D5B' }}
-          >
-            Đánh dấu đã thanh toán
-          </Button>
+          {!isPaid && (
+            <Button
+              type="primary"
+              icon={<CheckCircleOutlined />}
+              loading={isPaying}
+              onClick={() => markPaid()}
+              style={{ background: '#2D7D5B', borderColor: '#2D7D5B' }}
+            >
+              Đánh dấu đã thanh toán
+            </Button>
+          )}
 
           <Button danger icon={<CloseCircleOutlined />} onClick={onCancel}>
             Huỷ nhật ký

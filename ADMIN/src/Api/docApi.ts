@@ -97,6 +97,8 @@ import { IUpdatePurchaseOrderStatusRequest } from '@/Interface/Inventory/UpdateP
 import { IGetDiaryResponse } from '@/Interface/Diary/GetDiary';
 import { ICreateDiaryRequest, ICreateDiaryResponse } from '@/Interface/Diary/CreateDiary';
 import { IGetDiaryDetailRes } from '@/Interface/Diary/GetDiaryDetail';
+import { ICreateDiaryItemReq, ICreateDiaryItemRes } from '@/Interface/Diary/DiaryItem';
+import { IUpdateDiaryStatusReq, IUpdateDiaryStatusRes } from '@/Interface/Diary/UpdateDiaryStatus';
 
 export const docApi = {
   //* ======================================================== Auth  ======================================================== */
@@ -756,9 +758,26 @@ export const docApi = {
 
   //* ======================================================== Diary Management  ======================================================== */
 
+   ExportDiaryExcelFile: async (userId: string, diaryId: string): Promise<IApiResponse<any>> => {
+    const url = `/diaries/${userId}/${diaryId}/export-excel`;
+    const res = await axiosClient.get(url);
+    return res.data; 
+  },
+
+  UpdateDiaryStatus: async(diaryId: string, body: IUpdateDiaryStatusReq): Promise<IApiResponse<IUpdateDiaryStatusRes>> => {
+    const url = `/diaries/${diaryId}/update-status`;
+    const res = await axiosClient.patch(url, body)
+    return res.data;
+  },
 
   CreateDiary: async(userId: string, body: ICreateDiaryRequest): Promise<IApiResponse<ICreateDiaryResponse>> => {
     const url = `/diaries/${userId}/create`;
+    const res = await axiosClient.post(url, body);
+    return res.data;
+  },
+
+  CreateDiaryItem: async(diaryId: string, body: ICreateDiaryItemReq[]): Promise<IApiResponse<ICreateDiaryItemRes>> => {
+    const url = `/diaries/${diaryId}/create-items`;
     const res = await axiosClient.post(url, body);
     return res.data;
   },

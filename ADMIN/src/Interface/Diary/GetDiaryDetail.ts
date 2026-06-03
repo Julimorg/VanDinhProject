@@ -19,7 +19,7 @@ export type IGetDiaryDetailRes = {
 
     createdAt: string;     
 
-    updatedAt: string;
+    updateAt: string;
 
 }
 

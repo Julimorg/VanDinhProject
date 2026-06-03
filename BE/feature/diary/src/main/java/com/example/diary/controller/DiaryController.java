@@ -5,6 +5,7 @@ import com.example.common.dto.diary.response.*;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
 import com.example.common.interfaces.diary.DiaryService;
+import com.example.diary.service.ExportDiaryDetailToFileService;
 import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
@@ -15,6 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,6 +27,8 @@ import org.springframework.web.bind.annotation.*;
 public class DiaryController {
 
     private final DiaryService diaryService;
+
+    private final ExportDiaryDetailToFileService exportDiaryDetailToFileService;
 
     @PostMapping("/{userId}/create")
     public ApiResponse<CreateDiaryRes> createDiary(
@@ -50,6 +56,17 @@ public class DiaryController {
                 .build();
     }
 
+    @GetMapping("/{userId}/{diaryId}/export-excel")
+    public ApiResponse<byte[]> exportDiaryExcelFile(@PathVariable String userId,
+                                                    @PathVariable String diaryId
+    ) {
+
+        return ApiResponse.<byte[]>builder()
+                .status_code(SuccessCode.EXPORT_PDF_FILE.getStatusCode().value())
+                .message(SuccessCode.EXPORT_PDF_FILE.getMessage())
+                .data(exportDiaryDetailToFileService.exportDiaryDetailToExcelFile(userId, diaryId))
+                .build();
+    }
 
     @GetMapping("/{userId}/get-all")
     public ApiResponse<Page<GetDiaryRes>> getDiaries(
@@ -98,14 +115,13 @@ public class DiaryController {
 
     @PatchMapping("/{userId}/{diaryId}/update-status")
     public ApiResponse<UpdateDiaryStatusRes> updateDiaryStatus(
-            @PathVariable String userId,
             @PathVariable String diaryId,
             @Valid @RequestBody UpdateDiaryStatusReq request
     ) {
         return ApiResponse.<UpdateDiaryStatusRes>builder()
                 .status_code(SuccessCode.UPDATE_STATUS.getStatusCode().value())
                 .message(SuccessCode.UPDATE_STATUS.getMessage())
-                .data(diaryService.updateDiaryStatus(userId, diaryId , request))
+                .data(diaryService.updateDiaryStatus(diaryId , request))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
