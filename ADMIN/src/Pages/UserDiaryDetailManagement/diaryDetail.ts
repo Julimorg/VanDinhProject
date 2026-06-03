@@ -1,102 +1,44 @@
-export enum DiaryStatus {
-  PAID = "PAID",
-  UNPAID = "UNPAID",
-  PARTIAL = "PARTIAL",
-  CANCELLED = "CANCELLED",
-}
+export const DiaryStatus = {
+  PAID:      "PAID",
+  UNPAID:    "UNPAID",
+} as const;
+export type DiaryStatus = typeof DiaryStatus[keyof typeof DiaryStatus];
 
-// Khớp GetDiaryRes từ backend
-export interface GetDiaryRes {
-  id: string;
-  diaryName: string;
-  diaryStatus: DiaryStatus;
-  diaryDate: string;        // LocalDate → "YYYY-MM-DD"
-  totalAmount: number;      // BigDecimal → number
-  totalQuantity: number;    // BigDecimal → number
-  note: string;
-  createdBy: string;
-  createdAt: string;        // LocalDateTime → ISO string
-  updatedAt: string;
-}
-
-export interface DiaryFilterParams {
-  search: string;
-  status: DiaryStatus | "";
-  fromDate?: string;
-  toDate?: string;
-  sortBy: string;
-  page: number;
-  pageSize: number;
-}
-
-export const STATUS_CONFIG: Record<
-  DiaryStatus,
-  { label: string; color: string; bg: string; dot: string; barColor: string }
-> = {
-  [DiaryStatus.PAID]: {
-    label: "Đã thanh toán",
-    color: "#2D7D5B", bg: "#EBF5F0", dot: "#2D7D5B", barColor: "#2D7D5B",
-  },
-  [DiaryStatus.UNPAID]: {
-    label: "Chưa thanh toán",
-    color: "#C0392B", bg: "#FDECEA", dot: "#C0392B", barColor: "#C0392B",
-  },
-  [DiaryStatus.PARTIAL]: {
-    label: "Thanh toán một phần",
-    color: "#B45309", bg: "#FEF9EC", dot: "#B45309", barColor: "#B45309",
-  },
-  [DiaryStatus.CANCELLED]: {
-    label: "Đã huỷ",
-    color: "#8C8479", bg: "#F2F0ED", dot: "#8C8479", barColor: "#8C8479",
-  },
+export const STATUS_CONFIG: Record<DiaryStatus, { label: string; color: string; bg: string; dot: string }> = {
+  [DiaryStatus.PAID]:      { label: "Đã thanh toán",    color: "#2D7D5B", bg: "#D1FAE5", dot: "#2D7D5B" },
+  [DiaryStatus.UNPAID]:    { label: "Chưa thanh toán",  color: "#C0392B", bg: "#FEE2E2", dot: "#C0392B" },
 };
 
-export const SORT_OPTIONS = [
-  { value: "date_desc",   label: "Mới nhất trước" },
-  { value: "date_asc",    label: "Cũ nhất trước" },
-  { value: "amount_desc", label: "Tiền cao nhất" },
-  { value: "amount_asc",  label: "Tiền thấp nhất" },
-];
-
-export const PAGE_SIZE_OPTIONS = [6, 9, 12, 24];
-
-export const DEFAULT_FILTER: DiaryFilterParams = {
-  search: "",
-  status: "",
-  fromDate: undefined,
-  toDate: undefined,
-  sortBy: "date_desc",
-  page: 1,
-  pageSize: 9,
-};
-
-// ── Detail types ─────────────────────────────────────────────────────────────
-
-// Khớp GetListItemsDiary
-export interface GetListItemsDiary {
-  id: string;
+export type GetListItemsDiary = {
+  id:        string;
   productId: string;
   productName: string;
-  quantity: number;
-  volume: string;
-  color: string;
-  unitPrice: number;      // BigDecimal → number
-  itemNote: string;
-  createAt: string;       // LocalDateTime → ISO string
-  updateAt: string;
-}
-
-// Khớp GetDiaryDetailRes
-export interface GetDiaryDetailRes {
-  id: string;
-  diaryName: string;
-  diaryStatus: DiaryStatus;
-  diaryDate: string;        // LocalDate → "YYYY-MM-DD"
-  totalAmount: number;      // BigDecimal → number
-  totalQuantity: number;    // BigDecimal → number
-  note: string;
-  createdBy: string;
-  items: GetListItemsDiary[];
+  quantity:  number;
+  volume:    string;
+  color:     string;
+  unitPrice: number;
+  itemNote:  string;
+  itemDate:  string;
   createdAt: string;
   updatedAt: string;
-}
+};
+
+export type DiaryDayGroup = {
+  date:      string;
+  itemCount: number;
+  totalDay:  number;
+  items:     GetListItemsDiary[];
+};
+
+export type GetDiaryDetailRes = {
+  id:            string;
+  diaryName:     string;
+  diaryStatus:   DiaryStatus;
+  totalAmount:   number;
+  totalQuantity: number;
+  note:          string;
+  days:          DiaryDayGroup[]; 
+  createdBy:     string;
+  createdAt:     string;
+  updatedAt:     string;
+};

@@ -75,12 +75,13 @@ public class DiaryServiceImpl implements DiaryService {
     public Page<GetDiaryRes> getDiaries(
             String userId,
             String keyword,
+            String status,
             String fromDate,
             String toDate,
             Pageable pageable
     ) {
         Specification<UserDiary> spec = DiarySpecification.from(
-                DiarySpecification.DiaryFilter.of(userId,keyword, fromDate, toDate)
+                DiarySpecification.DiaryFilter.of(userId,keyword, status, fromDate, toDate)
         );
         return diaryRepository
                 .findAll(spec, pageable)

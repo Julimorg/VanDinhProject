@@ -1,73 +1,59 @@
 import React, { useState } from "react";
-import { Input, Button, Tooltip } from "antd";
-import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
-import { GetListItemsDiary } from "../diaryDetail";
+import { Input, Button, Tooltip, Tag } from "antd";
+import { SearchOutlined, PlusOutlined, CalendarOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { DiaryDayGroup, GetListItemsDiary } from "../diaryDetail";
 
 interface DiaryItemsTableProps {
-  items: GetListItemsDiary[];
+  days: DiaryDayGroup[];
   onAddItem?: () => void;
 }
 
 const fmtVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
-// Extract date from createAt ISO string → "YYYY-MM-DD"
-const toDateKey = (iso: string) => iso?.slice(0, 10) ?? "";
 
 const fmtDateLabel = (iso: string) => {
   if (!iso) return "—";
-  const [y, m, d] = iso.split("-");
+
+  const datePart = iso.slice(0, 10);
+  const [y, m, d] = datePart.split("-");
   return `${d}/${m}/${y}`;
 };
 
-const COLOR_MAP: Record<string, string> = {
-  "trắng ngà": "#FFF8DC", "trắng": "#F5F5F5",
-  "xám xi măng": "#8E9BAA", "xám": "#9CA3AF",
-  "xanh dương": "#3B82F6", "xanh lá": "#22C55E",
-  "xanh mint": "#6EE7B7",
-  "vàng kem": "#FDE68A", "vàng": "#EAB308",
-  "đỏ": "#EF4444", "đen": "#1E293B", "nâu": "#92400E",
+const fmtDateTime = (iso: string) => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  // format theo giờ VN
+  return d.toLocaleString("vi-VN", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  });
 };
 
-const colorDot = (name: string) => {
-  const k = (name ?? "").toLowerCase();
-  for (const [n, c] of Object.entries(COLOR_MAP)) {
-    if (k.includes(n)) return c;
-  }
-  return "#E5E7EB";
-};
-
-// Group items by date (createAt date)
-function groupByDate(items: GetListItemsDiary[]): { date: string; rows: GetListItemsDiary[] }[] {
-  const map = new Map<string, GetListItemsDiary[]>();
-  for (const item of items) {
-    const key = toDateKey(item.createAt);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(item);
-  }
-  return Array.from(map.entries())
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([date, rows]) => ({ date, rows }));
-}
-
-const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ items, onAddItem }) => {
+const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem }) => {
   const [search, setSearch] = useState("");
 
-  const filtered = items.filter(it => {
-    const q = search.toLowerCase();
-    return (
-      !q ||
-      it.productName.toLowerCase().includes(q) ||
-      it.color?.toLowerCase().includes(q) ||
-      it.volume?.toLowerCase().includes(q)
-    );
-  });
+  const filteredDays: DiaryDayGroup[] = search.trim()
+    ? days
+        .map(d => ({
+          ...d,
+          items: d.items.filter(it => {
+            const q = search.toLowerCase();
+            return (
+              it.productName.toLowerCase().includes(q) ||
+              it.color?.toLowerCase().includes(q) ||
+              it.volume?.toLowerCase().includes(q)
+            );
+          }),
+        }))
+        .filter(d => d.items.length > 0)
+    : days;
 
-  const groups = groupByDate(filtered);
-  const totalQty = filtered.reduce((s, i) => s + i.quantity, 0);
-  const totalAmt = filtered.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
+  const filteredItems = filteredDays.flatMap(d => d.items);
+  const totalQty = filteredItems.reduce((s, i) => s + i.quantity, 0);
+  const totalAmt = filteredItems.reduce((s, i) => s + i.unitPrice * i.quantity, 0);
 
-  // running index across all groups
   let globalIdx = 0;
 
   return (
@@ -78,7 +64,7 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ items, onAddItem }) =
         <div>
           <h2 className="text-base font-bold text-gray-800">Danh sách sản phẩm</h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            {filtered.length} sản phẩm · {totalQty} đơn vị
+            {filteredItems.length} sản phẩm · {totalQty} đơn vị
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -101,164 +87,162 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ items, onAddItem }) =
         </div>
       </div>
 
-      {/* Grouped table */}
+      {/* Table */}
       <div className="overflow-x-auto">
-        {groups.length === 0 ? (
+        {filteredDays.length === 0 ? (
           <div className="flex items-center justify-center py-12 text-gray-400 text-sm">
             Không tìm thấy sản phẩm
           </div>
         ) : (
-          <table className="w-full border-collapse text-sm">
-            {groups.map(({ date, rows }) => {
-              const dayTotal = rows.reduce((s, r) => s + r.unitPrice * r.quantity, 0);
-              const dayQty   = rows.reduce((s, r) => s + r.quantity, 0);
+          <div className="flex flex-col" style={{ gap: 24, padding: "20px 0" }}>
+            {filteredDays.map(({ date, items, totalDay }) => {
+              const dayQty = items.reduce((s, r) => s + r.quantity, 0);
 
               return (
-                <React.Fragment key={date}>
-                  {/* Date group header */}
-                  <thead>
-                    <tr className="bg-blue-50 border-y border-blue-100">
-                      <th colSpan={2} className="px-4 py-2.5 text-left">
-                        <div className="flex items-center gap-2">
-                          <svg width="14" height="14" fill="#3B82F6" viewBox="0 0 16 16">
-                            <path d="M3.5 0a.5.5 0 01.5.5V1h8V.5a.5.5 0 011 0V1h1a2 2 0 012 2v11a2 2 0 01-2 2H2a2 2 0 01-2-2V3a2 2 0 012-2h1V.5a.5.5 0 01.5-.5zM1 4v10a1 1 0 001 1h12a1 1 0 001-1V4H1z"/>
-                          </svg>
-                          <span className="text-sm font-bold text-blue-600">{fmtDateLabel(date)}</span>
-                          <span className="text-xs text-gray-400">{rows.length} sản phẩm</span>
-                        </div>
-                      </th>
-                      <th colSpan={3} className="px-4 py-2.5 text-left">
-                        <tr className="hidden sm:contents">
-                          <th className="w-44 text-xs font-semibold text-gray-400 uppercase tracking-wider text-left pr-4">Phân loại</th>
-                          <th className="w-28 text-xs font-semibold text-gray-400 uppercase tracking-wider text-right pr-4">Đơn giá</th>
-                          <th className="w-10 text-xs font-semibold text-gray-400 uppercase tracking-wider text-center">SL</th>
-                        </tr>
-                      </th>
-                      <th className="px-4 py-2.5 text-right">
-                        <span className="text-xs text-gray-500">Cộng ngày:</span>
-                        <span className="text-sm font-bold text-blue-600 ml-1">{fmtVND(dayTotal)}</span>
-                      </th>
-                      <th className="px-4 py-2.5" />
-                    </tr>
-                    {/* Column headers per group */}
-                    <tr className="border-b border-gray-100 bg-gray-50/80">
-                      <th className="w-10 px-4 py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
-                      <th className="px-4 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Sản phẩm</th>
-                      <th className="w-48 px-4 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Phân loại</th>
-                      <th className="w-32 px-4 py-2 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Đơn giá</th>
-                      <th className="w-12 px-4 py-2 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">SL</th>
-                      <th className="w-36 px-4 py-2 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Thành Tiền</th>
-                      <th className="w-40 px-4 py-2 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Ghi chú</th>
-                    </tr>
-                  </thead>
+                <div
+                  key={date}
+                  className="mx-5 rounded-xl overflow-hidden border border-gray-100"
+                  style={{ boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
+                >
+                  {/* Day group header */}
+                  <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border-b border-blue-100 flex-wrap">
+                    <CalendarOutlined className="text-blue-500" />
+                    <span className="text-sm font-bold text-blue-600">
+                      {fmtDateLabel(date)}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {items.length} sản phẩm · {dayQty} đơn vị
+                    </span>
+                    <span className="ml-auto text-xs text-gray-500">
+                      Cộng ngày:
+                      <span className="text-sm font-bold text-blue-600 ml-1">{fmtVND(totalDay)}</span>
+                    </span>
+                  </div>
 
-                  <tbody>
-                    {rows.map((row) => {
-                      globalIdx += 1;
-                      const currentIdx = globalIdx;
-                      const subtotal = row.unitPrice * row.quantity;
-                      const dot = colorDot(row.color);
-                      const hasColor = !!row.color;
+                  {/* Table for this day */}
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50/80">
+                        <th className="w-10 px-4 py-2.5 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">#</th>
+                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Sản phẩm</th>
+                        <th className="w-28 px-4 py-2.5 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Màu sắc</th>
+                        <th className="w-24 px-4 py-2.5 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Quy cách</th>
+                        <th className="w-32 px-4 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Đơn giá</th>
+                        <th className="w-12 px-4 py-2.5 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">SL</th>
+                        <th className="w-36 px-4 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Thành tiền</th>
+                        <th className="w-44 px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Thời gian</th>
+                        <th className="w-40 px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Ghi chú</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {items.map(row => {
+                        globalIdx += 1;
+                        const currentIdx = globalIdx;
+                        const subtotal   = row.unitPrice * row.quantity;
 
-                      return (
-                        <tr key={row.id} className="border-b border-gray-50 hover:bg-gray-50/60 transition-colors">
-                          {/* # */}
-                          <td className="px-4 py-3.5 text-center">
-                            <span className="text-xs text-gray-400">{currentIdx}</span>
-                          </td>
+                        return (
+                          <tr key={row.id} className="border-b border-gray-50 hover:bg-orange-50/30 transition-colors">
 
-                          {/* Product */}
-                          <td className="px-4 py-3.5">
-                            <div className="flex items-center gap-3">
-                              {/* Product image placeholder */}
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 border border-gray-200 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                                <svg width="18" height="18" fill="none" stroke="#D1D5DB" strokeWidth="1.5" viewBox="0 0 24 24">
-                                  <rect x="3" y="3" width="18" height="18" rx="2"/>
-                                  <circle cx="8.5" cy="8.5" r="1.5"/>
-                                  <path d="M21 15l-5-5L5 21"/>
-                                </svg>
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-gray-800 leading-tight truncate">{row.productName}</p>
-                                <p className="text-xs text-gray-400 font-mono mt-0.5">{row.productId}</p>
-                              </div>
-                            </div>
-                          </td>
+                            {/* # */}
+                            <td className="px-4 py-3.5 text-center">
+                              <span className="text-xs text-gray-400 font-mono">{String(currentIdx).padStart(2, "0")}</span>
+                            </td>
 
-                          {/* Phân loại: color chip + volume tag */}
-                          <td className="px-4 py-3.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {hasColor && (
-                                <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-gray-200 bg-white text-xs text-gray-600">
-                                  <span
-                                    className="w-2.5 h-2.5 rounded-sm flex-shrink-0 border border-black/10"
-                                    style={{ background: dot }}
-                                  />
-                                  {row.color}
-                                </span>
+                            {/* Tên sản phẩm */}
+                            <td className="px-4 py-3.5">
+                              <p className="font-semibold text-gray-800 leading-tight">{row.productName}</p>
+                            </td>
+
+                            {/* Màu sắc — chỉ text */}
+                            <td className="px-4 py-3.5 text-center">
+                              {row.color ? (
+                                <span className="text-sm text-gray-600">{row.color}</span>
+                              ) : (
+                                <span className="text-gray-300">—</span>
                               )}
-                              {row.volume && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-md border border-gray-200 bg-gray-50 text-xs text-gray-500 font-medium">
+                            </td>
+
+                            {/* Quy cách / Volume */}
+                            <td className="px-4 py-3.5 text-center">
+                              {row.volume ? (
+                                <Tag
+                                  style={{
+                                    fontSize: 11, borderRadius: 4, margin: 0,
+                                    background: "#F1F5F9", color: "#475569",
+                                    borderColor: "#E2E8F0",
+                                  }}
+                                >
                                   {row.volume}
-                                </span>
+                                </Tag>
+                              ) : (
+                                <span className="text-gray-300">—</span>
                               )}
-                              {!hasColor && !row.volume && (
-                                <span className="text-xs text-gray-300">—</span>
-                              )}
-                            </div>
-                          </td>
+                            </td>
 
-                          {/* Đơn giá */}
-                          <td className="px-4 py-3.5 text-right">
-                            <span className="text-sm text-gray-700">{fmtVND(row.unitPrice)}</span>
-                          </td>
+                            {/* Đơn giá */}
+                            <td className="px-4 py-3.5 text-right">
+                              <span className="text-sm text-gray-700">{fmtVND(row.unitPrice)}</span>
+                            </td>
 
-                          {/* SL */}
-                          <td className="px-4 py-3.5 text-center">
-                            <span className="text-sm font-semibold text-gray-800">{row.quantity}</span>
-                          </td>
+                            {/* SL */}
+                            <td className="px-4 py-3.5 text-center">
+                              <span className="text-sm font-bold text-orange-600">{row.quantity}</span>
+                            </td>
 
-                          {/* Thành tiền */}
-                          <td className="px-4 py-3.5 text-right">
-                            <span className="text-sm font-bold text-blue-600">{fmtVND(subtotal)}</span>
-                          </td>
+                            {/* Thành tiền */}
+                            <td className="px-4 py-3.5 text-right">
+                              <span className="text-sm font-bold text-blue-600">{fmtVND(subtotal)}</span>
+                            </td>
 
-                          {/* Ghi chú */}
-                          <td className="px-4 py-3.5">
-                            {row.itemNote ? (
-                              <Tooltip title={row.itemNote}>
-                                <span className="text-sm text-gray-500 truncate block max-w-[150px] cursor-default">
-                                  {row.itemNote}
+                            {/* Thời gian item */}
+                            <td className="px-4 py-3.5">
+                              <div className="flex flex-col gap-0.5">
+                                <span className="flex items-center gap-1 text-xs text-gray-400">
+                                  <ClockCircleOutlined style={{ fontSize: 10 }} />
+                                  {fmtDateTime(row.itemDate || row.createdAt)}
                                 </span>
-                              </Tooltip>
-                            ) : (
-                              <span className="text-gray-300">—</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </React.Fragment>
+                                {row.updatedAt && row.updatedAt !== row.createdAt && (
+                                  <span className="text-[10px] text-gray-300">
+                                    Sửa: {fmtDateTime(row.updatedAt)}
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+
+                            {/* Ghi chú */}
+                            <td className="px-4 py-3.5">
+                              {row.itemNote ? (
+                                <Tooltip title={row.itemNote}>
+                                  <span className="text-xs text-gray-500 truncate block max-w-[150px] cursor-default leading-relaxed">
+                                    {row.itemNote}
+                                  </span>
+                                </Tooltip>
+                              ) : (
+                                <span className="text-gray-300">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               );
             })}
 
-            {/* Grand total footer */}
-            <tfoot>
-              <tr className="bg-gray-50 border-t-2 border-gray-200">
-                <td colSpan={4} className="px-4 py-3">
-                  <span className="text-sm font-bold text-gray-700">Tổng cộng</span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span className="text-sm font-bold text-gray-800">{totalQty}</span>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <span className="text-sm font-bold text-emerald-700">{fmtVND(totalAmt)}</span>
-                </td>
-                <td />
-              </tr>
-            </tfoot>
-          </table>
+            {/* Grand total */}
+            <div className="mx-5 flex items-center justify-between px-5 py-3.5 bg-gray-50 rounded-xl border border-gray-200">
+              <span className="text-sm font-bold text-gray-700">Tổng cộng</span>
+              <div className="flex items-center gap-6">
+                <span className="text-xs text-gray-400">
+                  Số lượng: <span className="text-sm font-bold text-gray-800 ml-1">{totalQty}</span>
+                </span>
+                <span className="text-xs text-gray-400">
+                  Thành tiền: <span className="text-sm font-bold text-emerald-700 ml-1">{fmtVND(totalAmt)}</span>
+                </span>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

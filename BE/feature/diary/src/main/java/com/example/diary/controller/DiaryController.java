@@ -55,6 +55,7 @@ public class DiaryController {
     public ApiResponse<Page<GetDiaryRes>> getDiaries(
             @PathVariable String userId,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate,
             @PageableDefault(
@@ -66,7 +67,7 @@ public class DiaryController {
         return ApiResponse.<Page<GetDiaryRes>>builder()
             .status_code(SuccessCode.GET_DIARIES.getStatusCode().value())
             .message(SuccessCode.GET_DIARIES.getMessage())
-            .data(diaryService.getDiaries(userId, keyword, fromDate, toDate, pageable))
+            .data(diaryService.getDiaries(userId, keyword,status, fromDate, toDate, pageable))
             .timestamp(LocalDateTime.now())
             .build();
     }

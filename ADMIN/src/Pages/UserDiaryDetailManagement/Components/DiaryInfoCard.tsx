@@ -1,32 +1,32 @@
-import React from "react";
+import React from 'react';
 import {
   UserOutlined,
   CalendarOutlined,
   FileTextOutlined,
   ShoppingOutlined,
   DollarOutlined,
-} from "@ant-design/icons";
-import { GetDiaryDetailRes } from "../diaryDetail";
+} from '@ant-design/icons';
+import { GetDiaryDetailRes } from '../diaryDetail';
 
 interface DiaryInfoCardsProps {
   data: GetDiaryDetailRes;
 }
 
 const fmtDate = (iso: string) => {
-  if (!iso) return "—";
-  const [, m, d] = iso.split("-");
+  if (!iso) return '—';
+  const [, m, d] = iso.split('-');
   const date = new Date(iso);
   return `${d}/${m}/${date.getFullYear()}`;
 };
 
 const fmtDateTime = (iso: string) => {
-  if (!iso) return "—";
+  if (!iso) return '—';
   const d = new Date(iso);
-  return `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 };
 
 const fmtVND = (n: number) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
 
 const DiaryInfoCards: React.FC<DiaryInfoCardsProps> = ({ data }) => {
   return (
@@ -36,7 +36,7 @@ const DiaryInfoCards: React.FC<DiaryInfoCardsProps> = ({ data }) => {
         <StatCard
           icon={<ShoppingOutlined className="text-orange-500 text-lg" />}
           label="Số sản phẩm"
-          value={`${data.items?.length ?? 0} loại`}
+          value={`${data.days?.length ?? 0} loại`}
           bg="bg-orange-50"
         />
         <StatCard
@@ -48,8 +48,8 @@ const DiaryInfoCards: React.FC<DiaryInfoCardsProps> = ({ data }) => {
         />
         <StatCard
           icon={<CalendarOutlined className="text-amber-500 text-lg" />}
-          label="Ngày giao dịch"
-          value={fmtDate(data.diaryDate)}
+          label="Số ngày giao dịch"
+          value={`${data.days?.length ?? 0} ngày`}
           bg="bg-amber-50"
           valueClass="text-amber-700"
         />
@@ -107,7 +107,13 @@ interface StatCardProps {
   valueClass?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, bg, valueClass = "text-gray-800" }) => (
+const StatCard: React.FC<StatCardProps> = ({
+  icon,
+  label,
+  value,
+  bg,
+  valueClass = 'text-gray-800',
+}) => (
   <div className={`${bg} border border-black/[0.04] rounded-xl p-4 flex flex-col gap-2`}>
     <div className="flex items-center gap-2">
       {icon}
@@ -129,8 +135,8 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value, muted }) => (
     <span className="mt-0.5 flex-shrink-0">{icon}</span>
     <div className="min-w-0">
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className={`text-sm font-medium truncate ${muted ? "text-gray-400" : "text-gray-800"}`}>
-        {value || "—"}
+      <p className={`text-sm font-medium truncate ${muted ? 'text-gray-400' : 'text-gray-800'}`}>
+        {value || '—'}
       </p>
     </div>
   </div>

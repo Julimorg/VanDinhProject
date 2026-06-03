@@ -1,19 +1,27 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Table, Button, Select, Space, Avatar, Tag, Spin, Input, Row, Col } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, EyeOutlined, PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  FilterOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  BookOutlined,
+} from '@ant-design/icons';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useUsers } from './Hook/useGetUsers';
-import { useDeleteUser } from './Hook/useDeleteUser'; 
-import { useDebounce } from '@/Hook/useDebounce'; 
+import { useDeleteUser } from './Hook/useDeleteUser';
+import { useDebounce } from '@/Hook/useDebounce';
 import { IUsersResponse, UserRoles } from '@/Interface/Users/IGetUsers';
-import UserUpdateModal from './Components/UserUpdateModal'; 
+import UserUpdateModal from './Components/UserUpdateModal';
 import UserCreateModal from './Components/CreateUserModal';
 import DeleteUserModal from './Components/DeleteUserModal';
 
 const UserManagementView: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation(); 
+  const location = useLocation();
 
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -37,7 +45,7 @@ const UserManagementView: React.FC = () => {
 
   //? Reset page to first page when status or search changes
   useEffect(() => {
-    setPageInfo(prev => ({ ...prev, number: 0 }));
+    setPageInfo((prev) => ({ ...prev, number: 0 }));
   }, [statusFilter, debouncedSearch]);
 
   const { data, isLoading, error } = useUsers({
@@ -60,7 +68,10 @@ const UserManagementView: React.FC = () => {
     },
   });
 
-  const users: IUsersResponse[] = useMemo(() => (data?.data?.content || []) as IUsersResponse[], [data]);
+  const users: IUsersResponse[] = useMemo(
+    () => (data?.data?.content || []) as IUsersResponse[],
+    [data]
+  );
 
   const pagination = useMemo(() => data?.data?.page || pageInfo, [data, pageInfo]);
 
@@ -82,7 +93,7 @@ const UserManagementView: React.FC = () => {
   };
 
   const handleViewUser = (user: IUsersResponse) => {
-    navigate(`user-detail/${user.id}`); 
+    navigate(`user-detail/${user.id}`);
   };
 
   const handleOpenDeleteModal = (user: IUsersResponse) => {
@@ -132,12 +143,10 @@ const UserManagementView: React.FC = () => {
       key: 'roles',
       render: (roles: UserRoles[]) => (
         <Space>
-          {roles.map(role => (
+          {roles.map((role) => (
             <Tag
               key={role.name}
-              color={
-                role.name === 'ADMIN' ? 'red' : role.name === 'STAFF' ? 'blue' : 'green'
-              }
+              color={role.name === 'ADMIN' ? 'red' : role.name === 'STAFF' ? 'blue' : 'green'}
             >
               {role.name}
             </Tag>
@@ -149,9 +158,7 @@ const UserManagementView: React.FC = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       key: 'status',
-      render: (status: string) => (
-        <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>
-      ),
+      render: (status: string) => <Tag color={status === 'ACTIVE' ? 'green' : 'red'}>{status}</Tag>,
     },
     {
       title: 'Ngày tạo',
@@ -166,24 +173,32 @@ const UserManagementView: React.FC = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button 
-            type="link" 
-            icon={<EyeOutlined />} 
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
             onClick={() => handleViewUser(record)}
             title="Xem chi tiết"
           >
             Xem
           </Button>
-          <Button 
-            type="link" 
+          <Button
+            type="link"
             icon={<EditOutlined />}
             onClick={() => handleUpdateUser(record)}
             title="Chỉnh sửa"
           >
             Chỉnh sửa
           </Button>
-          <Button 
-            type="link" 
+          <Button
+            type="link"
+            icon={<BookOutlined />}
+            onClick={() => navigate(`/diary/${record.id}`)} 
+            title="Xem nhật ký"
+          >
+            Xem Nhật Ký
+          </Button>
+          <Button
+            type="link"
             icon={<DeleteOutlined />}
             danger
             onClick={() => handleOpenDeleteModal(record)}
@@ -201,7 +216,7 @@ const UserManagementView: React.FC = () => {
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
       {isDetailView ? (
-        <Outlet /> 
+        <Outlet />
       ) : (
         <>
           <h1 className="text-2xl font-bold mb-6 text-gray-800">Quản lý người dùng</h1>
@@ -285,10 +300,10 @@ const UserManagementView: React.FC = () => {
                 showSizeChanger: true,
                 pageSizeOptions: ['5', '10', '20', '50'],
                 onChange: (page, pageSize) => {
-                  setPageInfo(prev => ({ 
-                    ...prev, 
-                    number: page - 1, 
-                    size: pageSize 
+                  setPageInfo((prev) => ({
+                    ...prev,
+                    number: page - 1,
+                    size: pageSize,
                   }));
                 },
               }}

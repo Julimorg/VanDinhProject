@@ -1,168 +1,265 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { ConfigProvider, message, Select, Empty, Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
-import { PAGE_SIZE_OPTIONS } from "@/Constant/inventory-contants";
-import DiaryCard from "./Components/DiaryCard";
-import DiaryFilterBar from "./Components/DiaryFilterBar";
-import DiaryStatsRow from "./Components/DiaryStat";
-import { GetDiaryRes, DiaryStatus, DiaryFilterParams, DEFAULT_FILTER } from "./components/diary";
+import React, { useState, useCallback, useEffect } from 'react';
+import { Select, Empty, Button, Skeleton } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import { useParams, useNavigate } from 'react-router-dom';
+import { PAGE_SIZE_OPTIONS } from '@/Constant/inventory-contants';
+import DiaryCard from './Components/DiaryCard';
+import DiaryFilterBar from './Components/DiaryFilterBar';
+import DiaryStatsRow from './Components/DiaryStat';
+import { IGetDiaryResponse } from '@/Interface/Diary/GetDiary';
+import { GetDiaryRes, DiaryStatus, DiaryFilterParams, DEFAULT_FILTER } from './Hooks/diary';
+import { useGetAllDiary } from './Hooks/useGetAllDiary';
+import { toast } from 'react-toastify';
+import { CreateDiaryModal } from './Components/CreateDiaryModal';
 
-// Mock data — shape of GetDiaryRes
-// Khi tích hợp API: xoá MOCK_DATA, dùng useQuery
-const MOCK_DATA: GetDiaryRes[] = [
-  { id:"D001", diaryName:"Mua sơn nội thất nhà anh Minh",          diaryStatus:DiaryStatus.PAID,      diaryDate:"2025-05-10", totalAmount:4800000,  totalQuantity:12, note:"Khách thân, bán 90% giá.",         createdBy:"admin",       createdAt:"2025-05-08T09:00:00", updatedAt:"2025-05-10T14:00:00" },
-  { id:"D002", diaryName:"Đơn sơn epoxy xưởng chị Lan",            diaryStatus:DiaryStatus.UNPAID,    diaryDate:"2025-05-15", totalAmount:18600000, totalQuantity:8,  note:"Chưa thanh toán, chờ xác nhận.",   createdBy:"nguyen.van.a",createdAt:"2025-05-14T10:30:00", updatedAt:"2025-05-15T08:00:00" },
-  { id:"D003", diaryName:"Bột trét + lót chống kiềm anh Hùng",     diaryStatus:DiaryStatus.PARTIAL,   diaryDate:"2025-05-18", totalAmount:3200000,  totalQuantity:20, note:"Đã cọc 1.5tr. Còn lại đợt 2.",     createdBy:"tran.thi.b", createdAt:"2025-05-17T14:00:00", updatedAt:"2025-05-18T16:00:00" },
-  { id:"D004", diaryName:"Sơn ngoại thất biệt thự Quận 9",         diaryStatus:DiaryStatus.PAID,      diaryDate:"2025-04-28", totalAmount:24500000, totalQuantity:15, note:"",                                 createdBy:"admin",       createdAt:"2025-04-25T09:00:00", updatedAt:"2025-04-28T18:00:00" },
-  { id:"D005", diaryName:"Bộ sơn trang trí tiệm tóc Thu",          diaryStatus:DiaryStatus.UNPAID,    diaryDate:"2025-05-20", totalAmount:2100000,  totalQuantity:6,  note:"Giá đặc biệt vì quen lâu năm.",    createdBy:"le.van.c",   createdAt:"2025-05-20T08:00:00", updatedAt:"2025-05-20T08:00:00" },
-  { id:"D006", diaryName:"Sơn nhà trọ dãy 10 phòng",               diaryStatus:DiaryStatus.CANCELLED, diaryDate:"2025-04-15", totalAmount:8900000,  totalQuantity:30, note:"Khách huỷ vì tìm giá rẻ hơn.",     createdBy:"tran.thi.b", createdAt:"2025-04-12T11:00:00", updatedAt:"2025-04-15T09:00:00" },
-  { id:"D007", diaryName:"Sơn lại phòng ngủ cô Ba",                diaryStatus:DiaryStatus.PAID,      diaryDate:"2025-05-05", totalAmount:960000,   totalQuantity:4,  note:"",                                 createdBy:"admin",       createdAt:"2025-05-04T15:00:00", updatedAt:"2025-05-05T12:00:00" },
-  { id:"D008", diaryName:"Đơn lớn nhà máy Bình Dương",             diaryStatus:DiaryStatus.PARTIAL,   diaryDate:"2025-05-22", totalAmount:52000000, totalQuantity:50, note:"Thanh toán 3 đợt. Đợt 1 đã 20tr.", createdBy:"nguyen.van.a",createdAt:"2025-05-21T09:00:00", updatedAt:"2025-05-22T10:00:00" },
-  { id:"D009", diaryName:"Sơn cổng + tường rào anh Dũng",          diaryStatus:DiaryStatus.UNPAID,    diaryDate:"2025-05-25", totalAmount:1850000,  totalQuantity:5,  note:"Bán nợ cuối tháng trả.",           createdBy:"le.van.c",   createdAt:"2025-05-25T07:30:00", updatedAt:"2025-05-25T07:30:00" },
-  { id:"D010", diaryName:"Sơn shop thời trang chị Hà",             diaryStatus:DiaryStatus.PAID,      diaryDate:"2025-03-20", totalAmount:6400000,  totalQuantity:18, note:"",                                 createdBy:"admin",       createdAt:"2025-03-18T10:00:00", updatedAt:"2025-03-20T16:00:00" },
-  { id:"D011", diaryName:"Sơn văn phòng công ty ABC",              diaryStatus:DiaryStatus.PARTIAL,   diaryDate:"2025-04-10", totalAmount:31000000, totalQuantity:40, note:"Đợt 2 còn 11tr chưa thanh toán.",  createdBy:"nguyen.van.a",createdAt:"2025-04-08T09:00:00", updatedAt:"2025-04-12T14:00:00" },
-  { id:"D012", diaryName:"Sơn chống thấm mái nhà ông Tám",         diaryStatus:DiaryStatus.PAID,      diaryDate:"2025-02-14", totalAmount:7200000,  totalQuantity:10, note:"Khách VIP, giá ưu đãi 85%.",       createdBy:"tran.thi.b", createdAt:"2025-02-12T08:00:00", updatedAt:"2025-02-14T17:00:00" },
-];
+const mapDiary = (d: IGetDiaryResponse): GetDiaryRes => ({
+  id: d.id,
+  diaryName: d.diaryName,
+  diaryStatus: d.diaryStatus as DiaryStatus,
+  totalAmount: d.totalAmount,
+  totalQuantity: d.totalQuantity,
+  note: d.note,
+  createdBy: d.createdBy,
+  createdAt: d.createdAt,
+  updatedAt: d.updatedAt,
+});
 
+// ── Skeleton Card ──────────────────────────────────────────────────────────
+const SkeletonDiaryCard: React.FC = () => (
+  <div className="relative bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+    <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-2xl bg-gray-200" />
+    <div className="flex flex-col gap-3 pl-5 pr-4 pt-4 pb-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 flex flex-col gap-2">
+          <Skeleton.Input active size="small" style={{ width: 80, height: 10, borderRadius: 4 }} />
+          <Skeleton.Input active style={{ width: '90%', height: 18, borderRadius: 4 }} />
+        </div>
+        <Skeleton.Button active style={{ width: 72, height: 24, borderRadius: 99 }} />
+      </div>
+      <div className="border-t border-dashed border-gray-200" />
+      <div className="flex gap-5">
+        <Skeleton.Input active size="small" style={{ width: 100, height: 14, borderRadius: 4 }} />
+        <Skeleton.Input active size="small" style={{ width: 60, height: 14, borderRadius: 4 }} />
+      </div>
+      <Skeleton.Input active style={{ width: '100%', height: 44, borderRadius: 8 }} />
+    </div>
+    <div className="flex items-center justify-between pl-5 pr-4 py-2.5 bg-gray-50 border-t border-gray-100">
+      <div className="flex flex-col gap-1">
+        <Skeleton.Input active size="small" style={{ width: 80, height: 10, borderRadius: 4 }} />
+        <Skeleton.Input active size="small" style={{ width: 100, height: 10, borderRadius: 4 }} />
+      </div>
+      <div className="flex gap-1.5">
+        <Skeleton.Button active style={{ width: 64, height: 28, borderRadius: 6 }} />
+        <Skeleton.Button active style={{ width: 64, height: 28, borderRadius: 6 }} />
+      </div>
+    </div>
+  </div>
+);
+
+// ── Skeleton Stats ─────────────────────────────────────────────────────────
+const SkeletonStats: React.FC = () => (
+  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    {Array.from({ length: 4 }).map((_, i) => (
+      <div
+        key={i}
+        className="bg-white border border-gray-100 rounded-xl px-4 py-4 shadow-sm flex flex-col gap-2"
+      >
+        <Skeleton.Input active size="small" style={{ width: 80, height: 10, borderRadius: 4 }} />
+        <Skeleton.Input active style={{ width: 120, height: 28, borderRadius: 4 }} />
+        <Skeleton.Input active size="small" style={{ width: 100, height: 10, borderRadius: 4 }} />
+      </div>
+    ))}
+  </div>
+);
+
+const SKELETON_COUNT = 6;
+
+// ── Page ───────────────────────────────────────────────────────────────────
 const UserDiaryPage: React.FC = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const navigate = useNavigate();
+  const [openCreate, setOpenCreate] = useState(false);
   const [params, setParams] = useState<DiaryFilterParams>(DEFAULT_FILTER);
 
+  const { data, isLoading, isFetching } = useGetAllDiary(
+    userId ?? '',
+    {
+      keyword: params.search || undefined,
+      status: params.status || undefined,
+      fromtDate: params.fromDate || undefined,
+      toDate: params.toDate || undefined,
+      page: params.page - 1,
+      size: params.pageSize,
+      sort:
+        params.sortBy === 'date_desc'
+          ? 'createdAt,desc'
+          : params.sortBy === 'date_asc'
+            ? 'createdAt,asc'
+            : params.sortBy === 'amount_desc'
+              ? 'totalAmount,desc'
+              : params.sortBy === 'amount_asc'
+                ? 'totalAmount,asc'
+                : 'createdAt,desc',
+    },
+    { placeholderData: (prev: any) => prev }
+  );
+
+  const rawOrders: IGetDiaryResponse[] = Array.isArray(data?.data?.content)
+    ? data.data.content
+    : [];
+  const orders = rawOrders.map(mapDiary);
+  const total = data?.data?.page?.totalElements ?? 0;
+  const totalPages = Math.ceil(total / params.pageSize) || 1;
+
   const updateFilter = useCallback((patch: Partial<DiaryFilterParams>) => {
-    setParams(prev => ({ ...prev, ...patch, page: 1 }));
+    setParams((prev) => ({ ...prev, ...patch, page: 1 }));
   }, []);
 
-  const changePage = useCallback((p: number) => {
-    setParams(prev => ({ ...prev, page: p }));
-  }, []);
-
+  const changePage = useCallback((p: number) => setParams((prev) => ({ ...prev, page: p })), []);
   const resetFilter = useCallback(() => setParams(DEFAULT_FILTER), []);
 
-  const filtered = useMemo(() => {
-    const q = params.search.trim().toLowerCase();
-    let list = MOCK_DATA.filter(d => {
-      const matchSearch = !q ||
-        d.diaryName.toLowerCase().includes(q) ||
-        d.createdBy.toLowerCase().includes(q) ||
-        d.note.toLowerCase().includes(q);
-      const matchStatus = !params.status || d.diaryStatus === params.status;
-      const matchFrom   = !params.fromDate || d.diaryDate >= params.fromDate;
-      const matchTo     = !params.toDate   || d.diaryDate <= params.toDate;
-      return matchSearch && matchStatus && matchFrom && matchTo;
-    });
-    list = [...list].sort((a, b) => {
-      if (params.sortBy === "date_desc")   return b.diaryDate.localeCompare(a.diaryDate);
-      if (params.sortBy === "date_asc")    return a.diaryDate.localeCompare(b.diaryDate);
-      if (params.sortBy === "amount_desc") return b.totalAmount - a.totalAmount;
-      if (params.sortBy === "amount_asc")  return a.totalAmount - b.totalAmount;
-      return 0;
-    });
-    return list;
-  }, [params]);
-
-  const total      = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total / params.pageSize));
-  const paged      = filtered.slice((params.page - 1) * params.pageSize, params.page * params.pageSize);
-
-  const handleView = (d: GetDiaryRes) => message.info(`Xem: ${d.diaryName}`);
-  const handleEdit = (d: GetDiaryRes) => message.info(`Sửa: ${d.diaryName}`);
+  const handleView = (d: GetDiaryRes) => navigate(`/diary/${userId}/${d.id}`);
+  const handleEdit = (d: GetDiaryRes) => navigate(`/diary/${userId}/${d.id}/edit`);
 
   return (
-    <ConfigProvider
-      theme={{
-        token: { colorPrimary: "#C17B3F", borderRadius: 8 },
-      }}
-    >
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-col gap-6">
-
-          {/* ── Header ── */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{ background: "#C17B3F", boxShadow: "0 4px 14px rgba(193,123,63,.35)" }}
-              >
-                <svg width="22" height="22" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
-                  <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
-                  <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-800 leading-tight m-0">Nhật ký mua hàng</h1>
-                <p className="text-xs text-gray-400 mt-0.5">Quản lý giao dịch & công nợ khách hàng</p>
-              </div>
-            </div>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{ background: "#C17B3F", borderColor: "#C17B3F", fontWeight: 600 }}
-              onClick={() => message.success("Tạo nhật ký mới")}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-[1320px] mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: '#C17B3F', boxShadow: '0 4px 14px rgba(193,123,63,.35)' }}
             >
-              Tạo nhật ký mới
-            </Button>
+              <svg
+                width="22"
+                height="22"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" />
+              </svg>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-800 leading-tight m-0">
+                Nhật ký mua hàng
+              </h1>
+              <p className="text-xs text-gray-400 mt-0.5">Quản lý giao dịch & công nợ khách hàng</p>
+            </div>
           </div>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setOpenCreate(true)}
+            style={{ background: '#C17B3F', borderColor: '#C17B3F', fontWeight: 600 }}
+          >
+            Tạo nhật ký mới
+          </Button>
+        </div>
+        <CreateDiaryModal
+          open={openCreate}
+          onClose={() => setOpenCreate(false)}
+          userId={userId ?? ''}
+        />
 
-          {/* ── Stats ── */}
-          <DiaryStatsRow data={MOCK_DATA} />
+        {/* Stats */}
+        {isLoading ? <SkeletonStats /> : <DiaryStatsRow data={orders} />}
 
-          {/* ── Filter ── */}
-          <DiaryFilterBar
-            params={params}
-            total={total}
-            onSearch={val => updateFilter({ search: val })}
-            onStatusChange={val => updateFilter({ status: val })}
-            onSortChange={val => updateFilter({ sortBy: val })}
-            onDateRangeChange={(from, to) => updateFilter({ fromDate: from, toDate: to })}
-            onReset={resetFilter}
-          />
+        {/* Filter */}
+        <DiaryFilterBar
+          params={params}
+          total={total}
+          onSearch={(val) => updateFilter({ search: val })}
+          onStatusChange={(val) => updateFilter({ status: val || undefined })}
+          onSortChange={(val) => updateFilter({ sortBy: val })}
+          onDateRangeChange={(from, to) => updateFilter({ fromDate: from, toDate: to })}
+          onReset={resetFilter}
+        />
 
-          {/* ── Grid ── */}
-          {paged.length === 0 ? (
+        {/* Grid */}
+        <div style={{ position: 'relative' }}>
+          {/* fetching overlay khi filter/paginate */}
+          {isFetching && !isLoading && (
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'rgba(249,250,251,0.65)',
+                borderRadius: 12,
+                zIndex: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <div className="w-8 h-8 rounded-full border-2 border-orange-400 border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          {isLoading ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+                <SkeletonDiaryCard key={i} />
+              ))}
+            </div>
+          ) : orders.length === 0 ? (
             <div className="flex items-center justify-center py-16">
-              <Empty description={<span className="text-gray-400">Không tìm thấy nhật ký nào</span>} />
+              <Empty
+                description={<span className="text-gray-400">Không tìm thấy nhật ký nào</span>}
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paged.map(d => (
+              {orders.map((d) => (
                 <DiaryCard key={d.id} diary={d} onView={handleView} onEdit={handleEdit} />
               ))}
             </div>
           )}
-
-          {/* ── Pagination ── */}
-          {total > 0 && (
-            <div className="flex items-center justify-between flex-wrap gap-3">
-              <span className="text-xs text-gray-400">
-                Hiển thị {(params.page - 1) * params.pageSize + 1}–{Math.min(params.page * params.pageSize, total)} / {total} nhật ký
-              </span>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={params.pageSize}
-                  onChange={val => updateFilter({ pageSize: val, page: 1 })}
-                  style={{ width: 110 }}
-                  options={PAGE_SIZE_OPTIONS.map(n => ({ value: n, label: `${n} / trang` }))}
-                  popupMatchSelectWidth={false}
-                />
-                <button
-                  disabled={params.page <= 1}
-                  onClick={() => changePage(params.page - 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-orange-400 hover:text-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >‹</button>
-                <div className="h-8 min-w-[36px] px-3 flex items-center justify-center rounded-lg border-2 bg-white text-sm font-bold" style={{ borderColor: "#C17B3F", color: "#C17B3F" }}>
-                  {params.page}
-                </div>
-                <button
-                  disabled={params.page >= totalPages}
-                  onClick={() => changePage(params.page + 1)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-orange-400 hover:text-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-                >›</button>
-              </div>
-            </div>
-          )}
-
         </div>
+
+        {/* Pagination */}
+        {total > 0 && (
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <span className="text-xs text-gray-400">
+              Hiển thị {(params.page - 1) * params.pageSize + 1}–
+              {Math.min(params.page * params.pageSize, total)} / {total} nhật ký
+            </span>
+            <div className="flex items-center gap-2">
+              <Select
+                value={params.pageSize}
+                onChange={(val) => updateFilter({ pageSize: val, page: 1 })}
+                style={{ width: 110 }}
+                options={PAGE_SIZE_OPTIONS.map((n) => ({ value: n, label: `${n} / trang` }))}
+                popupMatchSelectWidth={false}
+              />
+              <button
+                disabled={params.page <= 1}
+                onClick={() => changePage(params.page - 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-orange-400 hover:text-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                ‹
+              </button>
+              <div
+                className="h-8 min-w-[36px] px-3 flex items-center justify-center rounded-lg border-2 bg-white text-sm font-bold"
+                style={{ borderColor: '#C17B3F', color: '#C17B3F' }}
+              >
+                {params.page}
+              </div>
+              <button
+                disabled={params.page >= totalPages}
+                onClick={() => changePage(params.page + 1)}
+                className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-orange-400 hover:text-orange-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
       </div>
-    </ConfigProvider>
+    </div>
   );
 };
 

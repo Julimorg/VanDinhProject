@@ -1,7 +1,7 @@
 import React from "react";
 import { Button, Tooltip } from "antd";
 import { EyeOutlined, EditOutlined, FileTextOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
-import { GetDiaryRes, DiaryStatus, STATUS_CONFIG } from "./diary";
+import { GetDiaryRes, DiaryStatus, STATUS_CONFIG } from "../Hooks/diary";
 
 interface DiaryCardProps {
   diary: GetDiaryRes;
@@ -27,8 +27,6 @@ const fmtVND = (n: number) =>
 const BAR_COLOR: Record<DiaryStatus, string> = {
   PAID:      "#2D7D5B",
   UNPAID:    "#C0392B",
-  PARTIAL:   "#B45309",
-  CANCELLED: "#94A3B8",
 };
 
 const DiaryCard: React.FC<DiaryCardProps> = ({ diary, onView, onEdit }) => {
@@ -50,9 +48,6 @@ const DiaryCard: React.FC<DiaryCardProps> = ({ diary, onView, onEdit }) => {
         {/* Header */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-1">
-              {fmtDate(diary.diaryDate)}
-            </p>
             <h3 className="text-[15px] font-semibold text-gray-800 leading-snug line-clamp-2">
               {diary.diaryName}
             </h3>

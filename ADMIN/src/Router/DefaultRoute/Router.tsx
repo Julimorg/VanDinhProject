@@ -54,13 +54,10 @@ const Router: React.FC = () => {
     <Routes>
       <Route element={<UnAuthorizedRoute />}>
         <Route path="/login" element={<Login />} />
-        <Route path="/diary" element={<UserDiaryPage />} />
-        <Route path="/diary-detail" element={<UserDiaryDetailPage />} />
       </Route>
 
       <Route element={<AuthorizedRoute />}>
         <Route path="/" element={<MainLayout />}>
-
           <Route index element={<Navigate to="/dashboard" replace />} />
 
           <Route path="dashboard" element={<DashboardPage />} />
@@ -68,7 +65,6 @@ const Router: React.FC = () => {
           <Route path="users" element={<UserManagement />}>
             <Route path="user-detail/:id" element={<UserDetailView />} />
           </Route>
-
 
           <Route path="products" element={<ProductList />}>
             <Route path="create" element={<CreateProductPage />} />
@@ -82,11 +78,11 @@ const Router: React.FC = () => {
             <Route path=":categoryId" element={<CategoryDetail />} />
           </Route>
 
-        <Route path="orders" element={<OrderManagementPage />}>
-          <Route path=":orderId" element={<OrderDetailPage />} />
-          <Route path="create" element={<CreateOrderPage />} />
-          <Route path=":orderId/items" element={<UpdateOrderItemsPage />} />
-        </Route>
+          <Route path="orders" element={<OrderManagementPage />}>
+            <Route path=":orderId" element={<OrderDetailPage />} />
+            <Route path="create" element={<CreateOrderPage />} />
+            <Route path=":orderId/items" element={<UpdateOrderItemsPage />} />
+          </Route>
 
           <Route path="analytics" element={<ExpenseAnalyticsDashboard />} />
           <Route path="profile" element={<MyProfile />} />
@@ -96,6 +92,9 @@ const Router: React.FC = () => {
           <Route path="notifications/send" element={<SendNotificationPage />} />
           <Route path="/inventory" element={<PurchaseOrderPage />} />
           <Route path="inventory/:purchaseOrderId" element={<PurchaseOrderDetailPage />} />
+
+          <Route path="/diary/:userId" element={<UserDiaryPage />} />
+          <Route path="diary/:userId/:diaryId" element={<UserDiaryDetailPage />} />
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Route>

@@ -35,6 +35,7 @@ public interface DiaryService {
     Page<GetDiaryRes> getDiaries(
             String userId,
             String keyword,
+            String status,
             String fromDate,
             String toDate,
             Pageable pageable
