@@ -16,7 +16,12 @@ import com.example.persistence.enumTable.DiaryStatus;
 import com.example.security.Util.UtilSecurityClass;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -39,6 +44,8 @@ public class DiaryServiceImpl implements DiaryService {
     private final DiaryMapper mapper;
 
     private final UserInternalService userInternalService;
+
+    private final UtilSecurityClass utilSecurityClass;
 
     private void reCalculateUserDiary(UserDiary userDiary,
                                       List<UserDiaryItem> items) {
@@ -82,8 +89,64 @@ public class DiaryServiceImpl implements DiaryService {
 
     @Override
     public GetDiaryDetailRes getDiaryDetail (String diaryId) {
+
         UserDiary diary = findDiaryOrThrow(diaryId);
-        return mapper.toGetDiaryDetail(diary);
+
+        LinkedHashMap<LocalDateTime, List<UserDiaryItem>> groupItemWithDate = new LinkedHashMap<>();
+
+        List<UserDiaryItem> items = itemRepository.findByDiaryIdOrderByItemDateAsc(diaryId);
+
+        for(UserDiaryItem item : items ) {
+
+            LocalDateTime date = item.getItemDate();
+
+            if (!groupItemWithDate.containsKey(date)) {
+                groupItemWithDate.put(date, new ArrayList<>());
+            }
+
+            groupItemWithDate.get(date).add(item);
+        }
+
+        List<DiaryDayGroup> days = new ArrayList<>();
+
+        for(Map.Entry<LocalDateTime, List<UserDiaryItem>> entry : groupItemWithDate.entrySet()) {
+
+            LocalDateTime date = entry.getKey();
+
+            List<UserDiaryItem> itemsOfDay = entry.getValue();
+
+            List<GetListItemsDiary> mapped = new ArrayList<>();
+
+            BigDecimal calcTotalDay = BigDecimal.ZERO;
+
+            int totalQuantityInDay = 0;
+
+            for (UserDiaryItem item : itemsOfDay) {
+
+                BigDecimal totalAvgInOneItem = item.getUnitPrice()
+                        .multiply(BigDecimal.valueOf(item.getQuantity()));
+
+                totalQuantityInDay += item.getQuantity();
+
+                calcTotalDay = calcTotalDay.add(totalAvgInOneItem);
+
+                GetListItemsDiary dto = mapper.toGetListItemsDiary(item);
+
+                mapped.add(dto);
+
+            }
+
+            DiaryDayGroup group = DiaryDayGroup.builder()
+                    .date(date)
+                    .itemCount(totalQuantityInDay)
+                    .totalDay(calcTotalDay)
+                    .items(mapped)
+                    .build();
+
+            days.add(group);
+        }
+
+        return mapper.toGetDiaryDetailRes(diary, days);
     }
 
 
@@ -98,10 +161,12 @@ public class DiaryServiceImpl implements DiaryService {
                 .diaryName(request.getDiaryName())
                 .diaryStatus(DiaryStatus.UNPAID)
                 .note(request.getNote())
-                .createdBy(UtilSecurityClass.getCurrentUsername())
+                .createdBy(utilSecurityClass.getCurrentUsername())
+                .startDate(LocalDateTime.now())
                 .build();
 
         diary = diaryRepository.save(diary);
+
         return mapper.toCreateDiary(diary);
     }
 
@@ -114,6 +179,7 @@ public class DiaryServiceImpl implements DiaryService {
                 .map(req ->  UserDiaryItem.builder()
                         .diary(userDiary)
                         .productName(req.getProductName())
+                        .itemDate(req.getItemDate().atStartOfDay())
                         .quantity(req.getQuantity())
                         .volume(req.getVolume())
                         .color(req.getColor())
@@ -194,6 +260,8 @@ public class DiaryServiceImpl implements DiaryService {
         }
 
         userDiary.setDiaryStatus(request.getDiaryStatus());
+
+        userDiary.setEndDate(LocalDateTime.now());
 
         diaryRepository.save(userDiary);
 

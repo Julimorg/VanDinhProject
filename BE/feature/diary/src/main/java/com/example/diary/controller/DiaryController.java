@@ -59,7 +59,7 @@ public class DiaryController {
             @RequestParam(required = false) String toDate,
             @PageableDefault(
             size = 20,
-            sort = "diaryDate",
+            sort = "createdAt",
             direction = Sort.Direction.DESC
         ) Pageable pageable
     ) {

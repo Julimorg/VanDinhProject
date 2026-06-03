@@ -10,5 +10,8 @@ public interface UserDiaryItemRepository
     extends JpaRepository<UserDiaryItem, String>
 {
     List<UserDiaryItem> findByDiaryId(String diaryId);
+
+    List<UserDiaryItem> findByDiaryIdOrderByItemDateAsc(String diaryId);
+
     void deleteByDiaryId(String diaryId);
 }

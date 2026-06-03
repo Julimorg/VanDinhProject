@@ -30,6 +30,8 @@ public class GetListItemsDiary {
 
     private String itemNote;
 
+    private LocalDateTime itemDate;
+
     private LocalDateTime createAt;
 
     private LocalDateTime updateAt;

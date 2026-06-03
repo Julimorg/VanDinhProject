@@ -1,20 +1,25 @@
 package com.example.security.Util;
 
 import com.example.common.interfaces.user.UserInternalService;
+import com.example.persistence.entity.User;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Component;
 
 @Slf4j
-@UtilityClass
+@Component
+@RequiredArgsConstructor
 public class UtilSecurityClass {
 
-    private UserInternalService userInternalService;
+    private final UserInternalService userInternalService;
 
     public String getCurrentUsername() {
+
         Authentication authentication = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
@@ -26,9 +31,12 @@ public class UtilSecurityClass {
             userId = jwt.getAudience().getFirst();
         }
 
-        return userInternalService
-                .getUserNameById(userId)
-                .getUserName();
+        log.error("============== USER ID AFTER EXTRACT: {}" , userId);
+
+            User user = userInternalService.getUserById(userId);
+
+        return user.getUserName();
+
     }
 
 }

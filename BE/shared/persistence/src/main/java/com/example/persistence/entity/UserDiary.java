@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Getter
 @Setter
@@ -18,10 +21,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 @Table(
     name = "user_diary",
     indexes = {
-        @Index(name = "idx_diary_date", columnList = "diary_date"),
-        @Index(name = "idx_diary_created_by", columnList = "created_by"),
+            @Index(name = "idx_date_start", columnList = "start_date"),
+            @Index(name = "idx_date_end", columnList = "end_date"),
+            @Index(name = "idx_diary_name", columnList = "diary_name"),
+            @Index(name = "idx_diary_created_by", columnList = "created_by"),
     }
 )
+@EntityListeners(AuditingEntityListener.class)
 public class UserDiary {
 
     @Id
@@ -35,8 +41,11 @@ public class UserDiary {
     @Column(name = "diary_status", nullable = false)
     private DiaryStatus diaryStatus;
 
-    @Column(name = "diary_date", nullable = false)
-    private LocalDate diaryDate;
+    @Column(name = "start_date", nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(name = "end_date")
+    private LocalDateTime endDate;
 
     @Column(name = "total_amount", precision = 15, scale = 2)
     private BigDecimal totalAmount = BigDecimal.ZERO;
@@ -50,11 +59,11 @@ public class UserDiary {
     @Column(name = "created_by", nullable = false)
     private String createdBy;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     @Column(name = "update_at", nullable = false)
     private LocalDateTime updateAt;
 

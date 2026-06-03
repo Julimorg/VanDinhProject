@@ -21,12 +21,16 @@ public interface DiaryMapper {
 
     GetDiaryRes toGetDiary(UserDiary diary);
 
-    GetListItemsDiary toOneDiaryItem(UserDiaryItem diaryItems);
+    GetListItemsDiary toGetListItemsDiary(UserDiaryItem item);
 
-    List<GetListItemsDiary> toGetListItemsDiary(UserDiaryItem diaryItems);
+    @Mapping(target = "days", ignore = true)
+    GetDiaryDetailRes toGetDiaryDetailRes(UserDiary diary);
 
-    @Mapping(source = "items", target = "items")
-    GetDiaryDetailRes toGetDiaryDetail(UserDiary diary);
+    default GetDiaryDetailRes toGetDiaryDetailRes(UserDiary diary, List<DiaryDayGroup> days) {
+        GetDiaryDetailRes res = toGetDiaryDetailRes(diary);
+        res.setDays(days);
+        return res;
+    }
 
     DiaryItemResponse toItemResponse(UserDiaryItem item);
 
@@ -50,7 +54,6 @@ public interface DiaryMapper {
 
     List<ListItemInUserDiaryAfterCreate> toListItemResponse(List<UserDiaryItem> items);
 
-    @Mapping(target = "items", ignore = true)
     CreateDiaryRes toResponse(UserDiary diary);
 
     //** ===============================   UPDATE RESPONSE   ===========================
@@ -67,7 +70,8 @@ public interface DiaryMapper {
     @Mapping(target = "totalAmount", ignore = true)
     @Mapping(target = "totalQuantity", ignore = true)
     @Mapping(target = "diaryStatus", ignore = true)
-    @Mapping(target = "diaryDate", ignore = true)
+    @Mapping(target = "startDate", ignore = true)
+    @Mapping(target = "endDate", ignore = true)
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "updateAt", ignore = true)
     void updateDiaryFromRequest(UpdateDiaryReq request, @MappingTarget UserDiary diary);

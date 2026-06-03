@@ -47,6 +47,9 @@ public class UserDiaryItem {
     @Column(name = "color")
     private String color;
 
+    @Column(name = "item_date", nullable = false)
+    private LocalDateTime itemDate;
+
     @Column(name = "unit_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal unitPrice = BigDecimal.ZERO;
 

@@ -1,5 +1,6 @@
 package com.example.common.dto.diary.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -26,6 +28,9 @@ public class CreateDiaryItemsReq {
     @NotNull(message = "Price Can Not Be Empty!")
     @DecimalMin(value = "0.0", inclusive = false, message = "Price Must Be Greater Than 0!")
     private BigDecimal unitPrice;
+
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate itemDate;
 
     private String itemNote;
 

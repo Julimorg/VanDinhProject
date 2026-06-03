@@ -22,7 +22,9 @@ public class CreateDiaryRes {
 
     private DiaryStatus diaryStatus;
 
-    private LocalDate diaryDate;
+    private LocalDateTime startDate;
+
+    private LocalDateTime endDate;
 
     private BigDecimal totalAmount;
 

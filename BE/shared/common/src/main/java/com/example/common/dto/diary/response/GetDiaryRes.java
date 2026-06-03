@@ -22,8 +22,6 @@ public class GetDiaryRes {
 
     private DiaryStatus diaryStatus;
 
-    private LocalDate diaryDate;
-
     private BigDecimal totalAmount;
 
     private BigDecimal totalQuantity;
