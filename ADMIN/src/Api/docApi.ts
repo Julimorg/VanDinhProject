@@ -99,6 +99,7 @@ import { ICreateDiaryRequest, ICreateDiaryResponse } from '@/Interface/Diary/Cre
 import { IGetDiaryDetailRes } from '@/Interface/Diary/GetDiaryDetail';
 import { ICreateDiaryItemReq, ICreateDiaryItemRes } from '@/Interface/Diary/DiaryItem';
 import { IUpdateDiaryStatusReq, IUpdateDiaryStatusRes } from '@/Interface/Diary/UpdateDiaryStatus';
+import { IUpdateDiaryReq, IUpdateDiaryRes, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary';
 
 export const docApi = {
   //* ======================================================== Auth  ======================================================== */
@@ -763,6 +764,19 @@ export const docApi = {
     const res = await axiosClient.get(url);
     return res.data; 
   },
+
+  UpdateDiary: async(userId: string, diaryId: string, body: IUpdateDiaryReq): Promise<IApiResponse<IUpdateDiaryRes>> => {
+    const url = `/diaries/${userId}/${diaryId}/update-diary`;
+    const res = await axiosClient.patch(url, body)
+    return res.data;
+  },
+
+  DeleteDiary: async(userId: string, diaryId: string): Promise<IApiResponse<void>> => {
+    const url = `/diaries/${userId}/${diaryId}/delete-diary`;
+    const res = await axiosClient.delete(url);
+    return res.data;
+  },
+
 
   UpdateDiaryStatus: async(diaryId: string, body: IUpdateDiaryStatusReq): Promise<IApiResponse<IUpdateDiaryStatusRes>> => {
     const url = `/diaries/${diaryId}/update-status`;

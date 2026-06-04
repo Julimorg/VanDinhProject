@@ -80,6 +80,11 @@ const UserDiaryPage: React.FC = () => {
   const navigate = useNavigate();
   const [openCreate, setOpenCreate] = useState(false);
   const [params, setParams] = useState<DiaryFilterParams>(DEFAULT_FILTER);
+  
+
+  const handleDelete = () => {
+    toast.error('Tính năng xóa nhật ký hiện chưa khả dụng', { autoClose: 3000 });
+  };
 
   const { data, isLoading, isFetching } = useGetAllDiary(
     userId ?? '',
@@ -214,7 +219,13 @@ const UserDiaryPage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {orders.map((d) => (
-                <DiaryCard key={d.id} diary={d} onView={handleView} onEdit={handleEdit} />
+                <DiaryCard
+                  key={d.id}
+                  diary={d}
+                  onNavigate={handleView}
+                  onEdit={handleEdit}
+                  onDelete={handleDelete}
+                />
               ))}
             </div>
           )}

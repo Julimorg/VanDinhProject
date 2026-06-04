@@ -66,13 +66,13 @@ const DiaryDetailHeader: React.FC<DiaryDetailHeaderProps> = ({
             In phiếu
           </Button>
 
-          <Button
+          {/* <Button
             icon={<EditOutlined />}
             onClick={onEdit}
             style={{ borderColor: '#E2E8F0', color: '#64748B' }}
           >
             Chỉnh sửa
-          </Button>
+          </Button> */}
 
           {!isPaid && (
             <Button
@@ -86,9 +86,9 @@ const DiaryDetailHeader: React.FC<DiaryDetailHeaderProps> = ({
             </Button>
           )}
 
-          <Button danger icon={<CloseCircleOutlined />} onClick={onCancel}>
+          {/* <Button danger icon={<CloseCircleOutlined />} onClick={onCancel}>
             Huỷ nhật ký
-          </Button>
+          </Button> */}
         </div>
       </div>
 
