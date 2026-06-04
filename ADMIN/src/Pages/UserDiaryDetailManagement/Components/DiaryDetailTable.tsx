@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { Input, Button, Tooltip, Tag, Modal } from 'antd';
 import {
-  SearchOutlined,
-  PlusOutlined,
-  CalendarOutlined,
-  ClockCircleOutlined,
-  DeleteOutlined,
-  ExclamationCircleOutlined,
+  SearchOutlined, PlusOutlined, CalendarOutlined, ClockCircleOutlined,
+  DeleteOutlined, EditOutlined, ExclamationCircleOutlined,
 } from '@ant-design/icons';
+import { useParams } from 'react-router-dom';
 import { DiaryDayGroup } from '../diaryDetail';
-import CreateDiaryItemModal from './CreateDiaryItemModal';
+import { useDeleteDiaryItem } from '../Hooks/useDeleteDiaryItem';
+import UpdateDiaryItemModal from './UpdateDiaryItemModal';
 
 interface DiaryItemsTableProps {
   days: DiaryDayGroup[];
   onAddItem?: () => void;
-  onDeleteItem?: (itemId: string) => void;
 }
 
 const fmtVND = (n: number) =>
@@ -22,24 +19,35 @@ const fmtVND = (n: number) =>
 
 const fmtDateLabel = (iso: string) => {
   if (!iso) return '—';
-  const datePart = iso.slice(0, 10);
-  const [y, m, d] = datePart.split('-');
+  const [y, m, d] = iso.slice(0, 10).split('-');
   return `${d}/${m}/${y}`;
 };
 
 const fmtDateTime = (iso: string) => {
   if (!iso) return '—';
-  const d = new Date(iso);
-  return d.toLocaleString('vi-VN', {
+  return new Date(iso).toLocaleString('vi-VN', {
     timeZone: 'Asia/Ho_Chi_Minh',
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
 };
 
-const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDeleteItem }) => {
+const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem }) => {
+  const { diaryId } = useParams<{ diaryId: string }>();
+
   const [search, setSearch] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [editTarget, setEditTarget] = useState<{ itemId: string; item: any } | null>(null);
+
+  const { mutate: deleteItem, isPending: isDeleting } = useDeleteDiaryItem();
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    deleteItem(
+      { diaryId: diaryId!, itemId: deleteTarget.id }, 
+      { onSuccess: () => setDeleteTarget(null) }
+    );
+  };
 
   const filteredDays: DiaryDayGroup[] = search.trim()
     ? days
@@ -110,7 +118,7 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
                     className="mx-5 rounded-xl overflow-hidden border border-gray-100"
                     style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
                   >
-                    {/* Day group header */}
+                    {/* Day header */}
                     <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border-b border-blue-100 flex-wrap">
                       <CalendarOutlined className="text-blue-500" />
                       <span className="text-sm font-bold text-blue-600">{fmtDateLabel(date)}</span>
@@ -123,7 +131,6 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
                       </span>
                     </div>
 
-                    {/* Table */}
                     <table className="w-full border-collapse text-sm">
                       <thead>
                         <tr className="border-b border-gray-100 bg-gray-50/80">
@@ -136,7 +143,7 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
                           <th className="w-36 px-4 py-2.5 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Thành tiền</th>
                           <th className="w-44 px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Thời gian</th>
                           <th className="w-40 px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Ghi chú</th>
-
+                          <th className="w-20 px-4 py-2.5 text-center text-xs font-semibold text-gray-400 uppercase tracking-wider">Thao tác</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -149,54 +156,35 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
                               key={row.id}
                               className="border-b border-gray-50 hover:bg-orange-50/30 transition-colors group"
                             >
-                              {/* # */}
                               <td className="px-4 py-3.5 text-center">
                                 <span className="text-xs text-gray-400 font-mono">
                                   {String(currentIdx).padStart(2, '0')}
                                 </span>
                               </td>
-
-                              {/* Tên sản phẩm */}
                               <td className="px-4 py-3.5">
                                 <p className="font-semibold text-gray-800 leading-tight">{row.productName}</p>
                               </td>
-
-                              {/* Màu sắc */}
                               <td className="px-4 py-3.5 text-center">
-                                {row.color ? (
-                                  <span className="text-sm text-gray-600">{row.color}</span>
-                                ) : (
-                                  <span className="text-gray-300">—</span>
-                                )}
+                                {row.color
+                                  ? <span className="text-sm text-gray-600">{row.color}</span>
+                                  : <span className="text-gray-300">—</span>}
                               </td>
-
-                              {/* Quy cách */}
                               <td className="px-4 py-3.5 text-center">
                                 {row.volume ? (
                                   <Tag style={{ fontSize: 11, borderRadius: 4, margin: 0, background: '#F1F5F9', color: '#475569', borderColor: '#E2E8F0' }}>
                                     {row.volume}
                                   </Tag>
-                                ) : (
-                                  <span className="text-gray-300">—</span>
-                                )}
+                                ) : <span className="text-gray-300">—</span>}
                               </td>
-
-                              {/* Đơn giá */}
                               <td className="px-4 py-3.5 text-right">
                                 <span className="text-sm text-gray-700">{fmtVND(row.unitPrice)}</span>
                               </td>
-
-                              {/* SL */}
                               <td className="px-4 py-3.5 text-center">
                                 <span className="text-sm font-bold text-orange-600">{row.quantity}</span>
                               </td>
-
-                              {/* Thành tiền */}
                               <td className="px-4 py-3.5 text-right">
                                 <span className="text-sm font-bold text-blue-600">{fmtVND(subtotal)}</span>
                               </td>
-
-                              {/* Thời gian */}
                               <td className="px-4 py-3.5">
                                 <div className="flex flex-col gap-0.5">
                                   <span className="flex items-center gap-1 text-xs text-gray-400">
@@ -210,22 +198,28 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
                                   )}
                                 </div>
                               </td>
-
-                              {/* Ghi chú + delete */}
                               <td className="px-4 py-3.5">
-                                <div className="flex items-center gap-2">
-                                  {row.itemNote ? (
-                                    <Tooltip title={row.itemNote}>
-                                      <span className="text-xs text-gray-500 truncate block max-w-[130px] cursor-default leading-relaxed">
-                                        {row.itemNote}
-                                      </span>
-                                    </Tooltip>
-                                  ) : (
-                                    <span className="text-gray-300">—</span>
-                                  )}
+                                {row.itemNote ? (
+                                  <Tooltip title={row.itemNote}>
+                                    <span className="text-xs text-gray-500 truncate block max-w-[130px] cursor-default leading-relaxed">
+                                      {row.itemNote}
+                                    </span>
+                                  </Tooltip>
+                                ) : <span className="text-gray-300">—</span>}
+                              </td>
+
+                              {/* Thao tác */}
+                              <td className="px-4 py-3.5">
+                                <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button
+                                    onClick={() => setEditTarget({ itemId: row.id, item: row })}
+                                    className="w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-orange-500 hover:bg-orange-50 border-none bg-transparent cursor-pointer"
+                                  >
+                                    <EditOutlined style={{ fontSize: 13 }} />
+                                  </button>
                                   <button
                                     onClick={() => setDeleteTarget({ id: row.id, name: row.productName })}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"
+                                    className="w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 border-none bg-transparent cursor-pointer"
                                   >
                                     <DeleteOutlined style={{ fontSize: 13 }} />
                                   </button>
@@ -258,7 +252,7 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
         </div>
       </div>
 
-      {/* ── Delete confirm modal ── */}
+      {/* Delete modal */}
       <Modal
         open={!!deleteTarget}
         onCancel={() => setDeleteTarget(null)}
@@ -271,17 +265,13 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
         }}
         footer={
           <div className="flex justify-end gap-2">
-            <Button onClick={() => setDeleteTarget(null)}>Huỷ</Button>
+            <Button onClick={() => setDeleteTarget(null)} disabled={isDeleting}>Huỷ</Button>
             <Button
               danger
               type="primary"
               icon={<DeleteOutlined />}
-              onClick={() => {
-                if (deleteTarget) {
-                  onDeleteItem?.(deleteTarget.id);
-                  setDeleteTarget(null);
-                }
-              }}
+              loading={isDeleting}
+              onClick={handleConfirmDelete}
             >
               Xoá
             </Button>
@@ -302,6 +292,14 @@ const DiaryItemsTable: React.FC<DiaryItemsTableProps> = ({ days, onAddItem, onDe
           </div>
         </div>
       </Modal>
+
+      {/* Edit modal */}
+      <UpdateDiaryItemModal
+        open={!!editTarget}
+        itemId={editTarget?.itemId ?? null}
+        initialValues={editTarget?.item ?? null}
+        onClose={() => setEditTarget(null)}
+      />
     </>
   );
 };

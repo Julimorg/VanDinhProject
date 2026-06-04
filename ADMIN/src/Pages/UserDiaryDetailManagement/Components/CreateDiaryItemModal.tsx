@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Input, InputNumber, Button, DatePicker } from "antd";
 import {
   PlusOutlined, DeleteOutlined, ShoppingOutlined,
   CheckOutlined, InfoCircleOutlined, WarningOutlined,
-  BgColorsOutlined, CalendarOutlined,
+  BgColorsOutlined, CalendarOutlined, HistoryOutlined,
 } from "@ant-design/icons";
 import { toast } from "react-toastify";
 import dayjs from "dayjs";
@@ -12,7 +12,6 @@ import { ICreateDiaryItemReq } from "@/Interface/Diary/DiaryItem";
 import { useCreateDiaryItem } from "../Hooks/useCreateDiaryItem";
 import { QueryKeys } from "@/Constant/query-key";
 
-/* ── local form type: unitPrice/quantity nullable để InputNumber có thể trống ── */
 type ItemForm = Omit<ICreateDiaryItemReq, "quantity" | "unitPrice"> & {
   quantity: number | null;
   unitPrice: number | null;
@@ -33,7 +32,26 @@ const EMPTY_ITEM = (): ItemForm => ({
 const fmtVND = (n: number) =>
   new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(n);
 
-/* ── Props ── */
+// ── Session storage key theo diaryId để không bị lẫn giữa các diary ──
+const storageKey = (diaryId: string) => `draft_diary_items_${diaryId}`;
+
+const saveDraft = (diaryId: string, items: ItemForm[], active: number) => {
+  sessionStorage.setItem(storageKey(diaryId), JSON.stringify({ items, active }));
+};
+
+const loadDraft = (diaryId: string): { items: ItemForm[]; active: number } | null => {
+  try {
+    const raw = sessionStorage.getItem(storageKey(diaryId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const clearDraft = (diaryId: string) => {
+  sessionStorage.removeItem(storageKey(diaryId));
+};
+
 interface CreateDiaryItemModalProps {
   open: boolean;
   diaryId: string;
@@ -50,19 +68,36 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
   const [items, setItems] = useState<ItemForm[]>([EMPTY_ITEM()]);
   const [active, setActive] = useState(0);
   const [errors, setErrors] = useState<Record<number, ItemErrors>>({});
+  const [hasDraft, setHasDraft] = useState(false); // có draft chưa restore không
 
   const queryClient = useQueryClient();
 
+  // ── Khi modal mở: kiểm tra draft ──
+  useEffect(() => {
+    if (!open) return;
+    const draft = loadDraft(diaryId);
+    if (draft && draft.items.length > 0) {
+      setHasDraft(true);
+      setItems(draft.items);
+      setActive(draft.active ?? 0);
+    }
+  }, [open, diaryId]);
+
+  // ── Auto-save mỗi khi items thay đổi ──
+  useEffect(() => {
+    if (!open) return;
+    saveDraft(diaryId, items, active);
+  }, [items, active, open, diaryId]);
+
   const { mutate, isPending } = useCreateDiaryItem(diaryId, {
-    onSuccess: (res) => {
-      toast.success(
-        `✅ Thêm ${items.length} sản phẩm thành công!`,
-        { position: "top-right", autoClose: 3000 }
-      );
-      queryClient.invalidateQueries({
-        queryKey: [QueryKeys.GET_DIARY_DETAIL, diaryId],
+    onSuccess: () => {
+      toast.success(`✅ Thêm ${items.length} sản phẩm thành công!`, {
+        position: "top-right",
+        autoClose: 3000,
       });
-      handleClose();
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_DIARY_DETAIL, diaryId] });
+      clearDraft(diaryId); // xóa draft sau khi submit thành công
+      handleClose(true);
       onSuccess?.();
     },
     onError: (error: any) => {
@@ -119,11 +154,24 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
     mutate(body);
   };
 
-  const handleClose = () => {
+  // clearDraft chỉ khi submit thành công, đóng tay thì giữ draft
+  const handleClose = (clearOnSuccess = false) => {
+    if (clearOnSuccess) clearDraft(diaryId);
     setItems([EMPTY_ITEM()]);
     setErrors({});
     setActive(0);
+    setHasDraft(false);
     onClose();
+  };
+
+  // Xóa draft thủ công
+  const handleDiscardDraft = () => {
+    clearDraft(diaryId);
+    setItems([EMPTY_ITEM()]);
+    setErrors({});
+    setActive(0);
+    setHasDraft(false);
+    toast.info("Đã xóa bản nháp.", { position: "top-right", autoClose: 2000 });
   };
 
   const item = items[active] ?? EMPTY_ITEM();
@@ -135,7 +183,7 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
   return (
     <Modal
       open={open}
-      onCancel={handleClose}
+      onCancel={() => handleClose()}
       width={960}
       centered
       styles={{
@@ -151,25 +199,43 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
           </div>
           <div>
             <div className="text-[15px] font-bold text-slate-900">Thêm sản phẩm vào nhật ký</div>
-            <div className="text-xs text-slate-400 font-normal">
+            <div className="text-xs text-slate-400 font-normal flex items-center gap-2">
               Đã thêm {items.length} sản phẩm · Chọn sản phẩm bên trái để chỉnh sửa
+              {/* Badge thông báo đang có draft */}
+              {hasDraft && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full font-medium">
+                  <HistoryOutlined style={{ fontSize: 10 }} />
+                  Đã khôi phục bản nháp
+                </span>
+              )}
             </div>
           </div>
         </div>
       }
       footer={
         <div className="flex items-center justify-between gap-3">
-          <span className="text-xs text-slate-400">
-            Tổng:{" "}
-            <strong className="text-[#C17B3F]">{items.length} sản phẩm</strong>
-            {" · "}
-            <strong className="text-[#C17B3F]">{totalQty} đơn vị</strong>
-            {totalAmt > 0 && (
-              <>{" · "}<strong className="text-emerald-600">{fmtVND(totalAmt)}</strong></>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-slate-400">
+              Tổng:{" "}
+              <strong className="text-[#C17B3F]">{items.length} sản phẩm</strong>
+              {" · "}
+              <strong className="text-[#C17B3F]">{totalQty} đơn vị</strong>
+              {totalAmt > 0 && (
+                <>{" · "}<strong className="text-emerald-600">{fmtVND(totalAmt)}</strong></>
+              )}
+            </span>
+            {/* Nút xóa draft thủ công */}
+            {hasDraft && (
+              <button
+                onClick={handleDiscardDraft}
+                className="text-[11px] text-slate-400 hover:text-red-500 underline underline-offset-2 cursor-pointer bg-transparent border-none p-0 transition-colors"
+              >
+                Xóa bản nháp
+              </button>
             )}
-          </span>
+          </div>
           <div className="flex gap-2">
-            <Button onClick={handleClose} disabled={isPending}>Huỷ</Button>
+            <Button onClick={() => handleClose()} disabled={isPending}>Huỷ</Button>
             <Button
               type="primary"
               icon={<CheckOutlined />}
@@ -183,6 +249,7 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
         </div>
       }
     >
+      {/* Phần body giữ nguyên hoàn toàn */}
       <div className="flex flex-1 overflow-hidden h-full">
 
         {/* ── LEFT: sidebar list ── */}
@@ -368,7 +435,7 @@ const CreateDiaryItemModal: React.FC<CreateDiaryItemModalProps> = ({
   );
 };
 
-/* ── Helpers ── */
+/* ── Helpers giữ nguyên ── */
 const FormSection: React.FC<{ title: string; cols?: number; children: React.ReactNode }> = ({
   title, cols = 2, children,
 }) => (

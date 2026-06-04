@@ -44,5 +44,6 @@ public interface DiaryService {
 
     void deleteDiary(String userId, String diaryId);
 
+    @Transactional
     void deleteDiaryItem(String diaryId, String itemId);
 }

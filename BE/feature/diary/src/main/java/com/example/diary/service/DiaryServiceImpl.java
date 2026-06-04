@@ -277,13 +277,23 @@ public class DiaryServiceImpl implements DiaryService {
     }
 
     @Override
+    @Transactional
     public void deleteDiaryItem(String diaryId, String itemId) {
 
-        itemRepository
-                .findById(itemId)
+        itemRepository.findById(itemId)
                 .orElseThrow(() -> new AppException(ErrorCode.DIARY_ITEMS_NOT_FOUND));
 
         itemRepository.deleteById(itemId);
+
+        UserDiary diary = diaryRepository.findById(diaryId)
+                .orElseThrow(() -> new AppException(ErrorCode.DIARY_NOT_FOUND));
+
+        List<UserDiaryItem> remainingItems = itemRepository.findByDiaryId(diaryId);
+
+        reCalculateUserDiary(diary, remainingItems);
+
+        diaryRepository.save(diary);
+
     }
 
 }
