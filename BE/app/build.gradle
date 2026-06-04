@@ -10,7 +10,7 @@ dependencies {
     implementation project(':feature:product')
     implementation project(':feature:notification')
     implementation project(':feature:storage')
-    implementation project(':feature:search')
+    //implementation project(':feature:search')
     implementation project(':feature:report')
     implementation project(':feature:qrcode')
     implementation project(':feature:order')
@@ -21,6 +21,7 @@ dependencies {
     implementation project(':feature:category')
     implementation project(':feature:payment')
     implementation project(':feature:Inventory')
+    implementation project(':feature:diary')
 
     implementation project(':shared:security')
     implementation project(':shared:api-docs')

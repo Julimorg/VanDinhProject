@@ -29,4 +29,6 @@ GET_PURCHASE_ORDERS: 'Get Purchase Orders',
 GET_PURCHASE_ORDER_DETAIL: 'Get Purchase Order Detail',
 GET_INVENTORY: 'Get Inventory',
 GET_PURCHASE_DETAIL: 'Get Purchase Detail',
+GET_ALL_DIARY: 'Get All Diary',
+GET_DIARY_DETAIL: 'Get Diary Detail',
 }

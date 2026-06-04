@@ -38,6 +38,7 @@ build/
 BE/.gradle/
 BE/build/
 BE/**/build/
+**/bin/
 
 # Gradle
 .gradle/
