@@ -217,7 +217,7 @@ export const docApi = {
   },
 
   CreateUser: async (body: ICreateUserRequest): Promise<IApiResponse<ICreateUserResponse>> => {
-    const url = `/users/create-staff`;
+    const url = `/users/create-user`;
 
     const formData = buildFormData(body);
 
