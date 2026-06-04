@@ -113,7 +113,7 @@ public class DiaryController {
             .build();
     }
 
-    @PatchMapping("/{userId}/{diaryId}/update-status")
+    @PatchMapping("/{diaryId}/update-status")
     public ApiResponse<UpdateDiaryStatusRes> updateDiaryStatus(
             @PathVariable String diaryId,
             @Valid @RequestBody UpdateDiaryStatusReq request
@@ -127,7 +127,7 @@ public class DiaryController {
     }
 
     @PatchMapping("/{diaryId}/{itemId}/update-item")
-    public ApiResponse<UpdateItemRes> updateDiary(
+    public ApiResponse<UpdateItemRes> updateDiaryItem(
             @PathVariable String diaryId,
             @PathVariable String itemId,
             @Valid @RequestBody UpdateItemsReq request
