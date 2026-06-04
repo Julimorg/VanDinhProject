@@ -99,7 +99,8 @@ import { ICreateDiaryRequest, ICreateDiaryResponse } from '@/Interface/Diary/Cre
 import { IGetDiaryDetailRes } from '@/Interface/Diary/GetDiaryDetail';
 import { ICreateDiaryItemReq, ICreateDiaryItemRes } from '@/Interface/Diary/DiaryItem';
 import { IUpdateDiaryStatusReq, IUpdateDiaryStatusRes } from '@/Interface/Diary/UpdateDiaryStatus';
-import { IUpdateDiaryReq, IUpdateDiaryRes, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary';
+import { IUpdateDiaryReq, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary';
+
 
 export const docApi = {
   //* ======================================================== Auth  ======================================================== */
