@@ -69,7 +69,7 @@ public class ExportDiaryDetailToFileService {
             Cell storeCell = r0.createCell(0);
             storeCell.setCellValue("VAN_DINH_STORE");
             storeCell.setCellStyle(titleStyle);
-            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 5));
+            sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
             // ── Row 1: Tiêu đề phiếu ─────────────────────────────────────
             Row r1 = sheet.createRow(1);
@@ -77,7 +77,7 @@ public class ExportDiaryDetailToFileService {
             Cell titleCell = r1.createCell(0);
             titleCell.setCellValue("PHIẾU MUA HÀNG");
             titleCell.setCellStyle(subTitleStyle);
-            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
+            sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
             // ── Row 2: Tên khách hàng ─────────────────────────────────────
             Row r2 = sheet.createRow(2);
@@ -85,7 +85,7 @@ public class ExportDiaryDetailToFileService {
             Cell customerCell = r2.createCell(0);
             customerCell.setCellValue("Khách hàng: " + customer.getUserName());
             customerCell.setCellStyle(dataStyle);
-            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 5));
+            sheet.addMergedRegion(new CellRangeAddress(2, 2, 0, 6));
 
             // ── Row 3: spacer ─────────────────────────────────────────────
             sheet.createRow(3).setHeightInPoints(6);
@@ -93,7 +93,7 @@ public class ExportDiaryDetailToFileService {
             // ── Row 4: Header bảng ────────────────────────────────────────
             Row headerRow = sheet.createRow(4);
             headerRow.setHeightInPoints(28);
-            String[] cols = {"Ngày", "Tên hàng", "ĐVT", "Số lượng", "Đơn giá", "Thành tiền"};
+            String[] cols = {"Ngày", "Tên hàng", "ĐVT", "Màu sắc", "Số lượng", "Đơn giá", "Thành tiền"};
             for (int i = 0; i < cols.length; i++) {
                 Cell c = headerRow.createCell(i);
                 c.setCellValue(cols[i]);
@@ -130,17 +130,22 @@ public class ExportDiaryDetailToFileService {
                     dvtCell.setCellValue(item.getVolume() != null ? item.getVolume() : "");
                     dvtCell.setCellStyle(dateCenterStyle);
 
-                    // Cột D — Số lượng
+                    // Cột D — Màu sắc ← thêm mới
+                    Cell colorCell = row.createCell(3);
+                    colorCell.setCellValue(item.getColor() != null ? item.getColor() : "—");
+                    colorCell.setCellStyle(dateCenterStyle);
+
+                    // Cột E — Số lượng
                     Cell qtyCell = row.createCell(3);
                     qtyCell.setCellValue(item.getQuantity());
                     qtyCell.setCellStyle(dateCenterStyle);
 
-                    // Cột E — Đơn giá
+                    // Cột F — Đơn giá
                     Cell priceCell = row.createCell(4);
                     priceCell.setCellValue(item.getUnitPrice().doubleValue());
                     priceCell.setCellStyle(moneyStyle);
 
-                    // Cột F — Thành tiền (formula, rowIdx+1 vì Excel 1-based)
+                    // Cột G — Thành tiền (formula, rowIdx+1 vì Excel 1-based)
                     Cell subtotalCell = row.createCell(5);
                     subtotalCell.setCellFormula("D" + (rowIdx + 1) + "*E" + (rowIdx + 1));
                     subtotalCell.setCellStyle(moneyStyle);
@@ -157,21 +162,22 @@ public class ExportDiaryDetailToFileService {
             Cell totalLabel = totalRow.createCell(0);
             totalLabel.setCellValue("TỔNG CỘNG");
             totalLabel.setCellStyle(totalStyle);
-            sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 4));
+            sheet.addMergedRegion(new CellRangeAddress(rowIdx, rowIdx, 0, 5));
 
             // fill merged cells với style để border hiển thị đều
-            for (int col = 1; col <= 4; col++) {
+            for (int col = 1; col <= 5; col++) {
                 totalRow.createCell(col).setCellStyle(totalStyle);
             }
 
-            Cell totalValue = totalRow.createCell(5);
-            totalValue.setCellFormula("SUM(F6:F" + rowIdx + ")");
+            Cell totalValue = totalRow.createCell(6);
+            totalValue.setCellFormula("SUM(G6:G" + rowIdx + ")");
             totalValue.setCellStyle(totalMoneyStyle);
 
             // ── Column widths ─────────────────────────────────────────────
             sheet.setColumnWidth(0, 13 * 256);
             sheet.setColumnWidth(1, 32 * 256);
             sheet.setColumnWidth(2,  9 * 256);
+            sheet.setColumnWidth(3, 12 * 256);
             sheet.setColumnWidth(3, 11 * 256);
             sheet.setColumnWidth(4, 14 * 256);
             sheet.setColumnWidth(5, 16 * 256);
