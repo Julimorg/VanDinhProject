@@ -1,39 +1,60 @@
 import React from 'react';
-import { Col, Card, Skeleton } from 'antd';
+import { Box, Skeleton } from '@mui/material';
 
 const ProductSkeletonLoading: React.FC = () => {
   return (
-    <Col xs={12} sm={12} md={8} lg={6} xl={4}>
-      <Card
-        className="h-full rounded-xl border border-gray-200 overflow-hidden bg-white"
-        bodyStyle={{ padding: 0, height: '100%' }}
-      >
-        <div className="w-full h-56 md:h-64 bg-gray-200 animate-pulse" />
+    <Box
+      sx={{
+        bgcolor: 'white',
+        border: '1px solid #e7e5e4',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Image */}
+      <Skeleton variant="rectangular" sx={{ aspectRatio: '1/1', width: '100%', height: 'auto' }} />
 
-        {/* Nội dung */}
-        <div className="p-4">
-          {/* Tên sản phẩm - 2 dòng */}
-          <Skeleton
-            active
-            paragraph={{ rows: 2 }}
-            title={false}
-            className="mb-4"
-          />
+      {/* Content */}
+      <Box sx={{ p: 1.75, display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+        {/* Color label */}
+        <Skeleton variant="text" width={64} height={14} />
 
-          {/* Giá + tồn kho */}
-          <div className="flex justify-between mb-4">
-            <Skeleton.Button active style={{ width: 110, height: 28 }} />
-            <Skeleton.Button active style={{ width: 90, height: 20 }} />
-          </div>
+        {/* Product name */}
+        <Box>
+          <Skeleton variant="text" width="100%" height={16} />
+          <Skeleton variant="text" width="80%" height={16} />
+        </Box>
 
-          {/* Hai nút */}
-          <div className="flex gap-3">
-            <Skeleton.Button active block style={{ height: 38 }} />
-            <Skeleton.Button active block style={{ height: 38 }} />
-          </div>
-        </div>
-      </Card>
-    </Col>
+        {/* Code & volume */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Skeleton variant="text" width={56} height={12} />
+          <Skeleton variant="text" width={44} height={12} />
+        </Box>
+
+        {/* Divider */}
+        <Box sx={{ height: '1px', bgcolor: '#f5f5f4' }} />
+
+        {/* Price row */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+          <Skeleton variant="text" width={96} height={22} />
+          <Box sx={{ display: 'flex', gap: 0.4 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Skeleton key={i} variant="circular" width={6} height={6} />
+            ))}
+          </Box>
+        </Box>
+
+        {/* Quantity */}
+        <Skeleton variant="rectangular" width={128} height={28} />
+
+        {/* Buttons */}
+        <Box sx={{ display: 'flex', gap: 1 }}>
+          <Skeleton variant="rectangular" sx={{ flex: 1, height: 34 }} />
+          <Skeleton variant="rectangular" sx={{ flex: 2, height: 34 }} />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

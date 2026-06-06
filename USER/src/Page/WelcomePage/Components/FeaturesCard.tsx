@@ -1,52 +1,92 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Typography } from 'antd';
-import { type LucideIcon } from 'lucide-react';
+import React from "react";
+import SectionLabel from "./SectionsLabel";
+import { data } from "../../../Data/WelcomePageData";
 
-const { Title, Paragraph } = Typography;
 
-interface Feature {
-  id: number;
-  icon: LucideIcon;
-  title: string;
-  description: string;
-}
-
-interface FeatureCardProps {
-  feature: Feature;
-  index: number;
-}
-
-const FeatureCard: React.FC<FeatureCardProps> = ({ feature, index }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const Icon = feature.icon;
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), index * 150);
-    return () => clearTimeout(timer);
-  }, [index]);
-
-  return (
-    <div
-      className={`transform transition-all duration-700 ${
-        isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'
-      }`}
-    >
-      <Card
-        hoverable
-        className="h-full border-2 border-transparent hover:border-blue-500 transition-all duration-300 hover:shadow-xl"
-      >
-        <div className="flex flex-col items-center text-center p-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-4 transform hover:scale-110 transition-transform duration-300">
-            <Icon className="text-white" size={32} />
+const Features: React.FC = () => (
+  <>
+    <section style={{ background: "#fff", padding: "80px 0" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem" }}>
+        <div className="features-outer-grid">
+          {/* Left header */}
+          <div>
+            <SectionLabel text="Tại Sao Chọn Chúng Tôi" />
+            <h2
+              style={{
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                fontSize: "clamp(32px, 4vw, 52px)",
+                fontWeight: 700,
+                color: "#1a1208",
+                lineHeight: 1.15,
+              }}
+            >
+              Vạn Dinh —<br />Cam Kết Vượt Trội
+            </h2>
           </div>
-          <Title level={4} className="mb-2">{feature.title}</Title>
-          <Paragraph className="text-gray-600 mb-0">
-            {feature.description}
-          </Paragraph>
-        </div>
-      </Card>
-    </div>
-  );
-};
 
-export default FeatureCard;
+          {/* Right: 2-col cards */}
+          <div className="features-inner-grid">
+            {data.features.map((f) => (
+              <div
+                key={f.id}
+                style={{
+                  padding: "32px 0",
+                  borderTop: "1px solid #e0dbd0",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: "'Cormorant Garamond', Georgia, serif",
+                    fontSize: 60,
+                    fontWeight: 700,
+                    color: "#f0ece3",
+                    lineHeight: 1,
+                    position: "absolute",
+                    top: 20,
+                    right: 0,
+                    userSelect: "none",
+                    pointerEvents: "none",
+                  }}
+                >
+                  {f.number}
+                </div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a1208", marginBottom: 10 }}>
+                  {f.title}
+                </h3>
+                <p style={{ fontSize: 14, color: "#6b6258", lineHeight: 1.7 }}>{f.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <style>{`
+      .features-outer-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 80px;
+        align-items: start;
+      }
+      .features-inner-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 48px;
+      }
+      @media (max-width: 900px) {
+        .features-outer-grid {
+          grid-template-columns: 1fr;
+          gap: 40px;
+        }
+      }
+      @media (max-width: 560px) {
+        .features-inner-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `}</style>
+  </>
+);
+
+export default Features;

@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react';
 import moment from 'moment-timezone';
 import { STATUS_MAP, type UserStatus } from '../Enum/UserStatus';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const removeDiacritics = (str: string): string => {
   return str.normalize('NFD')

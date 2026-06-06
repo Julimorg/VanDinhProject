@@ -1,54 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Typography } from 'antd';
+import React, { useRef } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import Autoplay from "embla-carousel-autoplay";
+import SectionLabel from "./SectionsLabel";
+import { data } from "../../../Data/WelcomePageData";
 
-const { Title } = Typography;
 
-interface Brand {
-  id: number;
-  name: string;
-}
 
-interface BrandSliderProps {
-  brands: Brand[];
-}
-
-const BrandSlider: React.FC<BrandSliderProps> = ({ brands }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % brands.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [brands.length]);
+const BrandsSection: React.FC = () => {
+  const autoplay = useRef(Autoplay({ delay: 2200, stopOnInteraction: false }));
+  const [emblaRef] = useEmblaCarousel(
+    { loop: true, dragFree: true, align: "start" },
+    [autoplay.current]
+  );
 
   return (
-    <div className="relative overflow-hidden h-20 flex items-center justify-center">
-      {brands.map((brand, index) => {
-        const position = (index - currentIndex + brands.length) % brands.length;
-        return (
-          <div
-            key={brand.id}
-            className={`absolute transition-all duration-500 ${
-              position === 0
-                ? 'opacity-100 scale-100 z-10'
-                : position === 1 || position === brands.length - 1
-                ? 'opacity-40 scale-75'
-                : 'opacity-0 scale-50'
-            }`}
-            style={{
-              left: `${50 + (position - 1) * 30}%`,
-              transform: 'translateX(-50%)'
-            }}
-          >
-            <div className="bg-white rounded-lg shadow-md px-8 py-4 border-2 border-gray-200">
-              <Title level={3} className="mb-0 text-gray-800">{brand.name}</Title>
+    <section id="brands" style={{ background: "#1a1208", padding: "80px 0", overflow: "hidden" }}>
+      <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 1.5rem", marginBottom: 44 }}>
+        <SectionLabel text="Thương Hiệu Đối Tác" light />
+        <h2
+          style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(28px, 4vw, 44px)",
+            fontWeight: 700,
+            color: "#f0ece3",
+            lineHeight: 1.2,
+          }}
+        >
+          Hợp Tác Với Những Thương Hiệu Hàng Đầu Thế Giới
+        </h2>
+      </div>
+
+      <div ref={emblaRef} style={{ overflow: "hidden", cursor: "grab" }}>
+        <div style={{ display: "flex", gap: 2 }}>
+          {[...data.brands, ...data.brands].map((brand, i) => (
+            <div
+              key={i}
+              style={{
+                flex: "0 0 200px",
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                padding: "28px 32px",
+                transition: "background 0.2s",
+                cursor: "default",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(193,127,58,0.12)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: "'Cormorant Garamond', Georgia, serif",
+                  fontSize: 26,
+                  fontWeight: 700,
+                  color: "#f0ece3",
+                  letterSpacing: 1,
+                }}
+              >
+                {brand.name}
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  letterSpacing: 3,
+                  color: "#9a8a72",
+                  marginTop: 4,
+                  textTransform: "uppercase" as const,
+                }}
+              >
+                {brand.origin}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
-export default BrandSlider;
+export default BrandsSection;

@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
-import { Col, Card, Typography, Button, Tag, Rate, message } from 'antd';
-import { ShoppingCartOutlined, EyeOutlined, HeartOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { Box, Typography, IconButton, Chip } from '@mui/material';
+import {
+  ShoppingCart,
+  Visibility,
+  FavoriteBorder,
+  Favorite,
+  Add,
+  Remove,
+} from '@mui/icons-material';
+import { message } from 'antd';
 import type { IGetProductNewArrival } from '../../../Interface/Product/IGetProductNewArrival';
 import { useProductCardUtils } from '../../../Hook/useProductCardUltis';
 
@@ -10,183 +18,214 @@ interface ProductCardNewArrivalProps {
   onAddToCart: (product: IGetProductNewArrival[0], quantity: number) => void;
 }
 
-const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({ product, onViewDetail, onAddToCart }) => {
+const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({
+  product,
+  onViewDetail,
+  onAddToCart,
+}) => {
   const [quantity, setQuantity] = useState(1);
   const [isHovered, setIsHovered] = useState(false);
+  const [isWished, setIsWished] = useState(false);
 
   const utils = useProductCardUtils(product);
-
   const mainImage = product.productImage?.[0] || 'https://via.placeholder.com/300x300?text=No+Image';
-
   const formatPrice = (price: number) => price.toLocaleString('vi-VN') + ' ₫';
+  const isLowStock = product.productQuantity < 10 && product.productQuantity > 0;
 
   const handleQuantity = (value: number) => {
     const result = utils.validateQuantity(value);
     setQuantity(result.value);
-
-    if (result.warning) {
-      message.warning(result.warning);
-    }
+    if (result.warning) message.warning(result.warning);
   };
 
   return (
-    <Col xs={12} sm={12} md={8} lg={6} xl={4} xxl={3}>
-      <Card
-        hoverable
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 h-full flex flex-col"
-        bodyStyle={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}
-        cover={
-          <div className="relative overflow-hidden aspect-[4/3] md:aspect-square">
-            <img
-              alt={product.productName}
-              src={mainImage}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+    <Box
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        bgcolor: 'white',
+        border: '1px solid',
+        borderColor: isHovered ? '#a8a29e' : '#e7e5e4',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'all 0.25s ease',
+        boxShadow: isHovered ? '0 8px 24px rgba(0,0,0,0.1)' : 'none',
+        transform: isHovered ? 'translateY(-2px)' : 'none',
+        height: '100%',
+      }}
+    >
+      {/* Image */}
+      <Box sx={{ position: 'relative', overflow: 'hidden', aspectRatio: '1/1', bgcolor: '#fafaf9' }}>
+        <Box
+          component="img"
+          src={mainImage}
+          alt={product.productName}
+          sx={{
+            width: '100%', height: '100%', objectFit: 'cover',
+            transition: 'transform 0.6s ease',
+            transform: isHovered ? 'scale(1.06)' : 'scale(1)',
+          }}
+        />
 
-            {/* Badges top-left */}
-            <div className="absolute top-2 left-2 flex flex-col gap-1">
-              <Tag color="red" className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm">
-                MỚI
-              </Tag>
-              {utils.stockBadge && (
-                <Tag className={`text-[10px] px-1.5 py-0.5 rounded-full shadow-sm ${utils.stockBadge.className}`}>
-                  {utils.stockBadge.text}
-                </Tag>
-              )}
-            </div>
+        {/* Badges */}
+        <Box sx={{ position: 'absolute', top: 6, left: 6, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+          <Chip label="MỚI" size="small" sx={{
+            bgcolor: '#f59e0b', color: '#1c1917', fontWeight: 800,
+            fontSize: '0.55rem', letterSpacing: '0.12em', height: 16,
+            borderRadius: 0, '& .MuiChip-label': { px: 0.75 },
+          }} />
+          {isLowStock && (
+            <Chip label="SẮP HẾT" size="small" sx={{
+              bgcolor: '#dc2626', color: 'white', fontWeight: 700,
+              fontSize: '0.5rem', height: 14, borderRadius: 0,
+              '& .MuiChip-label': { px: 0.75 },
+            }} />
+          )}
+          {utils.isOutOfStock && (
+            <Chip label="HẾT HÀNG" size="small" sx={{
+              bgcolor: '#44403c', color: 'white', fontWeight: 700,
+              fontSize: '0.5rem', height: 14, borderRadius: 0,
+              '& .MuiChip-label': { px: 0.75 },
+            }} />
+          )}
+        </Box>
 
-            {/* Wishlist button */}
-            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <Button
-                shape="circle"
-                icon={<HeartOutlined />}
-                size="small"
-                className="bg-white/90 backdrop-blur-sm border-none shadow hover:bg-red-50"
-              />
-            </div>
+        {/* Wishlist */}
+        <IconButton
+          size="small"
+          onClick={() => setIsWished(v => !v)}
+          sx={{
+            position: 'absolute', top: 4, right: 4,
+            bgcolor: 'rgba(255,255,255,0.85)', borderRadius: 0,
+            width: 26, height: 26,
+            opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s',
+            '&:hover': { bgcolor: '#fff5f5' },
+          }}
+        >
+          {isWished
+            ? <Favorite sx={{ fontSize: '0.75rem', color: '#ef4444' }} />
+            : <FavoriteBorder sx={{ fontSize: '0.75rem', color: '#78716c' }} />
+          }
+        </IconButton>
 
-            {/* Color & Category tags top-right */}
-            <div className="absolute top-2 right-2 flex flex-col items-end gap-1 opacity-90">
-              {product.colorName && (
-                <Tag className="text-[9px] px-1.5 py-0.5 rounded-full bg-white/90 text-gray-800 shadow-sm">
-                  Màu: {product.colorName}
-                </Tag>
-              )}
-              <Tag className="text-[9px] px-1.5 py-0.5 rounded-full bg-gray-800/80 text-white shadow-sm">
-                {product.categoryName || 'Sơn nội thất'}
-              </Tag>
-            </div>
+        {/* Quick view */}
+        <Box
+          onClick={() => onViewDetail(product.productId)}
+          sx={{
+            position: 'absolute', inset: 'auto 0 0 0',
+            bgcolor: 'rgba(28,25,23,0.85)', py: 0.75,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5,
+            opacity: isHovered ? 1 : 0,
+            transform: isHovered ? 'translateY(0)' : 'translateY(100%)',
+            transition: 'all 0.25s ease', cursor: 'pointer',
+          }}
+        >
+          <Visibility sx={{ fontSize: '0.7rem', color: 'white' }} />
+          <Typography variant="caption" sx={{
+            color: 'white', fontWeight: 700, letterSpacing: '0.12em',
+            textTransform: 'uppercase', fontSize: '0.6rem',
+          }}>
+            Xem chi tiết
+          </Typography>
+        </Box>
+      </Box>
 
-            {/* Out of stock overlay */}
-            {utils.isOutOfStock && (
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white font-medium text-sm">Hết hàng</span>
-              </div>
-            )}
+      {/* Info */}
+      <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, p: 1.25, gap: 0.75 }}>
 
-            {/* Quick view button bottom */}
-            <div
-              className={`absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-opacity duration-300 ${
-                isHovered && utils.canAddToCart ? 'opacity-100' : 'opacity-0'
-              }`}
+        {/* Name */}
+        <Typography sx={{
+          fontWeight: 700, color: '#1c1917', lineHeight: 1.3, fontSize: '0.75rem',
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {product.productName}
+        </Typography>
+
+        {/* Code & volume */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Typography sx={{ color: '#a8a29e', fontFamily: 'monospace', fontSize: '0.6rem' }}>
+            {product.productCode}
+          </Typography>
+          <Typography sx={{ color: '#a8a29e', fontFamily: 'monospace', fontSize: '0.6rem' }}>
+            {product.productVolume} {product.productUnit}
+          </Typography>
+        </Box>
+
+        <Box sx={{ height: '1px', bgcolor: '#f5f5f4' }} />
+
+        {/* Price */}
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Typography sx={{ fontWeight: 900, color: '#1c1917', fontSize: '0.85rem', lineHeight: 1 }}>
+            {formatPrice(product.productPrice)}
+          </Typography>
+          {isLowStock && (
+            <Typography sx={{ color: '#ef4444', fontSize: '0.55rem', fontWeight: 600 }}>
+              Còn {product.productQuantity}
+            </Typography>
+          )}
+        </Box>
+
+        {/* Quantity */}
+        {utils.canAddToCart && (
+          <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #e7e5e4', width: 'fit-content' }}>
+            <Box component="button" onClick={() => handleQuantity(quantity - 1)} disabled={quantity <= 1}
+              sx={{
+                px: 0.75, py: 0.4, border: 'none', bgcolor: 'transparent',
+                cursor: quantity <= 1 ? 'not-allowed' : 'pointer',
+                opacity: quantity <= 1 ? 0.3 : 1, display: 'flex', alignItems: 'center',
+              }}
             >
-              <Button
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => onViewDetail(product.productId)}
-                block
-                className="bg-white/95 hover:bg-white text-black font-medium text-xs"
-              >
-                Xem chi tiết
-              </Button>
-            </div>
-          </div>
-        }
-      >
-        <div className="flex flex-col flex-1 space-y-1.5">
-          {/* Name */}
-          <Typography.Title
-            level={5}
-            className="text-sm md:text-base font-semibold line-clamp-2 mb-0 h-10 md:h-12"
+              <Remove sx={{ fontSize: '0.6rem' }} />
+            </Box>
+            <Typography sx={{ px: 1, fontWeight: 700, color: '#1c1917', fontSize: '0.7rem', minWidth: 20, textAlign: 'center' }}>
+              {quantity}
+            </Typography>
+            <Box component="button" onClick={() => handleQuantity(quantity + 1)} disabled={quantity >= utils.maxOrderQuantity}
+              sx={{
+                px: 0.75, py: 0.4, border: 'none', bgcolor: 'transparent',
+                cursor: quantity >= utils.maxOrderQuantity ? 'not-allowed' : 'pointer',
+                opacity: quantity >= utils.maxOrderQuantity ? 0.3 : 1, display: 'flex', alignItems: 'center',
+              }}
+            >
+              <Add sx={{ fontSize: '0.6rem' }} />
+            </Box>
+          </Box>
+        )}
+
+        {/* Buttons */}
+        <Box sx={{ display: 'flex', gap: 0.75, mt: 'auto' }}>
+          <Box component="button" onClick={() => onViewDetail(product.productId)}
+            sx={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              py: 0.75, border: '1px solid #e7e5e4', bgcolor: 'transparent', cursor: 'pointer',
+              transition: 'all 0.2s', '&:hover': { borderColor: '#78716c' },
+            }}
           >
-            {product.productName}
-          </Typography.Title>
+            <Visibility sx={{ fontSize: '0.7rem', color: '#78716c' }} />
+          </Box>
 
-          {/* Code & Volume */}
-          <div className="flex justify-between text-xs text-gray-500">
-            <span>{product.productCode}</span>
-            <span>
-              {product.productVolume} {product.productUnit}
-            </span>
-          </div>
-
-          {/* Price & Rating */}
-          <div className="flex items-end justify-between mt-1">
-            <div>
-              <Typography.Text strong className="text-base md:text-lg text-green-700 block">
-                {formatPrice(product.productPrice)}
-              </Typography.Text>
-              {product.productQuantity < 10 && product.productQuantity > 0 && (
-                <Typography.Text type="danger" className="text-xs">
-                  Còn {product.productQuantity}
-                </Typography.Text>
-              )}
-            </div>
-            <Rate disabled defaultValue={4.5} count={5} className="text-xs" />
-          </div>
-
-          {/* Quantity selector & Buttons */}
-          <div className="mt-auto pt-2 space-y-2">
-            {utils.canAddToCart && (
-              <div className="flex items-center justify-center gap-2">
-                <div className="flex items-center border border-gray-300 rounded-md overflow-hidden bg-white text-xs">
-                  <button
-                    onClick={() => handleQuantity(quantity - 1)}
-                    disabled={quantity <= 1}
-                    className="px-2 py-1 hover:bg-gray-100 disabled:opacity-40"
-                  >
-                    <MinusOutlined />
-                  </button>
-                  <span className="px-3 py-1 font-medium min-w-[32px] text-center">
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => handleQuantity(quantity + 1)}
-                    disabled={quantity >= utils.maxOrderQuantity}
-                    className="px-2 py-1 hover:bg-gray-100 disabled:opacity-40"
-                  >
-                    <PlusOutlined />
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-1.5">
-              <Button
-                size="small"
-                icon={<EyeOutlined />}
-                onClick={() => onViewDetail(product.productId)}
-                className="flex-1 text-xs border-gray-300 hover:border-gray-400"
-              >
-                Chi tiết
-              </Button>
-              <Button
-                type="primary"
-                size="small"
-                icon={<ShoppingCartOutlined />}
-                onClick={() => onAddToCart(product, quantity)}
-                disabled={!utils.canAddToCart}
-                className="flex-1 text-xs bg-gray-900 hover:bg-gray-800"
-              >
-                Thêm giỏ
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Card>
-    </Col>
+          <Box component="button" onClick={() => onAddToCart(product, quantity)} disabled={!utils.canAddToCart}
+            sx={{
+              flex: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0.5,
+              py: 0.75, border: 'none',
+              bgcolor: utils.canAddToCart ? '#1c1917' : '#e7e5e4',
+              cursor: utils.canAddToCart ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s',
+              '&:hover': utils.canAddToCart ? { bgcolor: '#f59e0b' } : {},
+            }}
+          >
+            <ShoppingCart sx={{ fontSize: '0.7rem', color: utils.canAddToCart ? 'white' : '#a8a29e' }} />
+            <Typography sx={{
+              fontWeight: 700, fontSize: '0.6rem', letterSpacing: '0.06em',
+              textTransform: 'uppercase', color: utils.canAddToCart ? 'white' : '#a8a29e',
+            }}>
+              {utils.canAddToCart ? 'Thêm giỏ' : 'Hết hàng'}
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
