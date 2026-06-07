@@ -193,7 +193,7 @@ const Navbar: React.FC = () => {
         }}
       >
         <div style={{ padding: "32px 1.5rem", display: "flex", flexDirection: "column", gap: 0 }}>
-          {NAV_ITEMS.map((item, i) => (
+          {NAV_ITEMS.map((item) => (
             <button
               key={item.sectionId}
               onClick={() => handleNavClick(item.sectionId)}
