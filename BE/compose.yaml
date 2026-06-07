@@ -1,36 +1,20 @@
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: jianfong/van-dinh-be:latest
+    container_name: spring-app
     ports:
       - "8080:8080"
     env_file:
       - ./.env
     restart: unless-stopped
-    depends_on:
-      elasticsearch:
-        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    networks:
+      - app-network
 
-  elasticsearch:
-    image: elasticsearch:8.18.1
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - ES_JAVA_OPTS=-Xms256m -Xmx256m
-    ports:
-      - "9200:9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    mem_limit: 512m
-    memswap_limit: 1g
-
-volumes:
-  es_data:
+networks:
+  app-network:
+    name: app-network
+    external: true

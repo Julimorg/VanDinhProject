@@ -43,7 +43,10 @@ public class SecurityConfiguration {
             "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**"
     };
     private static final String[] PUBLIC_GET_VNPAY = { "/api/v1/vn-pay/**" };
-    private static final String PUBLIC_ENDPOINT = "/api/v1/public/**";
+    private static final String[] PUBLIC_ENDPOINT = {
+            "api/v1/catgories/select-categories",
+            "api/v1/products/get-products"
+    };
 
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
