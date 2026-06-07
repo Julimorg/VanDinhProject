@@ -9,20 +9,30 @@ import 'flag-icon-css/css/flag-icons.min.css';
 
 import { App as AntdApp } from 'antd';
 import ReactQueryProvider from './Provider/ReactQueryProvider';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+
+const theme = createTheme({
+  typography: {
+    fontFamily: 'inherit',
+  },
+});
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <ReactQueryProvider>
-      <AntdApp>
-        <App />
-        <ToastContainer
-          theme="light"
-          position="top-right"
-          autoClose={3000}
-          closeOnClick
-          pauseOnHover={false}
-        />
-      </AntdApp>
+      <ThemeProvider theme={theme}>
+        <AntdApp>
+          <App />
+          <ToastContainer
+            theme="light"
+            position="top-right"
+            autoClose={3000}
+            closeOnClick
+            pauseOnHover={false}
+          />
+        </AntdApp>
+      </ThemeProvider>
     </ReactQueryProvider>
   </React.StrictMode>
 );
