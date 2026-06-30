@@ -10,6 +10,7 @@ import 'dayjs/locale/vi';
 import { useNavigate } from 'react-router-dom';
 import { useMarkAllNotificationsAsRead } from '../Hook/useMarkAllNotificationsAsRead';
 import { toast } from 'react-toastify';
+import { useGetUnreadCountNumNotifications } from '../Hook/useGetUnreadCountNumNotification';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -27,6 +28,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
     enabled: !!userId && open,
   });
 
+  const { data: unreadCountData, refetch: refetchUnreadCount } = useGetUnreadCountNumNotifications(
+    userId || undefined
+  );
+
   const markAsRead = useMarkAllNotificationsAsRead();
 
   const notifications: IGetNotificationResponse[] = useMemo(() => {
@@ -34,13 +39,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
 
     const list = Array.isArray(data.data) ? data.data : [data.data];
 
-    return [...list].sort(
-      (a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf()
-    );
+    return [...list].sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
   }, [data]);
 
-  const unreadNotifications = notifications.filter(n => !n.isRead);
-  const unreadCount = unreadNotifications.length;
+  const unreadNotifications = notifications.filter((n) => !n.isRead);
+  const unreadCount = unreadCountData?.data ?? 0;
 
   const handleMarkAllAsRead = () => {
     if (userId && unreadNotifications.length > 0) {
@@ -54,6 +57,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
             onSuccess: () => {
               toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
               refetch();
+              refetchUnreadCount();
             },
             onError: (err: any) => {
               toast.error(`Đánh dấu thất bại: ${err.message || 'Vui lòng thử lại!'}`);
@@ -61,12 +65,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
           }
         );
       });
-
-
     }
   };
-
-
 
   const getNotificationColor = (type: string) => {
     const colorMap: Record<string, string> = {
@@ -83,7 +83,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
   const formatTime = (dateString: string) => dayjs(dateString).fromNow();
 
   const notificationMenu = (
-    <div className={`${isMobile ? 'w-80' : 'w-96'} max-h-[450px] overflow-auto bg-white rounded-lg shadow-2xl`}>
+    <div
+      className={`${isMobile ? 'w-80' : 'w-96'} max-h-[450px] overflow-auto bg-white rounded-lg shadow-2xl`}
+    >
       <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
         <span className="text-base font-semibold">Thông báo</span>
         {unreadCount > 0 && (
@@ -114,10 +116,11 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
 
               return (
                 <div
-                  className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-50 ${isUnread
-                    ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500'
-                    : 'bg-white hover:bg-gray-50 opacity-70'
-                    }`}
+                  className={`px-4 py-3 cursor-pointer transition-all border-b border-gray-50 ${
+                    isUnread
+                      ? 'bg-blue-50 hover:bg-blue-100 border-l-4 border-l-blue-500'
+                      : 'bg-white hover:bg-gray-50 opacity-70'
+                  }`}
                 >
                   <div className="flex gap-3">
                     <div
@@ -136,7 +139,9 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isMobile })
                           {formatTime(item.createdAt)}
                         </span>
                       </div>
-                      <p className={`text-sm m-0 ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}>
+                      <p
+                        className={`text-sm m-0 ${isUnread ? 'text-gray-700 font-medium' : 'text-gray-500'}`}
+                      >
                         {item.message}
                       </p>
                     </div>
