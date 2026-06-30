@@ -28,9 +28,6 @@ public class PaintDetail {
     @JoinColumn(name = "product_id")
     private Product product;
 
-//    @Column(name = "finish_type")
-//    private String finishType;
-
     @Column(name = "surface_type")
     private String surfaceType;
 

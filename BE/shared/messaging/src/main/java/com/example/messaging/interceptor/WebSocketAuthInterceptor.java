@@ -11,6 +11,7 @@ import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
+import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -36,23 +37,23 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
 
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
-        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        StompCommand command = accessor.getCommand();
+        StompHeaderAccessor accessor =
+                MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
+        if (accessor == null) return message;
+        StompCommand command = accessor.getCommand();
         if (command == null) return message;
 
-        return switch (command) {
-            case CONNECT    -> {
+        return switch (accessor.getCommand()) {
+            case CONNECT -> {
                 try {
                     yield handleConnect(message, accessor);
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                } catch (JOSEException e) {
+                } catch (ParseException | JOSEException e) {
                     throw new RuntimeException(e);
                 }
             }
             case DISCONNECT -> handleDisconnect(message, accessor);
-            default         -> message;
+            default -> message;
         };
     }
 

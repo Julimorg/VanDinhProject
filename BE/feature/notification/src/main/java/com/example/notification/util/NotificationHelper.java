@@ -33,6 +33,10 @@ public class NotificationHelper {
         messagingTemplate.convertAndSend(queue, payload);
     }
 
+    public void sendToNotificationUser(String userId, NotificationRes payload){
+        messagingTemplate.convertAndSendToUser(userId, "/queue/notifications", payload);
+    }
+
 
     public Notifications saveNotification(String title, String message,
                                            String type, String createdBy) {

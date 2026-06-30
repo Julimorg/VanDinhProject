@@ -4,6 +4,7 @@ import com.example.common.dto.notification.request.SendNotiToOneUserOrManyUserRe
 import com.example.common.dto.notification.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
+import com.example.common.interfaces.notifications.NotificationInterface;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.common.interfaces.user.UserPresenceInternalService;
 import com.example.notification.mapper.NotificationMapper;
@@ -34,7 +35,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationService {
+public class NotificationService implements NotificationInterface {
 
     private final NotificationsRepository notiRepo;
 
@@ -54,6 +55,50 @@ public class NotificationService {
 
     private final NotificationHelper notificationHelper;
 
+
+    private UserNotifications buildAndSend(Notifications noti, String targetUserId,
+                                           UserNotifactionStatus defaultStatus) {
+        UserNotifications un = UserNotifications.builder()
+                .notifications(noti)
+                .userId(targetUserId)
+                .isRead(false)
+                .status(defaultStatus)
+                .sendChannel(UserNotifactionSendChannel.WEB)
+                .build();
+
+        if (userPresenceInternalService.isOnline(targetUserId)) {
+            un.setStatus(UserNotifactionStatus.DELIVERED);
+            un.setDeliveredAt(LocalDateTime.now());
+            notificationHelper.sendToNotificationUser(targetUserId, notificationHelper.buildPayload(noti));
+            log.info("Realtime noti -> user [{}]", targetUserId);
+        } else {
+            log.info("User [{}] OFFLINE – saved to DB", targetUserId);
+        }
+        return un;
+    }
+
+    @Override
+    public void notifyAdminsOrderConfirmed(String userId) {
+
+        User customer = userInternalService.getUserById(userId);
+
+        Notifications notifications = notificationHelper.saveNotification(
+                "Order Confirmation!",
+                customer.getUserName() + " has successfully confirmed their order!",
+                "Order!",
+                userId);
+
+        List<String> adminIds = userInternalService
+                .findAllByRoles_NameIn(List.of(UserRole.ADMIN.toString(), UserRole.STAFF.toString()))
+                .stream().map(User::getId).toList();
+
+        List<UserNotifications> saved = adminIds.stream()
+                .map(id -> buildAndSend(notifications, id, UserNotifactionStatus.PENDING))
+                .toList();
+
+        userNotiRepo.saveAll(saved);
+
+    }
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetUserIsOnline> getUserOnline(Pageable pageable) {
@@ -161,30 +206,4 @@ public class NotificationService {
         return notificationMapper.toSendNotiToAdminRes(noti, saved);
     }
 
-    private UserNotifications buildAndSend(Notifications noti,
-                                           String targetUserId,
-                                           UserNotifactionStatus defaultStatus) {
-        UserNotifications un = UserNotifications.builder()
-                .notifications(noti)
-                .userId(targetUserId)
-                .isRead(false)
-                .status(defaultStatus)
-                .sendChannel(UserNotifactionSendChannel.WEB)
-                .build();
-
-        userPresenceInternalService.getSocketId(targetUserId)
-                .ifPresentOrElse(
-                        socketId -> {
-                            un.setStatus(UserNotifactionStatus.DELIVERED);
-                            un.setDeliveredAt(LocalDateTime.now());
-                            notificationHelper
-                                    .sendToQueue(socketId,
-                                            notificationHelper.buildPayload(noti));
-                            log.info("Realtime notification sent to user [{}]", targetUserId);
-                        },
-                        () -> log.info("User [{}] OFFLINE – notification saved to DB", targetUserId)
-                );
-
-        return un;
-    }
 }

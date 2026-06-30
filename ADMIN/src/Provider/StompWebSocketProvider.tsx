@@ -2,25 +2,27 @@ import { useEffect } from 'react';
 import { useWebSocketService } from '../Hook/useWebSocket';
 import { useAuthStore } from '@/Store/IAuth';
 import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
-import { AWS_API_RAW } from '@/Utils/env_dev_handler';
 import { toast } from 'react-toastify';
 import { WS_CHANNELS } from '@/Constant/websocket-channels';
+import { LOCAL_API_RAW, PUBLIC_API_RAW } from '@/Utils/env_dev_handler';
+import { useQueryClient } from '@tanstack/react-query';
+import { QueryKeys } from '@/Constant/query-key';
 
 const GlobalWebSocketListener = () => {
   const { id: userId, accessToken } = useAuthStore();
+  const queryClient = useQueryClient();
   const updateUserStatus = useOnlineStatusStore((state) => state.updateUserStatus);
   const clearAll = useOnlineStatusStore((state) => state.clearAll);
 
-  const PUBLIC_API = AWS_API_RAW;
   const { connect, subscribe, disconnect, isConnected } = useWebSocketService(
-     AWS_API_RAW + '/ws',
+    LOCAL_API_RAW + '/ws',
     () => {
       console.log('WebSocket Connected - Setting up subscriptions...');
       toast.success('Kết nối realtime thành công!');
 
       //? Private notifications
       subscribe(WS_CHANNELS.NOTIFICATIONS, (msg) => {
-        console.log(' Private Notification received:', msg);
+        console.log('Private Notification received:', msg);
 
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification(msg.title || 'New Notification', {
@@ -30,6 +32,12 @@ const GlobalWebSocketListener = () => {
         }
 
         toast.info(msg.message);
+
+        // Đổi 'notifications' thành đúng key mà useGetNotifications dùng
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_NOTIFICATIONS, userId] });
+
+        // Nếu có badge/unread-count riêng, invalidate luôn
+        // queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_UNREAD_COUNT, userId] });
       });
 
       //? Public notifications
