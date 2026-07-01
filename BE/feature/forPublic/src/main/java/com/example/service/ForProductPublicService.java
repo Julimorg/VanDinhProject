@@ -1,16 +1,16 @@
-package com.example.service;
-
-import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-@Slf4j
-@Service
-@RequiredArgsConstructor
-@AllArgsConstructor
-public class ForProductPublicService {
-
-
-
-}
+//package com.example.service;
+//
+//import lombok.AllArgsConstructor;
+//import lombok.RequiredArgsConstructor;
+//import lombok.extern.slf4j.Slf4j;
+//import org.springframework.stereotype.Service;
+//
+//@Slf4j
+//@Service
+//@RequiredArgsConstructor
+//@AllArgsConstructor
+//public class ForProductPublicService {
+//
+//
+//
+//}

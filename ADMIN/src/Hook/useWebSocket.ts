@@ -38,6 +38,12 @@ const reducer = (state: State, action: Action): State => {
     }
 }
 
+// Thời gian tối đa chờ CONNECT thành công trước khi tự huỷ và cho phép retry.
+// Đây là lớp bảo vệ cuối cùng: nếu vì bất kỳ lý do gì (BE không phản hồi,
+// mạng treo, BE âm thầm drop CONNECT frame...) mà không có callback nào
+// của stomp.js được gọi, guard này đảm bảo isConnectingRef không bị kẹt mãi mãi.
+const CONNECT_TIMEOUT_MS = 10000;
+
 export const useWebSocketService = (
     webSocketUrl: string,
     onConnectCallback: () => void,
@@ -56,6 +62,9 @@ export const useWebSocketService = (
     const currentTokenRef = useRef<string | null>(null);
     const isMountedRef = useRef(true);
     const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // Timeout riêng cho việc "chờ kết nối thành công", khác với connectTimeoutRef
+    // (dùng để debounce trước khi bắt đầu connect).
+    const connectionGuardRef = useRef<NodeJS.Timeout | null>(null);
 
     // Luôn cập nhật ref khi callback thay đổi
     useEffect(() => {
@@ -63,8 +72,22 @@ export const useWebSocketService = (
         onErrorRef.current = onErrorCallback;
     }, [onConnectCallback, onErrorCallback]);
 
+    // Helper: dọn timeout guard và reset trạng thái "đang connect"
+    const clearConnectionGuard = useCallback(() => {
+        if (connectionGuardRef.current) {
+            clearTimeout(connectionGuardRef.current);
+            connectionGuardRef.current = null;
+        }
+    }, []);
+
+    const resetConnectingState = useCallback((reason: string) => {
+        clearConnectionGuard();
+        isConnectingRef.current = false;
+        console.log(`🔓 isConnecting reset (${reason})`);
+    }, [clearConnectionGuard]);
+
     const connect = useCallback((token: string) => {
-        // Clear pending timeout
+        // Clear pending debounce timeout
         if (connectTimeoutRef.current) {
             clearTimeout(connectTimeoutRef.current);
             connectTimeoutRef.current = null;
@@ -118,6 +141,37 @@ export const useWebSocketService = (
 
             console.log("🔄 Initializing WebSocket Client...");
 
+            // --- Connection guard timeout ---
+            // Nếu sau CONNECT_TIMEOUT_MS mà không có callback nào của stomp.js
+            // được gọi (onConnect / onStompError / onWebSocketError / onWebSocketClose),
+            // nghĩa là server đã "nuốt" CONNECT frame (vd: reject nhưng không đóng
+            // socket / không gửi ERROR). Ta chủ động huỷ và mở khoá để lần connect()
+            // tiếp theo (thường mang token mới sau khi refresh) không bị chặn.
+            clearConnectionGuard();
+            connectionGuardRef.current = setTimeout(() => {
+                if (!isConnectingRef.current) return; // đã tự resolve theo hướng khác rồi
+
+                console.warn(`⏰ Connect timeout after ${CONNECT_TIMEOUT_MS}ms - forcing reset`);
+
+                try {
+                    clientRef.current?.deactivate();
+                } catch (e) {
+                    console.warn("Error deactivating timed-out client:", e);
+                }
+                clientRef.current = null;
+                currentTokenRef.current = null;
+
+                if (isMountedRef.current) {
+                    dispatch({ type: 'CLEAR_ALL' });
+                }
+
+                resetConnectingState('connect-timeout');
+
+                if (onErrorRef.current) {
+                    onErrorRef.current('Connection timeout - server did not respond');
+                }
+            }, CONNECT_TIMEOUT_MS);
+
             const client = new Client({
                 webSocketFactory: () => new SockJS(webSocketUrl),
                 connectHeaders: {
@@ -140,6 +194,8 @@ export const useWebSocketService = (
                 heartbeatOutgoing: 4000,
 
                 onConnect: () => {
+                    resetConnectingState('connected');
+
                     if (!isMountedRef.current) {
                         console.log("⚠️ Connected but component unmounted, disconnecting...");
                         client.deactivate();
@@ -147,9 +203,8 @@ export const useWebSocketService = (
                     }
 
                     console.log('✅ WebSocket connected');
-                    isConnectingRef.current = false;
                     dispatch({ type: 'SET_CONNECTED', payload: true });
-                    
+
                     if (onConnectRef.current) {
                         onConnectRef.current();
                     }
@@ -157,8 +212,8 @@ export const useWebSocketService = (
 
                 onDisconnect: () => {
                     console.log('🔌 WebSocket disconnected');
-                    isConnectingRef.current = false;
-                    
+                    resetConnectingState('disconnected');
+
                     if (isMountedRef.current) {
                         dispatch({ type: 'SET_CONNECTED', payload: false });
                     }
@@ -166,8 +221,8 @@ export const useWebSocketService = (
 
                 onStompError: error => {
                     console.error("❌ Stomp Error Header:", error.headers);
-                    isConnectingRef.current = false;
-                    
+                    resetConnectingState('stomp-error');
+
                     if (onErrorRef.current) {
                         onErrorRef.current(error.headers['message'] || 'Unknown error');
                     }
@@ -175,12 +230,12 @@ export const useWebSocketService = (
 
                 onWebSocketError: (error) => {
                     console.error("❌ WebSocket Error:", error);
-                    isConnectingRef.current = false;
+                    resetConnectingState('websocket-error');
                 },
 
                 onWebSocketClose: (evt) => {
                     console.log("🔌 Socket Closed with code:", evt.code, "reason:", evt.reason);
-                    isConnectingRef.current = false;
+                    resetConnectingState('websocket-close');
                 }
             });
 
@@ -190,7 +245,7 @@ export const useWebSocketService = (
 
         }, 300); // Debounce 300ms
 
-    }, [webSocketUrl]);
+    }, [webSocketUrl, clearConnectionGuard, resetConnectingState]);
 
     const subscribe = useCallback(
         (destination: string, callback: SubscriptionCallback) => {
@@ -226,7 +281,7 @@ export const useWebSocketService = (
 
     const send = useCallback((destination: string, body: Record<string, any> = {}) => {
         const client = clientRef.current;
-        
+
         if (!client || !client.connected) {
             console.warn("⚠️ Cannot send: Client not connected");
             return;
@@ -251,10 +306,14 @@ export const useWebSocketService = (
 
     const disconnect = useCallback(() => {
         const client = clientRef.current;
-        
+
+        // Luôn dọn guard timeout khi disconnect chủ động, tránh nó bắn ra
+        // sau khi client đã bị null hoá.
+        clearConnectionGuard();
+
         if (client) {
             console.log("🔌 Disconnecting WebSocket...");
-            
+
             // Unsubscribe tất cả
             state.subscriptions.forEach(sub => {
                 try {
@@ -275,7 +334,7 @@ export const useWebSocketService = (
             isConnectingRef.current = false;
             dispatch({ type: 'CLEAR_ALL' });
         }
-    }, [state.subscriptions]);
+    }, [state.subscriptions, clearConnectionGuard]);
 
     // Cleanup on unmount
     useEffect(() => {
@@ -285,10 +344,16 @@ export const useWebSocketService = (
             console.log("🧹 Component unmounting, cleaning up WebSocket...");
             isMountedRef.current = false;
 
-            // Clear timeout
+            // Clear debounce timeout
             if (connectTimeoutRef.current) {
                 clearTimeout(connectTimeoutRef.current);
                 connectTimeoutRef.current = null;
+            }
+
+            // Clear connection guard timeout
+            if (connectionGuardRef.current) {
+                clearTimeout(connectionGuardRef.current);
+                connectionGuardRef.current = null;
             }
 
             // Cleanup WebSocket
@@ -301,7 +366,6 @@ export const useWebSocketService = (
                         // eslint-disable-next-line @typescript-eslint/no-unused-vars
                         } catch (e) {
                             // Ignore errors during cleanup
-                            
                         }
                     });
 
@@ -317,12 +381,12 @@ export const useWebSocketService = (
         };
     }, []); // Empty dependency array - chỉ chạy mount/unmount
 
-    return { 
-        connect, 
-        subscribe, 
-        send, 
-        unsubscribe, 
-        disconnect, 
-        isConnected: state.isConnected 
+    return {
+        connect,
+        subscribe,
+        send,
+        unsubscribe,
+        disconnect,
+        isConnected: state.isConnected
     };
 }

@@ -19,5 +19,5 @@ public class GetSystemTopFiveNotifications {
     private String type;
     private String createBy;
     private Boolean isRead;
-    private LocalDateTime createdAt;
+    private LocalDateTime createAt;
 }

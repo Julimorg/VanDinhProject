@@ -22,7 +22,7 @@ public interface NotificationMapper {
     @Mapping(source = "notifications.type", target = "type")
     @Mapping(source = "isRead", target = "isRead")
     @Mapping(source = "notifications.createBy", target = "createBy")
-    @Mapping(source = "notifications.createdAt", target = "createdAt")
+    @Mapping(source = "notifications.createdAt", target = "createAt")
     GetSystemTopFiveNotifications toGetSystemTopFiveNotifications(UserNotifications entity);
 
     @Mapping(source = "notifications.notificationId", target = "notificationId")

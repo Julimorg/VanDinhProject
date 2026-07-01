@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -37,6 +38,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
 
 
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
+
         StompHeaderAccessor accessor =
                 MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
 
@@ -49,7 +51,7 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
                 try {
                     yield handleConnect(message, accessor);
                 } catch (ParseException | JOSEException e) {
-                    throw new RuntimeException(e);
+                    throw new MessagingException("Failed to parse/verify token", e);
                 }
             }
             case DISCONNECT -> handleDisconnect(message, accessor);
@@ -64,15 +66,16 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         // 1. Check header tồn tại
         if (!StringUtils.hasText(authHeader) || !authHeader.startsWith("Bearer ")) {
             log.warn("WebSocket CONNECT rejected – missing or malformed Authorization header");
-            return null;
+            throw new MessagingException("Missing or malformed Authorization header");
         }
+
 
         String token = authHeader.substring(7);
 
         // 2. Validate token (expired / invalid signature)
         if (!tokenValidator.isValid(token)) {
             log.warn("WebSocket CONNECT rejected – token invalid or expired");
-            return null;
+            throw new MessagingException("Token invalid or expired");
         }
 
         // 3. Extract userId
@@ -80,10 +83,17 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
         SignedJWT signedJWT = tokenValidator.verifyAndParse(token);
 
         String userId = tokenValidator.extractUserId(signedJWT);
+
+        log.info(" === Token SignedJWT in WS: [{}] " , signedJWT);
+
+        log.info(" === UserID SignedJWT in WS: [{}] " , userId);
+
         if (!StringUtils.hasText(userId)) {
             log.warn("WebSocket CONNECT rejected – cannot extract userId from token");
-            return null;
+            throw new MessagingException("Cannot extract userId from token");
         }
+
+        log.info("WebSocket CONNECT – principal name set = [{}]", userId);
 
         String sessionId = accessor.getSessionId();
 

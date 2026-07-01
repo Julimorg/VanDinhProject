@@ -23,7 +23,9 @@ import com.example.persistence.enumTable.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -77,12 +79,23 @@ public class NotificationService implements NotificationInterface {
         return un;
     }
 
+    private UserNotifications buildUserNotification(Notifications noti, String targetUserId,
+                                                    UserNotifactionStatus defaultStatus) {
+        return UserNotifications.builder()
+                .notifications(noti)
+                .userId(targetUserId)
+                .isRead(false)
+                .status(defaultStatus)
+                .sendChannel(UserNotifactionSendChannel.WEB)
+                .build();
+    }
+
     @Override
     public void notifyAdminsOrderConfirmed(String userId) {
 
         User customer = userInternalService.getUserById(userId);
 
-        Notifications notifications = notificationHelper.saveNotification(
+        Notifications notifications= notificationHelper.saveNotification(
                 "Order Confirmation!",
                 customer.getUserName() + " has successfully confirmed their order!",
                 "Order!",
@@ -93,10 +106,15 @@ public class NotificationService implements NotificationInterface {
                 .stream().map(User::getId).toList();
 
         List<UserNotifications> saved = adminIds.stream()
-                .map(id -> buildAndSend(notifications, id, UserNotifactionStatus.PENDING))
+                .map(id -> buildUserNotification(notifications, id, UserNotifactionStatus.DELIVERED))
                 .toList();
 
         userNotiRepo.saveAll(saved);
+
+        adminIds.forEach(adminId -> {
+            int count = userNotiRepo.countByUserIdAndIsReadFalse(adminId);
+            notificationHelper.sendUnreadCount(adminId, count);
+        });
 
     }
 
@@ -113,7 +131,7 @@ public class NotificationService implements NotificationInterface {
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId) {
         userInternalService.validateUserExists(userId);
 
-        return userNotiRepo.findTop5ByUserIdOrderByDeliveredAtDesc(userId)
+        return userNotiRepo.findTop5ByUserIdAndIsReadFalseOrderByCreateAtDesc(userId)
                 .stream()
                 .map(notificationMapper::toGetSystemTopFiveNotifications)
                 .toList();

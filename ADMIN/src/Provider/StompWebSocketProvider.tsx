@@ -4,7 +4,7 @@ import { useAuthStore } from '@/Store/IAuth';
 import { useOnlineStatusStore } from '@/Store/useOnlineStatusStore';
 import { toast } from 'react-toastify';
 import { WS_CHANNELS } from '@/Constant/websocket-channels';
-import {PUBLIC_API } from '@/Utils/env_dev_handler';
+import {LOCAL_API, LOCAL_API_RAW, PUBLIC_API } from '@/Utils/env_dev_handler';
 import { useQueryClient } from '@tanstack/react-query';
 import { QueryKeys } from '@/Constant/query-key';
 
@@ -15,7 +15,7 @@ const GlobalWebSocketListener = () => {
   const clearAll = useOnlineStatusStore((state) => state.clearAll);
 
   const { connect, subscribe, disconnect, isConnected } = useWebSocketService(
-    PUBLIC_API + '/ws',
+    LOCAL_API_RAW + '/ws',
     () => {
       console.log('WebSocket Connected - Setting up subscriptions...');
       toast.success('Kết nối realtime thành công!');
@@ -39,6 +39,12 @@ const GlobalWebSocketListener = () => {
 
         // Nếu có badge/unread-count riêng, invalidate luôn
         // queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_UNREAD_COUNT, userId] });
+      });
+
+      //? Private unread count notifications
+      subscribe(WS_CHANNELS.UNREAD_COUNT_NOTIFICATION, (msg) => {
+        console.log('Unread Count Notification received:', msg);
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_UNREAD_COUNT_NUM_NOTIFICATIONS, userId] });
       });
 
       //? Public notifications

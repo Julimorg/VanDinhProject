@@ -33,6 +33,11 @@ public class NotificationHelper {
         messagingTemplate.convertAndSend(queue, payload);
     }
 
+    public void sendUnreadCount(String userId, int unreadCount){
+        log.info("Sending unread count to userId = [{}]", userId);
+        messagingTemplate.convertAndSendToUser(userId, "/queue/unread-count", unreadCount);
+    }
+
     public void sendToNotificationUser(String userId, NotificationRes payload){
         messagingTemplate.convertAndSendToUser(userId, "/queue/notifications", payload);
     }
