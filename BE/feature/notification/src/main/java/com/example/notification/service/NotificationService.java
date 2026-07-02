@@ -58,6 +58,8 @@ public class NotificationService implements NotificationInterface {
     private final NotificationHelper notificationHelper;
 
 
+
+
     private UserNotifications buildAndSend(Notifications noti, String targetUserId,
                                            UserNotifactionStatus defaultStatus) {
         UserNotifications un = UserNotifications.builder()
@@ -222,6 +224,31 @@ public class NotificationService implements NotificationInterface {
         userNotiRepo.saveAll(saved);
 
         return notificationMapper.toSendNotiToAdminRes(noti, saved);
+    }
+
+    @Override
+    public UserNotifications createAndSendNotification(String title, String message, String type, String createdBy, String targetUserId, UserNotifactionStatus defaultStatus) {
+        Notifications noti = notificationHelper.saveNotification(title, message, type, createdBy);
+
+        UserNotifications un = UserNotifications.builder()
+                .notifications(noti)
+                .userId(targetUserId)
+                .isRead(false)
+                .status(defaultStatus)
+                .sendChannel(UserNotifactionSendChannel.WEB)
+                .build();
+
+        userNotiRepo.save(un);
+
+        notificationHelper.sendToNotificationUser(targetUserId, notificationHelper.buildPayload(noti));
+
+        int unreadCount = userNotiRepo.countByUserIdAndIsReadFalse(targetUserId);
+
+        notificationHelper.sendUnreadCount(targetUserId, unreadCount);
+
+        log.info("Notification + unread count sent -> user [{}]", targetUserId);
+
+        return un;
     }
 
 }

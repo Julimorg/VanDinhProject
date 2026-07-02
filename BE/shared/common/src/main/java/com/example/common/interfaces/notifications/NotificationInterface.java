@@ -32,6 +32,13 @@ public interface NotificationInterface {
 
     SendNotiToAdminRes sendToAdmins(SendNotiToAdminReq req);
 
+    UserNotifications createAndSendNotification(String title,
+                                                String message,
+                                                String type,
+                                                String createdBy,
+                                                String targetUserId,
+                                                UserNotifactionStatus defaultStatus);
+
 
 
 }

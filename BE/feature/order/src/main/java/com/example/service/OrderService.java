@@ -313,14 +313,14 @@ public class OrderService {
 
         clearCart(customer.getCart());
 
-//        createAndSendNotification(
-//                "Order Approved!",
-//                "Your order has been approved!",
-//                "Order!",
-//                admin.getUserName(),
-//                customer.getId(),   // ✅ target đúng
-//                UserNotifactionStatus.PENDING
-//        );
+        notificationInterface.createAndSendNotification(
+                "Order Approved!",
+                "Your order has been approved!",
+                "Order!",
+                admin.getUserName(),
+                customer.getId(),
+                UserNotifactionStatus.DELIVERED
+        );
 
         mailService.sendOrderApprovedEmail(orderResponse);
 
@@ -341,16 +341,15 @@ public class OrderService {
 
         clearCart(customer.getCart());
 
-//        // ✅ Gửi notification đến CUSTOMER
-//        createAndSendNotification(
-//                "Order Canceled!",
-//                "Your order has been canceled!",
-//                "Order!",
-//                admin.getUserName(),
-//                customer.getId(),   // ✅ target đúng
-//                UserNotifactionStatus.PENDING
-//        );
-//
+        notificationInterface.createAndSendNotification(
+                "Order Canceled!",
+                "Your order has been canceled!",
+                "Order!",
+                admin.getUserName(),
+                customer.getId(),
+                UserNotifactionStatus.DELIVERED
+        );
+
         mailService.sendOrderCanceledEmail(orderResponse);
 
         return SuccessCode.CANCELED_ORDER.getMessage();

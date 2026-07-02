@@ -7,6 +7,8 @@ import com.example.notification.repository.NotificationsRepository;
 import com.example.notification.repository.UserNotificationsRepository;
 import com.example.persistence.entity.Notifications;
 import com.example.persistence.entity.UserNotifications;
+import com.example.persistence.enumTable.UserNotifactionSendChannel;
+import com.example.persistence.enumTable.UserNotifactionStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -64,5 +66,7 @@ public class NotificationHelper {
                 .createdAt(noti.getCreatedAt())
                 .build();
     }
+
+
 
 }
