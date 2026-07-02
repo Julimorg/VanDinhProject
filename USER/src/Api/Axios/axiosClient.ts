@@ -1,5 +1,5 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
-import { LOCAL_API, PUBLIC_API, RENDER_API } from '../../Utils/env_dev_handler';
+import { PUBLIC_API } from '../../Utils/env_dev_handler';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 import { auth_api_handler } from '../Api_Handler/auth_api';
 import { toast } from 'react-toastify';

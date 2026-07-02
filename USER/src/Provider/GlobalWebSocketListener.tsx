@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useWebSocketService } from "../Hook/useWebSocket";
 import { useNotificationStore } from "../Middleware/useNotificationStore";
-import { LOCAL_API_RAW, PUBLIC_API } from "../Utils/env_dev_handler";
+import { PUBLIC_API } from "../Utils/env_dev_handler";
 import { useAuthStore } from "../Middleware/useAuthStoreWithLocal";
 
 const GlobalWebSocketListener = () => {
