@@ -736,6 +736,12 @@ export const docApi = {
     return res.data;
   },
 
+  GetUnreadCountNumNotification: async(userId: string): Promise<IApiResponse<number>> => {
+    const url = `/notification/unread-count/${userId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
   GetMyNotification: async (userId: string): Promise<IApiResponse<IGetNotificationResponse>> => {
     const url = `/notification/system/${userId}`;
     const res = await axiosClient.get(url);

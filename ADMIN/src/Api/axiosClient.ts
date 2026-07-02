@@ -2,10 +2,10 @@ import axios from 'axios';
 import { docApi } from './docApi';
 import { toast } from 'react-toastify';
 import { useAuthStore } from '@/Store/IAuth';
-import { PUBLIC_API } from '@/Utils/env_dev_handler';
+import { LOCAL_API, PUBLIC_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: PUBLIC_API,
+  baseURL: PUBLIC_API, // Sử dụng LOCAL_API cho môi trường phát triển
   headers: {
     'Content-Type': 'application/json',
   },

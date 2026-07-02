@@ -74,14 +74,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./ADMIN/yarn.lock
+          cache: 'npm'
+          cache-dependency-path: ./ADMIN/package-lock.json
 
       - name: Build Admin
         working-directory: ./ADMIN
         run: |
-          yarn install --frozen-lockfile
-          yarn build
+          npm ci
+          npm run build
+
 
   user:
     runs-on: ubuntu-latest
@@ -92,11 +93,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'yarn'
-          cache-dependency-path: ./USER/yarn.lock
+          cache: 'npm'
+          cache-dependency-path: ./USER/package-lock.json
 
       - name: Build User
         working-directory: ./USER
         run: |
-          yarn install --frozen-lockfile
-          yarn build
+          npm ci
+          npm run build

@@ -5,6 +5,7 @@ import com.example.common.enums.ErrorCode;
 import com.example.common.enums.SuccessCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.cart.CartInternalService;
+import com.example.common.interfaces.notifications.NotificationInterface;
 import com.example.common.interfaces.payment.PaymentInternalService;
 import com.example.common.interfaces.products.ProductInternalService;
 import com.example.common.interfaces.user.UserInternalService;
@@ -65,6 +66,8 @@ public class OrderService {
     private final GenerateRandomCode generateRandomCode;
 
     private final EmailProperties mailProperties;
+
+    private final NotificationInterface notificationInterface;
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF', 'ROLE_USER')")
     public Page<GetUserOrderRes> getUserOrderHistory(String userId,
@@ -216,28 +219,8 @@ public class OrderService {
 
             clearCart(user.getCart());
 
-            // Gửi notification đến từng ADMIN/STAFF (đúng targetUserId từng người)
-            List<User> admins = userInternalService
-                    .findAllByRoles_NameIn(
-                            List.of(UserRole.ADMIN.toString(),
-                                    UserRole.STAFF.toString()
-                            )
-                    );
+            notificationInterface.notifyAdminsOrderConfirmed(userId);
 
-                        for (User admin : admins) {
-                            // TODO
-                            //      --> Config Notification
-                            //            for (User admin : admins) {
-                            //                createAndSendNotification(
-                            //                        "Order Confirmation!",
-                            //                        user.getUserName() + " has successfully confirmed their order!",
-                            //                        "Order!",
-                            //                        user.getUserName(),
-                            //                        admin.getId(),
-                            //                        UserNotifactionStatus.DELIVERED
-                            //                );
-                            //            }
-                        }
         }
 
         if (request.getPaymentMethod() == PaymentMethod.VN_PAY) {
@@ -330,14 +313,14 @@ public class OrderService {
 
         clearCart(customer.getCart());
 
-//        createAndSendNotification(
-//                "Order Approved!",
-//                "Your order has been approved!",
-//                "Order!",
-//                admin.getUserName(),
-//                customer.getId(),   // ✅ target đúng
-//                UserNotifactionStatus.PENDING
-//        );
+        notificationInterface.createAndSendNotification(
+                "Order Approved!",
+                "Your order has been approved!",
+                "Order!",
+                admin.getUserName(),
+                customer.getId(),
+                UserNotifactionStatus.DELIVERED
+        );
 
         mailService.sendOrderApprovedEmail(orderResponse);
 
@@ -358,16 +341,15 @@ public class OrderService {
 
         clearCart(customer.getCart());
 
-//        // ✅ Gửi notification đến CUSTOMER
-//        createAndSendNotification(
-//                "Order Canceled!",
-//                "Your order has been canceled!",
-//                "Order!",
-//                admin.getUserName(),
-//                customer.getId(),   // ✅ target đúng
-//                UserNotifactionStatus.PENDING
-//        );
-//
+        notificationInterface.createAndSendNotification(
+                "Order Canceled!",
+                "Your order has been canceled!",
+                "Order!",
+                admin.getUserName(),
+                customer.getId(),
+                UserNotifactionStatus.DELIVERED
+        );
+
         mailService.sendOrderCanceledEmail(orderResponse);
 
         return SuccessCode.CANCELED_ORDER.getMessage();

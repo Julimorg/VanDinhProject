@@ -24,13 +24,18 @@ import java.util.Set;
         @Index(name = "idx_user_status", columnList = "status")
 })
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
     private String firstName;
+
     private String lastName;
+
     @Column(unique = true)
     private String userName;
+
     private String password;
 
     @Email
@@ -54,7 +59,7 @@ public class User {
     @Column(name = "update_at")
     private LocalDateTime updateAt;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

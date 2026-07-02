@@ -4,6 +4,7 @@ import com.example.common.dto.notification.request.SendNotiToOneUserOrManyUserRe
 import com.example.common.dto.notification.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
+import com.example.common.interfaces.notifications.NotificationInterface;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.common.interfaces.user.UserPresenceInternalService;
 import com.example.notification.mapper.NotificationMapper;
@@ -22,7 +23,9 @@ import com.example.persistence.enumTable.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -34,7 +37,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class NotificationService {
+public class NotificationService implements NotificationInterface {
 
     private final NotificationsRepository notiRepo;
 
@@ -55,6 +58,68 @@ public class NotificationService {
     private final NotificationHelper notificationHelper;
 
 
+
+
+    private UserNotifications buildAndSend(Notifications noti, String targetUserId,
+                                           UserNotifactionStatus defaultStatus) {
+        UserNotifications un = UserNotifications.builder()
+                .notifications(noti)
+                .userId(targetUserId)
+                .isRead(false)
+                .status(defaultStatus)
+                .sendChannel(UserNotifactionSendChannel.WEB)
+                .build();
+
+        if (userPresenceInternalService.isOnline(targetUserId)) {
+            un.setStatus(UserNotifactionStatus.DELIVERED);
+            un.setDeliveredAt(LocalDateTime.now());
+            notificationHelper.sendToNotificationUser(targetUserId, notificationHelper.buildPayload(noti));
+            log.info("Realtime noti -> user [{}]", targetUserId);
+        } else {
+            log.info("User [{}] OFFLINE – saved to DB", targetUserId);
+        }
+        return un;
+    }
+
+    private UserNotifications buildUserNotification(Notifications noti, String targetUserId,
+                                                    UserNotifactionStatus defaultStatus) {
+        return UserNotifications.builder()
+                .notifications(noti)
+                .userId(targetUserId)
+                .isRead(false)
+                .status(defaultStatus)
+                .sendChannel(UserNotifactionSendChannel.WEB)
+                .build();
+    }
+
+    @Override
+    public void notifyAdminsOrderConfirmed(String userId) {
+
+        User customer = userInternalService.getUserById(userId);
+
+        Notifications notifications= notificationHelper.saveNotification(
+                "Order Confirmation!",
+                customer.getUserName() + " has successfully confirmed their order!",
+                "Order!",
+                userId);
+
+        List<String> adminIds = userInternalService
+                .findAllByRoles_NameIn(List.of(UserRole.ADMIN.toString(), UserRole.STAFF.toString()))
+                .stream().map(User::getId).toList();
+
+        List<UserNotifications> saved = adminIds.stream()
+                .map(id -> buildUserNotification(notifications, id, UserNotifactionStatus.DELIVERED))
+                .toList();
+
+        userNotiRepo.saveAll(saved);
+
+        adminIds.forEach(adminId -> {
+            int count = userNotiRepo.countByUserIdAndIsReadFalse(adminId);
+            notificationHelper.sendUnreadCount(adminId, count);
+        });
+
+    }
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetUserIsOnline> getUserOnline(Pageable pageable) {
         return userInternalService.getAllUsers(pageable)
@@ -68,7 +133,7 @@ public class NotificationService {
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId) {
         userInternalService.validateUserExists(userId);
 
-        return userNotiRepo.findTop5ByUserIdOrderByDeliveredAtDesc(userId)
+        return userNotiRepo.findTop5ByUserIdAndIsReadFalseOrderByCreateAtDesc(userId)
                 .stream()
                 .map(notificationMapper::toGetSystemTopFiveNotifications)
                 .toList();
@@ -161,9 +226,10 @@ public class NotificationService {
         return notificationMapper.toSendNotiToAdminRes(noti, saved);
     }
 
-    private UserNotifications buildAndSend(Notifications noti,
-                                           String targetUserId,
-                                           UserNotifactionStatus defaultStatus) {
+    @Override
+    public UserNotifications createAndSendNotification(String title, String message, String type, String createdBy, String targetUserId, UserNotifactionStatus defaultStatus) {
+        Notifications noti = notificationHelper.saveNotification(title, message, type, createdBy);
+
         UserNotifications un = UserNotifications.builder()
                 .notifications(noti)
                 .userId(targetUserId)
@@ -172,19 +238,17 @@ public class NotificationService {
                 .sendChannel(UserNotifactionSendChannel.WEB)
                 .build();
 
-        userPresenceInternalService.getSocketId(targetUserId)
-                .ifPresentOrElse(
-                        socketId -> {
-                            un.setStatus(UserNotifactionStatus.DELIVERED);
-                            un.setDeliveredAt(LocalDateTime.now());
-                            notificationHelper
-                                    .sendToQueue(socketId,
-                                            notificationHelper.buildPayload(noti));
-                            log.info("Realtime notification sent to user [{}]", targetUserId);
-                        },
-                        () -> log.info("User [{}] OFFLINE – notification saved to DB", targetUserId)
-                );
+        userNotiRepo.save(un);
+
+        notificationHelper.sendToNotificationUser(targetUserId, notificationHelper.buildPayload(noti));
+
+        int unreadCount = userNotiRepo.countByUserIdAndIsReadFalse(targetUserId);
+
+        notificationHelper.sendUnreadCount(targetUserId, unreadCount);
+
+        log.info("Notification + unread count sent -> user [{}]", targetUserId);
 
         return un;
     }
+
 }

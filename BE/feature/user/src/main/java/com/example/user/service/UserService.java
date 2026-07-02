@@ -47,13 +47,6 @@ public class UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
     }
 
-    private CloudinaryService  cloudinaryService;
-
-
-    // ----------------------------------------------------------------
-    // GET
-    // ----------------------------------------------------------------
-
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetUserSelectionRes> getUserSelection(){
         return userRepository.findAll()
@@ -89,10 +82,6 @@ public class UserService {
     }
 
 
-    // ----------------------------------------------------------------
-    // CREATE
-    // ----------------------------------------------------------------
-
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public CreateUserRes createUser(CreateUserReq req) {
 
@@ -119,10 +108,6 @@ public class UserService {
 
         return userMapper.toCreateUserRes(userRepository.save(user));
     }
-
-    // ----------------------------------------------------------------
-    // Update
-    // ----------------------------------------------------------------
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_STAFF')")
     public UpdateMyProfileRes updateMyProfile(String userId, UpdateMyProfileReq request) {
@@ -165,9 +150,6 @@ public class UserService {
         return userMapper.toUpdateUseByAdminRes(userRepository.save(user));
     }
 
-    // ----------------------------------------------------------------
-    // Delete
-    // ----------------------------------------------------------------
 
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void deleteUser(String userId) {

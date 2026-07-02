@@ -22,6 +22,7 @@ dependencies {
     implementation project(':feature:payment')
     implementation project(':feature:Inventory')
     implementation project(':feature:diary')
+    implementation project(':feature:forPublic')
 
     implementation project(':shared:security')
     implementation project(':shared:api-docs')

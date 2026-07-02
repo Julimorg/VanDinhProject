@@ -31,4 +31,5 @@ GET_INVENTORY: 'Get Inventory',
 GET_PURCHASE_DETAIL: 'Get Purchase Detail',
 GET_ALL_DIARY: 'Get All Diary',
 GET_DIARY_DETAIL: 'Get Diary Detail',
+GET_UNREAD_COUNT_NUM_NOTIFICATIONS: 'Get UnRead Count Num Notifications'
 }
