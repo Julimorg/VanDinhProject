@@ -33,6 +33,8 @@ COPY feature/supplier/build.gradle        feature/supplier/
 COPY feature/wishlist/build.gradle        feature/wishlist/
 COPY feature/category/build.gradle        feature/category/
 COPY feature/payment/build.gradle         feature/payment/
+COPY feature/diary/build.gradle           feature/diary/
+COPY feature/Inventory/build.gradle       feature/Inventory/
 
 RUN chmod +x gradlew
 
