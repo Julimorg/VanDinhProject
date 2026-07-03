@@ -1,0 +1,28 @@
+package com.example.common.interfaces.color;
+
+import com.example.common.dto.color.*;
+import com.example.common.dto.color.request.CreateColorReq;
+import com.example.common.dto.color.request.UpdateColorReq;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
+public interface ColorServiceInterface {
+
+    List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId);
+
+
+    Page<GetColorRes> getColor(String keyword,
+                               String supplierName,
+                               Pageable pageable);
+
+    GetColorDetailRes getColorDetail(String colorId);
+
+    CreateColorRes createColor(CreateColorReq request);
+
+    UpdateColorRes updateColor(String colorId, UpdateColorReq request);
+
+    void deleteColor(String colorId);
+
+}

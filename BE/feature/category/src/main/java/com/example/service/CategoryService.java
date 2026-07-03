@@ -5,6 +5,7 @@ import com.example.common.dto.category.request.UpdateCategoryReq;
 import com.example.common.dto.category.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
+import com.example.common.interfaces.category.CategoryServiceInterface;
 import com.example.common.service.FileUploadService;
 import com.example.config.CategorySpecification;
 import com.example.mapper.CategoryMapper;
@@ -25,7 +26,7 @@ import com.example.common.events.search.SearchDeleteEvent;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class CategoryService {
+public class CategoryService implements CategoryServiceInterface {
 
     private final CategoryRepository categoryRepository;
 
@@ -35,6 +36,7 @@ public class CategoryService {
 
     private final ApplicationEventPublisher publisher;
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetCategoriesSelectionRes> getCategoriesSelection(){
         return categoryRepository
@@ -43,6 +45,7 @@ public class CategoryService {
                 .map(categoryMapper::toGetCategoriesSelectionRes).toList();
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetCategoriesRes> getCategories(Pageable pageable, String keyword){
         Specification<Category> specification = CategorySpecification
@@ -54,6 +57,7 @@ public class CategoryService {
                 .map(categoryMapper::toGetCategoriesRes);
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public GetDetailCategoryRes getCategory(String id){
         Category category = categoryRepository
@@ -63,6 +67,7 @@ public class CategoryService {
         return categoryMapper.toGetDetailCategoryRes(category);
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateCategoryRes createCategory(CreateCategoryReq request){
 
@@ -95,6 +100,7 @@ public class CategoryService {
     }
 
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateCategoryRes updateCategory(String id, UpdateCategoryReq request){
 
@@ -125,6 +131,7 @@ public class CategoryService {
         return categoryMapper.toUpdateCategoryRes(category);
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteCategory(String id){
         //  TODO

@@ -2,8 +2,8 @@ package com.example.service;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.supplier.SupplierInternalService;
 import com.example.common.dto.search.SupplierIndexData;
+import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.mapper.SupplierMapper;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.SupplierRepository;
@@ -13,12 +13,10 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class SupplierInternalServiceImpl implements SupplierInternalService {
+public class SupplierInternalServiceImpl implements SupplierQueryInternalService {
 
     private final SupplierRepository supplierRepository;
 

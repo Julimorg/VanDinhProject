@@ -5,7 +5,7 @@ import com.example.persistence.entity.Product;
 import com.example.common.dto.search.ProductIndexData;
 import java.util.List;
 
-public interface ProductInternalService {
+public interface ProductQueryInternalService {
 
     void  validateProductExistById(String productId);
 

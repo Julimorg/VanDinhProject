@@ -3,7 +3,7 @@ import com.example.common.dto.order.request.UpdateOrderItemByAdminRequest;
 import com.example.common.dto.order.request.UpdateOrderItemRequest;
 import com.example.common.dto.order.response.UpdateOrderItemByAdminResponse;
 import com.example.common.enums.ErrorCode;
-import com.example.common.interfaces.products.ProductInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.persistence.entity.Order;
 import com.example.persistence.entity.OrderItem;
 import com.example.persistence.entity.Product;
@@ -29,7 +29,7 @@ public class OrderItemService {
 
     private final OrderItemRepository orderItemRepository;
 
-    private final ProductInternalService productInternalService;
+    private final ProductQueryInternalService productInternalService;
 
     private final OrderUtilService  orderUtilService;
 

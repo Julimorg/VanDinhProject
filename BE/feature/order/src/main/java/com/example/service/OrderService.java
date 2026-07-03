@@ -7,7 +7,7 @@ import com.example.common.exception.AppException;
 import com.example.common.interfaces.cart.CartInternalService;
 import com.example.common.interfaces.notifications.NotificationInterface;
 import com.example.common.interfaces.payment.PaymentInternalService;
-import com.example.common.interfaces.products.ProductInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.common.util.EmailProperties;
 import com.example.common.util.GenerateRandomCode;
@@ -39,9 +39,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.persistence.enumTable.OrderStatus.Approved;
-import static com.example.persistence.enumTable.PaymentMethodStatus.Canceled;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -59,7 +56,7 @@ public class OrderService {
 
     private final PaymentInternalService paymentInternalService;
 
-    private final ProductInternalService productInternalService;
+    private final ProductQueryInternalService productInternalService;
 
     private final MailService mailService;
 

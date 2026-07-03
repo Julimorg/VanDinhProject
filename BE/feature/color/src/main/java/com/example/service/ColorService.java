@@ -5,8 +5,8 @@ import com.example.common.dto.color.request.CreateColorReq;
 import com.example.common.dto.color.request.UpdateColorReq;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.supplier.SupplierInternalService;
-import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.interfaces.color.ColorServiceInterface;
+import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.CloudinaryService;
 import com.example.common.service.FileUploadService;
 import com.example.config.ColorSpecification;
@@ -27,7 +27,7 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ColorService {
+public class ColorService implements ColorServiceInterface {
 
     private final ColorRepository colorRepository;
 
@@ -35,9 +35,11 @@ public class ColorService {
 
     private final CloudinaryService  cloudinaryService;
 
-    private final SupplierInternalService supplierInternalService;
+    private final SupplierQueryInternalService supplierInternalService;
+
     private final FileUploadService fileUploadService;
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId){
 
@@ -50,6 +52,7 @@ public class ColorService {
                 .toList();
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetColorRes> getColor(String keyword,
                                       String supplierName,
@@ -65,6 +68,8 @@ public class ColorService {
 
     }
 
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public GetColorDetailRes getColorDetail(String colorId){
 
         Color color = colorRepository.findById(colorId)
@@ -73,6 +78,8 @@ public class ColorService {
         return colorMapper.toGetColorDetailRes(color);
     }
 
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateColorRes createColor(CreateColorReq request){
 
         if(request.getSupplierId().isEmpty())
@@ -94,6 +101,8 @@ public class ColorService {
         return colorMapper.toCreateColorRes(color);
     }
 
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateColorRes updateColor(String colorId, UpdateColorReq request) {
 
         Color color = colorRepository
@@ -108,6 +117,8 @@ public class ColorService {
         return colorMapper.toUpdateColorRes(color);
     }
 
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteColor(String colorId){
         if(!colorRepository.existsById(colorId)){
             throw new AppException(ErrorCode.COLOR_NOT_FOUND);

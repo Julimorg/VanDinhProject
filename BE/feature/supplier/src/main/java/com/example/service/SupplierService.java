@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.common.dto.supplier.request.CreateSupplierReq;
 import com.example.common.dto.supplier.request.UpdateSupplierReq;
 import com.example.common.dto.supplier.response.*;
+import com.example.common.interfaces.supplier.SupplierServiceInterface;
 import com.example.common.service.FileUploadService;
 import com.example.config.SupplierSpecification;
 import com.example.mapper.SupplierMapper;
@@ -24,7 +25,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SupplierService {
+public class SupplierService implements SupplierServiceInterface {
 
     private final SupplierRepository supplierRepository;
 
@@ -38,6 +39,7 @@ public class SupplierService {
     * Nhớ config elastic search cho supplier
     * */
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetSupplierSelectionRes> getSupplierSelection(){
         return supplierRepository.findAll()
@@ -46,7 +48,7 @@ public class SupplierService {
                 .toList();
     }
 
-
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable){
 
@@ -59,6 +61,7 @@ public class SupplierService {
                 .map(supplier -> supplierMapper.toGetSuppliers(supplier));
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
@@ -67,6 +70,7 @@ public class SupplierService {
                 .orElseThrow(() -> new RuntimeException("Supplier not found")));
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateSupplierRes createSupplier(CreateSupplierReq request){
 
@@ -93,6 +97,7 @@ public class SupplierService {
         return supplierMapper.toCreateSupplierRes(supplier);
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateSupplierRes updateSupplier(String supplierId, UpdateSupplierReq request){
 
@@ -121,6 +126,7 @@ public class SupplierService {
 
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteSupplier(String supplier_id){
 

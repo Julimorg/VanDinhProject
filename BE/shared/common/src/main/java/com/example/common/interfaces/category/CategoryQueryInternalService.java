@@ -4,7 +4,7 @@ import com.example.common.dto.search.CategoryIndexData;
 import com.example.persistence.entity.Category;
 import java.util.List;
 
-public interface CategoryInternalService {
+public interface CategoryQueryInternalService {
 
     void validateCategoryExists(String categoryId);
 

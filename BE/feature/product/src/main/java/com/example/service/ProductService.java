@@ -6,16 +6,14 @@ import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.category.CategoryInternalService;
-import com.example.common.interfaces.color.ColorInternalService;
-import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.interfaces.category.CategoryQueryInternalService;
+import com.example.common.interfaces.color.ColorQueryInternalService;
+import com.example.common.interfaces.products.ProductServiceInterface;
+import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.FileUploadService;
 import com.example.config.ProductSpecification;
 import com.example.mapper.ProductMapper;
-import com.example.persistence.entity.Category;
-import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Product;
-import com.example.persistence.entity.Supplier;
 import com.example.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -37,17 +35,17 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ProductService {
+public class ProductService implements ProductServiceInterface {
 
     private final ProductRepository productRepository;
 
     private final ProductMapper  productMapper;
 
-    private final SupplierInternalService supplierInternalService;
+    private final SupplierQueryInternalService supplierInternalService;
 
-    private final ColorInternalService colorInternalService;
+    private final ColorQueryInternalService colorInternalService;
 
-    private final CategoryInternalService categoryInternalService;
+    private final CategoryQueryInternalService categoryInternalService;
 
     private final FileUploadService fileUploadService;
 
@@ -57,8 +55,9 @@ public class ProductService {
 
     private final ProductHelpClassService productHelpClassService;
 
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
-    public List<ProductNewArrivalRes> getProductNewArrival(){
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF' , 'ROLE_USER')")
+    public List<ProductNewArrivalRes> getProductNewArrival() {
         var products = productRepository.findTop10ByOrderByCreateAtDesc();
 
         return products
@@ -67,6 +66,7 @@ public class ProductService {
                 .toList();
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public List<GetProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
@@ -88,6 +88,7 @@ public class ProductService {
                 .toList();
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public Page<GetProductsRes> getProducts(String keyword,
                                             String categoryName,
@@ -108,6 +109,7 @@ public class ProductService {
         return productRepository.findAll(specification, pageable).map(productMapper::toGetProductsResponses);
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public ProductRes getProductById(String id){
         Product product = productRepository.findById(id)
@@ -126,7 +128,7 @@ public class ProductService {
         return response;
     }
 
-
+    @Override
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateProductRes createProduct(CreateProductReq request) {
@@ -209,6 +211,7 @@ public class ProductService {
         };
     }
 
+    @Override
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public UpdateProductRes updateProduct(String productId,
@@ -266,8 +269,8 @@ public class ProductService {
 
     }
 
+    @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
-
     public UpdateProductQuantityRes updateProductQuantity(String id,
                                                           UpdateProductQuantityReq request){
         Product product = productRepository
@@ -284,6 +287,7 @@ public class ProductService {
         return productMapper.toUpdateProductQuantityRes(productRepository.save(product));
     }
 
+    @Override
     @Transactional
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public void deleteProduct(String id){

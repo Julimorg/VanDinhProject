@@ -2,9 +2,8 @@ package com.example.service;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.category.CategoryInternalService;
-import com.example.common.interfaces.supplier.SupplierInternalService;
 import com.example.common.dto.search.CategoryIndexData;
+import com.example.common.interfaces.category.CategoryQueryInternalService;
 import com.example.mapper.CategoryMapper;
 import com.example.persistence.entity.Category;
 import com.example.persistence.entity.Supplier;
@@ -18,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CategoryInternalServiceImp implements CategoryInternalService {
+public class CategoryInternalServiceImp implements CategoryQueryInternalService {
 
     private final CategoryRepository  categoryRepository;
 

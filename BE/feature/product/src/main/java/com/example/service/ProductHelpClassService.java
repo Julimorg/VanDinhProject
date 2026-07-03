@@ -1,32 +1,29 @@
 package com.example.service;
 
 import com.example.common.dto.product.request.UpdateProductReq;
-import com.example.common.interfaces.category.CategoryInternalService;
-import com.example.common.interfaces.supplier.SupplierInternalService;
+import com.example.common.interfaces.category.CategoryQueryInternalService;
+import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.FileUploadService;
 import com.example.persistence.entity.Category;
 import com.example.persistence.entity.Product;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.ProductRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductHelpClassService {
 
-    private final CategoryInternalService  categoryInternalService;
+    private final CategoryQueryInternalService categoryInternalService;
 
-    private final SupplierInternalService   supplierInternalService;
+    private final SupplierQueryInternalService supplierInternalService;
 
     private final ProductRepository productRepository;
 
