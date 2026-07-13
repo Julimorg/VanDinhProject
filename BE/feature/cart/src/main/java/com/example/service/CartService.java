@@ -6,7 +6,7 @@ import com.example.common.dto.cart.response.CartItemDetailRes;
 import com.example.common.dto.cart.response.GetCartRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.products.ProductInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.mapper.CartMapper;
 import com.example.persistence.entity.Cart;
@@ -40,7 +40,7 @@ public class CartService {
 
     private final UserInternalService userInternalService;
 
-    private final ProductInternalService productInternalService;
+    private final ProductQueryInternalService productInternalService;
 
     @Transactional
     public GetCartRes getCart(String userId) {

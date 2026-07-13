@@ -3,7 +3,7 @@ import com.example.common.dto.wishlist.response.AddWishListRes;
 import com.example.common.dto.wishlist.response.GetWishList;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.products.ProductInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.interfaces.user.UserInternalService;
 import com.example.mapper.WishListMapper;
 import com.example.persistence.entity.Product;
@@ -29,7 +29,7 @@ public class WishListService {
 
     private final UserInternalService userInternalService;
 
-    private final ProductInternalService productInternalService;
+    private final ProductQueryInternalService productInternalService;
 
     public boolean isInWishlist(String userId, String productId) {
         return wishListRepository.existsByUserIdAndProductProductId(userId, productId);

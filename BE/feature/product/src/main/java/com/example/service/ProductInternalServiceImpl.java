@@ -2,8 +2,8 @@ package com.example.service;
 
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.products.ProductInternalService;
 import com.example.common.dto.search.ProductIndexData;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.mapper.ProductMapper;
 import com.example.persistence.entity.Product;
 import com.example.repository.ProductRepository;
@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProductInternalServiceImpl implements ProductInternalService {
+public class ProductInternalServiceImpl implements ProductQueryInternalService {
 
     private final ProductRepository productRepository;
 
@@ -34,6 +34,11 @@ public class ProductInternalServiceImpl implements ProductInternalService {
     public void saveProductData(Product product) {
 
         productRepository.save(product);
+    }
+
+    @Override
+    public List<Product> findTop10ByOrderByCreateAtDesc() {
+        return productRepository.findTop10ByOrderByCreateAtDesc();
     }
 
     @Override

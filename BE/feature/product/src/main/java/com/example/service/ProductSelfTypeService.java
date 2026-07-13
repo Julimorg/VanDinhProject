@@ -5,7 +5,7 @@ import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.CreateProductRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
-import com.example.common.interfaces.color.ColorInternalService;
+import com.example.common.interfaces.color.ColorQueryInternalService;
 import com.example.mapper.ChemicalDetailMapper;
 import com.example.mapper.PaintDetailMapper;
 import com.example.mapper.ProductMapper;
@@ -29,7 +29,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductSelfTypeService {
 
-    private final ColorInternalService colorInternalService;
+    private final ColorQueryInternalService colorInternalService;
 
     private final PaintDetailRepository  paintDetailRepository;
 
