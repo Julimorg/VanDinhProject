@@ -37,7 +37,6 @@ public class CategoryService implements CategoryServiceInterface {
     private final ApplicationEventPublisher publisher;
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetCategoriesSelectionRes> getCategoriesSelection(){
         return categoryRepository
                 .findAll()
@@ -46,7 +45,6 @@ public class CategoryService implements CategoryServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public Page<GetCategoriesRes> getCategories(Pageable pageable, String keyword){
         Specification<Category> specification = CategorySpecification
                 .from(CategorySpecification
@@ -58,7 +56,6 @@ public class CategoryService implements CategoryServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public GetDetailCategoryRes getCategory(String id){
         Category category = categoryRepository
                 .findById(id)

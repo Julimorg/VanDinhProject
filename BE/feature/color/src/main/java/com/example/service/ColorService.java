@@ -40,7 +40,6 @@ public class ColorService implements ColorServiceInterface {
     private final FileUploadService fileUploadService;
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId){
 
         supplierInternalService.validateSupplierExists(supplierId);
@@ -53,7 +52,6 @@ public class ColorService implements ColorServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetColorRes> getColor(String keyword,
                                       String supplierName,
                                       Pageable pageable){

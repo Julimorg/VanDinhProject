@@ -11,6 +11,8 @@ public interface ProductQueryInternalService {
 
     void saveProductData(Product product);
 
+    List<Product> findTop10ByOrderByCreateAtDesc();
+
     List<Product> saveAllProductData(List<Product> products);
 
     Product getProductById(String productId);

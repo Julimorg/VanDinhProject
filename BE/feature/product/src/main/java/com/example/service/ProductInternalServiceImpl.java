@@ -37,6 +37,11 @@ public class ProductInternalServiceImpl implements ProductQueryInternalService {
     }
 
     @Override
+    public List<Product> findTop10ByOrderByCreateAtDesc() {
+        return productRepository.findTop10ByOrderByCreateAtDesc();
+    }
+
+    @Override
     public List<Product> saveAllProductData(List<Product> products) {
        return productRepository.saveAll(products);
     }

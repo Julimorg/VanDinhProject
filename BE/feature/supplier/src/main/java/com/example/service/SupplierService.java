@@ -40,7 +40,6 @@ public class SupplierService implements SupplierServiceInterface {
     * */
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetSupplierSelectionRes> getSupplierSelection(){
         return supplierRepository.findAll()
                 .stream()
@@ -49,7 +48,6 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable){
 
         Specification<Supplier> spec = SupplierSpecification
@@ -62,7 +60,6 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
         return supplierMapper.toGetSupplierDetailRes(supplierRepository

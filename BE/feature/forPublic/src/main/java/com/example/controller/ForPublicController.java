@@ -14,6 +14,7 @@ import com.example.common.dto.supplier.response.GetSupplierSelectionRes;
 import com.example.common.enums.SuccessCode;
 import com.example.common.interfaces.category.CategoryServiceInterface;
 import com.example.common.interfaces.color.ColorServiceInterface;
+import com.example.common.interfaces.forPublic.ForProductPublicInterface;
 import com.example.common.interfaces.products.ProductServiceInterface;
 import com.example.common.interfaces.supplier.SupplierServiceInterface;
 import com.example.common.response.ApiResponse;
@@ -78,7 +79,7 @@ public class ForPublicController {
                 .build();
     }
 
-    //* ============================ Supplier FEATURE ============================
+    //* ============================ Color FEATURE ============================
 
     @GetMapping("/get-color")
     public ApiResponse<Page<GetColorRes>> getColor(

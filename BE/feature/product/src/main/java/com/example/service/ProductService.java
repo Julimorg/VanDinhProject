@@ -8,6 +8,7 @@ import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.category.CategoryQueryInternalService;
 import com.example.common.interfaces.color.ColorQueryInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.interfaces.products.ProductServiceInterface;
 import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.FileUploadService;
@@ -43,6 +44,8 @@ public class ProductService implements ProductServiceInterface {
 
     private final SupplierQueryInternalService supplierInternalService;
 
+    private final ProductQueryInternalService productQueryInternalService;
+
     private final ColorQueryInternalService colorInternalService;
 
     private final CategoryQueryInternalService categoryInternalService;
@@ -56,9 +59,9 @@ public class ProductService implements ProductServiceInterface {
     private final ProductHelpClassService productHelpClassService;
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF' , 'ROLE_USER')")
     public List<ProductNewArrivalRes> getProductNewArrival() {
-        var products = productRepository.findTop10ByOrderByCreateAtDesc();
+
+        var products = productQueryInternalService.findTop10ByOrderByCreateAtDesc();
 
         return products
                 .stream()
@@ -67,7 +70,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public List<GetProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
                                                             String supplierName,
@@ -89,7 +91,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public Page<GetProductsRes> getProducts(String keyword,
                                             String categoryName,
                                             String supplierName,
@@ -110,7 +111,6 @@ public class ProductService implements ProductServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public ProductRes getProductById(String id){
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
