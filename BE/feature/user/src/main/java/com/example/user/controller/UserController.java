@@ -30,6 +30,7 @@ public class UserController {
     private final UserService userService;
 
 
+    @GetMapping("/selection")
     public ApiResponse<List<GetUserSelectionRes>> getUserSelection(){
         return ApiResponse.<List<GetUserSelectionRes>>
                         builder()
@@ -47,15 +48,15 @@ public class UserController {
             //?          page = 0 (default 0-based)
             //?          size = 10
             //?          sort = createAt, asc
+            @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String role,
-            @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "userName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetUserRes>>builder()
                 .status_code(SuccessCode.GET_USER.getStatusCode().value())
                 .message(SuccessCode.GET_USER.getMessage())
-                .data(userService.getUsersByAdmin(status, role, keyword, pageable))
+                .data(userService.getUsersByAdmin(keyword, status, role, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

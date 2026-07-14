@@ -1,12 +1,11 @@
 package com.example.diary.service;
-
-import ch.qos.logback.core.spi.ErrorCodes;
 import com.example.common.dto.diary.request.*;
 import com.example.common.dto.diary.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.diary.DiaryService;
 import com.example.common.interfaces.user.UserInternalService;
+import com.example.common.util.GenerateRandomCode;
 import com.example.diary.config.DiarySpecification;
 import com.example.diary.mapper.DiaryMapper;
 import com.example.diary.repository.UserDiaryItemRepository;
@@ -27,9 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+
 
 @Slf4j
 @Service
@@ -46,6 +47,8 @@ public class DiaryServiceImpl implements DiaryService {
     private final UserInternalService userInternalService;
 
     private final UtilSecurityClass utilSecurityClass;
+
+    private final GenerateRandomCode generateRandomCode;
 
     private void reCalculateUserDiary(UserDiary userDiary,
                                       List<UserDiaryItem> items) {
@@ -159,6 +162,7 @@ public class DiaryServiceImpl implements DiaryService {
 
         UserDiary diary = UserDiary.builder()
                 .user(user)
+                .diaryCode(generateRandomCode.generateDiaryCode())
                 .diaryName(request.getDiaryName())
                 .diaryStatus(DiaryStatus.UNPAID)
                 .note(request.getNote())

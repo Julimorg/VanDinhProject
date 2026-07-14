@@ -25,6 +25,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
             @Index(name = "idx_date_end", columnList = "end_date"),
             @Index(name = "idx_diary_name", columnList = "diary_name"),
             @Index(name = "idx_diary_created_by", columnList = "created_by"),
+            @Index(name = "idx_diary_code", columnList = "diary_code"),
     }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -55,6 +56,9 @@ public class UserDiary {
 
     @Column(columnDefinition = "TEXT")
     private String note;
+
+    @Column(name = "diary_code", unique = true)
+    private String diaryCode;
 
     @Column(name = "created_by", nullable = false)
     private String createdBy;

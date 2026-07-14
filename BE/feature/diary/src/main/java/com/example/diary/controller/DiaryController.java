@@ -5,7 +5,8 @@ import com.example.common.dto.diary.response.*;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
 import com.example.common.interfaces.diary.DiaryService;
-import com.example.diary.service.ExportDiaryDetailToFileService;
+import com.example.diary.service.ExportDiaryDetailToExcelService;
+import com.example.diary.service.ExportDiaryDetailToPDFService;
 import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +30,9 @@ public class DiaryController {
 
     private final DiaryService diaryService;
 
-    private final ExportDiaryDetailToFileService exportDiaryDetailToFileService;
+    private final ExportDiaryDetailToExcelService exportDiaryDetailToFileService;
+
+    private final ExportDiaryDetailToPDFService exportDiaryDetailToPDFService;
 
     @PostMapping("/{userId}/create")
     public ApiResponse<CreateDiaryRes> createDiary(
@@ -65,6 +69,17 @@ public class DiaryController {
                 .status_code(SuccessCode.EXPORT_PDF_FILE.getStatusCode().value())
                 .message(SuccessCode.EXPORT_PDF_FILE.getMessage())
                 .data(exportDiaryDetailToFileService.exportDiaryDetailToExcelFile(userId, diaryId))
+                .build();
+    }
+
+    @GetMapping("/{diaryId}/export-invoice-pdf")
+    public ApiResponse<byte[]> exportDiaryInvoicePdf(
+            @PathVariable String diaryId) {
+
+        return ApiResponse.<byte[]>builder()
+                .status_code(SuccessCode.EXPORT_PDF_FILE.getStatusCode().value())
+                .message(SuccessCode.EXPORT_PDF_FILE.getMessage())
+                .data(exportDiaryDetailToPDFService.exportInvoice(diaryId))
                 .build();
     }
 

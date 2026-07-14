@@ -22,6 +22,8 @@ public class GetDiaryDetailRes {
 
     private String diaryName;
 
+    private String diaryCode;
+
     private DiaryStatus diaryStatus;
 
     private BigDecimal totalAmount;
