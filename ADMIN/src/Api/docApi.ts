@@ -767,6 +767,14 @@ export const docApi = {
 
   //* ======================================================== Diary Management  ======================================================== */
 
+
+  ExportDiaryInvoicePdf: async (diaryId: string): Promise<IApiResponse<any>> => {
+    const url = `/diaries/${diaryId}/export-invoice-pdf`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+
    ExportDiaryExcelFile: async (userId: string, diaryId: string): Promise<IApiResponse<any>> => {
     const url = `/diaries/${userId}/${diaryId}/export-excel`;
     const res = await axiosClient.get(url);

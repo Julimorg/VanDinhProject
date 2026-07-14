@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Skeleton, Result, Button } from 'antd';
+import { PrinterOutlined } from '@ant-design/icons';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useGetDiaryDetail } from './Hooks/useGetDiaryDetail';
@@ -9,7 +10,7 @@ import DiaryInfoCards from './Components/DiaryInfoCard';
 import { GetDiaryDetailRes, DiaryStatus } from './diaryDetail';
 import { IGetDiaryDetailRes } from '@/Interface/Diary/GetDiaryDetail';
 import CreateDiaryItemModal from './Components/CreateDiaryItemModal';
-import { de } from 'zod/v4/locales';
+import { usePrintDiaryInvoicePdf } from './Hooks/useExportDiaryInvoicePDFFile';
 
 const mapDetail = (d: IGetDiaryDetailRes): GetDiaryDetailRes => ({
   id: d.id,
@@ -30,6 +31,7 @@ const UserDiaryDetailPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { data, isLoading, isError, error } = useGetDiaryDetail(diaryId);
+  const { mutate: printInvoice, isPending: isPrinting } = usePrintDiaryInvoicePdf();
 
   useEffect(() => {
     if (isError) {
@@ -113,6 +115,16 @@ const UserDiaryDetailPage: React.FC = () => {
           onEdit={() => toast.info('Chỉnh sửa nhật ký')}
           onCancel={() => toast.warning('Đã huỷ nhật ký')}
         />
+
+        <div className="flex justify-end">
+          <Button
+            icon={<PrinterOutlined />}
+            loading={isPrinting}
+            onClick={() => printInvoice({ diaryId: detail.id })}
+          >
+            In Hóa Đơn
+          </Button>
+        </div>
 
         <DiaryInfoCards data={detail} />
 
