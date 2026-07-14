@@ -45,7 +45,7 @@ public enum ErrorCode {
     ),
     EMAIL_INVALID("Invalid Email Format", HttpStatus.BAD_REQUEST),
     PHONE_INVALID("Invalid Phone Number", HttpStatus.BAD_REQUEST),
-    USER_NOT_EXISTED("User Not Existed", HttpStatus.BAD_REQUEST),
+    USER_NOT_EXISTED("User Not Existed", HttpStatus.NOT_FOUND),
     EMAIl_EXISTED("Email Existed", HttpStatus.BAD_REQUEST),
     EMAIL_NOT_FOUND("Email Not Found", HttpStatus.NOT_FOUND),
     USER_NOT_FOUND("User Not Found", HttpStatus.NOT_FOUND),

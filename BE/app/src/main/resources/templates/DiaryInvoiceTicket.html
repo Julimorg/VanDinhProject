@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <style>
+        * { font-family: 'DejaVu Sans', sans-serif; font-size: 10pt; box-sizing: border-box; }
+        body { margin: 12mm 14mm 12mm 14mm; color: #222; }
+
+        /* ==== Header cửa hàng ==== */
+        .store-header { border-bottom: 2px solid #c0392b; padding-bottom: 8px; margin-bottom: 4px; }
+        .store-name { font-size: 15pt; font-weight: bold; color: #c0392b; margin: 0 0 3px 0; text-transform: uppercase; }
+        .store-sub { font-size: 8.5pt; color: #444; margin: 1px 0; }
+
+        h1 {
+            text-align: center;
+            font-size: 18pt;
+            font-weight: bold;
+            color: #c0392b;
+            letter-spacing: 1px;
+            margin: 10px 0 12px 0;
+        }
+
+        /* ==== Dòng thông tin phiếu ==== */
+        .invoice-meta { margin-bottom: 10px; }
+        .invoice-meta .left { float: left; width: 60%; font-size: 9.5pt; }
+        .invoice-meta .right { float: right; width: 38%; text-align: right; font-size: 9.5pt; }
+        .clearfix::after { content: ""; display: table; clear: both; }
+
+        /* ==== Bảng sản phẩm ==== */
+        table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+        th, td { border: 1px solid #c0392b; padding: 5px 6px; text-align: center; vertical-align: middle; }
+        td.left { text-align: left; }
+        th {
+            font-weight: bold;
+            background-color: #c0392b;
+            color: #ffffff;
+            font-size: 9pt;
+            text-transform: uppercase;
+        }
+        .number { text-align: right; }
+        .row-total td { font-weight: bold; background-color: #fbeaea; }
+
+        /* ==== Tổng tiền / ghi chú ==== */
+        .summary-block { margin-top: 8px; font-size: 9.5pt; }
+        .summary-block div { margin: 2px 0; }
+        .summary-block .label { font-weight: bold; }
+
+        .date-line { text-align: right; font-style: italic; font-size: 9.5pt; margin-top: 16px; }
+
+        /* ==== Chữ ký ==== */
+        .sig-col { display: inline-block; width: 45%; text-align: center; vertical-align: top; }
+        .sig-title { font-weight: bold; color: #c0392b; }
+        .sig-sub { font-size: 8.5pt; font-style: italic; color: #666; }
+        .sig-space { height: 55px; }
+    </style>
+</head>
+<body>
+
+<div class="store-header">
+    <p class="store-name" th:text="${storeName}"></p>
+    <p class="store-sub" th:text="'Địa chỉ: ' + ${storeAddress}"></p>
+    <p class="store-sub" th:text="'Điện thoại: ' + ${storePhone} + '   -   MST: ' + ${storeTaxCode}"></p>
+</div>
+
+<h1>HÓA ĐƠN BÁN LẺ</h1>
+
+<div class="invoice-meta clearfix">
+    <div class="left">
+        <div th:text="'Số phiếu: ' + ${diary.diaryCode}"></div>
+    </div>
+    <div class="right">
+        <div th:text="'Ngày lập: ' + ${diaryDate}"></div>
+    </div>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th style="width:5%">STT</th>
+        <th style="width:12%">Ngày</th>
+        <th style="width:28%">Tên hàng</th>
+        <th style="width:12%">Quy cách</th>
+        <th style="width:10%">Màu sắc</th>
+        <th style="width:8%">SL</th>
+        <th style="width:12%">Đơn giá</th>
+        <th style="width:13%">Thành tiền</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="row : ${rows}">
+        <td th:text="${row.stt}"></td>
+        <td th:text="${row.date}"></td>
+        <td class="left" th:text="${row.productName}"></td>
+        <td th:text="${row.volume}"></td>
+        <td th:text="${row.color}"></td>
+        <td th:text="${row.quantity}"></td>
+        <td class="number" th:text="${#numbers.formatDecimal(row.unitPrice, 1, 'COMMA', 0, 'POINT')}"></td>
+        <td class="number" th:text="${#numbers.formatDecimal(row.lineTotal, 1, 'COMMA', 0, 'POINT')}"></td>
+    </tr>
+    <tr class="row-total">
+        <td colspan="7">TỔNG CỘNG</td>
+        <td class="number" th:text="${#numbers.formatDecimal(totalAmount, 1, 'COMMA', 0, 'POINT')}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="summary-block">
+    <div><span class="label">Thành tiền (viết bằng chữ):</span> <span th:text="${totalInWords}"></span></div>
+    <div th:if="${bankAccount != null}">
+        <span class="label">Chuyển khoản:</span>
+        <span th:text="${bankAccount} + ' - ' + ${bankName}"></span>
+    </div>
+</div>
+
+<div class="date-line" th:text="'Ngày ' + ${diaryDate}"></div>
+
+<div style="margin-top:10px;" class="clearfix">
+    <div class="sig-col">
+        <div class="sig-title">NGƯỜI MUA HÀNG</div>
+        <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
+        <div class="sig-space"></div>
+    </div>
+    <div class="sig-col" style="float:right;">
+        <div class="sig-title">NGƯỜI BÁN HÀNG</div>
+        <div class="sig-sub">(Ký, ghi rõ họ tên)</div>
+        <div class="sig-space"></div>
+    </div>
+</div>
+
+</body>
+</html>

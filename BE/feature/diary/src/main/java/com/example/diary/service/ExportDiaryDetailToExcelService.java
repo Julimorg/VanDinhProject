@@ -23,7 +23,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class ExportDiaryDetailToFileService {
+public class ExportDiaryDetailToExcelService {
 
     private final DiaryServiceImpl    diaryService;
 
@@ -39,6 +39,7 @@ public class ExportDiaryDetailToFileService {
         userService.getUserById(userId);
 
         log.error("==== DIARY ID: {} ====", diaryId);
+
         diaryRepository.findById(diaryId).orElseThrow(() -> new AppException(ErrorCode.DIARY_NOT_FOUND));
 
         return exportDiaryToExcel(userId, diaryId);

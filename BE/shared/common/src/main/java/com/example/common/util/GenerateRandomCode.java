@@ -18,4 +18,10 @@ public class GenerateRandomCode {
 
         return prefix + date + "-" + randomNumber;
     }
+
+    public String generateDiaryCode(){
+        String prefix = "PMH";
+        String date = LocalDate.now().format(DATE_FORMATTER);
+        return prefix + "-" + date;
+    }
 }
