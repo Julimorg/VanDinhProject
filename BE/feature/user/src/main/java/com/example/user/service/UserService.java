@@ -49,10 +49,7 @@ public class UserService {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public List<GetUserSelectionRes> getUserSelection(){
-        return userRepository.findAll()
-                .stream()
-                .map(user -> userMapper.toGetUserSelection(user))
-                .toList();
+        return userRepository.findAllForSelection();
     }
 
 
@@ -71,13 +68,13 @@ public class UserService {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
     public GetMyProfileDetailRes getMyProfile(String userId) {
-        User user = findUserOrThrow(userId);
+        User user = userRepository.findByIdWithOrdersAndPayment(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toGetProfileDetailRes(user);
     }
 
     @PreAuthorize("hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN')")
     public GetUserProfileDetailByAdminRes getUserProfileByAdmin(String userId) {
-        User user = findUserOrThrow(userId);
+        User user = userRepository.findByIdWithRoles(userId).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         return userMapper.toGetUserProfileDetailByAdminRes(user);
     }
 
