@@ -5,7 +5,7 @@ import { useAuthStore } from '@/Store/IAuth';
 import { LOCAL_API, PUBLIC_API } from '@/Utils/env_dev_handler';
 
 const axiosClient = axios.create({
-  baseURL: PUBLIC_API, // Sử dụng LOCAL_API cho môi trường phát triển
+  baseURL: LOCAL_API, 
   headers: {
     'Content-Type': 'application/json',
   },
