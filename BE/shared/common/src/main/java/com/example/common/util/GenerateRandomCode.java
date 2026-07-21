@@ -8,7 +8,9 @@ import java.util.Random;
 
 @Component
 public class GenerateRandomCode {
+
     private static final Random RANDOM = new Random();
+
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd");
 
     public String generateOrderCode() {
@@ -21,7 +23,8 @@ public class GenerateRandomCode {
 
     public String generateDiaryCode(){
         String prefix = "PMH";
+        int randomNumber = 1000 + RANDOM.nextInt(9000);
         String date = LocalDate.now().format(DATE_FORMATTER);
-        return prefix + "-" + date;
+        return prefix + "-" + date + "-" + randomNumber;
     }
 }
