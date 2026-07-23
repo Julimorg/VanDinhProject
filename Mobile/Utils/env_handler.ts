@@ -1,4 +1,3 @@
 import Constants from 'expo-constants';
 
-
-export const API_URL = Constants.expoConfig?.extra?.apiUrl as string;
+export const PUBLIC_API = Constants.expoConfig?.extra?.PUBLIC_API as string;

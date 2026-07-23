@@ -1,8 +1,8 @@
 import React from "react";
 import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { formatCurrency } from "@/Utils/utils";
 import { router } from "expo-router";
+import { formatCurrency } from "../../Utils/utils";
 
 interface Product {
   productId: string;

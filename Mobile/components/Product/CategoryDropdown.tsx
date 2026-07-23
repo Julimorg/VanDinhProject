@@ -8,7 +8,8 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useGetCategorySelection } from "@/hooks/Product/useGetCategorySelection";
+import { useGetCategorySelection } from "../../hooks/Product/useGetCategorySelection";
+
 
 interface CategoryDropdownProps {
   selectedCategory?: string;

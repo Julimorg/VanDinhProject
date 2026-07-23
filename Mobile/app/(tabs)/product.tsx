@@ -1,10 +1,4 @@
-import { FilterButton } from "@/components/Product/FilterButton";
-import { FilterSidebar } from "@/components/Product/FilterSidebar";
-import { ProductCard } from "@/components/Product/ProductCard";
-import { SearchBar } from "@/components/Product/SearchBar";
-import { ProductSkeleton } from "@/components/Product/ProductSkeleton";
-import { useGetAllProducts } from "@/hooks/Product/useGetAllProducts";
-import { useDebounce } from "@/hooks/useDebounce";
+
 import React, { useState, useCallback, useMemo } from "react";
 import {
   FlatList,
@@ -16,7 +10,14 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRefresh } from "@/context/RefreshContextType ";
+import { FilterButton } from "../../components/Product/FilterButton";
+import { FilterSidebar } from "../../components/Product/FilterSidebar";
+import { ProductCard } from "../../components/Product/ProductCard";
+import { ProductSkeleton } from "../../components/Product/ProductSkeleton";
+import { useGetAllProducts } from "../../hooks/Product/useGetAllProducts";
+import { useDebounce } from "../../hooks/useDebounce";
+import { SearchBar } from "../../components/Product/SearchBar";
+import { useRefresh } from "../../context/RefreshContextType ";
 
 export default function ProductScreen() {
   const { refreshApp } = useRefresh();
@@ -106,7 +107,7 @@ export default function ProductScreen() {
 
   const handleViewDetail = useCallback((productId: string) => {
     console.log("👁 View product detail:", productId);
-    // TODO: navigation.navigate("ProductDetail", { id: productId });
+   navigation.navigate("ProductDetail", { id: productId });
   }, []);
 
   const handleScrollToTop = useCallback(() => {
@@ -121,7 +122,7 @@ export default function ProductScreen() {
   const handleOpenFilter = useCallback(() => {
     console.log("🔽 Opening filter sidebar");
     setFilterVisible(true);
-  }, []);
+  }, []);navigation
 
   const handleCloseFilter = useCallback(() => {
     console.log("Closing filter sidebar");

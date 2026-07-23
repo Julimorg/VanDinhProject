@@ -7,7 +7,7 @@ import {
   Animated,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useGetSupplierSelections } from "@/hooks/Product/useGetSupplierSelection";
+import { useGetSupplierSelections } from "../../hooks/Product/useGetSupplierSelection";
 
 interface SupplierDropdownProps {
   selectedSupplier?: string;

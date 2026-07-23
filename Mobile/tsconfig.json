@@ -1,20 +1,11 @@
 {
+  "compilerOptions": {},
   "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "importHelpers": true,
-    "esModuleInterop": true,
-    "paths": {
-      "@/*": ["./*"],
-      "tailwind.config": ["./tailwind.config.js"]
-    }
-  },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
-    "nativewind-env.d.ts",
-    "assets.d.ts"
+    "nativewind-env.d.ts"
   ]
 }

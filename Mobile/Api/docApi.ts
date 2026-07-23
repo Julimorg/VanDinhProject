@@ -1,13 +1,14 @@
-import { IApiResponsePagination } from "@/Interface/IApiResponsePagination";
+import { IGetCategorySelectionResponse } from "../Interface/Category/IGetCategorySelection";
+import { IGetAllColor } from "../Interface/Color/IGetAllColor";
+import { IApiResponse } from "../Interface/IApiResponse";
+import { IApiResponsePagination } from "../Interface/IApiResponsePagination";
+import { IGetAllProductResponse } from "../Interface/Product/IGetAllProducts";
+import { IGetProductDetailResponse } from "../Interface/Product/IGetProductsDetail";
+import { IGetProductSelectionResponse } from "../Interface/Product/IGetProductSelection";
+import { IGetAllSupplierResponse } from "../Interface/Supplier/IGetAllSuppliers";
+import { IGetSupplierSelectionResponse } from "../Interface/Supplier/IGetSupplierSelection";
 import axiosClient from "./axiosClient";
-import { IApiResponse } from "@/Interface/IApiResponse";
-import { IGetAllProductResponse } from "@/Interface/Product/IGetAllProducts";
-import { IGetProductDetailResponse } from "@/Interface/Product/IGetProductsDetail";
-import { IGetProductSelectionResponse } from "@/Interface/Product/IGetProductSelection";
-import { IGetSupplierSelectionResponse } from "@/Interface/Supplier/IGetSupplierSelection";
-import { IGetCategorySelectionResponse } from "@/Interface/Category/IGetCategorySelection";
-import { IGetAllSupplierResponse } from "@/Interface/Supplier/IGetAllSuppliers";
-import { IGetAllColor } from "@/Interface/Color/IGetAllColor";
+
 
 
 export const docApi = {

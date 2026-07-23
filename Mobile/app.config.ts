@@ -49,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     reactCompiler: true,
   },
   extra: {
-    apiUrl: process.env.API_URL,
+    apiUrl: process.env.PUBLIC_API,
     eas: {
       projectId: "36178f2c-52e5-4a3a-832b-7b90da89274b"  
     },
