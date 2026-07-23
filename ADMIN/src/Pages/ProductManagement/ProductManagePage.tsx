@@ -15,6 +15,7 @@ import {
   List,
   Modal,
   Upload,
+  Divider,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -328,107 +329,110 @@ const ProductList: React.FC = () => {
           <Title level={2} className="text-center mb-4 sm:mb-6">
             Quản lý Sản phẩm
           </Title>
-          {/* Filters */}
-          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
-            <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-              <div className="w-full lg:w-auto lg:flex-1">
-                <Input
-                  placeholder="Tìm kiếm theo tên sản phẩm, mô tả hoặc mã..."
-                  prefix={<SearchOutlined />}
-                  value={filters.keyword}
-                  onChange={(e) => handleSearch(e.target.value)}
-                  className="min-w-[250px] lg:min-w-[300px] w-full"
-                  size="large"
-                  allowClear
-                  onClear={() => handleSearch('')}
-                  style={{ borderRadius: '8px' }}
-                />
-              </div>
 
-              <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-row items-start sm:items-center gap-2 sm:gap-3 lg:gap-4">
+          {/* Actions + Filters */}
+          <div className="bg-white rounded-lg shadow-sm p-4 sm:p-6 mb-4 sm:mb-6">
+            {/* Hàng 1 — Tìm kiếm + Hành động chính */}
+            <div className="w-full flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+              <Input
+                placeholder="Tìm kiếm theo tên sản phẩm, mô tả hoặc mã..."
+                prefix={<SearchOutlined />}
+                value={filters.keyword}
+                onChange={(e) => handleSearch(e.target.value)}
+                className="w-full lg:max-w-[380px]"
+                size="large"
+                allowClear
+                onClear={() => handleSearch('')}
+                style={{ borderRadius: '8px' }}
+              />
+
+              <Space size="small" wrap className="w-full lg:w-auto justify-end">
                 <Button
                   type="primary"
                   icon={<PlusOutlined />}
                   size="large"
                   onClick={handleAddProduct}
-                  className="w-full sm:w-auto min-w-[120px]"
+                  className="min-w-[140px]"
                 >
                   Thêm sản phẩm
                 </Button>
-                <Upload accept=".xlsx,.xls" showUploadList={false} beforeUpload={handleImportExcel}>
-                  <Button
-                    icon={<UploadOutlined />}
-                    size="large"
-                    loading={importExcelMutation.isPending}
-                    className="w-full sm:w-auto"
-                  >
-                    Import Excel
-                  </Button>
-                </Upload>
 
+                <Space.Compact>
+                  <Upload accept=".xlsx,.xls" showUploadList={false} beforeUpload={handleImportExcel}>
+                    <Button icon={<UploadOutlined />} size="large" loading={importExcelMutation.isPending}>
+                      Import Excel
+                    </Button>
+                  </Upload>
+                  <Button
+                    icon={<DownloadOutlined />}
+                    size="large"
+                    onClick={() => downloadTemplateMutation.mutate()}
+                    loading={downloadTemplateMutation.isPending}
+                  >
+                    Tải Template
+                  </Button>
+                </Space.Compact>
+              </Space>
+            </div>
+
+            <Divider style={{ margin: '16px 0' }} />
+
+            {/* Hàng 2 — Bộ lọc */}
+            <div className="w-full flex flex-col sm:flex-row sm:items-center gap-3 flex-wrap">
+              <Text type="secondary" className="hidden sm:inline whitespace-nowrap">
+                Bộ lọc:
+              </Text>
+
+              <Select
+                placeholder="Lọc theo danh mục"
+                value={filters.categoryName || 'Tất cả'}
+                onChange={handleCategoryFilter}
+                options={uniqueCategories.map((cat) => ({ value: cat, label: cat }))}
+                className="w-full sm:w-[160px]"
+                size="large"
+                suffixIcon={<FilterOutlined />}
+                allowClear={false}
+                showSearch
+              />
+
+              <Select
+                placeholder="Lọc theo nhà cung cấp"
+                value={filters.supplierName || 'Tất cả'}
+                onChange={handleSupplierFilter}
+                options={uniqueSuppliers.map((sup) => ({ value: sup, label: sup }))}
+                className="w-full sm:w-[170px]"
+                size="large"
+                suffixIcon={<FilterOutlined />}
+                allowClear={false}
+                showSearch
+              />
+
+              <Space.Compact className="ml-0 sm:ml-2">
                 <Button
-                  icon={<DownloadOutlined />}
+                  icon={<SortAscendingOutlined />}
+                  onClick={() => handleSort('all')}
+                  type={filters.sort === 'createAt,desc' ? 'primary' : 'default'}
                   size="large"
-                  onClick={() => downloadTemplateMutation.mutate()}
-                  loading={downloadTemplateMutation.isPending}
-                  className="w-full sm:w-auto"
                 >
-                  Tải Template
+                  Tất cả
                 </Button>
-                <Select
-                  placeholder="Lọc theo danh mục"
-                  value={filters.categoryName || 'Tất cả'}
-                  onChange={handleCategoryFilter}
-                  options={uniqueCategories.map((cat) => ({ value: cat, label: cat }))}
-                  className="w-full sm:w-[150px] lg:w-[160px]"
+                <Button
+                  icon={<CalendarOutlined />}
+                  onClick={() => handleSort('newest')}
+                  type={filters.sort === 'createAt,desc' ? 'primary' : 'default'}
                   size="large"
-                  suffixIcon={<FilterOutlined />}
-                  allowClear={false}
-                  showSearch
-                />
-
-                <Select
-                  placeholder="Lọc theo nhà cung cấp"
-                  value={filters.supplierName || 'Tất cả'}
-                  onChange={handleSupplierFilter}
-                  options={uniqueSuppliers.map((sup) => ({ value: sup, label: sup }))}
-                  className="w-full sm:w-[160px] lg:w-[170px]"
+                >
+                  Mới nhất
+                </Button>
+                <Button
+                  icon={<CalendarOutlined />}
+                  onClick={() => handleSort('oldest')}
+                  type={filters.sort === 'createAt,asc' ? 'primary' : 'default'}
                   size="large"
-                  suffixIcon={<FilterOutlined />}
-                  allowClear={false}
-                  showSearch
-                />
-
-                <Space size="middle" className="flex-wrap">
-                  <Button
-                    icon={<SortAscendingOutlined />}
-                    onClick={() => handleSort('all')}
-                    type={filters.sort === 'createAt,desc' ? 'primary' : 'default'}
-                    size="large"
-                    className="min-w-[60px]"
-                  >
-                    Tất cả
-                  </Button>
-                  <Button
-                    icon={<CalendarOutlined />}
-                    onClick={() => handleSort('newest')}
-                    type={filters.sort === 'createAt,desc' ? 'primary' : 'default'}
-                    size="large"
-                    className="min-w-[70px]"
-                  >
-                    Mới nhất
-                  </Button>
-                  <Button
-                    icon={<CalendarOutlined />}
-                    onClick={() => handleSort('oldest')}
-                    type={filters.sort === 'createAt,asc' ? 'primary' : 'default'}
-                    size="large"
-                    className="min-w-[70px]"
-                  >
-                    Cũ nhất
-                  </Button>
-                </Space>
-              </div>
+                >
+                  Cũ nhất
+                </Button>
+              </Space.Compact>
             </div>
           </div>
 
@@ -495,6 +499,7 @@ const ProductList: React.FC = () => {
         }}
       />
 
+      {/* Modal hiển thị chi tiết lỗi import Excel */}
       <Modal
         title={`Import thất bại — ${importRowErrors.length} dòng bị lỗi`}
         open={importErrorModalOpen}
