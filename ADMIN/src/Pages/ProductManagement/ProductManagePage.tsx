@@ -12,6 +12,9 @@ import {
   Select,
   Spin,
   Alert,
+  List,
+  Modal,
+  Upload,
 } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
@@ -24,6 +27,8 @@ import {
   EyeOutlined,
   DeleteOutlined,
   EditOutlined,
+  DownloadOutlined,
+  UploadOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
@@ -31,6 +36,12 @@ import { useGetAllProducts } from './Hook/useGetAllProducts';
 import { formatCurrency } from '@/Utils/ulti';
 import ConfirmDeleteModal from './Components/DeleteProductModal';
 import UpdateProductQuantityModal from './Components/UpdateProductQuantityModal';
+import { IImportRowError } from '@/Interface/Product/IImportExcelFile';
+import {
+  useImportProductExcel,
+  useDownloadProductImportTemplate,
+  ImportExcelError,
+} from './Hook/useImportProductExcel';
 const { Title, Text } = Typography;
 
 const ProductList: React.FC = () => {
@@ -39,6 +50,26 @@ const ProductList: React.FC = () => {
 
   const isChildRoute = location.pathname !== '/products';
 
+  const [importErrorModalOpen, setImportErrorModalOpen] = useState(false);
+  const [importRowErrors, setImportRowErrors] = useState<IImportRowError[]>([]);
+
+  const importExcelMutation = useImportProductExcel();
+  const downloadTemplateMutation = useDownloadProductImportTemplate();
+
+  const handleImportExcel = (file: File) => {
+    importExcelMutation.mutate(file, {
+      onSuccess: () => {
+        refetch();
+      },
+      onError: (error: ImportExcelError) => {
+        if (error.rowErrors?.length) {
+          setImportRowErrors(error.rowErrors);
+          setImportErrorModalOpen(true);
+        }
+      },
+    });
+    return false;
+  };
   //? State filters (params cho hook)
   const [filters, setFilters] = useState({
     keyword: '',
@@ -324,7 +355,26 @@ const ProductList: React.FC = () => {
                 >
                   Thêm sản phẩm
                 </Button>
+                <Upload accept=".xlsx,.xls" showUploadList={false} beforeUpload={handleImportExcel}>
+                  <Button
+                    icon={<UploadOutlined />}
+                    size="large"
+                    loading={importExcelMutation.isPending}
+                    className="w-full sm:w-auto"
+                  >
+                    Import Excel
+                  </Button>
+                </Upload>
 
+                <Button
+                  icon={<DownloadOutlined />}
+                  size="large"
+                  onClick={() => downloadTemplateMutation.mutate()}
+                  loading={downloadTemplateMutation.isPending}
+                  className="w-full sm:w-auto"
+                >
+                  Tải Template
+                </Button>
                 <Select
                   placeholder="Lọc theo danh mục"
                   value={filters.categoryName || 'Tất cả'}
@@ -441,9 +491,39 @@ const ProductList: React.FC = () => {
         onSuccess={() => {
           setEditQuantityModal(false);
           setSelectedProduct(null);
-          refetch(); 
+          refetch();
         }}
       />
+
+      <Modal
+        title={`Import thất bại — ${importRowErrors.length} dòng bị lỗi`}
+        open={importErrorModalOpen}
+        onCancel={() => setImportErrorModalOpen(false)}
+        footer={
+          <Button key="close" onClick={() => setImportErrorModalOpen(false)}>
+            Đóng
+          </Button>
+        }
+        width={600}
+      >
+        <List
+          dataSource={importRowErrors}
+          renderItem={(item) => (
+            <List.Item>
+              <List.Item.Meta
+                title={`Dòng ${item.rowNumber}`}
+                description={
+                  <ul style={{ marginBottom: 0, paddingLeft: 20 }}>
+                    {item.messages.map((msg, idx) => (
+                      <li key={idx}>{msg}</li>
+                    ))}
+                  </ul>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      </Modal>
     </div>
   );
 };

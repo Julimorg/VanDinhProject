@@ -1,20 +1,26 @@
 package com.example.controller;
+import com.example.common.dto.ImportExcelFile.Response.ImportSummaryRes;
 import com.example.common.dto.product.request.CreateProductReq;
 import com.example.common.dto.product.request.UpdateProductQuantityReq;
 import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.*;
 import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
+import com.example.common.service.ExcelImportService;
 import com.example.common.util.QRGenerateUtil;
+import com.example.service.ProductImportService;
 import com.example.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,6 +32,29 @@ public class ProductController {
 
     private final ProductService productService;
 
+    private final ExcelImportService excelImportService;
+
+    private final ProductImportService productImportService;
+
+
+    @PostMapping(value = "/import-excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<ImportSummaryRes> importProductsFromExcel(@RequestParam("file") MultipartFile file) {
+        return ApiResponse.<ImportSummaryRes>builder()
+                .status_code(SuccessCode.IMPORT_PRODUCT_EXCEL_FILE.getStatusCode().value())
+                .message(SuccessCode.IMPORT_PRODUCT_EXCEL_FILE.getMessage())
+                .data(excelImportService.importExcel(file, productImportService))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/import-template")
+    public ApiResponse<byte[]> downloadImportTemplate() {
+        return ApiResponse.<byte[]>builder()
+                .status_code(SuccessCode.IMPORT_TEMPLATE.getStatusCode().value())
+                .message(SuccessCode.IMPORT_TEMPLATE.getMessage())
+                .data(excelImportService.generateTemplate(productImportService))
+                .build();
+    }
 
     @GetMapping("/select-products")
     public ApiResponse<List<GetProductSelectionRes>> getProductSelection(

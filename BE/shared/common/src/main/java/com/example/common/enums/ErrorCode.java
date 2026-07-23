@@ -138,6 +138,11 @@ public enum ErrorCode {
 
     // ======================= PAYMENT =======================
     DIARY_NOT_FOUND("Diary Not Found", HttpStatus.NOT_FOUND),
+
+    // ======================= IMPORT EXCEL FILE =======================
+    EXCEL_FILE_EMPTY("Excel File Is Empty Or Invalid", HttpStatus.BAD_REQUEST),
+    EXCEL_READ_FAILED("Failed To Read Excel File", HttpStatus.BAD_REQUEST),
+
     // ======================= CLOUDINARY =======================
     IMG_OVER_SIZE("Your Image is over size!", HttpStatus.BAD_REQUEST),
 
