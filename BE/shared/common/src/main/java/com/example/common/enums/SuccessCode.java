@@ -103,6 +103,12 @@ public enum SuccessCode {
     EXPORT_PDF_FILE("Export PDF File Successfully!", HttpStatus.OK),
     UPDATE_INVENTORY("Update Inventory Successfully! ", HttpStatus.OK),
 
+
+    // ======================= IMPORT FILE =======================
+    IMPORT_TEMPLATE("Import Template Successfully!", HttpStatus.OK),
+    IMPORT_PRODUCT_EXCEL_FILE("Import Product File Successfully!", HttpStatus.OK),
+
+
     // ======================= DIARY =======================
     CREATE_DIARY("Create Diary Successfully!", HttpStatus.CREATED),
     CREATE_DIARY_ITEMS("Create Diary Items Successfully!", HttpStatus.CREATED),

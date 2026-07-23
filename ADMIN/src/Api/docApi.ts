@@ -101,6 +101,7 @@ import { ICreateDiaryItemReq, ICreateDiaryItemRes } from '@/Interface/Diary/Diar
 import { IUpdateDiaryStatusReq, IUpdateDiaryStatusRes } from '@/Interface/Diary/UpdateDiaryStatus';
 import { IUpdateDiaryReq, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary';
 import { IUpdateDiaryItemReq, IUpdateDiaryItemRes } from '@/Interface/Diary/UpdateDiaryItem';
+import { IImportSummaryRes } from '@/Interface/Product/IImportExcelFile';
 
 
 export const docApi = {
@@ -464,6 +465,20 @@ export const docApi = {
 
   //* ======================================================== Product  ======================================================== */
 
+    ImportProductsExcel: async (file: File): Promise<IApiResponse<IImportSummaryRes>> => {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axiosClient.post('/products/import-excel', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data;
+    },
+
+     DownloadProductImportTemplate: async (): Promise<IApiResponse<string>> => {
+    const res = await axiosClient.get('/products/import-template');
+    return res.data;
+  },
+
   GetAllProducts: async (
     params: {
       keyword?: string;
@@ -550,7 +565,7 @@ export const docApi = {
       supplierName?: string;
       minPrice?: number;
       maxPrice?: number;
-    } = {}
+    } = {}  
   ): Promise<IApiResponse<IGetProductSelectionResponse>> => {
     const { keyword, categoryName, supplierName, minPrice, maxPrice } = params;
 
@@ -565,6 +580,7 @@ export const docApi = {
     const res = await axiosClient.get(url);
     return res.data;
   },
+  
 
   UpdateProductQuantity: async (
     productId: string,

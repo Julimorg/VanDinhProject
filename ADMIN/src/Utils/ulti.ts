@@ -126,6 +126,29 @@ export const downloadCsvFromBase64 = (base64String: string, fileName: string): v
   }
 };
 
+export const downloadBinaryFromBase64 = (
+  base64: string,
+  fileName: string,
+  mimeType: string = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+) => {
+  const byteCharacters = atob(base64);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: mimeType });
+
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', fileName);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
+};
+
 /**
  * Format file size to readable string
  * @param bytes - File size in bytes
