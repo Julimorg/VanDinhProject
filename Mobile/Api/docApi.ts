@@ -122,13 +122,13 @@ export const docApi = {
             ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
 
         })
-        const url = `/public/get-products?${queryParams.toString()}`;
+        const url = `/for-public/get-products?${queryParams.toString()}`;
         const res = await axiosClient.get(url);
         return res.data;
     },
 
     GetProducDetail: async (productId: string): Promise<IApiResponse<IGetProductDetailResponse>> => {
-        const url = `/public/detail-product/${productId}`;
+        const url = `/for-public/detail-product/${productId}`;
         const res = await axiosClient.get(url);
         return res.data;
     },
