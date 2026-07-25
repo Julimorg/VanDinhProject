@@ -6,14 +6,11 @@ import {
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
-
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { QueryProvider } from "@/provider/QueryProvider";
-
-import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import "@/global.css";
-import { RefreshProvider } from "@/context/RefreshContextType ";
 import Toast from "react-native-toast-message";
+import { GluestackUIProvider } from "../components/ui/gluestack-ui-provider";
+import { RefreshProvider } from "../context/RefreshContextType ";
+import { QueryProvider } from "../provider/QueryProvider";
 
 export const unstable_settings = {
   anchor: "(tabs)",

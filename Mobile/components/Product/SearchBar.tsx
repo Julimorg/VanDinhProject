@@ -5,38 +5,26 @@ import { Ionicons } from "@expo/vector-icons";
 interface SearchBarProps {
   keyword: string;
   onChangeKeyword: (text: string) => void;
-  isSearching?: boolean; 
+  isSearching?: boolean;
 }
 
-export const SearchBar: React.FC<SearchBarProps> = ({ 
-  keyword, 
+export const SearchBar: React.FC<SearchBarProps> = ({
+  keyword,
   onChangeKeyword,
   isSearching = false,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleClear = () => {
-    onChangeKeyword("");
-  };
-
   return (
-    <View className="px-4 py-3 bg-white">
-      <View 
-        className={`
-          flex-row items-center bg-gray-100 rounded-xl px-4 py-3
-          ${isFocused ? 'border-2 border-blue-500' : 'border-2 border-transparent'}
-        `}
+    <View className="px-4 pt-2 pb-2 bg-white">
+      <View
+        className={`flex-row items-center bg-gray-100 rounded-xl px-3 py-2 border ${
+          isFocused ? "border-blue-400" : "border-transparent"
+        }`}
       >
-        {/* Search Icon */}
-        <Ionicons 
-          name="search" 
-          size={20} 
-          color={isFocused ? "#3B82F6" : "#9CA3AF"} 
-        />
-
-        {/* Text Input */}
+        <Ionicons name="search" size={18} color={isFocused ? "#3B82F6" : "#9CA3AF"} />
         <TextInput
-          className="flex-1 ml-3 text-base text-gray-800"
+          className="flex-1 ml-2 text-sm text-gray-800 py-0"
           placeholder="Tìm kiếm sản phẩm..."
           placeholderTextColor="#9CA3AF"
           value={keyword}
@@ -47,23 +35,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           autoCorrect={false}
           returnKeyType="search"
         />
-
         {isSearching && keyword.length > 0 && (
-          <ActivityIndicator 
-            size="small" 
-            color="#3B82F6" 
-            className="mr-2"
-          />
+          <ActivityIndicator size="small" color="#3B82F6" className="mr-1" />
         )}
-
-        {/* Clear Button */}
         {keyword.length > 0 && !isSearching && (
           <TouchableOpacity
-            onPress={handleClear}
-            className="ml-2 bg-gray-200 rounded-full p-1"
+            onPress={() => onChangeKeyword("")}
+            className="ml-1 bg-gray-200 rounded-full p-1"
             activeOpacity={0.7}
           >
-            <Ionicons name="close" size={16} color="#6B7280" />
+            <Ionicons name="close" size={14} color="#6B7280" />
           </TouchableOpacity>
         )}
       </View>

@@ -1,166 +1,168 @@
-import { IApiResponsePagination } from "@/Interface/IApiResponsePagination";
+import { IGetCategorySelectionResponse } from "../Interface/Category/IGetCategorySelection";
+import { IGetAllColor } from "../Interface/Color/IGetAllColor";
+import { IApiResponse } from "../Interface/IApiResponse";
+import { IApiResponsePagination } from "../Interface/IApiResponsePagination";
+import { IGetAllProductResponse } from "../Interface/Product/IGetAllProducts";
+import { IGetProductNewArrival } from "../Interface/Product/IGetProductNewArrival";
+import { IGetProductDetailResponse } from "../Interface/Product/IGetProductsDetail";
+import { IGetProductSelectionResponse } from "../Interface/Product/IGetProductSelection";
+import { IGetAllSupplierResponse } from "../Interface/Supplier/IGetAllSuppliers";
+import { IGetSupplierSelectionResponse } from "../Interface/Supplier/IGetSupplierSelection";
 import axiosClient from "./axiosClient";
-import { IApiResponse } from "@/Interface/IApiResponse";
-import { IGetAllProductResponse } from "@/Interface/Product/IGetAllProducts";
-import { IGetProductDetailResponse } from "@/Interface/Product/IGetProductsDetail";
-import { IGetProductSelectionResponse } from "@/Interface/Product/IGetProductSelection";
-import { IGetSupplierSelectionResponse } from "@/Interface/Supplier/IGetSupplierSelection";
-import { IGetCategorySelectionResponse } from "@/Interface/Category/IGetCategorySelection";
-import { IGetAllSupplierResponse } from "@/Interface/Supplier/IGetAllSuppliers";
-import { IGetAllColor } from "@/Interface/Color/IGetAllColor";
-
 
 export const docApi = {
+  // * =================== COLOR =================== * //
+  GetAllColor: async (
+    params: {
+      supplierName?: string;
+      keyword?: string;
+      page?: number;
+      size?: number;
+      sort?: string;
+    } = {},
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
+    const {
+      supplierName,
+      keyword,
+      page = 1,
+      size = 5,
+      sort = "createAt, desc",
+    } = params;
 
-    // * =================== COLOR =================== * //
-    GetAllColor: async (
-        params: {
-            supplierName?: string,
-            keyword?: string,
-            page?: number,
-            size?: number,
-            sort?: string,
-        } = {}
-    ): Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+      ...(supplierName && { supplierName }),
+    });
 
-        const {
-            supplierName,
-            keyword,
-            page = 1,
-            size = 5,
-            sort = 'createAt, desc'
-        } = params;
+    const url = `/public/get-color?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-        const queryParams = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sort,
-            ...(keyword && { keyword }),
-            ...(supplierName && { supplierName })
-        })
+  // * =================== CATEGORY =================== * //
 
-        const url = `/public/get-color?${queryParams.toString()}`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
+  GetCategorySelection: async (): Promise<
+    IApiResponse<IGetCategorySelectionResponse>
+  > => {
+    const url = `/public/select-categories`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-    // * =================== CATEGORY =================== * //
+  // * =================== SUPPLIER =================== * //
 
+  GetSupplierSelection: async (): Promise<
+    IApiResponse<IGetSupplierSelectionResponse>
+  > => {
+    const url = `/public/select-suppliers`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-    GetCategorySelection: async (): Promise<IApiResponse<IGetCategorySelectionResponse>> => {
-        const url = `/public/select-categories`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
+  GetAllSupplier: async (
+    params: {
+      keyword?: string;
+      page?: number;
+      size?: number;
+      sort?: string;
+    } = {},
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
+    const { keyword, page = 1, size = 5, sort = "createAt, desc" } = params;
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+    });
 
+    const url = `/public/get-suppliers?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-    // * =================== SUPPLIER =================== * //
+  // * =================== PRODUCT =================== * //
 
+  GetProductNewArrvial: async (): Promise<
+    IApiResponse<IGetProductNewArrival>
+  > => {
+    const url = "/for-public/new-arrival";
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-    GetSupplierSelection: async (): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
-        const url = `/public/select-suppliers`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
+  GetAllProducts: async (
+    params: {
+      keyword?: string;
+      categoryName?: string;
+      supplierName?: string;
+      minPrice?: number;
+      maxPrice?: number;
+      page?: number;
+      size?: number;
+      sort?: string;
+    } = {},
+  ): Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
+    const {
+      keyword,
+      categoryName,
+      supplierName,
+      minPrice,
+      maxPrice,
+      page = 1,
+      size = 5,
+      sort = "productPrice,desc",
+    } = params;
 
+    const queryParams = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      sort,
+      ...(keyword && { keyword }),
+      ...(categoryName && { categoryName }),
+      ...(supplierName && { supplierName }),
+      ...(typeof minPrice === "number" &&
+        !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+      ...(typeof maxPrice === "number" &&
+        !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
+    });
+    const url = `/for-public/get-products?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-    GetAllSupplier: async (
-        params: {
-            keyword?: string,
-            page?: number,
-            size?: number,
-            sort?: string,
-        } = {}
-    ): Promise<IApiResponse<IApiResponsePagination<IGetAllSupplierResponse>>> => {
-        const { keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
-        const queryParams = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sort,
-            ...(keyword && { keyword }),
-        });
+  GetProducDetail: async (
+    productId: string,
+  ): Promise<IApiResponse<IGetProductDetailResponse>> => {
+    const url = `/for-public/detail-product/${productId}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
 
-        const url = `/public/get-suppliers?${queryParams.toString()}`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
+  GetProductSelection: async (
+    params: {
+      keyword?: string;
+      categoryName?: string;
+      supplierName?: string;
+      minPrice?: number;
+      maxPrice?: number;
+    } = {},
+  ): Promise<IApiResponse<IGetProductSelectionResponse>> => {
+    const { keyword, categoryName, supplierName, minPrice, maxPrice } = params;
 
-    // * =================== PRODUCT =================== * //
-    GetAllProducts: async (
-        params: {
-            keyword?: string,
-            categoryName?: string,
-            supplierName?: string,
-            minPrice?: number,
-            maxPrice?: number,
-            page?: number,
-            size?: number,
-            sort?: string
-        } = {}
-    ): Promise<IApiResponse<IApiResponsePagination<IGetAllProductResponse>>> => {
-
-        const {
-            keyword,
-            categoryName,
-            supplierName,
-            minPrice,
-            maxPrice,
-            page = 1,
-            size = 5,
-            sort = 'productPrice,desc'
-        } = params;
-
-        const queryParams = new URLSearchParams({
-            page: page.toString(),
-            size: size.toString(),
-            sort,
-            ...(keyword && { keyword }),
-            ...(categoryName && { categoryName }),
-            ...(supplierName && { supplierName }),
-            ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
-            ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
-
-        })
-        const url = `/public/get-products?${queryParams.toString()}`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
-
-    GetProducDetail: async (productId: string): Promise<IApiResponse<IGetProductDetailResponse>> => {
-        const url = `/public/detail-product/${productId}`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
-
-    GetProductSelection: async (
-        params: {
-            keyword?: string,
-            categoryName?: string,
-            supplierName?: string,
-            minPrice?: number,
-            maxPrice?: number,
-        } = {}
-    ): Promise<IApiResponse<IGetProductSelectionResponse>> => {
-
-        const {
-            keyword,
-            categoryName,
-            supplierName,
-            minPrice,
-            maxPrice,
-        } = params;
-
-        const queryParams = new URLSearchParams({
-            ...(keyword && { keyword }),
-            ...(categoryName && { categoryName }),
-            ...(supplierName && { supplierName }),
-            ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
-            ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
-
-        })
-        const url = `/products/select-products?${queryParams.toString()}`;
-        const res = await axiosClient.get(url);
-        return res.data;
-    },
-
-}
+    const queryParams = new URLSearchParams({
+      ...(keyword && { keyword }),
+      ...(categoryName && { categoryName }),
+      ...(supplierName && { supplierName }),
+      ...(typeof minPrice === "number" &&
+        !isNaN(minPrice) && { minPrice: minPrice.toString() }),
+      ...(typeof maxPrice === "number" &&
+        !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
+    });
+    const url = `/products/select-products?${queryParams.toString()}`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+};
