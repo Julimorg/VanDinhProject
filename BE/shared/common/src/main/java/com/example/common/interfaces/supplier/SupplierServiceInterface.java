@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface SupplierServiceInterface {
 
-    List<GetSupplierSelectionRes> getSupplierSelection();
+    List<GetSupplierSelectionRes> getSupplierSelection(String keyword);
 
     Page<GetSupplierRes> getSuppliers(String keyword, Pageable pageable);
 

@@ -27,6 +27,9 @@ public class SupplierSpecification {
         return hasKeyword(filter.keyword());
     }
 
+    public static Specification<Supplier> supported(SupplierFilter filter){
+        return hasKeywordForSupplierSelection(filter.keyword);
+    }
 
     /*
      * Filter theo keyword — tìm theo tên / số điện thoại / email.
@@ -35,6 +38,19 @@ public class SupplierSpecification {
         return (root, query, cb) -> {
             if (!StringUtils.hasText(keyword)) return cb.conjunction();
 
+            String pattern = "%" + keyword.toLowerCase() + "%";
+
+            return cb.or(
+                    cb.like(cb.lower(root.get("supplierName")),  pattern),
+                    cb.like(cb.lower(root.get("supplierPhone")), pattern),
+                    cb.like(cb.lower(root.get("supplierEmail")), pattern)
+            );
+        };
+    }
+
+    private static Specification<Supplier> hasKeywordForSupplierSelection(String keyword){
+        return (root, query, cb) -> {
+            if (!StringUtils.hasText(keyword)) return cb.conjunction();
             String pattern = "%" + keyword.toLowerCase() + "%";
 
             return cb.or(

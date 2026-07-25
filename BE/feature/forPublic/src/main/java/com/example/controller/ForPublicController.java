@@ -110,12 +110,14 @@ public class ForPublicController {
     //* ============================ Supplier FEATURE ============================
 
     @GetMapping("/select-suppliers")
-    public ApiResponse<List<GetSupplierSelectionRes>> getSupplierSelection(){
+    public ApiResponse<List<GetSupplierSelectionRes>> getSupplierSelection(
+            @RequestParam(required = false) String keyword
+    ){
         return ApiResponse.<List<GetSupplierSelectionRes>>
                         builder()
                 .status_code(SuccessCode.GET_SUPPLIER_SELECTION.getStatusCode().value())
                 .message(SuccessCode.GET_SUPPLIER_SELECTION.getMessage())
-                .data(supplierServiceInterface.getSupplierSelection())
+                .data(supplierServiceInterface.getSupplierSelection(keyword))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
