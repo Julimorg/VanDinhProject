@@ -40,8 +40,11 @@ public class SupplierService implements SupplierServiceInterface {
     * */
 
     @Override
-    public List<GetSupplierSelectionRes> getSupplierSelection(){
-        return supplierRepository.findAll()
+    public List<GetSupplierSelectionRes> getSupplierSelection(String keyword){
+        Specification<Supplier> spec = SupplierSpecification
+                .supported((SupplierSpecification.SupplierFilter.keywordOnly(keyword)));
+
+        return supplierRepository.findAll(spec)
                 .stream()
                 .map(supplier -> supplierMapper.toGetSuppliersSelection(supplier))
                 .toList();
