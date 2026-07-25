@@ -7,6 +7,7 @@ import { router } from "expo-router";
 import { FilterBar } from "../../components/Product/FilterBar";
 import { ProductCard } from "../../components/Product/ProductCard";
 import { ProductSkeleton } from "../../components/Product/ProductSkeleton";
+import { ProductNewArrivalSection } from "../../components/Product/ProductNewArrivalSection";
 import { SearchBar } from "../../components/Product/SearchBar";
 import { SORT_OPTIONS } from "../../components/Product/SortDropdown";
 
@@ -163,14 +164,20 @@ export default function ProductScreen() {
     );
   }, [isInitialLoading, isSearching, hasActiveFilters, handleResetFilters]);
 
+  // Header của FlatList: New Arrival (chỉ hiện khi không có filter/search nào active)
+  // + skeleton khi đang load lần đầu
   const renderHeader = useCallback(() => {
-    if (!isInitialLoading) return null;
     return (
-      <View className="px-2 pt-2">
-        <ProductSkeleton count={6} />
+      <View>
+        {!hasActiveFilters && <ProductNewArrivalSection onPressItem={handleViewDetail} />}
+        {isInitialLoading && (
+          <View className="px-2 pt-2">
+            <ProductSkeleton count={6} />
+          </View>
+        )}
       </View>
     );
-  }, [isInitialLoading]);
+  }, [hasActiveFilters, isInitialLoading, handleViewDetail]);
 
   const renderItem = useCallback(
     ({ item }: { item: any }) => (
@@ -283,7 +290,7 @@ export default function ProductScreen() {
         renderItem={renderItem}
         numColumns={viewMode === "grid" ? 2 : 1}
         columnWrapperClassName={viewMode === "grid" ? "justify-between px-2" : undefined}
-        contentContainerClassName="pb-32 pt-1 bg-gray-50"
+        contentContainerClassName="pb-32 bg-gray-50"
         showsVerticalScrollIndicator={false}
         className="flex-1 bg-gray-50"
         bounces
