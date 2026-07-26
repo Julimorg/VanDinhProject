@@ -24,8 +24,10 @@ public class ToolDetail {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "tool_type")
     private String toolType;
 
+    @Column(name = "size")
     private String size;
 
     @Column(columnDefinition = "JSON")

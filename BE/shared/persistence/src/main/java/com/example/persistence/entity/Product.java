@@ -33,29 +33,33 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String productId;
 
+    @Column(name = "product_code", nullable = false)
+    private String productCode;
+
+    @Column(name = "product_name", nullable = false)
     private String productName;
 
+    @Column(name = "product_description")
     private String productDescription;
 
     @ElementCollection
     private List<String> productImage = new ArrayList<>();
 
-    private String productCode;
-
+    @Column(name = "product_quantity", nullable = false)
     private int productQuantity;
 
+    @Column(name = "discount")
     private double discount;
 
+    @Column(name = "product_price", nullable = false)
     private BigDecimal productPrice;
 
-    private LocalDateTime lastNotified;
-
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(name = "product_status_type")
     private ProductStatusType productStatusType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = true)
+    @Column(name = "product_type")
     private ProducType productType;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -63,13 +67,18 @@ public class Product {
     private Supplier supplier;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
     @CreationTimestamp
+    @Column(name = "create_at", nullable = false)
     private LocalDateTime createAt;
 
     @UpdateTimestamp
+    @Column(name = "update_at", nullable = false)
     private LocalDateTime updateAt;
+
+    @Column(name = "last_notified", nullable = false)
+    private LocalDateTime lastNotified;
 
 }

@@ -42,13 +42,7 @@ public class ProductService implements ProductServiceInterface {
 
     private final ProductMapper  productMapper;
 
-    private final SupplierQueryInternalService supplierInternalService;
-
     private final ProductQueryInternalService productQueryInternalService;
-
-    private final ColorQueryInternalService colorInternalService;
-
-    private final CategoryQueryInternalService categoryInternalService;
 
     private final FileUploadService fileUploadService;
 

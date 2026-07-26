@@ -43,6 +43,7 @@ public class CreateProductReq {
     @NotBlank(message = "Nhà cung cấp không được trống")
     private String supplierId;
 
+    @NotBlank(message = "Thành phần không được trống")
     private String categoryId;
 
     private String productDescription;
