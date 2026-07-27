@@ -26,6 +26,9 @@ public class ChemicalDetail {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @Column(name = "chemical_color")
+    private String chemicalColor;
+
     @Column(name = "volume")
     private String volume;
 

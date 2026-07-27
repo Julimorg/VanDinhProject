@@ -2,11 +2,13 @@ package com.example.config;
 
 import com.example.persistence.entity.Product;
 import jakarta.persistence.criteria.Predicate;
+import org.apache.poi.util.StringUtil;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class ProductSpecification {
 
@@ -16,6 +18,7 @@ public class ProductSpecification {
             String keyword,
             String categoryName,
             String supplierName,
+            String productType,
             Double minPrice,
             Double maxPrice
     ) {
@@ -23,22 +26,24 @@ public class ProductSpecification {
         public static ProductFilter full(String keyword,
                                          String categoryName,
                                          String supplierName,
+                                         String productType,
                                          Double minPrice,
                                          Double maxPrice) {
-            return new ProductFilter(keyword, categoryName, supplierName, minPrice, maxPrice);
+            return new ProductFilter(keyword, categoryName, supplierName, productType, minPrice, maxPrice);
         }
 
         /** Chỉ search theo keyword — dùng cho quick-search bar */
         public static ProductFilter keywordOnly(String keyword) {
-            return new ProductFilter(keyword, null, null, null, null);
+            return new ProductFilter(keyword, null, null, null,null, null);
         }
 
         /** Chỉ filter theo danh mục + nhà cung cấp + giá — không có keyword */
         public static ProductFilter filterOnly(String categoryName,
                                                String supplierName,
+                                               String productType,
                                                Double minPrice,
                                                Double maxPrice) {
-            return new ProductFilter(null, categoryName, supplierName, minPrice, maxPrice);
+            return new ProductFilter(null, categoryName, supplierName,productType, minPrice, maxPrice);
         }
     }
 
@@ -86,6 +91,17 @@ public class ProductSpecification {
             return cb.equal(
                     cb.lower(root.get("supplier").get("supplierName")),
                     supplierName.toLowerCase()
+            );
+        };
+    }
+
+    private static Specification<Product> hasProductType(String productType){
+        return (root, query, cb) -> {
+            if ( !StringUtils.hasText(productType)) return cb.conjunction();
+
+            return cb.equal(
+                    cb.lower(root.get("product").get("productType")),
+                    productType.toLowerCase()
             );
         };
     }

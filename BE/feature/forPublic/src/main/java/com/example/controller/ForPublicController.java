@@ -163,6 +163,7 @@ public class ForPublicController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryName", required = false) String categoryName,
             @RequestParam(value = "supplierName", required = false) String supplierName,
+            @RequestParam(value = "productType", required = false) String productType,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
             @RequestParam(value = "maxPrice", required = false) Double maxPrice){
 
@@ -173,6 +174,7 @@ public class ForPublicController {
                         keyword,
                         categoryName,
                         supplierName,
+                        productType,
                         minPrice,
                         maxPrice,
                         pageable))

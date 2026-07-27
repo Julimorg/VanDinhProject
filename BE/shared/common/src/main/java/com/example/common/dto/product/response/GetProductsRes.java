@@ -28,7 +28,7 @@ public class GetProductsRes {
 
     private boolean       isLowStock;
 
-    private ProducType productType;
+    private ProducType    productType;
 
     private List<String>  productImage;
 
@@ -36,9 +36,9 @@ public class GetProductsRes {
 
     private String        categoryName;
 
-    private PaintDetailDto    paintDetail;
+    private String createAt;
 
-    private ToolDetailDto     toolDetail;
+    private String updateAt;
 
-    private ChemicalDetailDto chemicalDetail;
 }
+

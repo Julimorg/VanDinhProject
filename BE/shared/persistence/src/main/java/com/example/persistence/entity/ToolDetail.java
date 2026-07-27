@@ -3,6 +3,8 @@ package com.example.persistence.entity;
 import com.example.persistence.config.MapToJsonConverter;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,7 @@ public class ToolDetail {
     @Column(name = "size")
     private String size;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "JSON")
     @Convert(converter = MapToJsonConverter.class)
     private Map<String, Object> extraSpecs = new HashMap<>();

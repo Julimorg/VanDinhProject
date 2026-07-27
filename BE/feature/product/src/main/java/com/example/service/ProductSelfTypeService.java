@@ -3,6 +3,7 @@ package com.example.service;
 import com.example.common.dto.product.request.CreateProductReq;
 import com.example.common.dto.product.request.UpdateProductReq;
 import com.example.common.dto.product.response.CreateProductRes;
+import com.example.common.dto.product.response.ProductRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.color.ColorQueryInternalService;
@@ -46,6 +47,17 @@ public class ProductSelfTypeService {
     private final ToolDetailMapper toolDetailMapper;
 
     private final ObjectMapper objectMapper;
+
+    public void attachDetailByType(Product product, ProductRes response) {
+        switch (product.getProductType()) {
+            case PAINT -> paintDetailRepository.findById(product.getProductId())
+                    .ifPresent(detail -> response.setPaintDetail(paintDetailMapper.toDto(detail)));
+            case TOOL -> toolDetailRepository.findById(product.getProductId())
+                    .ifPresent(detail -> response.setToolDetail(toolDetailMapper.toDto(detail)));
+            case CHEMICAL -> chemicalDetailRepository.findById(product.getProductId())
+                    .ifPresent(detail -> response.setChemicalDetail(chemicalDetailMapper.toDto(detail)));
+        }
+    }
 
     private Map<String, Object> parseExtraSpecs(String extraSpecsJson) {
         if (extraSpecsJson == null || extraSpecsJson.isBlank()) {

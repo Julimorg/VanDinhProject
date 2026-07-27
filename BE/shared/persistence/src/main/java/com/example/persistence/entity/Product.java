@@ -70,6 +70,15 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
+    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private PaintDetail paintDetail;
+
+    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ToolDetail toolDetail;
+
+    @OneToOne(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private ChemicalDetail chemicalDetail;
+
     @CreationTimestamp
     @Column(name = "create_at", nullable = false)
     private LocalDateTime createAt;

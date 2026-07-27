@@ -13,8 +13,12 @@ import java.util.Map;
 @Builder
 public class ChemicalDetailDto {
 
+    private String        productId;
+
     private String              chemicalType;
+
     private String              volume;
+
     private Map<String, Object> extraSpecs;
 
 }
