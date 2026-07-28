@@ -15,7 +15,7 @@ import { ICreateUserRequest, ICreateUserResponse } from '@/Interface/Users/ICrea
 import { IGetUserDetailResponse } from '@/Interface/Users/IGetUserDetail';
 import { IUpdateUserRequest, IUpdateUserResponse } from '@/Interface/Users/IUpdateUser';
 import { IGetAllSupplierResponse } from '@/Interface/Supplier/IGetAllSuppliers';
-import { buildFormData } from '@/Utils/ulti';
+import { buildFormData, buildFormDataForExtaSpec } from '@/Utils/ulti';
 import {
   ICreateSupplierRequest,
   ICreateSupplierResponse,
@@ -548,7 +548,7 @@ export const docApi = {
     body: IUpdateProductRequest
   ): Promise<IApiResponse<IUpdateProductResponse>> => {
     const url = `/products/update/${productId}`;
-    const formData = buildFormData(body);
+    const formData = buildFormDataForExtaSpec(body);
     const res = await axiosClient.patch(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data; charset=utf-8',

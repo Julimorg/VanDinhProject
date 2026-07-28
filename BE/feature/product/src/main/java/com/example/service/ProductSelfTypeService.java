@@ -143,6 +143,10 @@ public class ProductSelfTypeService {
 
                 paintDetailMapper.updatePaintDetailEntity(detail, req);
 
+                if (req.getExtraSpecs() != null) {
+                    detail.setExtraSpecs(parseExtraSpecs(req.getExtraSpecs()));
+                }
+
                 paintDetailRepository.save(detail);
             }
             case TOOL -> {
@@ -151,6 +155,10 @@ public class ProductSelfTypeService {
 
                 toolDetailMapper.updateToolDetailEntity(detail, req);
 
+                if (req.getExtraSpecs() != null) {
+                    detail.setExtraSpecs(parseExtraSpecs(req.getExtraSpecs()));
+                }
+
                 toolDetailRepository.save(detail);
             }
             case CHEMICAL -> {
@@ -158,6 +166,10 @@ public class ProductSelfTypeService {
                         .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
                 chemicalDetailMapper.updateChemicalDetailEntity(detail, req);
+
+                if (req.getExtraSpecs() != null) {
+                    detail.setExtraSpecs(parseExtraSpecs(req.getExtraSpecs()));
+                }
 
                 chemicalDetailRepository.save(detail);
             }

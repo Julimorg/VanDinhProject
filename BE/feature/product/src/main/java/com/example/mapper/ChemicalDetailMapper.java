@@ -13,6 +13,7 @@ public interface ChemicalDetailMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "productId", ignore = true)
     @Mapping(target = "product",   ignore = true)
+    @Mapping(target = "extraSpecs", ignore = true)
     void updateChemicalDetailEntity(@MappingTarget ChemicalDetail chemicalDetail,
                                     UpdateProductReq request);
 

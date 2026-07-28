@@ -14,6 +14,7 @@ public interface ToolDetailMapper {
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "productId", ignore = true)
     @Mapping(target = "product",   ignore = true)
+    @Mapping(target = "extraSpecs", ignore = true)
     void updateToolDetailEntity(@MappingTarget ToolDetail toolDetail,
                                 UpdateProductReq request);
 
