@@ -63,7 +63,7 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: docker-build-push
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' 
     steps:
       - name: Deploy
         run: |
