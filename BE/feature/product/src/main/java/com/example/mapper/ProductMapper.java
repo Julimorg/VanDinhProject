@@ -21,25 +21,20 @@ import org.mapstruct.*;
 public interface ProductMapper {
 
     //* =========================== GET MAPPER ===========================
+
     @Mapping(target = "productId",     source = "product.productId")
-    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
-    @Mapping(target = "categoryName",  source = "product.category.categoryName")
     @Mapping(target = "paintDetail",   source = "paintDetail")
     @Mapping(target = "toolDetail",    ignore = true)
     @Mapping(target = "chemicalDetail",ignore = true)
     CreateProductRes toPaintResponse(Product product, PaintDetail paintDetail);
 
     @Mapping(target = "productId",     source = "product.productId")
-    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
-    @Mapping(target = "categoryName",  source = "product.category.categoryName")
     @Mapping(target = "paintDetail",   ignore = true)
     @Mapping(target = "toolDetail",    source = "toolDetail")
     @Mapping(target = "chemicalDetail",ignore = true)
     CreateProductRes toToolResponse(Product product, ToolDetail toolDetail);
 
     @Mapping(target = "productId",     source = "product.productId")
-    @Mapping(target = "supplierName",  source = "product.supplier.supplierName")
-    @Mapping(target = "categoryName",  source = "product.category.categoryName")
     @Mapping(target = "paintDetail",   ignore = true)
     @Mapping(target = "toolDetail",    ignore = true)
     @Mapping(target = "chemicalDetail",source = "chemicalDetail")

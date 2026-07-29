@@ -30,6 +30,9 @@ import {
   EditOutlined,
   DownloadOutlined,
   UploadOutlined,
+  BgColorsOutlined,
+  ToolOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
@@ -44,6 +47,20 @@ import {
   ImportExcelError,
 } from './Hook/useImportProductExcel';
 const { Title, Text } = Typography;
+
+// Enum cố định — khớp với productType bên BE (Product entity)
+const PRODUCT_TYPE_FILTER_OPTIONS = [
+  { value: 'Tất cả', label: 'Tất cả loại' },
+  { value: 'PAINT', label: 'Sơn' },
+  { value: 'TOOL', label: 'Dụng cụ' },
+  { value: 'CHEMICAL', label: 'Hóa chất' },
+];
+
+const PRODUCT_TYPE_TAG_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  PAINT: { label: 'Sơn', color: 'purple', icon: <BgColorsOutlined /> },
+  TOOL: { label: 'Dụng cụ', color: 'blue', icon: <ToolOutlined /> },
+  CHEMICAL: { label: 'Hóa chất', color: 'green', icon: <ExperimentOutlined /> },
+};
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
@@ -76,6 +93,7 @@ const ProductList: React.FC = () => {
     keyword: '',
     categoryName: undefined as string | undefined,
     supplierName: undefined as string | undefined,
+    productType: undefined as string | undefined,
     page: 0,
     size: 5,
     sort: 'createAt,desc',
@@ -140,27 +158,46 @@ const ProductList: React.FC = () => {
       title: 'ID',
       dataIndex: 'productId',
       key: 'productId',
-      width: 120,
+      width: 140,
       ellipsis: true,
+    },
+    {
+      title: 'Mã SP',
+      dataIndex: 'productCode',
+      key: 'productCode',
+      width: 130,
+      render: (code: string) =>
+        code ? <Text code>{code}</Text> : <Text type="secondary">N/A</Text>,
     },
     {
       title: 'Tên sản phẩm',
       dataIndex: 'productName',
       key: 'productName',
-      width: 150,
-      render: (text) => <Text strong>{text}</Text>,
+      width: 200,
+      render: (text) => (
+        <Text strong style={{ fontSize: 15 }}>
+          {text}
+        </Text>
+      ),
     },
     {
       title: 'Ảnh',
       dataIndex: 'productImage',
       key: 'productImage',
-      width: 100,
+      width: 140,
       render: (images: string[]) =>
         images.length > 0 ? (
           <Carousel autoplay dots={false} arrows>
             {images.map((img, idx) => (
               <div key={idx}>
-                <Image src={img} alt="Product" width={80} preview={false} />
+                <Image
+                  src={img}
+                  alt="Product"
+                  width={110}
+                  height={110}
+                  style={{ objectFit: 'cover', borderRadius: 8 }}
+                  preview={false}
+                />
               </div>
             ))}
           </Carousel>
@@ -169,48 +206,72 @@ const ProductList: React.FC = () => {
         ),
     },
     {
+      title: 'Loại',
+      dataIndex: 'productType',
+      key: 'productType',
+      width: 110,
+      render: (type: string) => {
+        const info = PRODUCT_TYPE_TAG_MAP[type];
+        return info ? (
+          <Tag icon={info.icon} color={info.color}>
+            {info.label}
+          </Tag>
+        ) : (
+          <Text type="secondary">{type || 'N/A'}</Text>
+        );
+      },
+    },
+    {
       title: 'Dung lượng',
       dataIndex: 'productVolume',
       key: 'productVolume',
-      width: 100,
+      width: 120,
     },
     {
       title: 'Đơn vị',
       dataIndex: 'productUnit',
       key: 'productUnit',
-      width: 80,
+      width: 100,
     },
     {
       title: 'Số lượng',
       dataIndex: 'productQuantity',
       key: 'productQuantity',
-      width: 80,
-      render: (qty: number) => <Tag color="blue">{qty}</Tag>,
+      width: 110,
+      render: (qty: number) => (
+        <Tag color="blue" style={{ fontSize: 14, padding: '2px 10px' }}>
+          {qty}
+        </Tag>
+      ),
     },
     {
       title: 'Giá',
       dataIndex: 'productPrice',
       key: 'productPrice',
-      width: 100,
-      render: (price: number) => <Text strong>{formatCurrency(price)}</Text>,
+      width: 140,
+      render: (price: number) => (
+        <Text strong style={{ fontSize: 15 }}>
+          {formatCurrency(price)}
+        </Text>
+      ),
     },
     {
       title: 'Nhà cung cấp',
       dataIndex: 'supplierName',
       key: 'supplierName',
-      width: 120,
+      width: 150,
     },
     {
       title: 'Màu sắc',
       dataIndex: 'colorName',
       key: 'colorName',
-      width: 80,
+      width: 110,
     },
     {
       title: 'Danh mục',
       dataIndex: 'categoryName',
       key: 'categoryName',
-      width: 100,
+      width: 130,
       render: (cat: string) =>
         cat ? <Tag color="purple">{cat}</Tag> : <Text type="secondary">N/A</Text>,
     },
@@ -218,20 +279,20 @@ const ProductList: React.FC = () => {
       title: 'Tạo tại',
       dataIndex: 'createAt',
       key: 'createAt',
-      width: 140,
+      width: 160,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Cập nhật tại',
       dataIndex: 'updateAt',
       key: 'updateAt',
-      width: 140,
+      width: 160,
       render: (date: string) => new Date(date).toLocaleDateString('vi-VN'),
     },
     {
       title: 'Hành động',
       key: 'actions',
-      width: 320,
+      width: 340,
       render: (_: any, record: IGetAllProductResponse) => (
         <Space size="small">
           <Button
@@ -291,6 +352,11 @@ const ProductList: React.FC = () => {
   const handleSupplierFilter = (value: string) => {
     const supplier = value === 'Tất cả' ? undefined : value;
     setFilters((prev) => ({ ...prev, supplierName: supplier, page: 0 }));
+  };
+
+  const handleProductTypeFilter = (value: string) => {
+    const productType = value === 'Tất cả' ? undefined : value;
+    setFilters((prev) => ({ ...prev, productType, page: 0 }));
   };
 
   const handleAddProduct = () => {
@@ -384,6 +450,17 @@ const ProductList: React.FC = () => {
               </Text>
 
               <Select
+                placeholder="Lọc theo loại sản phẩm"
+                value={filters.productType || 'Tất cả'}
+                onChange={handleProductTypeFilter}
+                options={PRODUCT_TYPE_FILTER_OPTIONS}
+                className="w-full sm:w-[170px]"
+                size="large"
+                suffixIcon={<FilterOutlined />}
+                allowClear={false}
+              />
+
+              <Select
                 placeholder="Lọc theo danh mục"
                 value={filters.categoryName || 'Tất cả'}
                 onChange={handleCategoryFilter}
@@ -443,11 +520,11 @@ const ProductList: React.FC = () => {
                 columns={columns}
                 dataSource={products}
                 pagination={false}
-                scroll={{ x: 1500 }}
+                scroll={{ x: 2200 }}
                 rowKey="productId"
                 className="border-none"
                 locale={{ emptyText: 'Không có dữ liệu phù hợp' }}
-                size="middle"
+                size="large"
               />
             </Spin>
           </div>

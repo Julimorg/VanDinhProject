@@ -88,6 +88,34 @@ export const buildFormData = (data: Record<string, any>): FormData => {
   return formData;
 };
 
+
+export const buildFormDataForExtaSpec = (data: Record<string, any>): FormData => {
+  const formData = new FormData();
+
+  Object.entries(data).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+
+    if (key === 'productImage' && Array.isArray(value)) {
+      (value as File[]).forEach((file) => formData.append('productImage', file));
+      return;
+    }
+
+    // Map field (extraSpecs) — Spring WebDataBinder hỗ trợ sẵn cú pháp
+    // key[subKey]=value để bind vào Map<String, Object>, không cần Jackson.
+    if (typeof value === 'object' && !(value instanceof File) && !Array.isArray(value)) {
+      Object.entries(value).forEach(([subKey, subValue]) => {
+        if (subValue !== undefined && subValue !== null) {
+          formData.append(`${key}[${subKey}]`, String(subValue));
+        }
+      });
+      return;
+    }
+
+    formData.append(key, String(value));
+  });
+
+  return formData;
+};
 /**
  * Download CSV file from base64 string
  * @param base64String - Base64 encoded file content

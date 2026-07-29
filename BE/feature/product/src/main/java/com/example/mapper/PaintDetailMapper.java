@@ -18,6 +18,7 @@ public interface PaintDetailMapper {
     @Mapping(target = "productId", ignore = true)
     @Mapping(target = "product",   ignore = true)
     @Mapping(target = "color",     ignore = true)
+    @Mapping(target = "extraSpecs", ignore = true)
     void updatePaintDetailEntity(@MappingTarget PaintDetail paintDetail,
                                  UpdateProductReq request);
 }

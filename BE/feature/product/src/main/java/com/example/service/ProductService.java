@@ -14,6 +14,8 @@ import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.FileUploadService;
 import com.example.config.ProductSpecification;
 import com.example.mapper.ProductMapper;
+import com.example.persistence.entity.Color;
+import com.example.persistence.entity.PaintDetail;
 import com.example.persistence.entity.Product;
 import com.example.repository.ProductRepository;
 import jakarta.transaction.Transactional;
@@ -42,13 +44,7 @@ public class ProductService implements ProductServiceInterface {
 
     private final ProductMapper  productMapper;
 
-    private final SupplierQueryInternalService supplierInternalService;
-
     private final ProductQueryInternalService productQueryInternalService;
-
-    private final ColorQueryInternalService colorInternalService;
-
-    private final CategoryQueryInternalService categoryInternalService;
 
     private final FileUploadService fileUploadService;
 
@@ -73,6 +69,7 @@ public class ProductService implements ProductServiceInterface {
     public List<GetProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
                                                             String supplierName,
+                                                            String productType,
                                                             Double minPrice,
                                                             Double maxPrice) {
         Specification<Product> specification = ProductSpecification.from(
@@ -80,6 +77,7 @@ public class ProductService implements ProductServiceInterface {
                         keyword,
                         categoryName,
                         supplierName,
+                        productType,
                         minPrice,
                         maxPrice
                 )
@@ -94,6 +92,7 @@ public class ProductService implements ProductServiceInterface {
     public Page<GetProductsRes> getProducts(String keyword,
                                             String categoryName,
                                             String supplierName,
+                                            String productType,
                                             Double minPrice,
                                             Double maxPrice,
                                             Pageable pageable) {
@@ -102,6 +101,7 @@ public class ProductService implements ProductServiceInterface {
                         keyword,
                         categoryName,
                         supplierName,
+                        productType,
                         minPrice,
                         maxPrice
                 )
@@ -121,9 +121,11 @@ public class ProductService implements ProductServiceInterface {
             response.setSupplierName(product.getSupplier().getSupplierName());
         }
 
-        if(product.getCategory() != null){
+        if (product.getCategory() != null) {
             response.setCategoryName(product.getCategory().getCategoryName());
         }
+
+        productSelfTypeService.attachDetailByType(product, response);
 
         return response;
     }
@@ -223,6 +225,7 @@ public class ProductService implements ProductServiceInterface {
 
         if (request.getProductQuantity() > 10000000 ) {
             throw new AppException(ErrorCode.PRODUCT_EXCEED_LIMIT);
+
         }else if( request.getProductQuantity() <= 0) {
             throw new AppException(ErrorCode.PRODUCT_QUANTITY_CAN_NOT_BE_NEGATIVE);
         }

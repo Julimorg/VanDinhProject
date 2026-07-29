@@ -18,12 +18,14 @@ public interface ProductServiceInterface {
     List<GetProductSelectionRes> getProductSelection(String keyword,
                                                             String categoryName,
                                                             String supplierName,
+                                                            String productType,
                                                             Double minPrice,
                                                             Double maxPrice);
 
     Page<GetProductsRes> getProducts(String keyword,
                                             String categoryName,
                                             String supplierName,
+                                            String productType,
                                             Double minPrice,
                                             Double maxPrice,
                                             Pageable pageable);

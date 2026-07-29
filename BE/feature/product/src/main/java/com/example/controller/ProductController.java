@@ -61,6 +61,7 @@ public class ProductController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryName", required = false) String categoryName,
             @RequestParam(value = "supplierName", required = false) String supplierName,
+            @RequestParam(value = "productType", required = false) String productType,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
             @RequestParam(value = "maxPrice", required = false) Double maxPrice
     ) {
@@ -71,6 +72,7 @@ public class ProductController {
                         keyword,
                         categoryName,
                         supplierName,
+                        productType,
                         minPrice,
                         maxPrice)
                 )
@@ -105,13 +107,15 @@ public class ProductController {
             @RequestParam(value = "keyword", required = false) String keyword,
             @RequestParam(value = "categoryName", required = false) String categoryName,
             @RequestParam(value = "supplierName", required = false) String supplierName,
+            @RequestParam(value = "productType", required = false) String productType,
             @RequestParam(value = "minPrice", required = false) Double minPrice,
             @RequestParam(value = "maxPrice", required = false) Double maxPrice){
 
         return ApiResponse.<Page<GetProductsRes>>builder()
                 .status_code(SuccessCode.GET_PRODUCT.getStatusCode().value())
                 .message(SuccessCode.GET_PRODUCT.getMessage())
-                .data(productService.getProducts(keyword, categoryName, supplierName, minPrice, maxPrice, pageable))
+                .data(productService.getProducts(
+                        keyword, categoryName, supplierName,productType, minPrice, maxPrice, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

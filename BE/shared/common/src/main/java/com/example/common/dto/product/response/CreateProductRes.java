@@ -15,6 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class CreateProductRes {
+
     private String        productId;
 
     private String        productName;

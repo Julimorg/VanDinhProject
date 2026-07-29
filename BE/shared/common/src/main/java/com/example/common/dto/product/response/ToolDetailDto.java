@@ -12,6 +12,7 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class ToolDetailDto {
+    private String        productId;
     private String              toolType;
     private String              size;
     private Map<String, Object> extraSpecs;

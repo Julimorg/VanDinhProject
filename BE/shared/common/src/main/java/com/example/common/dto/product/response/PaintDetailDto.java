@@ -13,17 +13,19 @@ import java.util.Map;
 @Builder
 public class PaintDetailDto {
 
-    private String              colorId;
+    private String productId;
 
-    private String              colorName;
+    private String colorId;
 
-    private String              colorCode;
+    private String colorName;
 
-    private String              hexCode;
+    private String colorCode;
 
-    private String              surfaceType;
+    private String hexCode;
 
-    private String              volume;
+    private String surfaceType;
+
+    private String volume;
 
     private Map<String, Object> extraSpecs;
 
