@@ -1,0 +1,1 @@
+export type ExtraSpecValue = string | number | boolean | null;
