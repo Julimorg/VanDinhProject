@@ -9,6 +9,7 @@ type ProductsQueryParams = {
   keyword?: string;
   categoryName?: string;
   supplierName?: string;
+  productType?: string;
   minPrice?: number;
   maxPrice?: number;
   page?: number;
@@ -29,6 +30,7 @@ export const useGetAllProducts = (
     keyword,
     categoryName,
     supplierName,
+    productType,
     minPrice,
     maxPrice,
     page = 1,
@@ -40,6 +42,7 @@ export const useGetAllProducts = (
     keyword,
     categoryName,
     supplierName,
+    productType,
     minPrice: minPrice !== undefined ? minPrice : undefined,
     maxPrice: maxPrice !== undefined ? maxPrice : undefined,
     page,
@@ -54,6 +57,7 @@ export const useGetAllProducts = (
       keyword,
       categoryName,
       supplierName,
+      productType,
       minPrice,
       maxPrice,
       page,

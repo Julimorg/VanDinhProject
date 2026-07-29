@@ -1,6 +1,7 @@
 package com.example.config;
 
 import com.example.persistence.entity.Product;
+import com.example.persistence.enumTable.ProducType;
 import jakarta.persistence.criteria.Predicate;
 import org.apache.poi.util.StringUtil;
 import org.springframework.data.jpa.domain.Specification;
@@ -54,6 +55,7 @@ public class ProductSpecification {
             return hasKeyword(filter.keyword())
                     .and(hasCategory(filter.categoryName()))
                     .and(hasSupplier(filter.supplierName()))
+                    .and(hasProductType(filter.productType()))
                     .and(hasPrice(filter.minPrice(), filter.maxPrice()))
                     .toPredicate(root, query, cb);
         };
@@ -95,14 +97,17 @@ public class ProductSpecification {
         };
     }
 
-    private static Specification<Product> hasProductType(String productType){
+    private static Specification<Product> hasProductType(String productType) {
         return (root, query, cb) -> {
-            if ( !StringUtils.hasText(productType)) return cb.conjunction();
+            if (!StringUtils.hasText(productType)) return cb.conjunction();
 
-            return cb.equal(
-                    cb.lower(root.get("product").get("productType")),
-                    productType.toLowerCase()
-            );
+            try {
+                ProducType type = ProducType.valueOf(productType.toUpperCase());
+                return cb.equal(root.get("productType"), type);
+            } catch (IllegalArgumentException e) {
+
+                return cb.disjunction();
+            }
         };
     }
 

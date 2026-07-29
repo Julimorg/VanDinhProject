@@ -484,6 +484,7 @@ export const docApi = {
       keyword?: string;
       categoryName?: string;
       supplierName?: string;
+      productType?: string;
       minPrice?: number;
       maxPrice?: number;
       page?: number;
@@ -495,6 +496,7 @@ export const docApi = {
       keyword,
       categoryName,
       supplierName,
+      productType,
       minPrice,
       maxPrice,
       page = 1,
@@ -509,6 +511,7 @@ export const docApi = {
       ...(keyword && { keyword }),
       ...(categoryName && { categoryName }),
       ...(supplierName && { supplierName }),
+      ...(productType && { productType }),
       ...(typeof minPrice === 'number' && !isNaN(minPrice) && { minPrice: minPrice.toString() }),
       ...(typeof maxPrice === 'number' && !isNaN(maxPrice) && { maxPrice: maxPrice.toString() }),
     });

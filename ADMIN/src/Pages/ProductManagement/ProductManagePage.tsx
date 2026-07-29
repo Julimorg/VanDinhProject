@@ -30,6 +30,9 @@ import {
   EditOutlined,
   DownloadOutlined,
   UploadOutlined,
+  BgColorsOutlined,
+  ToolOutlined,
+  ExperimentOutlined,
 } from '@ant-design/icons';
 import type { IGetAllProductResponse } from '@/Interface/Product/IGetAllProducts';
 import { useDebounce } from '@/Hook/useDebounce';
@@ -44,6 +47,20 @@ import {
   ImportExcelError,
 } from './Hook/useImportProductExcel';
 const { Title, Text } = Typography;
+
+// Enum cố định — khớp với productType bên BE (Product entity)
+const PRODUCT_TYPE_FILTER_OPTIONS = [
+  { value: 'Tất cả', label: 'Tất cả loại' },
+  { value: 'PAINT', label: 'Sơn' },
+  { value: 'TOOL', label: 'Dụng cụ' },
+  { value: 'CHEMICAL', label: 'Hóa chất' },
+];
+
+const PRODUCT_TYPE_TAG_MAP: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
+  PAINT: { label: 'Sơn', color: 'purple', icon: <BgColorsOutlined /> },
+  TOOL: { label: 'Dụng cụ', color: 'blue', icon: <ToolOutlined /> },
+  CHEMICAL: { label: 'Hóa chất', color: 'green', icon: <ExperimentOutlined /> },
+};
 
 const ProductList: React.FC = () => {
   const navigate = useNavigate();
@@ -76,6 +93,7 @@ const ProductList: React.FC = () => {
     keyword: '',
     categoryName: undefined as string | undefined,
     supplierName: undefined as string | undefined,
+    productType: undefined as string | undefined,
     page: 0,
     size: 5,
     sort: 'createAt,desc',
@@ -186,6 +204,22 @@ const ProductList: React.FC = () => {
         ) : (
           <Text type="secondary">No image</Text>
         ),
+    },
+    {
+      title: 'Loại',
+      dataIndex: 'productType',
+      key: 'productType',
+      width: 110,
+      render: (type: string) => {
+        const info = PRODUCT_TYPE_TAG_MAP[type];
+        return info ? (
+          <Tag icon={info.icon} color={info.color}>
+            {info.label}
+          </Tag>
+        ) : (
+          <Text type="secondary">{type || 'N/A'}</Text>
+        );
+      },
     },
     {
       title: 'Dung lượng',
@@ -320,6 +354,11 @@ const ProductList: React.FC = () => {
     setFilters((prev) => ({ ...prev, supplierName: supplier, page: 0 }));
   };
 
+  const handleProductTypeFilter = (value: string) => {
+    const productType = value === 'Tất cả' ? undefined : value;
+    setFilters((prev) => ({ ...prev, productType, page: 0 }));
+  };
+
   const handleAddProduct = () => {
     navigate('/products/create');
   };
@@ -411,6 +450,17 @@ const ProductList: React.FC = () => {
               </Text>
 
               <Select
+                placeholder="Lọc theo loại sản phẩm"
+                value={filters.productType || 'Tất cả'}
+                onChange={handleProductTypeFilter}
+                options={PRODUCT_TYPE_FILTER_OPTIONS}
+                className="w-full sm:w-[170px]"
+                size="large"
+                suffixIcon={<FilterOutlined />}
+                allowClear={false}
+              />
+
+              <Select
                 placeholder="Lọc theo danh mục"
                 value={filters.categoryName || 'Tất cả'}
                 onChange={handleCategoryFilter}
@@ -470,7 +520,7 @@ const ProductList: React.FC = () => {
                 columns={columns}
                 dataSource={products}
                 pagination={false}
-                scroll={{ x: 2100 }}
+                scroll={{ x: 2200 }}
                 rowKey="productId"
                 className="border-none"
                 locale={{ emptyText: 'Không có dữ liệu phù hợp' }}
