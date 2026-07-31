@@ -114,6 +114,7 @@ const ProductOverviewInfo: React.FC<ProductOverviewInfoProps> = ({
       {/* Info list */}
       <div className="rounded-xl border border-gray-100 px-4 pt-1 mt-3">
         {colorName && <Row label="Color" value={colorName} />}
+        {colorCode && <Row label="Color Code" value={colorCode} />}
         {productVolume && <Row label="Volume" value={productVolume} />}
         {productUnit && <Row label="Unit" value={productUnit} />}
         {productCode && <Row label="Product Code" value={productCode} />}
