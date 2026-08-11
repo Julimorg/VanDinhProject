@@ -1,11 +1,12 @@
 package com.example.common.dto.color.request;
 
 import com.example.common.dto.color.response.SupplierInColorDetailRes;
+import jakarta.mail.event.MailEvent;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -13,12 +14,14 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CreateColorReq {
+public class CreateAlbumReq {
 
-    private String colorName;
-    private String colorCode;
-    private String colorDescription;
+    @NotBlank(message = "Album name can not be blank!")
+    private String albumName;
+
+    @NotBlank(message = "Supplier Can not be blank!")
     private String supplierId;
-    private String albumId;
-    private MultipartFile colorImg;
+
+    private String description;
+
 }

@@ -1,8 +1,10 @@
 package com.example.mapper;
 
-import com.example.common.dto.color.*;
+import com.example.common.dto.color.request.CreateAlbumReq;
 import com.example.common.dto.color.request.CreateColorReq;
 import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.response.*;
+import com.example.persistence.entity.Album;
 import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
 import org.mapstruct.Mapper;

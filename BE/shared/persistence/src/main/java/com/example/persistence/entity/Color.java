@@ -25,33 +25,43 @@ public class Color {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String colorId;
 
+    @Column(name = "color_name", nullable = false)
     private String colorName;
-    @Column(unique = true)
+
+    @Column(name = "color_code", nullable = false)
     private String colorCode;
 
-    @Column(unique = true)
+    @Column(name = "hex_code")
     private String hexCode;
 
+    @Column(name = "color_family")
     private String colorFamily;
 
+    @Column(name = "color_collection")
     private String colorCollection;
 
+    @Column(name = "finish_type")
     private String finishType;
 
+    @Column(name = "is_active")
     private Boolean isActive;
 
+    @Column(name = "color_img")
     private String colorImg;
 
     @CreationTimestamp
+    @Column(name = "create_at")
     private LocalDateTime createAt;
+
     @UpdateTimestamp
+    @Column(name = "update_at")
     private LocalDateTime updateAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     private Supplier supplier;
 
-
-    @OneToMany(mappedBy = "color", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<PaintDetail> paintDetails;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id")
+    private Album album;
 }

@@ -1,5 +1,6 @@
 package com.example.common.enums;
 
+import com.itextpdf.html2pdf.exceptions.Html2PdfException;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -78,6 +79,8 @@ public enum ErrorCode {
         "Color Does Not Fit With Supplier",
         HttpStatus.CONFLICT
     ),
+    ALBUM_NOT_FOUND("Album not found!", HttpStatus.NOT_FOUND),
+    ALBUM_SUPPLIER_MISMATCH("Album and Supplier Mismatch !" , HttpStatus.CONFLICT),
 
     // ======================= CATEGORY =======================
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),

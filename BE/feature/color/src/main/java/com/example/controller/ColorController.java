@@ -1,11 +1,13 @@
 package com.example.controller;
-import com.example.common.dto.color.*;
+import com.cloudinary.Api;
+import com.example.common.dto.color.request.CreateAlbumReq;
 import com.example.common.dto.color.request.CreateColorReq;
 import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.response.*;
+import com.example.common.enums.SuccessCode;
 import com.example.common.response.ApiResponse;
 import com.example.service.ColorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,7 +15,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -59,6 +60,17 @@ public class ColorController {
                 .data(colorService.getColorDetail(colorId))
                 .timestamp(LocalDateTime.now())
                 .build();
+    }
+
+    @PostMapping(value = "create-album")
+    public ApiResponse<CreateAlbumRes> createAlbum(@ModelAttribute CreateAlbumReq req){
+        return ApiResponse.<CreateAlbumRes>builder()
+                .status_code(SuccessCode.CREATE_ALBUM.getStatusCode().value())
+                .message(SuccessCode.CREATE_ALBUM.getMessage())
+                .data(colorService.createAlbum(req))
+                .timestamp(LocalDateTime.now())
+                .build();
+
     }
 
     //? Định nghĩa Endpoint Có Body theo FormData

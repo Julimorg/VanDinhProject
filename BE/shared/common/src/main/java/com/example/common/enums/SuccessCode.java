@@ -109,6 +109,9 @@ public enum SuccessCode {
     IMPORT_PRODUCT_EXCEL_FILE("Import Product File Successfully!", HttpStatus.OK),
 
 
+    // ======================= COLOR =======================
+    CREATE_ALBUM("Create Album Successfully!", HttpStatus.OK),
+
     // ======================= DIARY =======================
     CREATE_DIARY("Create Diary Successfully!", HttpStatus.CREATED),
     CREATE_DIARY_ITEMS("Create Diary Items Successfully!", HttpStatus.CREATED),

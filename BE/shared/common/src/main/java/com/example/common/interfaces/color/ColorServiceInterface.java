@@ -1,8 +1,10 @@
 package com.example.common.interfaces.color;
 
-import com.example.common.dto.color.*;
+import com.example.common.dto.color.request.CreateAlbumReq;
 import com.example.common.dto.color.request.CreateColorReq;
+import com.example.common.dto.color.request.UpdateAlbumReq;
 import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.response.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,8 +23,19 @@ public interface ColorServiceInterface {
 
     CreateColorRes createColor(CreateColorReq request);
 
+    CreateAlbumRes createAlbum(CreateAlbumReq request);
+
+    UpdateAlbumRes updateAlbum(String albumId, UpdateAlbumReq request);
+
+    List<GetListAlbumRes> getListAlbum();
+
     UpdateColorRes updateColor(String colorId, UpdateColorReq request);
 
+
+
     void deleteColor(String colorId);
+
+    void deleteAlbum(String albumId);
+
 
 }

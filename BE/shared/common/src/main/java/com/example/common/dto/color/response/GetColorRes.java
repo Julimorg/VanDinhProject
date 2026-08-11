@@ -1,4 +1,4 @@
-package com.example.common.dto.color;
+package com.example.common.dto.color.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

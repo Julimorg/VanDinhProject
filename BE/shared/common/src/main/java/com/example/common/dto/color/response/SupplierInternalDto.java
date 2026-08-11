@@ -1,4 +1,4 @@
-package com.example.common.dto.color;
+package com.example.common.dto.color.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,13 +11,15 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UpdateColorRes {
+public class SupplierInternalDto {
     private String colorId;
     private String colorName;
     private String colorCode;
     private String colorDescription;
-    private String colorImg;
     private SupplierInColorDetailRes supplier;
-    private LocalDateTime updateAt;
+    private String colorImg;
+
+
+    private LocalDateTime createAt;
 
 }
