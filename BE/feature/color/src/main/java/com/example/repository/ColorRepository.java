@@ -12,4 +12,8 @@ import java.util.Optional;
 @Repository
 public interface ColorRepository extends JpaRepository<Color,String>, JpaSpecificationExecutor<Color> {
     List<Color> findBySupplier_SupplierId(String supplierId);
+
+    Boolean existsByColorCode(String colorCode);
+
+    Boolean existsByHexCode(String hexCode);
 }

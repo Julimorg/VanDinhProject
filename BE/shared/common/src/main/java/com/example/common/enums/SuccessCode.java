@@ -111,6 +111,11 @@ public enum SuccessCode {
 
     // ======================= COLOR =======================
     CREATE_ALBUM("Create Album Successfully!", HttpStatus.OK),
+    GET_ALBUM("Get Album Successfully!", HttpStatus.OK),
+    UPDATE_ALBUM("Update Album Successfully!", HttpStatus.OK),
+    DELETE_ALBUM("Delete Album Successfully!", HttpStatus.OK),
+    IMPORT_COLOR("Import Color Successfully!", HttpStatus.OK),
+    IMPORT_COLOR_EXCEL("Import Color Excel File Successfully!",HttpStatus.OK),
 
     // ======================= DIARY =======================
     CREATE_DIARY("Create Diary Successfully!", HttpStatus.CREATED),

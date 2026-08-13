@@ -81,6 +81,10 @@ public enum ErrorCode {
     ),
     ALBUM_NOT_FOUND("Album not found!", HttpStatus.NOT_FOUND),
     ALBUM_SUPPLIER_MISMATCH("Album and Supplier Mismatch !" , HttpStatus.CONFLICT),
+    // ErrorCode
+    COLOR_IMPORT_FILE_EMPTY("Import File Is Empty", HttpStatus.BAD_REQUEST),
+    COLOR_IMPORT_INVALID_FORMAT("Import File Format Is Invalid", HttpStatus.BAD_REQUEST),
+    COLOR_IMPORT_DUPLICATE_IN_FILE("Duplicate Color Code Or Hex Code In Import File", HttpStatus.BAD_REQUEST),
 
     // ======================= CATEGORY =======================
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
