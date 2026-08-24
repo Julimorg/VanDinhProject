@@ -26,6 +26,7 @@ import PurchaseOrderPage from '@/Pages/PurchaseOrderManagement/PurchaseOrderPage
 import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
 import UserDiaryPage from '@/Pages/UserDiaryManagement/UserDiaryPage';
 import UserDiaryDetailPage from '@/Pages/UserDiaryDetailManagement/UserDiaryDetailPage';
+import SupplierDetailPage from '@/Pages/SupplierDetail/SupplierDetailPage';
 // import PurchaseOrderDetailPage from '@/Pages/PurchaseOrderDetailManagement/PurchaseOrderDetailPage';
 
 const AuthorizedRoute: React.FC = () => {
@@ -71,7 +72,10 @@ const Router: React.FC = () => {
             <Route path="product-detail/:productId" element={<ProductDetailPage />} />
           </Route>
 
-          <Route path="suppliers" element={<SupplierManagementPage />} />
+          <Route path="suppliers" element={<SupplierManagementPage />}>
+          </Route>
+          <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
+          
           <Route path="colors" element={<ColorManagement />} />
 
           <Route path="category" element={<CategoryManagementPage />}>

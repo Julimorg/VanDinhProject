@@ -110,6 +110,7 @@ public enum SuccessCode {
 
 
     // ======================= COLOR =======================
+    GET_COLOR("Get Color Successfully!", HttpStatus.OK),
     CREATE_ALBUM("Create Album Successfully!", HttpStatus.OK),
     GET_ALBUM("Get Album Successfully!", HttpStatus.OK),
     UPDATE_ALBUM("Update Album Successfully!", HttpStatus.OK),

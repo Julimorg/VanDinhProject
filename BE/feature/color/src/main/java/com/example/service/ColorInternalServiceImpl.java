@@ -4,12 +4,16 @@ import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.color.ColorQueryInternalService;
 import com.example.mapper.ColorMapper;
+import com.example.persistence.entity.Album;
 import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
+import com.example.repository.AlbumRepository;
 import com.example.repository.ColorRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @Slf4j
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Service;
 public class ColorInternalServiceImpl implements ColorQueryInternalService {
 
     private final ColorRepository colorRepository;
+
+    private final AlbumRepository albumRepository;
 
     private final ColorMapper colorMapper;
 
@@ -26,6 +32,16 @@ public class ColorInternalServiceImpl implements ColorQueryInternalService {
         if (!colorRepository.existsById(colorId)) {
             throw new AppException(ErrorCode.COLOR_NOT_EXISTED);
         }
+    }
+
+    @Override
+    public List<Album> findAlbumBySupplierId(String supplierId) {
+        return albumRepository.findBySupplier_SupplierId(supplierId);
+    }
+
+    @Override
+    public List<Color> findColorBySupplierId(String supplierId) {
+        return colorRepository.findBySupplier_SupplierId(supplierId);
     }
 
     @Override

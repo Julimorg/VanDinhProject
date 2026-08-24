@@ -16,8 +16,8 @@ public interface ColorServiceInterface {
     List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId);
 
 
-    Page<GetColorRes> getColor(String keyword,
-                               String supplierName,
+    Page<GetColorRes> getColorBySupplier(String keyword,
+                               String supplierId,
                                Pageable pageable);
 
     GetColorDetailRes getColorDetail(String colorId);
@@ -33,7 +33,6 @@ public interface ColorServiceInterface {
     UpdateColorRes updateColor(String colorId, UpdateColorReq request);
 
     ImportColorRes importColorFromJson(MultipartFile files);
-
 
     void deleteColor(String colorId);
 

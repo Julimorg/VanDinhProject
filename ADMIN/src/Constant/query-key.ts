@@ -28,8 +28,11 @@ GET_USER_ONLINE_STATUS: 'Get User Online Status',
 GET_PURCHASE_ORDERS: 'Get Purchase Orders',
 GET_PURCHASE_ORDER_DETAIL: 'Get Purchase Order Detail',
 GET_INVENTORY: 'Get Inventory',
-GET_PURCHASE_DETAIL: 'Get Purchase Detail',
+GET_PURCHASE_DETAIL: 'Get Purchase Detail', 
 GET_ALL_DIARY: 'Get All Diary',
 GET_DIARY_DETAIL: 'Get Diary Detail',
-GET_UNREAD_COUNT_NUM_NOTIFICATIONS: 'Get UnRead Count Num Notifications'
+GET_UNREAD_COUNT_NUM_NOTIFICATIONS: 'Get UnRead Count Num Notifications',
+GET_SUPPLIER_DETAIL: 'Get Supplier Detail',
+GET_ALBUM: 'Get Albums By Supplier',
+
 }

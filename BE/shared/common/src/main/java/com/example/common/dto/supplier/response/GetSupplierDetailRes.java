@@ -2,6 +2,8 @@ package com.example.common.dto.supplier.response;
 
 
 
+import com.example.common.dto.color.response.GetAlbumWithColorRes;
+import com.example.common.dto.color.response.GetColorSummaryRes;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GetSupplierDetailRes {
+
     private String supplierId;
     private String supplierName;
     private String supplierAddress;
@@ -25,4 +28,8 @@ public class GetSupplierDetailRes {
     private String supplierImg;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
+
+    private List<GetAlbumWithColorRes> albums;
+    private List<GetColorSummaryRes> unassignedColors;
+    private int totalColors;
 }

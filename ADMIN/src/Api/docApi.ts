@@ -102,6 +102,7 @@ import { IUpdateDiaryStatusReq, IUpdateDiaryStatusRes } from '@/Interface/Diary/
 import { IUpdateDiaryReq, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary';
 import { IUpdateDiaryItemReq, IUpdateDiaryItemRes } from '@/Interface/Diary/UpdateDiaryItem';
 import { IImportSummaryRes } from '@/Interface/Product/IImportExcelFile';
+import { SupplierDetailResponse } from '@/Interface/Supplier/IGetSupplierDetail';
 
 
 export const docApi = {
@@ -259,6 +260,12 @@ export const docApi = {
 
   GetSupplierSelection: async (): Promise<IApiResponse<IGetSupplierSelectionResponse>> => {
     const url = `/supplier/select-suppliers`;
+    const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  GetSupplierDetail: async(supplierId: string): Promise<IApiResponse<SupplierDetailResponse>> => { 
+    const url = `/supplier/get-supplier/${supplierId}`;
     const res = await axiosClient.get(url);
     return res.data;
   },

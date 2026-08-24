@@ -70,13 +70,15 @@ public class ColorService implements ColorServiceInterface {
     }
 
     @Override
-    public Page<GetColorRes> getColor(String keyword,
-                                      String supplierName,
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
+    public Page<GetColorRes> getColorBySupplier(String keyword,
+                                      String supplierId,
                                       Pageable pageable){
-        Specification<Color> spec = ColorSpecification
-                .from(ColorSpecification
-                        .ColorFilter
-                        .keywordAndSupplier(keyword, supplierName));
+
+        Specification<Color> spec = ColorSpecification.hasSupplierId(supplierId)
+                .and(ColorSpecification.from(ColorSpecification.ColorFilter.of(keyword)));
+
+        supplierInternalService.getSupplierById(supplierId);
 
         return colorRepository
                 .findAll(spec, pageable)

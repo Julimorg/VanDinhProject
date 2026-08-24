@@ -1,52 +1,40 @@
 package com.example.config;
 
 import com.example.persistence.entity.Color;
-import com.example.persistence.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 
 public class ColorSpecification {
 
-    private ColorSpecification() {};
+    private ColorSpecification() {}
 
-    public record ColorFilter(String keyword, String supplierName){
-        public static  ColorFilter keywordAndSupplier(String keyword, String supplierName){
-            return new ColorFilter(keyword, supplierName);
+    public record ColorFilter(String keyword) {
+        public static ColorFilter of(String keyword) {
+            return new ColorFilter(keyword);
         }
     }
 
-    private static Specification<Color> hasKeyword(String keyword){
-        return ( root, query, cb) -> {
+    private static Specification<Color> searchKeyword(String keyword) {
+        return (root, query, cb) -> {
             if (!StringUtils.hasText(keyword)) {
                 return cb.conjunction();
             }
-
             String pattern = "%" + keyword.toLowerCase() + "%";
-
             return cb.or(
-                    cb.like(cb.lower(root.get("ColorName")),
-                            cb.lower(root.get("ColorCode"))
-            ));
-        };
-    }
-
-    private static Specification<Color> hasSupplier(String supplierName){
-        return (root, query, cb) -> {
-            if (!StringUtils.hasText(supplierName)) {
-                return cb.conjunction();
-            }
-
-            return cb.like(
-                    cb.lower(root.get("supplierName")),
-                    "%" + supplierName.toLowerCase() + "%"
+                    cb.like(cb.lower(root.get("colorName")), pattern),
+                    cb.like(cb.lower(root.get("colorCode")), pattern)
             );
         };
     }
 
-    public static Specification<Color> from(ColorFilter filter) {
-        return hasSupplier(filter.keyword())
-                .and(hasSupplier(filter.supplierName()));
+    public static Specification<Color> hasSupplierId(String supplierId) {
+        return (root, query, cb) ->
+                StringUtils.hasText(supplierId)
+                        ? cb.equal(root.get("supplier").get("supplierId"), supplierId)
+                        : cb.conjunction();
     }
 
-
+    public static Specification<Color> from(ColorFilter filter) {
+        return searchKeyword(filter.keyword());
+    }
 }

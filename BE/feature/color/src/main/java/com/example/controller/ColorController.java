@@ -6,6 +6,7 @@ import com.example.common.dto.color.request.UpdateAlbumReq;
 import com.example.common.dto.color.request.UpdateColorReq;
 import com.example.common.dto.color.response.*;
 import com.example.common.enums.SuccessCode;
+import com.example.common.interfaces.color.ColorServiceInterface;
 import com.example.common.response.ApiResponse;
 import com.example.common.service.ExcelImportService;
 import com.example.service.ColorImportHandler;
@@ -28,7 +29,7 @@ import java.util.List;
 @RequestMapping("api/v1/color")
 public class ColorController {
 
-    private final ColorService colorService;
+    private final ColorServiceInterface colorService;
 
     private final ColorImportHandler colorImportHandler;
 
@@ -45,16 +46,16 @@ public class ColorController {
     }
 
 
-    @GetMapping("/get-color")
+    @GetMapping("/get-color/{supplierId}")
     public ApiResponse<Page<GetColorRes>> getColor(
-            @RequestParam(required = false) String supplierName,
+            @PathVariable String supplierId,
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetColorRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message("Successfully!")
-                .data(colorService.getColor(keyword, supplierName, pageable))
+                .status_code(SuccessCode.GET_COLOR.getStatusCode().value())
+                .message(SuccessCode.GET_COLOR.getMessage())
+                .data(colorService.getColor(keyword, supplierId, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -142,7 +143,6 @@ public class ColorController {
                 .timestamp(LocalDateTime.now())
                 .build();
     }
-
 
     @DeleteMapping("/delete-color/{colorId}")
     public ApiResponse<String> deleteColor(@PathVariable String colorId) {

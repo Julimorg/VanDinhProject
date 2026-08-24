@@ -1,12 +1,18 @@
 package com.example.service;
 
+import com.example.common.dto.color.response.GetAlbumWithColorRes;
+import com.example.common.dto.color.response.GetColorSummaryRes;
 import com.example.common.dto.supplier.request.CreateSupplierReq;
 import com.example.common.dto.supplier.request.UpdateSupplierReq;
 import com.example.common.dto.supplier.response.*;
+import com.example.common.enums.ErrorCode;
+import com.example.common.interfaces.color.ColorQueryInternalService;
 import com.example.common.interfaces.supplier.SupplierServiceInterface;
 import com.example.common.service.FileUploadService;
 import com.example.config.SupplierSpecification;
 import com.example.mapper.SupplierMapper;
+import com.example.persistence.entity.Album;
+import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +26,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import com.example.common.events.search.SearchIndexEvent;
 import com.example.common.events.search.SearchDeleteEvent;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,6 +37,8 @@ import java.util.List;
 public class SupplierService implements SupplierServiceInterface {
 
     private final SupplierRepository supplierRepository;
+
+    private final ColorQueryInternalService colorQueryInternalService;
 
     private final SupplierMapper supplierMapper;
 
@@ -65,9 +76,61 @@ public class SupplierService implements SupplierServiceInterface {
     @Override
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
-        return supplierMapper.toGetSupplierDetailRes(supplierRepository
-                .findById(supplierId)
-                .orElseThrow(() -> new RuntimeException("Supplier not found")));
+        Supplier supplier = supplierRepository.findById(supplierId)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.SUPPLIER_NOT_FOUND.getMessage()));
+
+        List<Album> albums = colorQueryInternalService.findAlbumBySupplierId(supplierId);
+
+        List<Color> colors = colorQueryInternalService.findColorBySupplierId(supplierId);
+
+        Map<String, List<Color>> colorsByAlbum = new HashMap<>();
+
+        List<GetColorSummaryRes> unassignedColors = new ArrayList<>();
+
+        for ( Color color : colors) {
+            if ( color.getAlbum() == null ) {
+                unassignedColors.add(supplierMapper.toColorSummary(color));
+                continue;
+            }
+
+            String albumId = color.getAlbum().getAlbumId();
+
+            if(!colorsByAlbum.containsKey(albumId)){
+                colorsByAlbum.put(albumId, new ArrayList<>());
+            }
+
+            colorsByAlbum.get(albumId).add(color);
+
+        }
+
+        List<GetAlbumWithColorRes> albumResList = new ArrayList<>();
+
+        for( Album album : albums ) {
+
+            List<Color> colorsInThisAlbum = colorsByAlbum.get(album.getAlbumId());
+            if (colorsInThisAlbum == null) {
+                colorsInThisAlbum = new ArrayList<>();
+            }
+
+            List<GetColorSummaryRes> colorSummaries = new ArrayList<>();
+            for (Color color : colorsInThisAlbum) {
+                colorSummaries.add(supplierMapper.toColorSummary(color));
+            }
+
+            GetAlbumWithColorRes albumRes = supplierMapper.toAlbumWithColors(album);
+            albumRes.setColors(colorSummaries);
+            albumResList.add(albumRes);
+        }
+
+        GetSupplierDetailRes result = supplierMapper.toGetSupplierDetailRes(supplier);
+
+        result.setAlbums(albumResList);
+
+        result.setUnassignedColors(unassignedColors);
+
+        result.setTotalColors(colors.size());
+
+        return result;
     }
 
     @Override
