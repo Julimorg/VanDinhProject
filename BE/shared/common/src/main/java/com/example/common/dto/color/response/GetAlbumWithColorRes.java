@@ -12,8 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class GetAlbumWithColorRes {
+
     private String albumId;
+
     private String albumName;
+
     private String albumImg;
+
     private List<GetColorSummaryRes> colors;
 }

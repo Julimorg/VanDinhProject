@@ -30,9 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -75,10 +73,57 @@ public class ColorService implements ColorServiceInterface {
                                       String supplierId,
                                       Pageable pageable){
 
+        supplierInternalService.getSupplierById(supplierId);
+
         Specification<Color> spec = ColorSpecification.hasSupplierId(supplierId)
                 .and(ColorSpecification.from(ColorSpecification.ColorFilter.of(keyword)));
 
-        supplierInternalService.getSupplierById(supplierId);
+        List<Album> albums = albumRepository.findBySupplier_SupplierId(supplierId);
+
+        List<Color> colors = colorRepository.findBySupplier_SupplierId(supplierId);
+
+        Map<String, List<Color>> colorsByAlbum = new HashMap<>();
+
+        List<GetColorSummaryRes> unassignedColors = new ArrayList<>();
+
+
+        for ( Color color : colors ) {
+            if ( color.getAlbum() == null ) {
+                colorMapper.toColorSummary(color);
+                continue;
+            }
+
+            String albumId = color.getAlbum().getAlbumId();
+
+            if ( !colorsByAlbum.containsKey(albumId)) {
+                colorsByAlbum.put(albumId, new ArrayList<>());
+            }
+
+            colorsByAlbum.get(albumId).add(color);
+        }
+
+        List<GetAlbumWithColorRes> albumResList = new ArrayList<>();
+
+        for ( Album album : albums) {
+
+            List<Color> colorsInThisAlbum = colorsByAlbum.get(album.getAlbumId());
+
+            if ( colorsInThisAlbum == null) {
+                colorsInThisAlbum = new ArrayList<>();
+            }
+
+            List<GetColorSummaryRes> colorSummaries = new ArrayList<>();
+            for (Color color : colorsInThisAlbum) {
+                colorSummaries.add(colorMapper.toColorSummary(color));
+            }
+
+            GetAlbumWithColorRes albumRes = colorMapper.toAlbumWithColors(album);
+
+            albumRes.setColors(colorSummaries);
+
+            albumResList.add(albumRes);
+        }
+
 
         return colorRepository
                 .findAll(spec, pageable)

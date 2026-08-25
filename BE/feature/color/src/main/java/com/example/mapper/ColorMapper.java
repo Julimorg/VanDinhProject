@@ -32,6 +32,11 @@ public interface ColorMapper {
     @Mapping(source = "colorCode", target = "colorCode")
     GetColorRes toSearchColor(Color color);
 
+    GetColorSummaryRes toColorSummary(Color color);
+
+    @Mapping(target = "colors", ignore = true)
+    GetAlbumWithColorRes toAlbumWithColors(Album album);
+
     //* =========================== CREATE MAPPER ===========================
 
     CreateColorRes toCreateColorRes(Color color);
