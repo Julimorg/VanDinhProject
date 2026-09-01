@@ -12,4 +12,6 @@ import java.util.List;
 @Repository
 public interface AlbumRepository extends JpaRepository<Album,String> {
     List<Album> findBySupplier_SupplierId(String supplierId);
+
+    boolean existsAlbumByAlbumId(String albumId);
 }

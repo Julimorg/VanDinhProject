@@ -70,66 +70,18 @@ public class ColorService implements ColorServiceInterface {
     @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetColorRes> getColorBySupplier(String keyword,
-                                      String supplierId,
-                                      Pageable pageable){
+                                                String supplierId,
+                                                Pageable pageable) {
 
         supplierInternalService.getSupplierById(supplierId);
 
         Specification<Color> spec = ColorSpecification.hasSupplierId(supplierId)
                 .and(ColorSpecification.from(ColorSpecification.ColorFilter.of(keyword)));
 
-        List<Album> albums = albumRepository.findBySupplier_SupplierId(supplierId);
-
-        List<Color> colors = colorRepository.findBySupplier_SupplierId(supplierId);
-
-        Map<String, List<Color>> colorsByAlbum = new HashMap<>();
-
-        List<GetColorSummaryRes> unassignedColors = new ArrayList<>();
-
-
-        for ( Color color : colors ) {
-            if ( color.getAlbum() == null ) {
-                colorMapper.toColorSummary(color);
-                continue;
-            }
-
-            String albumId = color.getAlbum().getAlbumId();
-
-            if ( !colorsByAlbum.containsKey(albumId)) {
-                colorsByAlbum.put(albumId, new ArrayList<>());
-            }
-
-            colorsByAlbum.get(albumId).add(color);
-        }
-
-        List<GetAlbumWithColorRes> albumResList = new ArrayList<>();
-
-        for ( Album album : albums) {
-
-            List<Color> colorsInThisAlbum = colorsByAlbum.get(album.getAlbumId());
-
-            if ( colorsInThisAlbum == null) {
-                colorsInThisAlbum = new ArrayList<>();
-            }
-
-            List<GetColorSummaryRes> colorSummaries = new ArrayList<>();
-            for (Color color : colorsInThisAlbum) {
-                colorSummaries.add(colorMapper.toColorSummary(color));
-            }
-
-            GetAlbumWithColorRes albumRes = colorMapper.toAlbumWithColors(album);
-
-            albumRes.setColors(colorSummaries);
-
-            albumResList.add(albumRes);
-        }
-
-
-        return colorRepository
-                .findAll(spec, pageable)
-                .map(color -> colorMapper.toGetColorRes(color));
-
+        return colorRepository.findAll(spec, pageable)
+                .map(colorMapper::toGetColorRes);
     }
+
 
     @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
@@ -204,6 +156,12 @@ public class ColorService implements ColorServiceInterface {
 
         if (items == null || items.isEmpty()) {
             throw new AppException(ErrorCode.COLOR_IMPORT_FILE_EMPTY);
+        }
+
+        for( ColorImportItemReq i : items) {
+            if (!albumRepository.existsAlbumByAlbumId(i.getAlbumId())) {
+                throw new AppException(ErrorCode.ALBUM_NOT_FOUND);
+            }
         }
 
         List<String> errors = new ArrayList<>();

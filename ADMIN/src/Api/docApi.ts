@@ -103,7 +103,7 @@ import { IUpdateDiaryReq, IUpdateDiaryRes } from '@/Interface/Diary/UpdateDiary'
 import { IUpdateDiaryItemReq, IUpdateDiaryItemRes } from '@/Interface/Diary/UpdateDiaryItem';
 import { IImportSummaryRes } from '@/Interface/Product/IImportExcelFile';
 import { SupplierDetailResponse } from '@/Interface/Supplier/IGetSupplierDetail';
-
+import { IImportColorJson } from '@/Interface/Color/IImportColorJson';
 
 export const docApi = {
   //* ======================================================== Auth  ======================================================== */
@@ -264,7 +264,7 @@ export const docApi = {
     return res.data;
   },
 
-  GetSupplierDetail: async(supplierId: string): Promise<IApiResponse<SupplierDetailResponse>> => { 
+  GetSupplierDetail: async (supplierId: string): Promise<IApiResponse<SupplierDetailResponse>> => {
     const url = `/supplier/get-supplier/${supplierId}`;
     const res = await axiosClient.get(url);
     return res.data;
@@ -407,26 +407,38 @@ export const docApi = {
   //* ======================================================== Color  ======================================================== */
 
   GetAllColor: async (
+    supplierId: string,
     params: {
-      supplierName?: string;
       keyword?: string;
       page?: number;
       size?: number;
       sort?: string;
     } = {}
   ): Promise<IApiResponse<IApiResponsePagination<IGetAllColor>>> => {
-    const { supplierName, keyword, page = 1, size = 5, sort = 'createAt, desc' } = params;
+    const { keyword, page = 1, size = 10, sort = 'createAt, desc' } = params;
 
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
       sort,
       ...(keyword && { keyword }),
-      ...(supplierName && { supplierName }),
     });
 
-    const url = `/color/get-color?${queryParams.toString()}`;
+    const url = `/color/get-color/${supplierId}?${queryParams.toString()}`;
     const res = await axiosClient.get(url);
+    return res.data;
+  },
+
+  ImportColorJson: async (
+    supplierId: string,
+    file: File
+  ): Promise<IApiResponse<IImportColorJson>> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const url = `/color/json/import-color`;
+    const res = await axiosClient.post(url, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
 
@@ -472,16 +484,16 @@ export const docApi = {
 
   //* ======================================================== Product  ======================================================== */
 
-    ImportProductsExcel: async (file: File): Promise<IApiResponse<IImportSummaryRes>> => {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await axiosClient.post('/products/import-excel', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      return res.data;
-    },
+  ImportProductsExcel: async (file: File): Promise<IApiResponse<IImportSummaryRes>> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await axiosClient.post('/products/import-excel', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
 
-     DownloadProductImportTemplate: async (): Promise<IApiResponse<string>> => {
+  DownloadProductImportTemplate: async (): Promise<IApiResponse<string>> => {
     const res = await axiosClient.get('/products/import-template');
     return res.data;
   },
@@ -575,7 +587,7 @@ export const docApi = {
       supplierName?: string;
       minPrice?: number;
       maxPrice?: number;
-    } = {}  
+    } = {}
   ): Promise<IApiResponse<IGetProductSelectionResponse>> => {
     const { keyword, categoryName, supplierName, minPrice, maxPrice } = params;
 
@@ -590,7 +602,6 @@ export const docApi = {
     const res = await axiosClient.get(url);
     return res.data;
   },
-  
 
   UpdateProductQuantity: async (
     productId: string,
@@ -762,7 +773,7 @@ export const docApi = {
     return res.data;
   },
 
-  GetUnreadCountNumNotification: async(userId: string): Promise<IApiResponse<number>> => {
+  GetUnreadCountNumNotification: async (userId: string): Promise<IApiResponse<number>> => {
     const url = `/notification/unread-count/${userId}`;
     const res = await axiosClient.get(url);
     return res.data;
@@ -793,58 +804,72 @@ export const docApi = {
 
   //* ======================================================== Diary Management  ======================================================== */
 
-
   ExportDiaryInvoicePdf: async (diaryId: string): Promise<IApiResponse<any>> => {
     const url = `/diaries/${diaryId}/export-invoice-pdf`;
     const res = await axiosClient.get(url);
     return res.data;
   },
 
-
-   ExportDiaryExcelFile: async (userId: string, diaryId: string): Promise<IApiResponse<any>> => {
+  ExportDiaryExcelFile: async (userId: string, diaryId: string): Promise<IApiResponse<any>> => {
     const url = `/diaries/${userId}/${diaryId}/export-excel`;
     const res = await axiosClient.get(url);
-    return res.data; 
+    return res.data;
   },
 
-  UpdateDiaryItem: async(diaryId: string,itemId: string, body: IUpdateDiaryItemReq): Promise<IApiResponse<IUpdateDiaryItemRes>> => {
+  UpdateDiaryItem: async (
+    diaryId: string,
+    itemId: string,
+    body: IUpdateDiaryItemReq
+  ): Promise<IApiResponse<IUpdateDiaryItemRes>> => {
     const url = `/diaries/${diaryId}/${itemId}/update-item`;
     const res = await axiosClient.patch(url, body);
     return res.data;
   },
 
-  UpdateDiary: async(userId: string, diaryId: string, body: IUpdateDiaryReq): Promise<IApiResponse<IUpdateDiaryRes>> => {
+  UpdateDiary: async (
+    userId: string,
+    diaryId: string,
+    body: IUpdateDiaryReq
+  ): Promise<IApiResponse<IUpdateDiaryRes>> => {
     const url = `/diaries/${userId}/${diaryId}/update-diary`;
-    const res = await axiosClient.patch(url, body)
+    const res = await axiosClient.patch(url, body);
     return res.data;
   },
 
-  DeleteDiaryItem: async(diaryId: string, itemId: string): Promise<IApiResponse<void>> => {
+  DeleteDiaryItem: async (diaryId: string, itemId: string): Promise<IApiResponse<void>> => {
     const url = `/diaries/${diaryId}/${itemId}/delete-items`;
     const res = await axiosClient.delete(url);
     return res.data;
   },
 
-  DeleteDiary: async(userId: string, diaryId: string): Promise<IApiResponse<void>> => {
+  DeleteDiary: async (userId: string, diaryId: string): Promise<IApiResponse<void>> => {
     const url = `/diaries/${userId}/${diaryId}/delete-diary`;
     const res = await axiosClient.delete(url);
     return res.data;
   },
 
-
-  UpdateDiaryStatus: async(diaryId: string, body: IUpdateDiaryStatusReq): Promise<IApiResponse<IUpdateDiaryStatusRes>> => {
+  UpdateDiaryStatus: async (
+    diaryId: string,
+    body: IUpdateDiaryStatusReq
+  ): Promise<IApiResponse<IUpdateDiaryStatusRes>> => {
     const url = `/diaries/${diaryId}/update-status`;
-    const res = await axiosClient.patch(url, body)
+    const res = await axiosClient.patch(url, body);
     return res.data;
   },
 
-  CreateDiary: async(userId: string, body: ICreateDiaryRequest): Promise<IApiResponse<ICreateDiaryResponse>> => {
+  CreateDiary: async (
+    userId: string,
+    body: ICreateDiaryRequest
+  ): Promise<IApiResponse<ICreateDiaryResponse>> => {
     const url = `/diaries/${userId}/create`;
     const res = await axiosClient.post(url, body);
     return res.data;
   },
 
-  CreateDiaryItem: async(diaryId: string, body: ICreateDiaryItemReq[]): Promise<IApiResponse<ICreateDiaryItemRes>> => {
+  CreateDiaryItem: async (
+    diaryId: string,
+    body: ICreateDiaryItemReq[]
+  ): Promise<IApiResponse<ICreateDiaryItemRes>> => {
     const url = `/diaries/${diaryId}/create-items`;
     const res = await axiosClient.post(url, body);
     return res.data;
@@ -854,7 +879,7 @@ export const docApi = {
     const url = `/diaries/${diaryId}/get-detail`;
     const res = await axiosClient.get(url);
     return res.data;
-  },  
+  },
 
   GetAllDiary: async (
     userId: string,
@@ -868,8 +893,15 @@ export const docApi = {
       sort?: string;
     } = {}
   ): Promise<IApiResponse<IApiResponsePagination<IGetDiaryResponse>>> => {
-    
-    const{keyword, status, fromtDate, toDate, page = 1, size = 5, sort = 'createdAt, desc' } = params;
+    const {
+      keyword,
+      status,
+      fromtDate,
+      toDate,
+      page = 1,
+      size = 5,
+      sort = 'createdAt, desc',
+    } = params;
     const queryParams = new URLSearchParams({
       page: page.toString(),
       size: size.toString(),
@@ -890,7 +922,7 @@ export const docApi = {
   ExportPurchasePDFFile: async (purchaseOrderId: string) => {
     const url = `/inventory/${purchaseOrderId}/export-pdf`;
     const res = await axiosClient.get(url);
-    return res.data; 
+    return res.data;
   },
 
   UpdatePurchaseOrderStatus: async (
@@ -902,7 +934,10 @@ export const docApi = {
     return res.data;
   },
 
-  UpdatePurchaseOrder:async (purchaseOrderId: string, body: IUpdatePurchaseOrder): Promise<IApiResponse<IUpdateCategoryRequest>> => {
+  UpdatePurchaseOrder: async (
+    purchaseOrderId: string,
+    body: IUpdatePurchaseOrder
+  ): Promise<IApiResponse<IUpdateCategoryRequest>> => {
     const url = `/inventory/update-purchase/${purchaseOrderId}`;
     const res = await axiosClient.patch(url, body);
     return res.data;
@@ -939,9 +974,7 @@ export const docApi = {
     return res.data;
   },
 
-  DeletePurchaseOrderItem: async (
-    itemId: string
-  ): Promise<IApiResponse<void>> => {
+  DeletePurchaseOrderItem: async (itemId: string): Promise<IApiResponse<void>> => {
     const url = `/inventory/delete-item/${itemId}`;
     const res = await axiosClient.delete(url);
     return res.data;

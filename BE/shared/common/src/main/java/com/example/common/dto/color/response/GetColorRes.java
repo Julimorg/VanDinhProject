@@ -14,21 +14,23 @@ import java.util.List;
 @Builder
 public class GetColorRes {
 
+    private String albumId;
+
+    private String albumName;
+
     private String colorId;
 
     private String colorName;
 
     private String colorCode;
 
+    private String hexCode;
+
     private String colorDescription;
 
     private String colorImg;
 
-    private List<GetAlbumWithColorRes> albums;
-
     private LocalDateTime createAt;
 
     private LocalDateTime updateAt;
-
-    private int totalColors;
 }

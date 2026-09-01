@@ -3,7 +3,6 @@ import Login from '@/Pages/Login/LoginPage';
 import MainLayout from '@/Pages/MainLayout/MainLayout';
 import UserManagement from '@/Pages/UsersManagement/UsersManagement';
 import SupplierManagementPage from '@/Pages/SupplierManagement/SupplierManagementPage';
-import ColorManagement from '@/Pages/ColorManagement/ColorManagementPage';
 import OrderManagementPage from '@/Pages/OrderManagement/OrderManagementPage';
 import ProductList from '@/Pages/ProductManagement/ProductManagePage';
 import ExpenseAnalyticsDashboard from '@/Pages/AnalysticManagement/AnalysticPage';
@@ -75,8 +74,6 @@ const Router: React.FC = () => {
           <Route path="suppliers" element={<SupplierManagementPage />}>
           </Route>
           <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
-          
-          <Route path="colors" element={<ColorManagement />} />
 
           <Route path="category" element={<CategoryManagementPage />}>
             <Route path=":categoryId" element={<CategoryDetail />} />

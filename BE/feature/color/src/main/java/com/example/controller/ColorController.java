@@ -55,7 +55,7 @@ public class ColorController {
         return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(SuccessCode.GET_COLOR.getStatusCode().value())
                 .message(SuccessCode.GET_COLOR.getMessage())
-                .data(colorService.getColor(keyword, supplierId, pageable))
+                .data(colorService.getColorBySupplier(keyword, supplierId, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -134,7 +134,7 @@ public class ColorController {
 //                .build();
 //    }
 
-    @PostMapping(value = "/json", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/json/import-color", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ImportColorRes> importJson(@RequestParam("file") MultipartFile file) {
         return ApiResponse.<ImportColorRes>builder()
                 .status_code(SuccessCode.IMPORT_COLOR.getStatusCode().value())

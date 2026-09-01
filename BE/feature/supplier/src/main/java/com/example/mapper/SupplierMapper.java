@@ -21,9 +21,6 @@ public interface SupplierMapper {
 
     GetSupplierRes toGetSuppliers(Supplier supplier);
 
-    @Mapping(target = "albums", ignore = true)
-    @Mapping(target = "unassignedColors", ignore = true)
-    @Mapping(target = "totalColors", ignore = true)
     GetSupplierDetailRes toGetSupplierDetailRes(Supplier supplier);
 
     Supplier toGetSupplierFindById(Supplier supplier);

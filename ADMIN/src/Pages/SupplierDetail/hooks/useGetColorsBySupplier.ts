@@ -7,7 +7,6 @@ import { IApiResponse } from "@/Interface/IApiResponse";
 import { IGetAllColor } from "@/Interface/Color/IGetAllColor";
 
 type ColorsQueryParams = {
-  supplierName?: string;
   page?: number;
   size?: number;
   sort?: string;
@@ -20,15 +19,16 @@ type UseGetColorsOptions = Omit<
 >;
 
 export const useGetColors = (
+  supplierId?: string,
   params: ColorsQueryParams = {},
   options?: UseGetColorsOptions
 ) => {
-  const { supplierName, page = 0, size = 5, sort = "createAt,desc", keyword } = params;
+  const { page = 0, size = 5, sort = "createAt,desc", keyword } = params;
 
   return useQuery({
     ...options,
-    queryKey: [QueryKeys.GET_COLORS, { supplierName, page, size, sort, keyword }],
-    queryFn: () => docApi.GetAllColor({ supplierName, page, size, sort, keyword }),
+    queryKey: [QueryKeys.GET_COLOR_BY_SUPPLIER, supplierId, {page, size, sort, keyword }],
+    queryFn: () => docApi.GetAllColor(supplierId!, { page, size, sort, keyword }),
     enabled: true, 
   });
 };

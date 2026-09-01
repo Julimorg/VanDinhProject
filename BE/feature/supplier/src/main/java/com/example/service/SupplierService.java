@@ -74,63 +74,12 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
-        Supplier supplier = supplierRepository.findById(supplierId)
-                .orElseThrow(() -> new RuntimeException(ErrorCode.SUPPLIER_NOT_FOUND.getMessage()));
-
-        List<Album> albums = colorQueryInternalService.findAlbumBySupplierId(supplierId);
-
-        List<Color> colors = colorQueryInternalService.findColorBySupplierId(supplierId);
-
-        Map<String, List<Color>> colorsByAlbum = new HashMap<>();
-
-        List<GetColorSummaryRes> unassignedColors = new ArrayList<>();
-
-        for ( Color color : colors) {
-            if ( color.getAlbum() == null ) {
-                unassignedColors.add(supplierMapper.toColorSummary(color));
-                continue;
-            }
-
-            String albumId = color.getAlbum().getAlbumId();
-
-            if(!colorsByAlbum.containsKey(albumId)){
-                colorsByAlbum.put(albumId, new ArrayList<>());
-            }
-
-            colorsByAlbum.get(albumId).add(color);
-
-        }
-
-        List<GetAlbumWithColorRes> albumResList = new ArrayList<>();
-
-        for( Album album : albums ) {
-
-            List<Color> colorsInThisAlbum = colorsByAlbum.get(album.getAlbumId());
-            if (colorsInThisAlbum == null) {
-                colorsInThisAlbum = new ArrayList<>();
-            }
-
-            List<GetColorSummaryRes> colorSummaries = new ArrayList<>();
-            for (Color color : colorsInThisAlbum) {
-                colorSummaries.add(supplierMapper.toColorSummary(color));
-            }
-
-            GetAlbumWithColorRes albumRes = supplierMapper.toAlbumWithColors(album);
-            albumRes.setColors(colorSummaries);
-            albumResList.add(albumRes);
-        }
-
-        GetSupplierDetailRes result = supplierMapper.toGetSupplierDetailRes(supplier);
-
-        result.setAlbums(albumResList);
-
-        result.setUnassignedColors(unassignedColors);
-
-        result.setTotalColors(colors.size());
-
-        return result;
+        return supplierMapper.toGetSupplierDetailRes(supplierRepository
+                .findById(supplierId)
+                .orElseThrow(() -> new RuntimeException(ErrorCode.SUPPLIER_NOT_FOUND.getMessage())));
     }
 
     @Override

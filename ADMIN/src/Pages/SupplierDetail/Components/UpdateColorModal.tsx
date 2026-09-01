@@ -1,12 +1,13 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Modal, Form, Input, Upload, Button } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { useQueryClient } from '@tanstack/react-query';
 import type { IGetAllColor } from '@/Interface/Color/IGetAllColor';
 import TextArea from 'antd/es/input/TextArea';
 import { useUploadImgFile } from '@/Hook/useUploadImgFile';
-import { useUpdateColor } from '../Hook/useUpdateColor';
+import { QueryKeys } from '@/Constant/query-key';
 import { toast } from 'react-toastify';
+import { useUpdateColor } from '../hooks/useUpdateColor';
 
 interface EditColorModalProps {
   visible: boolean;
@@ -24,26 +25,26 @@ const EditColorModal: React.FC<EditColorModalProps> = ({
   const [form] = Form.useForm();
   const imageUpload = useUploadImgFile({ maxCount: 1 });
   const prevVisibleRef = useRef<boolean>(false);
+  const queryClient = useQueryClient();
 
   const { mutate: updateColor, isPending: isUpdating } = useUpdateColor(
     color?.colorId || '',
     {
       onSuccess: () => {
         toast.success('Cập nhật mã màu thành công!');
+        queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_COLOR_BY_SUPPLIER] });
         form.resetFields();
-        imageUpload.reset(); 
-        onSuccess?.(); 
-        onCancel(); 
+        imageUpload.reset();
+        onSuccess?.();
+        onCancel();
       },
       onError: (error) => {
-
         toast.error(`Lỗi khi cập nhật màu: ${error}`);
       },
     }
   );
 
   useEffect(() => {
-
     if (!prevVisibleRef.current && visible && color) {
       form.setFieldsValue({
         colorId: color.colorId,
@@ -80,8 +81,8 @@ const EditColorModal: React.FC<EditColorModalProps> = ({
       onCancel={onCancel}
       okText="Cập nhật"
       cancelText="Hủy"
-      confirmLoading={isUpdating} 
-      okButtonProps={{ disabled: isUpdating }} 
+      confirmLoading={isUpdating}
+      okButtonProps={{ disabled: isUpdating }}
     >
       <Form form={form} layout="vertical">
         <Form.Item

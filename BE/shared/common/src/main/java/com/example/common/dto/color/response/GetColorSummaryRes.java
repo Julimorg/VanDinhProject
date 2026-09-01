@@ -12,11 +12,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class GetColorSummaryRes {
+
     private String colorId;
 
     private String colorName;
 
     private String colorCode;
+
+    private String hexCode;
 
     private String colorDescription;
 

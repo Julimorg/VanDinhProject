@@ -29,7 +29,4 @@ public class GetSupplierDetailRes {
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
-    private List<GetAlbumWithColorRes> albums;
-    private List<GetColorSummaryRes> unassignedColors;
-    private int totalColors;
 }

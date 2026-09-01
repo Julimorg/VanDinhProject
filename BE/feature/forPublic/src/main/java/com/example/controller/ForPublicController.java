@@ -88,7 +88,7 @@ public class ForPublicController {
         return ApiResponse.<Page<GetColorRes>>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Successfully!")
-                .data(colorServiceInterface.getColor(keyword, supplierName, pageable))
+                .data(colorServiceInterface.getColorBySupplier(keyword, supplierName, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }

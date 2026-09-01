@@ -2,9 +2,9 @@ import React from 'react';
 import { Modal } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IApiResponse } from '@/Interface/IApiResponse';
-import { useDeleteColor } from '../Hook/useDeleteColor';
 import { QueryKeys } from '@/Constant/query-key';
 import { toast } from 'react-toastify';
+import { useDeleteColor } from '../hooks/useDeleteColor';
 
 interface DeleteColorModalProps {
   visible: boolean;
@@ -24,7 +24,7 @@ const DeleteColorModal: React.FC<DeleteColorModalProps> = ({
   const { mutate: deleteColor, isPending: isDeleting } = useDeleteColor({
     onSuccess: (data: IApiResponse<void>) => {
       toast.success(`Xóa ${data.message}`);
-      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_COLORS] });
+      queryClient.invalidateQueries({ queryKey: [QueryKeys.GET_COLOR_BY_SUPPLIER] });
       onCancel();
     },
     onError: (error) => {
@@ -33,7 +33,6 @@ const DeleteColorModal: React.FC<DeleteColorModalProps> = ({
   });
 
   const handleConfirm = () => {
-    console.log(`colorId: ${colorId}`);
     deleteColor(colorId);
   };
 
