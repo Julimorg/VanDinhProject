@@ -74,7 +74,7 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
         return supplierMapper.toGetSupplierDetailRes(supplierRepository
