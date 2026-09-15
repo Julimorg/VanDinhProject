@@ -1,11 +1,17 @@
 package com.example.controller;
-import com.example.common.dto.color.*;
+import com.cloudinary.Api;
+import com.example.common.dto.color.request.CreateAlbumReq;
 import com.example.common.dto.color.request.CreateColorReq;
+import com.example.common.dto.color.request.UpdateAlbumReq;
 import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.response.*;
+import com.example.common.enums.SuccessCode;
+import com.example.common.interfaces.color.ColorServiceInterface;
 import com.example.common.response.ApiResponse;
+import com.example.common.service.ExcelImportService;
+import com.example.service.ColorImportHandler;
 import com.example.service.ColorService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -23,8 +29,11 @@ import java.util.List;
 @RequestMapping("api/v1/color")
 public class ColorController {
 
-    private final ColorService colorService;
+    private final ColorServiceInterface colorService;
 
+    private final ColorImportHandler colorImportHandler;
+
+    private final ExcelImportService excelImportService;
 
     @GetMapping("/color-selector/{supplierId}")
     public ApiResponse<List<GetColorWithSupplierRes>> getColorWithSupplier(@PathVariable String supplierId){
@@ -37,16 +46,16 @@ public class ColorController {
     }
 
 
-    @GetMapping("/get-color")
+    @GetMapping("/get-color/{supplierId}")
     public ApiResponse<Page<GetColorRes>> getColor(
-            @RequestParam(required = false) String supplierName,
+            @PathVariable String supplierId,
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, sort = "colorName", direction = Sort.Direction.ASC) Pageable pageable
     ){
         return ApiResponse.<Page<GetColorRes>>builder()
-                .status_code(HttpStatus.OK.value())
-                .message("Successfully!")
-                .data(colorService.getColor(keyword, supplierName, pageable))
+                .status_code(SuccessCode.GET_COLOR.getStatusCode().value())
+                .message(SuccessCode.GET_COLOR.getMessage())
+                .data(colorService.getColorBySupplier(keyword, supplierId, pageable))
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -57,6 +66,37 @@ public class ColorController {
                 .status_code(HttpStatus.OK.value())
                 .message("Successfully")
                 .data(colorService.getColorDetail(colorId))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @PostMapping(value = "create-album")
+    public ApiResponse<CreateAlbumRes> createAlbum(@ModelAttribute CreateAlbumReq req){
+        return ApiResponse.<CreateAlbumRes>builder()
+                .status_code(SuccessCode.CREATE_ALBUM.getStatusCode().value())
+                .message(SuccessCode.CREATE_ALBUM.getMessage())
+                .data(colorService.createAlbum(req))
+                .timestamp(LocalDateTime.now())
+                .build();
+
+    }
+
+    @PatchMapping(value = "/update-album/{albumId}")
+    public ApiResponse<UpdateAlbumRes> updateAlbum(@PathVariable String albumId, @ModelAttribute UpdateAlbumReq req){
+        return ApiResponse.<UpdateAlbumRes>builder()
+                .status_code(SuccessCode.UPDATE_ALBUM.getStatusCode().value())
+                .message(SuccessCode.UPDATE_ALBUM.getMessage())
+                .data(colorService.updateAlbum(albumId,req))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @GetMapping("/get-album")
+    public ApiResponse<List<GetListAlbumRes>> getAlbums(){
+        return ApiResponse.<List<GetListAlbumRes>>builder()
+                .status_code(SuccessCode.GET_ALBUM.getStatusCode().value())
+                .message(SuccessCode.GET_ALBUM.getMessage())
+                .data(colorService.getListAlbum())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -84,6 +124,25 @@ public class ColorController {
                 .build();
     }
 
+//    @PostMapping(value = "/excel", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ApiResponse<ImportColorRes> importExcel(@RequestParam("file") MultipartFile file) {
+//        return ApiResponse.<ImportColorRes>builder()
+//                .status_code(SuccessCode.IMPORT_COLOR_EXCEL.getStatusCode().value())
+//                .message(SuccessCode.IMPORT_COLOR_EXCEL.getMessage())
+//                .data(excelImportService.importExcel(file, colorImportHandler)) // ← đổi cho khớp engine của bạn
+//                .timestamp(LocalDateTime.now())
+//                .build();
+//    }
+
+    @PostMapping(value = "/json/import-color", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<ImportColorRes> importJson(@RequestParam("file") MultipartFile file) {
+        return ApiResponse.<ImportColorRes>builder()
+                .status_code(SuccessCode.IMPORT_COLOR.getStatusCode().value())
+                .message(SuccessCode.IMPORT_COLOR.getMessage())
+                .data(colorService.importColorFromJson(file))
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     @DeleteMapping("/delete-color/{colorId}")
     public ApiResponse<String> deleteColor(@PathVariable String colorId) {
@@ -91,6 +150,16 @@ public class ColorController {
         return ApiResponse.<String>builder()
                 .status_code(HttpStatus.OK.value())
                 .message("Delete Color Successfully!")
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @DeleteMapping("/delete-album/{albumId}")
+    public ApiResponse<String> deleteAlbum(@PathVariable String albumId){
+        colorService.deleteAlbum(albumId);
+        return ApiResponse.<String>builder()
+                .status_code(SuccessCode.DELETE_ALBUM.getStatusCode().value())
+                .message(SuccessCode.DELETE_ALBUM.getMessage())
                 .timestamp(LocalDateTime.now())
                 .build();
     }

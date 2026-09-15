@@ -109,6 +109,15 @@ public enum SuccessCode {
     IMPORT_PRODUCT_EXCEL_FILE("Import Product File Successfully!", HttpStatus.OK),
 
 
+    // ======================= COLOR =======================
+    GET_COLOR("Get Color Successfully!", HttpStatus.OK),
+    CREATE_ALBUM("Create Album Successfully!", HttpStatus.OK),
+    GET_ALBUM("Get Album Successfully!", HttpStatus.OK),
+    UPDATE_ALBUM("Update Album Successfully!", HttpStatus.OK),
+    DELETE_ALBUM("Delete Album Successfully!", HttpStatus.OK),
+    IMPORT_COLOR("Import Color Successfully!", HttpStatus.OK),
+    IMPORT_COLOR_EXCEL("Import Color Excel File Successfully!",HttpStatus.OK),
+
     // ======================= DIARY =======================
     CREATE_DIARY("Create Diary Successfully!", HttpStatus.CREATED),
     CREATE_DIARY_ITEMS("Create Diary Items Successfully!", HttpStatus.CREATED),

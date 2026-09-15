@@ -1,8 +1,8 @@
 package com.example.service;
 
-import com.example.common.dto.color.*;
-import com.example.common.dto.color.request.CreateColorReq;
-import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.request.*;
+import com.example.common.dto.color.response.*;
+import com.example.common.dto.order.response.GetAllOrdersRes;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.color.ColorServiceInterface;
@@ -10,19 +10,27 @@ import com.example.common.interfaces.supplier.SupplierQueryInternalService;
 import com.example.common.service.CloudinaryService;
 import com.example.common.service.FileUploadService;
 import com.example.config.ColorSpecification;
+import com.example.mapper.AlbumMapper;
 import com.example.mapper.ColorMapper;
+import com.example.persistence.entity.Album;
 import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
+import com.example.repository.AlbumRepository;
 import com.example.repository.ColorRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.naming.EjbRef;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -31,13 +39,21 @@ public class ColorService implements ColorServiceInterface {
 
     private final ColorRepository colorRepository;
 
+    private final AlbumRepository albumRepository;
+
     private final ColorMapper  colorMapper;
+
+    private final AlbumMapper albumMapper;
 
     private final CloudinaryService  cloudinaryService;
 
     private final SupplierQueryInternalService supplierInternalService;
 
     private final FileUploadService fileUploadService;
+
+    private final ColorImportHandler colorImportHandler;
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public List<GetColorWithSupplierRes> getColorWithSupplier(String supplierId){
@@ -52,19 +68,20 @@ public class ColorService implements ColorServiceInterface {
     }
 
     @Override
-    public Page<GetColorRes> getColor(String keyword,
-                                      String supplierName,
-                                      Pageable pageable){
-        Specification<Color> spec = ColorSpecification
-                .from(ColorSpecification
-                        .ColorFilter
-                        .keywordAndSupplier(keyword, supplierName));
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
+    public Page<GetColorRes> getColorBySupplier(String keyword,
+                                                String supplierId,
+                                                Pageable pageable) {
 
-        return colorRepository
-                .findAll(spec, pageable)
-                .map(color -> colorMapper.toGetColorRes(color));
+        supplierInternalService.getSupplierById(supplierId);
 
+        Specification<Color> spec = ColorSpecification.hasSupplierId(supplierId)
+                .and(ColorSpecification.from(ColorSpecification.ColorFilter.of(keyword)));
+
+        return colorRepository.findAll(spec, pageable)
+                .map(colorMapper::toGetColorRes);
     }
+
 
     @Override
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
@@ -80,16 +97,25 @@ public class ColorService implements ColorServiceInterface {
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
     public CreateColorRes createColor(CreateColorReq request){
 
-        if(request.getSupplierId().isEmpty())
-            throw new AppException(ErrorCode.SUPPLIER_NOT_FOUND);
-
-        Supplier supplierDto = supplierInternalService
+        Supplier supplier = supplierInternalService
                 .getSupplierById(request
                         .getSupplierId());
 
         Color color = colorMapper.toCreateColorReq(request);
 
-        color.setSupplier(supplierDto);
+        color.setSupplier(supplier);
+
+        if(StringUtils.hasText(request.getAlbumId())){
+            Album album = albumRepository.
+                    findById(request.getAlbumId())
+                    .orElseThrow(() -> new RuntimeException(String.valueOf(ErrorCode.ALBUM_NOT_FOUND)));
+
+            if (!album.getSupplier().getSupplierId().equals(request.getSupplierId())) {
+                throw new RuntimeException(String.valueOf(ErrorCode.ALBUM_SUPPLIER_MISMATCH));
+            }
+
+            color.setAlbum(album);
+        }
 
         color.setColorImg(fileUploadService
                 .uploadImageIfPresent(request.getColorImg(), request.getColorName()));
@@ -112,7 +138,54 @@ public class ColorService implements ColorServiceInterface {
         colorMapper.toUpdateColor(color, request);
 
         color = colorRepository.save(color);
+
         return colorMapper.toUpdateColorRes(color);
+
+    }
+
+    @Override
+    public ImportColorRes importColorFromJson(MultipartFile files) {
+
+        List<ColorImportItemReq> items;
+        try {
+            CreateImportJsonReq payload = objectMapper.readValue(files.getInputStream(), CreateImportJsonReq.class);
+            items = payload.getColors();
+        } catch (IOException e) {
+            throw new AppException(ErrorCode.COLOR_IMPORT_INVALID_FORMAT);
+        }
+
+        if (items == null || items.isEmpty()) {
+            throw new AppException(ErrorCode.COLOR_IMPORT_FILE_EMPTY);
+        }
+
+        for( ColorImportItemReq i : items) {
+            if (!albumRepository.existsAlbumByAlbumId(i.getAlbumId())) {
+                throw new AppException(ErrorCode.ALBUM_NOT_FOUND);
+            }
+        }
+
+        List<String> errors = new ArrayList<>();
+        for (int i = 0; i < items.size(); i++) {
+            errors.addAll(colorImportHandler.validateRow(items.get(i), i + 1));
+        }
+
+        if (!errors.isEmpty()) {
+            return ImportColorRes.builder()
+                    .totalRows(items.size())
+                    .successCount(0)
+                    .success(false)
+                    .errors(errors)
+                    .build();
+        }
+
+        colorImportHandler.saveAll(items);
+
+        return ImportColorRes.builder()
+                .totalRows(items.size())
+                .successCount(items.size())
+                .success(true)
+                .errors(List.of())
+                .build();
     }
 
     @Override
@@ -123,5 +196,53 @@ public class ColorService implements ColorServiceInterface {
         }
         colorRepository.deleteById(colorId);
     }
+
+    @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF')")
+    public CreateAlbumRes createAlbum(CreateAlbumReq request) {
+
+        Supplier supplier = supplierInternalService.getSupplierById(request.getSupplierId());
+
+        Album album = albumMapper.toAlbum(request);
+
+        album.setSupplier(supplier);
+
+        Album saved = albumRepository.save(album);
+
+        return albumMapper.toCreateAlbum(albumRepository.save(saved));
+    }
+
+    @Override
+    public UpdateAlbumRes updateAlbum(String albumId, UpdateAlbumReq request) {
+
+        Album album = albumRepository.findById(albumId)
+                .orElseThrow( () -> new RuntimeException(String.valueOf(ErrorCode.ALBUM_NOT_FOUND)));
+
+        albumMapper.toUpdateAlbum(album, request);
+
+        Album saved = albumRepository.save(album);
+
+        return albumMapper.toUpdateAlbumRes(saved);
+    }
+
+    @Override
+    public List<GetListAlbumRes> getListAlbum() {
+        return albumRepository
+                .findAll()
+                .stream()
+                .map(c -> albumMapper.toGetListAlbumRes(c))
+                .toList();
+    }
+
+    @Override
+    public void deleteAlbum(String albumId) {
+        if (!albumRepository.existsById(albumId)){
+            throw new AppException(ErrorCode.ALBUM_NOT_FOUND);
+        }
+
+        albumRepository.deleteById(albumId);
+    }
+
+
 
 }

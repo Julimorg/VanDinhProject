@@ -1,8 +1,15 @@
-
 import React, { useState } from 'react';
 import { Table, Pagination, Input, Button, Space, Typography, Card, Spin } from 'antd';
 import type { ColumnsType, TableProps } from 'antd/es/table';
-import { SearchOutlined, DownOutlined, PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import {
+  SearchOutlined,
+  DownOutlined,
+  PlusOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { useGetAllSupplier } from './Hook/useGetSupplier';
 import { useDebounce } from '@/Hook/useDebounce';
 import AddSupplierModal from './Components/CreateSupplierModal';
@@ -12,6 +19,8 @@ import DeleteSupplierModal from './Components/DeleteSupplierModal';
 const { Title, Text } = Typography;
 
 const SupplierManagementPage: React.FC = () => {
+  const navigate = useNavigate();
+
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(0);
   const [pageSize, setPageSize] = useState<number>(10);
@@ -42,6 +51,11 @@ const SupplierManagementPage: React.FC = () => {
     totalPages: 0,
   };
 
+  //? Điều hướng sang trang chi tiết supplier
+  const handleViewDetail = (supplier: any) => {
+    navigate(`/suppliers/${supplier.supplierId}`);
+  };
+
   const columns: ColumnsType<any> = [
     {
       title: 'ID',
@@ -62,7 +76,11 @@ const SupplierManagementPage: React.FC = () => {
       dataIndex: 'supplierName',
       key: 'supplierName',
       width: 150,
-      render: (text: string) => <Text strong>{text}</Text>,
+      render: (text: string, record: any) => (
+        <a onClick={() => handleViewDetail(record)} className="font-medium">
+          {text}
+        </a>
+      ),
       sorter: (a: any, b: any) => a.supplierName.localeCompare(b.supplierName),
       showSorterTooltip: false,
     },
@@ -144,10 +162,19 @@ const SupplierManagementPage: React.FC = () => {
     {
       title: 'Hành động',
       key: 'actions',
-      width: 150,
+      width: 190,
       fixed: 'right',
       render: (_, record: any) => (
         <Space size="small" wrap className="flex flex-col sm:flex-row">
+          <Button
+            type="link"
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewDetail(record)}
+            className="p-0"
+          >
+            Xem chi tiết
+          </Button>
           <Button
             type="link"
             size="small"
@@ -195,13 +222,11 @@ const SupplierManagementPage: React.FC = () => {
     setSelectedSupplier(null);
   };
 
-  // Thêm function handleDelete
   const handleDelete = (supplier: any) => {
     setSelectedSupplierToDelete(supplier);
     setIsDeleteModalVisible(true);
   };
 
-  // Thêm function handleCloseDeleteModal
   const handleCloseDeleteModal = () => {
     setIsDeleteModalVisible(false);
     setSelectedSupplierToDelete(null);
@@ -265,11 +290,7 @@ const SupplierManagementPage: React.FC = () => {
         </Button>
       </div>
 
-
-      <Card
-        className="mb-6 shadow-sm border-0 bg-white rounded-xl"
-        bodyStyle={{ padding: '16px' }}
-      >
+      <Card className="mb-6 shadow-sm border-0 bg-white rounded-xl" bodyStyle={{ padding: '16px' }}>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1">
             <Input
@@ -289,12 +310,11 @@ const SupplierManagementPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Table với Spin loading (cập nhật columns) */}
       <Spin spinning={isLoading}>
         <div className="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
           <Table
             columns={columns}
-            dataSource={suppliers} 
+            dataSource={suppliers}
             pagination={false}
             scroll={{ x: 768 }}
             rowKey="supplierId"
@@ -306,10 +326,9 @@ const SupplierManagementPage: React.FC = () => {
         </div>
       </Spin>
 
-      {/* Pagination (giữ nguyên) */}
       <div className="bg-white rounded-xl shadow-sm p-4 flex justify-center">
         <Pagination
-          current={currentPage + 1} 
+          current={currentPage + 1}
           total={pagination.totalElements}
           pageSize={pageSize}
           showSizeChanger={window.innerWidth >= 768}
@@ -323,7 +342,6 @@ const SupplierManagementPage: React.FC = () => {
         />
       </div>
 
-      {/* Modal add (cập nhật onSuccess với refetch) */}
       <AddSupplierModal
         visible={isModalVisible}
         onCancel={handleCloseModal}
@@ -333,7 +351,6 @@ const SupplierManagementPage: React.FC = () => {
         }}
       />
 
-      {/* Modal edit */}
       <EditSupplierModal
         visible={isEditModalVisible}
         onCancel={handleCloseEditModal}
@@ -344,7 +361,6 @@ const SupplierManagementPage: React.FC = () => {
         }}
       />
 
-      {/* Thêm Modal delete */}
       <DeleteSupplierModal
         visible={isDeleteModalVisible}
         onCancel={handleCloseDeleteModal}

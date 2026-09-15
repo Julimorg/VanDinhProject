@@ -5,7 +5,6 @@ import MainLayout from '../../Page/Main/MainLayout';
 import MyProfile from '../../Page/MyProfilePage/MyProfile';
 import OrderHistory from '../../Page/OrderHistoryPage/OrderHistoryPage';
 import SupplierPage from '../../Page/SupplierPage/SuppliersPage';
-import ColorPage from '../../Page/ColorPage/ColorPage';
 import Dashboard from '../../Page/DashBoard/Dashboard';
 import OrderDetailPage from '../../Page/OrderDetailPage/OrderDetailPage';
 import CartPage from '../../Page/CartPage/CartPage';
@@ -16,6 +15,7 @@ import PaymentResultPage from '../../Page/PaymentResultPage/PaymentResultPage';
 import NotificationPage from '../../Page/NotificationPage/NotificationPage';
 import SendNotiToAdminPage from '../../Components/SendNotiToAdminPage';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
+import SupplierDetailPage from '@/Page/SupplierPage/SupplierDetailPage';
 
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
@@ -56,7 +56,7 @@ const DefaultRouter = () => {
           </Route>
           <Route path="/payment-result" element={<PaymentResultPage />} />
           <Route path="suppliers" element={<SupplierPage />} />
-          <Route path="colors" element={<ColorPage />} />
+          <Route path="supplier-detail/:supplierId" element={<SupplierDetailPage />} />
           <Route path="order-detail/:orderId" element={<OrderDetailPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="transaction/:orderId" element={<TransactionPage />} />

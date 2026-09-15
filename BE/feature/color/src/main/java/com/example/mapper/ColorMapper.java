@@ -1,8 +1,10 @@
 package com.example.mapper;
 
-import com.example.common.dto.color.*;
+import com.example.common.dto.color.request.CreateAlbumReq;
 import com.example.common.dto.color.request.CreateColorReq;
 import com.example.common.dto.color.request.UpdateColorReq;
+import com.example.common.dto.color.response.*;
+import com.example.persistence.entity.Album;
 import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
 import org.mapstruct.Mapper;
@@ -29,6 +31,11 @@ public interface ColorMapper {
     @Mapping(source = "colorName", target = "colorName")
     @Mapping(source = "colorCode", target = "colorCode")
     GetColorRes toSearchColor(Color color);
+
+    GetColorSummaryRes toColorSummary(Color color);
+
+    @Mapping(target = "colors", ignore = true)
+    GetAlbumWithColorRes toAlbumWithColors(Album album);
 
     //* =========================== CREATE MAPPER ===========================
 

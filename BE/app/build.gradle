@@ -38,6 +38,9 @@ dependencies {
     implementation 'io.github.cdimascio:dotenv-java:3.0.2'
     implementation 'me.paulschwarz:spring-dotenv:3.0.0'
 
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+
     runtimeOnly    'org.postgresql:postgresql'
     runtimeOnly    'com.mysql:mysql-connector-j:8.3.0'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

@@ -56,7 +56,7 @@ public class SupplierController {
                 .build();
     }
 
-    @GetMapping("/detail-supplier/{supplierId}")
+    @GetMapping("/get-supplier/{supplierId}")
     public ApiResponse<GetSupplierDetailRes> getSupplierDetail(@PathVariable String supplierId){
         return ApiResponse.<GetSupplierDetailRes>builder()
                 .status_code(SuccessCode.GET_SUPPLIER_DETAIL.getStatusCode().value())

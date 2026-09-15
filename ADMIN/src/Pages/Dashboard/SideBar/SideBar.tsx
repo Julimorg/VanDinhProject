@@ -93,12 +93,6 @@ const Sidebar: React.FC<SidebarProps> = ({
       onClick: () => navigate('/suppliers'),
     },
     {
-      key: 'color',
-      icon: <BgColorsOutlined />,
-      label: 'Quản lý mã màu',
-      onClick: () => navigate('/colors'),
-    },
-    {
       key: 'category',
       icon: <KeyOutlined />,
       label: 'Quản lý Vật Dụng',

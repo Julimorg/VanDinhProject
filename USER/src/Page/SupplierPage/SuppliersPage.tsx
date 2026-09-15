@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { Pagination, Row, Col, Empty, Skeleton, message } from 'antd'; 
+import { Pagination, Row, Col, Empty, Skeleton, message } from 'antd';
 import SearchFilterBar from './Components/SearchFilterBar';
 import SupplierCard from './Components/SupplierCard';
-import { useGetAllSupplier } from './Hook/useGetSupplier'; 
+import { useGetAllSupplier } from './Hook/useGetSupplier';
 import type { IGetAllSupplierResponse } from '../../Interface/Supplier/IGetAllSuppliers';
 import { toast } from 'react-toastify';
 
 const SupplierPage: React.FC = () => {
-
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [currentPage, setCurrentPage] = useState(1); 
+  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(6);
   const [sortValue, setSortValue] = useState('createAt,desc');
 
@@ -19,20 +18,18 @@ const SupplierPage: React.FC = () => {
     isError,
   } = useGetAllSupplier({
     keyword: searchKeyword,
-    page: currentPage - 1, 
+    page: currentPage - 1,
     size: pageSize,
     sort: sortValue,
   });
-
 
   const rawContent = suppliersData?.data?.content;
   const suppliers: IGetAllSupplierResponse[] = Array.isArray(rawContent) ? rawContent : [];
   const totalSuppliers = suppliersData?.data?.page.totalElements || 0;
 
-
   const handleSearch = (value: string) => {
     setSearchKeyword(value);
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const handleSortChange = (value: string) => {
@@ -58,12 +55,8 @@ const SupplierPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Danh sách nhà cung cấp
-          </h1>
-          <p className="text-gray-600">
-            Tìm kiếm và khám phá các nhà cung cấp uy tín
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Danh sách nhà cung cấp</h1>
+          <p className="text-gray-600">Tìm kiếm và khám phá các nhà cung cấp uy tín</p>
         </div>
 
         {/* Search and Filter Bar */}
@@ -79,27 +72,20 @@ const SupplierPage: React.FC = () => {
           <Row gutter={[24, 24]} className="mb-8">
             {Array.from({ length: pageSize }).map((_, index) => (
               <Col key={`skeleton-${index}`} xs={24} sm={24} md={12} lg={8}>
-                <Skeleton 
-                  active 
-                  avatar 
-                  paragraph={{ rows: 3 }} 
-                  className="h-[300px]" 
-                />
+                <Skeleton active avatar paragraph={{ rows: 3 }} className="h-[300px]" />
               </Col>
             ))}
           </Row>
         ) : suppliers.length > 0 ? (
           <>
             <Row gutter={[24, 24]} className="mb-8">
-              {suppliers.map((supplier) => (
-                <Col
-                  key={supplier.supplierId}
-                  xs={24}
-                  sm={24}
-                  md={12}
-                  lg={8}
-                >
-                  <SupplierCard supplier={supplier} />
+              {suppliers.map((supplier, i) => (
+                <Col key={supplier.supplierId} xs={24} sm={24} md={12} lg={8}>
+                  <SupplierCard
+                    supplier={supplier}
+                    index={i}
+                    linkTo={(id) => `/supplier-detail/${id}`}
+                  />
                 </Col>
               ))}
             </Row>
@@ -113,9 +99,7 @@ const SupplierPage: React.FC = () => {
                 onChange={handlePageChange}
                 onShowSizeChange={handlePageChange}
                 showSizeChanger
-                showTotal={(total, range) =>
-                  `${range[0]}-${range[1]} của ${total} nhà cung cấp`
-                }
+                showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} nhà cung cấp`}
                 pageSizeOptions={['6', '12', '18', '24']}
                 className="bg-white px-4 py-3 rounded-lg shadow-sm"
               />
@@ -123,10 +107,7 @@ const SupplierPage: React.FC = () => {
           </>
         ) : (
           <div className="flex justify-center items-center min-h-[400px]">
-            <Empty
-              description="Không tìm thấy nhà cung cấp"
-              className="text-gray-500"
-            />
+            <Empty description="Không tìm thấy nhà cung cấp" className="text-gray-500" />
           </div>
         )}
       </div>

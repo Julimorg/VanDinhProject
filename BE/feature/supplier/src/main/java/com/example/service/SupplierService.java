@@ -1,12 +1,18 @@
 package com.example.service;
 
+import com.example.common.dto.color.response.GetAlbumWithColorRes;
+import com.example.common.dto.color.response.GetColorSummaryRes;
 import com.example.common.dto.supplier.request.CreateSupplierReq;
 import com.example.common.dto.supplier.request.UpdateSupplierReq;
 import com.example.common.dto.supplier.response.*;
+import com.example.common.enums.ErrorCode;
+import com.example.common.interfaces.color.ColorQueryInternalService;
 import com.example.common.interfaces.supplier.SupplierServiceInterface;
 import com.example.common.service.FileUploadService;
 import com.example.config.SupplierSpecification;
 import com.example.mapper.SupplierMapper;
+import com.example.persistence.entity.Album;
+import com.example.persistence.entity.Color;
 import com.example.persistence.entity.Supplier;
 import com.example.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +26,10 @@ import org.springframework.context.ApplicationEventPublisher;
 import com.example.common.events.search.SearchIndexEvent;
 import com.example.common.events.search.SearchDeleteEvent;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,6 +37,8 @@ import java.util.List;
 public class SupplierService implements SupplierServiceInterface {
 
     private final SupplierRepository supplierRepository;
+
+    private final ColorQueryInternalService colorQueryInternalService;
 
     private final SupplierMapper supplierMapper;
 
@@ -63,11 +74,12 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
         return supplierMapper.toGetSupplierDetailRes(supplierRepository
                 .findById(supplierId)
-                .orElseThrow(() -> new RuntimeException("Supplier not found")));
+                .orElseThrow(() -> new RuntimeException(ErrorCode.SUPPLIER_NOT_FOUND.getMessage())));
     }
 
     @Override
