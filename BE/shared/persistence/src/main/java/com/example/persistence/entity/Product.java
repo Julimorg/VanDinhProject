@@ -33,6 +33,11 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String productId;
 
+    // Optimistic locking: chan race condition khi nhieu request cung tru/cong productQuantity
+    // dong thoi (v.d. 2 order duyet cung 1 luc cho cung 1 product) -> tranh ban vuot ton kho.
+    @Version
+    private Long version;
+
     @Column(name = "product_code", nullable = false)
     private String productCode;
 

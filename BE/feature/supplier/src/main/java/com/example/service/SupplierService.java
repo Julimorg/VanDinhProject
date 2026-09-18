@@ -6,7 +6,9 @@ import com.example.common.dto.supplier.request.CreateSupplierReq;
 import com.example.common.dto.supplier.request.UpdateSupplierReq;
 import com.example.common.dto.supplier.response.*;
 import com.example.common.enums.ErrorCode;
+import com.example.common.exception.AppException;
 import com.example.common.interfaces.color.ColorQueryInternalService;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.interfaces.supplier.SupplierServiceInterface;
 import com.example.common.service.FileUploadService;
 import com.example.config.SupplierSpecification;
@@ -39,6 +41,8 @@ public class SupplierService implements SupplierServiceInterface {
     private final SupplierRepository supplierRepository;
 
     private final ColorQueryInternalService colorQueryInternalService;
+
+    private final ProductQueryInternalService productInternalService;
 
     private final SupplierMapper supplierMapper;
 
@@ -74,7 +78,6 @@ public class SupplierService implements SupplierServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF', 'ROLE_USER')")
     public GetSupplierDetailRes getSupplierDetailRes(String supplierId){
 
         return supplierMapper.toGetSupplierDetailRes(supplierRepository
@@ -143,7 +146,14 @@ public class SupplierService implements SupplierServiceInterface {
     public void deleteSupplier(String supplier_id){
 
         if(!supplierRepository.existsById(supplier_id)){
-            throw new RuntimeException("Supplier not found");
+            throw new AppException(ErrorCode.SUPPLIER_NOT_FOUND);
+        }
+
+        // Tu choi xoa neu con Product hoac Color dang tham chieu supplier nay,
+        // tranh mat du lieu do cascade delete.
+        if (productInternalService.existsBySupplierId(supplier_id)
+                || !colorQueryInternalService.findColorBySupplierId(supplier_id).isEmpty()) {
+            throw new AppException(ErrorCode.SUPPLIER_HAS_DEPENDENTS);
         }
 
         supplierRepository.deleteById(supplier_id);

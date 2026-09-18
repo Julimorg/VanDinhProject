@@ -25,6 +25,9 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String paymentId;
 
+    @Version
+    private Long version;
+
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
 

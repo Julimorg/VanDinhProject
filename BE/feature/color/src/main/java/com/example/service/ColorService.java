@@ -68,7 +68,6 @@ public class ColorService implements ColorServiceInterface {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_USER','ROLE_STAFF')")
     public Page<GetColorRes> getColorBySupplier(String keyword,
                                                 String supplierId,
                                                 Pageable pageable) {

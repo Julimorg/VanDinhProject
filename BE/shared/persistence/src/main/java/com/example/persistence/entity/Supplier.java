@@ -46,11 +46,13 @@ public class Supplier {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // Khong cascade delete: xoa 1 Supplier khong duoc phep tu dong xoa cac Product/Color dang tham
+    // chieu supplier do. SupplierService.deleteSupplier() phai kiem tra va tu choi xoa neu con ban ghi tham chieu.
+    @OneToMany(mappedBy = "supplier", fetch = FetchType.LAZY)
     private List<Product> products;
 
 
-    @OneToMany(mappedBy = "supplier", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "supplier", fetch = FetchType.LAZY)
     private List<Color> colors;
 
 

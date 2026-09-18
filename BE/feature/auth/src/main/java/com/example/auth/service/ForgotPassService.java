@@ -66,11 +66,13 @@ public class ForgotPassService {
                 .map(existing -> {
                     existing.setOtp(otp);
                     existing.setExpirationTime(expiryTime);
+                    existing.setVerified(false);
                     return existing;
                 })
                 .orElseGet(() -> ForgotPassword.builder()
                         .otp(otp)
                         .expirationTime(expiryTime)
+                        .verified(false)
                         .user(user)
                         .build());
 
@@ -102,6 +104,9 @@ public class ForgotPassService {
             forgotPasswordRepository.delete(forgotPassword);
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
+
+        forgotPassword.setVerified(true);
+        forgotPasswordRepository.save(forgotPassword);
     }
 
     @Transactional
@@ -114,8 +119,26 @@ public class ForgotPassService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
 
+        //? Bat buoc phai co 1 OTP da duoc verifyOtp() xac nhan truoc do cho user nay,
+        //? va van con trong thoi han, moi duoc phep doi mat khau.
+        //? Neu khong co ban ghi, hoac chua verified, hoac da het han -> tu choi (chan account-takeover).
+        ForgotPassword forgotPassword = forgotPasswordRepository.findByUser(user)
+                .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_VERIFIED));
+
+        if (!forgotPassword.isVerified()) {
+            throw new AppException(ErrorCode.OTP_NOT_VERIFIED);
+        }
+
+        if (forgotPassword.getExpirationTime().isBefore(LocalDateTime.now())) {
+            forgotPasswordRepository.delete(forgotPassword);
+            throw new AppException(ErrorCode.OTP_EXPIRED);
+        }
+
         String encodedPassword = passwordEncoder.encode(changePassword.getNewPassword());
 
         authRepository.updatePassword(email,  encodedPassword);
+
+        //? Tieu huy ban ghi OTP ngay sau khi dung, tranh replay lai OTP da verify nay.
+        forgotPasswordRepository.delete(forgotPassword);
     }
 }

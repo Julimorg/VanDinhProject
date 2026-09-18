@@ -106,6 +106,7 @@ public class JwtService implements JwtServiceInterface {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(user.getUserName())
                 .audience(user.getId())
                 .issuer("vandinhstore@example.com")
                 .issueTime(new Date())

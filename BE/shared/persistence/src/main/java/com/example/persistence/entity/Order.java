@@ -30,6 +30,9 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String orderId;
 
+    @Version
+    private Long version;
+
     private String orderCode;
 
     private String shipAddress;
@@ -57,7 +60,9 @@ public class Order {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @UpdateTimestamp
+    // Khong dung @UpdateTimestamp o day: field nay la moc thoi gian huy don (soft-delete marker),
+    // chi duoc set thu cong khi huy don (xem OrderService.handleCancelOrder), khong duoc tu dong
+    // ghi lai moi lan save() nhu updateAt, neu khong moi update binh thuong se bi coi la "da huy".
     private LocalDateTime deletedAt;
 
     private LocalDateTime completeAt;

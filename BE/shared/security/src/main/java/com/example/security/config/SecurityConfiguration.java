@@ -44,7 +44,7 @@ public class SecurityConfiguration {
     };
     private static final String[] PUBLIC_GET_VNPAY = { "/api/v1/vn-pay/**" };
     private static final String[] PUBLIC_ENDPOINT = {
-            "api/v1/for-public/**"
+            "/api/v1/for-public/**"
     };
 
     @Bean
@@ -67,7 +67,7 @@ public class SecurityConfiguration {
                 "http://127.0.0.1:5500",
                 "http://13.250.65.227:8080",
                 "https://van-dinh-project.vercel.app",
-                "https://van-dinh.net/"
+                "https://van-dinh.net"
         ));
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");

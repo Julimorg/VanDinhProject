@@ -19,13 +19,16 @@ public class GlobalExceptionHandler  {
 
     @ExceptionHandler(RuntimeException.class)
     ResponseEntity<ApiResponse<Void>> handleRunTimeException(RuntimeException exception) {
-        log.error("RuntimeException: {}", exception.getMessage());
+        // Chi log chi tiet loi thuc te o server (co the chua ten field/method noi bo, SQL constraint...),
+        // KHONG tra exception.getMessage() thang ve client vi day la fallback bat mabat ky RuntimeException
+        // (bao gom ca loi tu endpoint khong yeu cau dang nhap) -> tranh lo thong tin noi bo (info disclosure).
+        log.error("Unhandled RuntimeException", exception);
         ErrorCode errorCode = ErrorCode.UNKNOWN_ERROR;
         return ResponseEntity
                 .status(errorCode.getStatusCode())
                 .body(ApiResponse.<Void>builder()
                         .status_code(((org.springframework.http.HttpStatus) errorCode.getStatusCode()).value())
-                        .message(exception.getMessage() != null ? exception.getMessage() : errorCode.getMessage())
+                        .message(errorCode.getMessage())
                         .timestamp(LocalDateTime.now())
                         .build());
     }

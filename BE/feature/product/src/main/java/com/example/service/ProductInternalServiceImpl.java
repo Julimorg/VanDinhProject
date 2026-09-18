@@ -76,4 +76,14 @@ public class ProductInternalServiceImpl implements ProductQueryInternalService {
                 })
                 .toList();
     }
+
+    @Override
+    public boolean existsByCategoryId(String categoryId) {
+        return productRepository.existsByCategoryCategoryId(categoryId);
+    }
+
+    @Override
+    public boolean existsBySupplierId(String supplierId) {
+        return productRepository.existsBySupplierSupplierId(supplierId);
+    }
 }

@@ -25,6 +25,10 @@ public class ForgotPassword {
     @Column(nullable = false)
     private LocalDateTime expirationTime;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean verified = false;
+
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;

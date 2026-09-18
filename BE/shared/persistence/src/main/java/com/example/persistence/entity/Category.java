@@ -30,6 +30,8 @@ public class Category {
     @UpdateTimestamp
     private LocalDateTime updateAt;
 
-    @OneToMany(mappedBy = "category",cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    // Khong cascade delete: xoa 1 Category khong duoc phep tu dong xoa cac Product dang thuoc category do.
+    // CategoryService.deleteCategory() phai kiem tra va tu choi xoa neu con Product tham chieu.
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private List<Product> products;
 }

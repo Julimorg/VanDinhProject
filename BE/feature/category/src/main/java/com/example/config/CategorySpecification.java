@@ -17,7 +17,7 @@ public class CategorySpecification {
 
     private static Specification<Category> hasKeyword(String keyword){
         return(root, query, cb) -> {
-            if ( !StringUtils.isEmpty(keyword) ) {
+            if ( !StringUtils.hasText(keyword) ) {
                 return cb.conjunction();
             }
 

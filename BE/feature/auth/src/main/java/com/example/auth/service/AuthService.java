@@ -16,6 +16,7 @@ import com.example.persistence.entity.InvalidatedToken;
 import com.example.persistence.entity.Role;
 import com.example.persistence.entity.User;
 import com.example.persistence.enumTable.Status;
+import com.example.persistence.enumTable.TokenType;
 import com.example.user.repository.RoleRepository;
 import com.example.user.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
@@ -139,6 +140,13 @@ public class AuthService {
 
             if (isBlacklisted(signedJWT)) {
                 throw new AppException(ErrorCode.UNAUTHENTICATED);
+            }
+
+            // Chi cho phep dung REFRESH_TOKEN de goi refresh-token, khong cho dung ACCESS_TOKEN
+            // (neu khong ai co access token cung goi duoc refresh-token nhu the co refresh token).
+            String tokenType = (String) signedJWT.getJWTClaimsSet().getClaim("token_type");
+            if (!TokenType.REFRESH_TOKEN.name().equals(tokenType)) {
+                throw new AppException(ErrorCode.INVALID_TOKEN);
             }
 
             String userId = signedJWT.getJWTClaimsSet().getAudience().getFirst();

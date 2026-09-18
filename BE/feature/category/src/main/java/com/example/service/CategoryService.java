@@ -6,6 +6,7 @@ import com.example.common.dto.category.response.*;
 import com.example.common.enums.ErrorCode;
 import com.example.common.exception.AppException;
 import com.example.common.interfaces.category.CategoryServiceInterface;
+import com.example.common.interfaces.products.ProductQueryInternalService;
 import com.example.common.service.FileUploadService;
 import com.example.config.CategorySpecification;
 import com.example.mapper.CategoryMapper;
@@ -35,6 +36,8 @@ public class CategoryService implements CategoryServiceInterface {
     private final FileUploadService fileUploadService;
 
     private final ApplicationEventPublisher publisher;
+
+    private final ProductQueryInternalService productInternalService;
 
     @Override
     public List<GetCategoriesSelectionRes> getCategoriesSelection(){
@@ -134,6 +137,12 @@ public class CategoryService implements CategoryServiceInterface {
         //  TODO
         //  CONFIG ELASTICSEARCH !
         //  elasticSearchService.delete("C_"+id);
+
+        // Tu choi xoa neu con Product dang tham chieu category nay, tranh mat du lieu do cascade delete.
+        if (productInternalService.existsByCategoryId(id)) {
+            throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
+        }
+
         categoryRepository.deleteById(id);
         publisher.publishEvent(new SearchDeleteEvent("C_" + id));
     }

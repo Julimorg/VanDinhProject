@@ -33,12 +33,12 @@ public class CustomJwtDecoder implements JwtDecoder {
     private String signerKey;
 
     // Inject interface — implementation nằm ở feature:auth
-//    private final TokenIntrospector tokenIntrospector;
+    private final TokenIntrospector tokenIntrospector;
 
     private NimbusJwtDecoder nimbusJwtDecoder = null;
 
     private Boolean isValid(String token){
-        return true;
+        return tokenIntrospector.isValid(token);
     }
 
     @Override

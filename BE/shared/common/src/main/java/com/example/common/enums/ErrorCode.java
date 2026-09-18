@@ -19,11 +19,13 @@ public enum ErrorCode {
     BANNED("You have been banned!", HttpStatus.FORBIDDEN),
     INVALID_TOKEN("Invalid Token!", HttpStatus.UNAUTHORIZED),
     PASSWORD_MISMATCH("Password MissMatch!", HttpStatus.UNAUTHORIZED),
+    RESOURCE_ACCESS_DENIED("You do not have permission to access this resource!", HttpStatus.FORBIDDEN),
 
     // ======================= EMAIL =======================
     EMAIL_SEND_FAILED("Email Send Failed!", HttpStatus.BAD_REQUEST),
     INVALID_OTP("Invalid OTP!", HttpStatus.BAD_REQUEST),
     OTP_EXPIRED("OTP Expired!", HttpStatus.BAD_REQUEST),
+    OTP_NOT_VERIFIED("OTP has not been verified! Please verify OTP before changing password.", HttpStatus.BAD_REQUEST),
     EMAIL_EXISTED("Email Existed!", HttpStatus.BAD_REQUEST),
 
     // ======================= USER =======================
@@ -71,6 +73,10 @@ public enum ErrorCode {
     // ======================= SUPPLIER =======================
     SUPPLIER_NOT_EXISTED("Supplier Not Existed", HttpStatus.BAD_REQUEST),
     SUPPLIER_NOT_FOUND("Supplier Not Found", HttpStatus.NOT_FOUND),
+    SUPPLIER_HAS_DEPENDENTS(
+        "Cannot delete this supplier: there are still Products or Colors linked to it!",
+        HttpStatus.BAD_REQUEST
+    ),
 
     // ======================= COLOR =======================
     COLOR_NOT_EXISTED("Color Not Existed", HttpStatus.BAD_REQUEST),
@@ -90,6 +96,10 @@ public enum ErrorCode {
     CATEGORY_NOT_EXISTED("Category Not Existed", HttpStatus.BAD_REQUEST),
     CATEGORY_EXISTED("Category Existed", HttpStatus.BAD_REQUEST),
     CATEGORY_NOT_FOUND("Category Not Found", HttpStatus.NOT_FOUND),
+    CATEGORY_HAS_PRODUCTS(
+        "Cannot delete this category: there are still Products linked to it!",
+        HttpStatus.BAD_REQUEST
+    ),
 
     // ======================= CART =======================
     CART_ITEM_NOT_FOUND("Cart Item Not Found", HttpStatus.BAD_REQUEST),
@@ -110,6 +120,10 @@ public enum ErrorCode {
     ),
     INSUFFICIENT_STOCK("Insufficient Stock", HttpStatus.BAD_REQUEST),
     ORDER_ITEM_NOT_FOUND(" Order Item Not Found", HttpStatus.NOT_FOUND),
+    ORDER_ALREADY_PROCESSED(
+        "This order has already been Approved or Canceled and can no longer be changed!",
+        HttpStatus.BAD_REQUEST
+    ),
 
     // ======================= WISHLIST =======================
     PRODUCT_EXISTED_IN_WISHLIST(
@@ -142,6 +156,10 @@ public enum ErrorCode {
     EXPORT_EXCEL_FILE_FAILED("Export Excel File Failed", HttpStatus.BAD_REQUEST),
     // ======================= PAYMENT =======================
     PAYMENT_NOT_FOUND("Payment Not Found", HttpStatus.NOT_FOUND),
+    INVALID_PAYMENT_STATUS_TRANSITION(
+        "This payment status is already final (Paid/Canceled) and can no longer be changed!",
+        HttpStatus.BAD_REQUEST
+    ),
 
     // ======================= PAYMENT =======================
     DIARY_NOT_FOUND("Diary Not Found", HttpStatus.NOT_FOUND),

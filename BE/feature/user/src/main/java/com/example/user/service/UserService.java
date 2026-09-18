@@ -15,6 +15,7 @@ import com.example.user.config.UserSpecification;
 import com.example.user.domain.mapper.UserMapper;
 import com.example.user.repository.RoleRepository;
 import com.example.user.repository.UserRepository;
+import com.example.security.Util.UtilSecurityClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,8 @@ public class UserService {
     private final FileUploadService  fileUploadService;
 
     private final UserMapper userMapper;
+
+    private final UtilSecurityClass utilSecurityClass;
 
     private User findUserOrThrow(String userId) {
         return userRepository.findById(userId)
@@ -71,6 +74,7 @@ public class UserService {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
     public GetMyProfileDetailRes getMyProfile(String userId) {
+        utilSecurityClass.requireOwner(userId);
         User user = findUserOrThrow(userId);
         return userMapper.toGetProfileDetailRes(user);
     }
@@ -111,6 +115,7 @@ public class UserService {
 
     @PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_ADMIN', 'ROLE_STAFF')")
     public UpdateMyProfileRes updateMyProfile(String userId, UpdateMyProfileReq request) {
+        utilSecurityClass.requireOwner(userId);
         User user = findUserOrThrow(userId);
 
         // FIX: monolith dùng existsByUserName(request.getEmail()) — sai method

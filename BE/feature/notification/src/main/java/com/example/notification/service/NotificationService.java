@@ -20,6 +20,7 @@ import com.example.persistence.enumTable.Status;
 import com.example.persistence.enumTable.UserNotifactionSendChannel;
 import com.example.persistence.enumTable.UserNotifactionStatus;
 import com.example.persistence.enumTable.UserRole;
+import com.example.security.Util.UtilSecurityClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -56,6 +57,8 @@ public class NotificationService implements NotificationInterface {
     private final SimpMessagingTemplate messagingTemplate;
 
     private final NotificationHelper notificationHelper;
+
+    private final UtilSecurityClass utilSecurityClass;
 
 
 
@@ -131,6 +134,7 @@ public class NotificationService implements NotificationInterface {
 
     @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public List<GetSystemTopFiveNotifications> getSystemTopFiveNotifications(String userId) {
+        utilSecurityClass.requireOwner(userId);
         userInternalService.validateUserExists(userId);
 
         return userNotiRepo.findTop5ByUserIdAndIsReadFalseOrderByCreateAtDesc(userId)
@@ -141,6 +145,7 @@ public class NotificationService implements NotificationInterface {
 
     @PreAuthorize("hasAnyRole('ROLE_ADMIN','ROLE_STAFF','ROLE_USER')")
     public int getUnreadCount(String userId) {
+        utilSecurityClass.requireOwner(userId);
         userInternalService.validateUserExists(userId);
         return userNotiRepo.countByUserIdAndIsReadFalse(userId);
     }
@@ -148,6 +153,7 @@ public class NotificationService implements NotificationInterface {
     public Page<GetSystemAllNotificationsRes> getAllNotifications(String userId,
                                                                   String isRead,
                                                                   Pageable pageable) {
+        utilSecurityClass.requireOwner(userId);
         userInternalService.validateUserExists(userId);
 
         if (!StringUtils.hasText(isRead)) {
@@ -159,8 +165,11 @@ public class NotificationService implements NotificationInterface {
                 .map(notificationMapper::toGetSystemAllNotificationsRes);
     }
 
+    @PreAuthorize("hasAnyRole('ROLE_USER','ROLE_ADMIN','ROLE_STAFF')")
     public MarkNotificationAsReadRes markAsRead(String userNotificationId) {
         UserNotifications un = notificationHelper.findUserNotiOrThrow(userNotificationId);
+
+        utilSecurityClass.requireOwner(un.getUserId());
 
         // Idempotent — chỉ update nếu chưa read
         if (!un.getIsRead()) {

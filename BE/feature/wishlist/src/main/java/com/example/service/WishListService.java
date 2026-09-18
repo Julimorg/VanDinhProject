@@ -10,17 +10,20 @@ import com.example.persistence.entity.Product;
 import com.example.persistence.entity.User;
 import com.example.persistence.entity.WishList;
 import com.example.repository.WishListRepository;
+import com.example.security.Util.UtilSecurityClass;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ROLE_USER', 'ROLE_STAFF', 'ROLE_ADMIN')")
 public class WishListService {
 
     private final WishListRepository wishListRepository;
@@ -31,11 +34,16 @@ public class WishListService {
 
     private final ProductQueryInternalService productInternalService;
 
+    private final UtilSecurityClass utilSecurityClass;
+
     public boolean isInWishlist(String userId, String productId) {
+        utilSecurityClass.requireOwner(userId);
         return wishListRepository.existsByUserIdAndProductProductId(userId, productId);
     }
 
     public AddWishListRes addProductToWishList(String userId, String productId) {
+
+        utilSecurityClass.requireOwner(userId);
 
         if ( wishListRepository.existsByUserIdAndProductProductId(userId, productId) ) {
             throw new AppException(ErrorCode.PRODUCT_EXISTED_IN_WISHLIST);
@@ -58,6 +66,7 @@ public class WishListService {
 
     @Transactional
     public void removeFromWishlist(String userId, String productId) {
+        utilSecurityClass.requireOwner(userId);
         if (!wishListRepository.existsByUserIdAndProductProductId(userId, productId)) {
             throw new AppException(ErrorCode.PRODUCT_NONE_EXISTED_IN_WISHLIST);
         }
@@ -67,6 +76,7 @@ public class WishListService {
 
     @Transactional
     public String toggleWishlist(String userId, String productId) {
+        utilSecurityClass.requireOwner(userId);
         if (wishListRepository.existsByUserIdAndProductProductId(userId, productId)) {
             wishListRepository.deleteByUserIdAndProductProductId(userId, productId);
             return "Đã xóa khỏi wishlist";
@@ -79,6 +89,7 @@ public class WishListService {
 
     public Page<GetWishList> getWishListUser(String userId, Pageable pageable){
 
+         utilSecurityClass.requireOwner(userId);
          userInternalService.validateUserExists(userId);
 
 

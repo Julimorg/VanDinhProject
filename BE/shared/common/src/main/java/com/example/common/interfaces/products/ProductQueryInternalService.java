@@ -19,4 +19,8 @@ public interface ProductQueryInternalService {
 
     List<ProductIndexData> fetchProductsForIndex();
 
+    boolean existsByCategoryId(String categoryId);
+
+    boolean existsBySupplierId(String supplierId);
+
 }

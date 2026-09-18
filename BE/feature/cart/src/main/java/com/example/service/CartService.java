@@ -15,6 +15,7 @@ import com.example.persistence.entity.Product;
 import com.example.persistence.entity.User;
 import com.example.repository.CartItemRepository;
 import com.example.repository.CartRepository;
+import com.example.security.Util.UtilSecurityClass;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,19 +43,23 @@ public class CartService {
 
     private final ProductQueryInternalService productInternalService;
 
+    private final UtilSecurityClass utilSecurityClass;
+
     @Transactional
     public GetCartRes getCart(String userId) {
+        utilSecurityClass.requireOwner(userId);
         Cart cart = findOrCreateCart(userId);
         return cartMapper.toGetCartRes(cart);
     }
 
     private void validateQuantity(int quantity, Product product) {
         if (quantity < 0 || quantity > product.getProductQuantity()) {
-            throw new RuntimeException(
-                    "Invalid quantity for product: " + product.getProductName()
-                            + " (available: " + product.getProductQuantity() + ")"
-            );
+            throw new AppException(ErrorCode.INSUFFICIENT_STOCK);
         }
+    }
+
+    private void requireCartItemOwner(CartItem cartItem) {
+        utilSecurityClass.requireOwner(cartItem.getCart().getUser().getId());
     }
 
     private void reCalculateCart(Cart cart) {
@@ -96,6 +101,8 @@ public class CartService {
     @Transactional
     public GetCartRes addProductToCart(String userId,
                                        AddItemToCartReq request) {
+
+        utilSecurityClass.requireOwner(userId);
 
         Cart cart = findOrCreateCart(userId);
 
@@ -140,7 +147,9 @@ public class CartService {
                                             UpdateCartItemQuantityReq request) {
 
         CartItem cartItem = cartItemRepository.findById(cartItemId)
-                .orElseThrow(() -> new RuntimeException("CartItem not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        requireCartItemOwner(cartItem);
 
         validateQuantity(request.getQuantity(), cartItem.getProduct());
 
@@ -157,6 +166,8 @@ public class CartService {
     public void deleteCartItem(String cartItemId) {
         CartItem cartItem = cartItemRepository.findById(cartItemId)
                 .orElseThrow(() -> new AppException(ErrorCode.CART_ITEM_NOT_FOUND));
+
+        requireCartItemOwner(cartItem);
 
         Cart cart = cartItem.getCart();
         cart.getCartItems().remove(cartItem);

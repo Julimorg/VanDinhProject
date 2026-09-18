@@ -271,6 +271,12 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
+        // Chan double-approve / double-cancel: chi xu ly duoc khi don van con Pending.
+        // Neu khong co check nay, goi approve-order 2 lan se tru kho 2 lan cho cung 1 don.
+        if (order.getOrderStatus() != OrderStatus.Pending) {
+            throw new AppException(ErrorCode.ORDER_ALREADY_PROCESSED);
+        }
+
         User customer = order.getUser();
 
         UpdateOrderByUserRes orderResponse = orderMapper.toGetOrderResponse(order);

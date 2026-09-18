@@ -32,6 +32,9 @@ public class PurchaseOrder {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String purchaseOrderId;
 
+    @Version
+    private Long version;
+
     @NotBlank(message = "Purchase Order Code can not be empty! ")
     private String poCode;
 
