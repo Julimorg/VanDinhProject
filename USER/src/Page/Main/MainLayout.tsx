@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from 'antd';
+import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 import Footer from '../../Components/Footer/Footer';
 import Header from '../../Components/Header/Header';
 
-const { Content } = Layout;
-
 const MainLayout: React.FC = () => {
-  const [isMobile, setIsMobile] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -20,45 +18,23 @@ const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <Layout className="min-h-screen overflow-x-hidden"> 
-      {/* Header */}
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden' }}>
       <Header isMobile={isMobile} />
 
-      {/* Content */}
-      <Content className="pt-[112px] min-h-[calc(100vh-112px)] bg-gray-50 overflow-x-hidden min-h-0">
+      <Box
+        component="main"
+        sx={{
+          pt: '72px',
+          flex: 1,
+          bgcolor: 'background.default',
+          overflowX: 'hidden',
+        }}
+      >
         <Outlet />
-      </Content>
+      </Box>
 
-      <Footer/>
-
-      <style>{`
-        /* Giữ nguyên style cũ, thêm rule mới để tránh menu overflow */
-        .ant-menu-dark.ant-menu-inline .ant-menu-item-selected {
-          background-color: rgba(255, 255, 255, 0.2) !important;
-        }
-        .ant-menu-dark .ant-menu-item-selected {
-          background-color: rgba(255, 255, 255, 0.2) !important;
-        }
-        .ant-menu-dark .ant-menu-item:hover {
-          background-color: rgba(255, 255, 255, 0.1) !important;
-        }
-        .ant-menu-dark .ant-menu-submenu-title:hover {
-          background-color: rgba(255, 255, 255, 0.1) !important;
-        }
-        /* Thêm: Giới hạn width menu inline và force collapse nếu cần */
-        .ant-layout-sider {
-          max-width: 256px; /* Hoặc width cố định nếu menu quá rộng */
-          flex-shrink: 0; /* Ngăn sider co lại quá mức */
-        }
-        .ant-menu-inline-collapsed {
-          width: 80px; /* Collapse nhỏ hơn trên mobile/desktop hẹp */
-        }
-        /* Ẩn overflow cho sider nếu có */
-        .ant-layout-sider {
-          overflow-x: hidden;
-        }
-      `}</style>
-    </Layout>
+      <Footer />
+    </Box>
   );
 };
 

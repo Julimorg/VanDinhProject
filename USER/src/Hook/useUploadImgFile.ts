@@ -1,91 +1,62 @@
-import { useState, useCallback } from 'react'; 
-import { message } from 'antd';
-import type { UploadProps, UploadFile, UploadChangeParam, RcFile } from 'antd/es/upload';
+import { useCallback, useState } from 'react';
+import { toast } from 'react-toastify';
 
 interface UseImageUploadOptions {
   allowedTypes?: string[];
   maxSize?: number;
-  maxCount?: number;
   onFileChange?: (file: File | null) => void;
-  listType?: 'picture' | 'picture-circle';
 }
 
+/**
+ * Hook upload anh don gian, khong phu thuoc UI library - dung voi 1 input
+ * type="file" an (xem EditProfileModal.tsx de biet cach dung).
+ */
 export const useUploadImgFile = (options: UseImageUploadOptions = {}) => {
   const {
     allowedTypes = ['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'],
     maxSize = 2 * 1024 * 1024, // 2MB
-    maxCount = 1,
     onFileChange,
-    listType = 'picture',
   } = options;
 
-  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
-  // Xử lý thay đổi file upload (giữ nguyên)
-  const handleUploadChange = ({ fileList: newFileList }: UploadChangeParam<UploadFile>) => {
-    let updatedFileList = [...newFileList];
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selected = e.target.files?.[0];
+      e.target.value = ''; // cho phep chon lai cung 1 file lan nua
 
-    const currentFile = updatedFileList[updatedFileList.length - 1];
-    if (currentFile?.status === 'uploading') {
-      const rawFile = currentFile.originFileObj as RcFile;
+      if (!selected) return;
 
-      if (!allowedTypes.includes(rawFile.type)) {
-        message.error('File không hợp lệ! Chỉ chấp nhận định dạng: JPG, JPEG, PNG, GIF, BMP, WEBP.');
-        updatedFileList = updatedFileList.slice(0, -1);
+      if (!allowedTypes.includes(selected.type)) {
+        toast.error('File không hợp lệ! Chỉ chấp nhận định dạng: JPG, JPEG, PNG, GIF, BMP, WEBP.');
         return;
       }
 
-      if (rawFile.size && rawFile.size > maxSize) {
-        message.error('File quá lớn! Kích thước tối đa là 2MB.');
-        updatedFileList = updatedFileList.slice(0, -1);
+      if (selected.size > maxSize) {
+        toast.error('File quá lớn! Kích thước tối đa là 2MB.');
         return;
       }
 
-      updatedFileList = updatedFileList.map((file) =>
-        file.uid === currentFile.uid
-          ? {
-              ...file,
-              status: 'done',
-              url: URL.createObjectURL(rawFile),
-            }
-          : file
-      );
-      message.success('File ảnh hợp lệ đã được chọn!');
-    }
-
-    updatedFileList = updatedFileList.slice(-maxCount);
-
-    setFileList(updatedFileList);
-
-    const currentRawFile = updatedFileList[0]?.originFileObj || null;
-    onFileChange?.(currentRawFile);
-  };
-
-  // Props cho Upload (giữ nguyên)
-  const uploadProps: UploadProps = {
-    fileList,
-    onChange: handleUploadChange,
-    beforeUpload: () => false,
-    maxCount,
-    listType,
-    showUploadList: {
-      showPreviewIcon: true,
-      showRemoveIcon: true,
+      setFile(selected);
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(selected);
+      });
+      onFileChange?.(selected);
     },
-  };
+    [allowedTypes, maxSize, onFileChange]
+  );
 
-  // Lấy file hiện tại (giữ nguyên)
-  const getCurrentFile = (): File | null => fileList[0]?.originFileObj || null;
-
-  // Reset với useCallback để ổn định (tránh re-render loop)
   const reset = useCallback(() => {
-    setFileList([]);
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setFile(null);
   }, []);
 
-  return {
-    uploadProps,
-    fileList,
-    getCurrentFile,
-    reset,
-  };
+  const getCurrentFile = (): File | null => file;
+
+  return { file, previewUrl, handleFileChange, getCurrentFile, reset };
 };

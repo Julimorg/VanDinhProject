@@ -1,12 +1,17 @@
-import React from 'react';
-import { Form, Input, Button, Typography, DatePicker } from 'antd';
-import { MailOutlined, UserOutlined, LockOutlined, PhoneOutlined } from '@ant-design/icons';
-import dayjs, { Dayjs } from 'dayjs';
+import React, { useRef, useState } from 'react';
+import { Box, Typography, TextField, Button, InputAdornment, IconButton, Divider, Grid } from '@mui/material';
+import MailRoundedIcon from '@mui/icons-material/MailRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+import dayjs from 'dayjs';
 import { useRegister } from '../Hook/useRegister';
-import type { IRegisterRequest } from '../../../Interface/Auth/IRegister'; 
+import type { IRegisterRequest } from '../../../Interface/Auth/IRegister';
 import { toast } from 'react-toastify';
-import { useNavigate } from "react-router-dom";
-const { Text, Title } = Typography;
+import { useNavigate } from 'react-router-dom';
+import { shake } from '../../../Utils/animations';
 
 interface RegisterFormData {
   email: string;
@@ -15,7 +20,7 @@ interface RegisterFormData {
   userName: string;
   password: string;
   confirmPassword: string;
-  userDob: Dayjs;
+  userDob: string;
   phone: string;
   userAddress: string;
 }
@@ -24,14 +29,23 @@ interface RegisterFormProps {
   onSwitchToLogin?: () => void;
 }
 
+const EMPTY: RegisterFormData = {
+  email: '', firstName: '', lastName: '', userName: '', password: '',
+  confirmPassword: '', userDob: '', phone: '', userAddress: '',
+};
+
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
-  const [form] = Form.useForm<RegisterFormData>();
   const navigate = useNavigate();
+  const [values, setValues] = useState<RegisterFormData>(EMPTY);
+  const [errors, setErrors] = useState<Partial<RegisterFormData>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+
   const { mutate: register, isPending } = useRegister({
     onSuccess: () => {
       toast.success('Đăng ký tài khoản thành công!');
-      form.resetFields();
-      // onSwitchToLogin?.();
+      setValues(EMPTY);
       navigate('/dashboard');
     },
     onError: (err) => {
@@ -39,236 +53,220 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
     },
   });
 
+  const set = (key: keyof RegisterFormData) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setValues((v) => ({ ...v, [key]: e.target.value }));
 
-  const onFinish = async (values: RegisterFormData) => {
+  const validate = (): boolean => {
+    const next: Partial<RegisterFormData> = {};
 
-    const formattedValues: IRegisterRequest = {
-      ...values,
-      userName: values.userName,
-      userDob: dayjs(values.userDob).format('YYYY-MM-DD'),
-    };
-    delete (formattedValues as any).confirmPassword;
-    register(formattedValues);
+    if (!values.email.trim()) next.email = 'Vui lòng nhập email!';
+    else if (!/^\S+@\S+\.\S+$/.test(values.email)) next.email = 'Email không hợp lệ!';
+
+    if (!values.firstName.trim()) next.firstName = 'Vui lòng nhập họ!';
+    else if (values.firstName.trim().length < 2 || values.firstName.trim().length > 20) next.firstName = 'Phải từ 2-20 ký tự!';
+
+    if (!values.lastName.trim()) next.lastName = 'Vui lòng nhập tên!';
+    else if (values.lastName.trim().length < 1 || values.lastName.trim().length > 20) next.lastName = 'Không được quá 20 ký tự!';
+
+    if (!values.userName.trim()) next.userName = 'Vui lòng nhập tên đăng nhập!';
+    else if (values.userName.length < 3 || values.userName.length > 20) next.userName = 'Phải từ 3-20 ký tự!';
+    else if (!/^[a-zA-Z0-9_]+$/.test(values.userName)) next.userName = 'Chỉ chứa chữ, số và dấu gạch dưới!';
+
+    if (!values.password) next.password = 'Vui lòng nhập mật khẩu!';
+    else if (values.password.length < 5 || values.password.length > 20) next.password = 'Phải từ 5-20 ký tự!';
+
+    if (!values.confirmPassword) next.confirmPassword = 'Vui lòng xác nhận mật khẩu!';
+    else if (values.confirmPassword !== values.password) next.confirmPassword = 'Mật khẩu xác nhận không khớp!';
+
+    if (!values.userDob) next.userDob = 'Vui lòng chọn ngày sinh!';
+
+    if (!values.phone.trim()) next.phone = 'Vui lòng nhập số điện thoại!';
+    else if (!/^\d{10}$/.test(values.phone)) next.phone = 'Số điện thoại phải có đúng 10 chữ số!';
+
+    if (!values.userAddress.trim()) next.userAddress = 'Vui lòng nhập địa chỉ!';
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
-  const emailRules = [
-    { required: true, message: 'Vui lòng nhập email!' },
-    { type: 'email' as const, message: 'Email không hợp lệ!' },
-    { min: 3, message: 'Email phải có ít nhất 3 ký tự!' },
-    { max: 30, message: 'Email không được quá 30 ký tự!' },
-  ];
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) {
+      if (formRef.current) shake(formRef.current);
+      return;
+    }
 
-  const nameRules = [
-    { required: true, message: 'Vui lòng nhập trường này!' },
-    { min: 3, message: 'Phải có ít nhất 3 ký tự!' },
-    { max: 20, message: 'Không được quá 20 ký tự!' },
-  ];
-
-  const userNameRules = [
-    { required: true, message: 'Vui lòng nhập tên đăng nhập!' },
-    { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự!' },
-    { max: 20, message: 'Tên đăng nhập không được quá 20 ký tự!' },
-    { 
-      pattern: /^[a-zA-Z0-9_]+$/, 
-      message: 'Tên đăng nhập chỉ chứa chữ, số và dấu gạch dưới!' 
-    },
-  ];
-
-  const passwordRules = [
-    { required: true, message: 'Vui lòng nhập mật khẩu!' },
-    { min: 5, message: 'Mật khẩu phải có ít nhất 5 ký tự!' },
-    { max: 20, message: 'Mật khẩu không được quá 20 ký tự!' },
-  ];
-
-  const phoneRules = [
-    { required: true, message: 'Vui lòng nhập số điện thoại!' },
-    { pattern: /^\d{10}$/, message: 'Số điện thoại phải có đúng 10 chữ số!' },
-  ];
-
-  const addressRules = [
-    { required: true, message: 'Vui lòng nhập địa chỉ!' }
-  ];
+    const { confirmPassword, ...rest } = values;
+    void confirmPassword;
+    const payload: IRegisterRequest = { ...rest, userDob: dayjs(values.userDob).format('YYYY-MM-DD') };
+    register(payload);
+  };
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
-        <Title level={3} className="!text-2xl !font-semibold !text-gray-900 !mb-2">
+    <Box ref={formRef}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" sx={{ fontSize: '1.5rem', color: 'stone.900', mb: 0.5 }}>
           Đăng ký tài khoản
-        </Title>
-        <Text className="text-gray-600">
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
           Tạo tài khoản mới để bắt đầu mua sắm cùng chúng tôi.
-        </Text>
-      </div>
+        </Typography>
+      </Box>
 
-      <Form
-        form={form}
-        name="register"
-        onFinish={onFinish}
-        autoComplete="off"
-        layout="vertical"
-        size="large"
-        scrollToFirstError
-      >
-        {/* Email */}
-        <Form.Item
-          name="email"
-          label={<span className="text-sm font-medium text-gray-700">Email</span>}
-          rules={emailRules}
-        >
-          <Input 
-            prefix={<MailOutlined className="text-gray-400" />} 
-            placeholder="example@email.com"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
-
-        {/* First Name & Last Name */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Form.Item
-            name="firstName"
-            label={<span className="text-sm font-medium text-gray-700">Họ</span>}
-            rules={nameRules}
-          >
-            <Input 
-              prefix={<UserOutlined className="text-gray-400" />} 
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Grid container spacing={2}>
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="Email"
+              placeholder="example@email.com"
+              value={values.email}
+              onChange={set('email')}
+              error={!!errors.email}
+              helperText={errors.email}
+              InputProps={{ startAdornment: <InputAdornment position="start"><MailRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment> }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              label="Họ"
               placeholder="Nguyễn"
-              className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
+              value={values.firstName}
+              onChange={set('firstName')}
+              error={!!errors.firstName}
+              helperText={errors.firstName}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment> }}
             />
-          </Form.Item>
-
-          <Form.Item
-            name="lastName"
-            label={<span className="text-sm font-medium text-gray-700">Tên</span>}
-            rules={nameRules}
-          >
-            <Input 
-              prefix={<UserOutlined className="text-gray-400" />} 
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              label="Tên"
               placeholder="Văn A"
-              className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
+              value={values.lastName}
+              onChange={set('lastName')}
+              error={!!errors.lastName}
+              helperText={errors.lastName}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment> }}
             />
-          </Form.Item>
-        </div>
-
-        {/* Username */}
-        <Form.Item
-          name="userName"
-          label={<span className="text-sm font-medium text-gray-700">Tên đăng nhập</span>}
-          rules={userNameRules}
-        >
-          <Input 
-            prefix={<UserOutlined className="text-gray-400" />} 
-            placeholder="username123"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
-
-        {/* Password */}
-        <Form.Item
-          name="password"
-          label={<span className="text-sm font-medium text-gray-700">Mật khẩu</span>}
-          rules={passwordRules}
-          hasFeedback
-        >
-          <Input.Password 
-            prefix={<LockOutlined className="text-gray-400" />} 
-            placeholder="Nhập mật khẩu"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
-
-        {/* Confirm Password */}
-        <Form.Item
-          name="confirmPassword"
-          label={<span className="text-sm font-medium text-gray-700">Xác nhận mật khẩu</span>}
-          dependencies={['password']}
-          hasFeedback
-          rules={[
-            { required: true, message: 'Vui lòng xác nhận mật khẩu!' },
-            ({ getFieldValue }) => ({
-              validator(_, value) {
-                if (!value || getFieldValue('password') === value) {
-                  return Promise.resolve();
-                }
-                return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
-              },
-            }),
-          ]}
-        >
-          <Input.Password 
-            prefix={<LockOutlined className="text-gray-400" />} 
-            placeholder="Nhập lại mật khẩu"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
-
-        {/* Date of Birth & Phone */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Form.Item
-            name="userDob"
-            label={<span className="text-sm font-medium text-gray-700">Ngày sinh</span>}
-            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
-          >
-            <DatePicker 
-              format="DD/MM/YYYY" 
-              placeholder="Chọn ngày sinh"
-              className="w-full h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
+          </Grid>
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              label="Tên đăng nhập"
+              placeholder="username123"
+              value={values.userName}
+              onChange={set('userName')}
+              error={!!errors.userName}
+              helperText={errors.userName}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PersonRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment> }}
             />
-          </Form.Item>
-
-          <Form.Item
-            name="phone"
-            label={<span className="text-sm font-medium text-gray-700">Số điện thoại</span>}
-            rules={phoneRules}
-          >
-            <Input 
-              prefix={<PhoneOutlined className="text-gray-400" />} 
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type={showPassword ? 'text' : 'password'}
+              label="Mật khẩu"
+              placeholder="Nhập mật khẩu"
+              value={values.password}
+              onChange={set('password')}
+              error={!!errors.password}
+              helperText={errors.password}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><LockRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment>,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setShowPassword((s) => !s)}>
+                      {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type={showConfirm ? 'text' : 'password'}
+              label="Xác nhận mật khẩu"
+              placeholder="Nhập lại mật khẩu"
+              value={values.confirmPassword}
+              onChange={set('confirmPassword')}
+              error={!!errors.confirmPassword}
+              helperText={errors.confirmPassword}
+              InputProps={{
+                startAdornment: <InputAdornment position="start"><LockRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment>,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setShowConfirm((s) => !s)}>
+                      {showConfirm ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              type="date"
+              label="Ngày sinh"
+              value={values.userDob}
+              onChange={set('userDob')}
+              error={!!errors.userDob}
+              helperText={errors.userDob}
+              InputLabelProps={{ shrink: true }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <TextField
+              fullWidth
+              label="Số điện thoại"
               placeholder="912345678"
-              maxLength={10}
-              className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
+              value={values.phone}
+              onChange={set('phone')}
+              error={!!errors.phone}
+              helperText={errors.phone}
+              slotProps={{ htmlInput: { maxLength: 10 } }}
+              InputProps={{ startAdornment: <InputAdornment position="start"><PhoneRoundedIcon sx={{ color: 'stone.400' }} /></InputAdornment> }}
             />
-          </Form.Item>
-        </div>
+          </Grid>
+          <Grid size={12}>
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              label="Địa chỉ"
+              placeholder="Nhập địa chỉ của bạn"
+              value={values.userAddress}
+              onChange={set('userAddress')}
+              error={!!errors.userAddress}
+              helperText={errors.userAddress}
+            />
+          </Grid>
+        </Grid>
 
-        {/* Address */}
-        <Form.Item
-          name="userAddress"
-          label={<span className="text-sm font-medium text-gray-700">Địa chỉ</span>}
-          rules={addressRules}
-        >
-          <Input.TextArea 
-            placeholder="Nhập địa chỉ của bạn"
-            rows={3}
-            className="rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors resize-none"
-          />
-        </Form.Item>
+        <Button type="submit" fullWidth size="large" variant="contained" color="secondary" loading={isPending} sx={{ mt: 3, mb: 3 }}>
+          Đăng ký tài khoản
+        </Button>
 
-        {/* Submit Button */}
-        <Form.Item className="!mb-6">
-          <Button 
-            type="primary" 
-            htmlType="submit" 
-            loading={isPending}
-            className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-          >
-            Đăng ký tài khoản
-          </Button>
-        </Form.Item>
+        <Divider />
 
-        {/* Login Link */}
-        <div className="text-center pt-6 border-t border-gray-200">
-          <Text className="text-sm text-gray-600">
+        <Box sx={{ textAlign: 'center', pt: 3 }}>
+          <Typography sx={{ fontSize: '0.88rem', color: 'text.secondary' }}>
             Đã có tài khoản?{' '}
-            <Button 
-              type="link"
+            <Box
+              component="span"
               onClick={onSwitchToLogin}
-              className="!p-0 !h-auto text-sm font-medium text-gray-900 hover:!text-gray-700 transition-colors hover:underline"
+              sx={{ fontWeight: 700, color: 'stone.900', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
             >
               Đăng nhập ngay
-            </Button>
-          </Text>
-        </div>
-      </Form>
-    </div>
+            </Box>
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

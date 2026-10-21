@@ -7,22 +7,18 @@ import './index.css';
 import './i18n';
 import 'flag-icon-css/css/flag-icons.min.css';
 
-import { App as AntdApp } from 'antd';
 import ReactQueryProvider from './Provider/ReactQueryProvider';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-
-
-const theme = createTheme({
-  typography: {
-    fontFamily: 'inherit',
-  },
-});
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import theme from './Theme/theme';
+import ErrorBoundary from './Components/Shared/ErrorBoundary';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <ReactQueryProvider>
-      <ThemeProvider theme={theme}>
-        <AntdApp>
+    <ErrorBoundary>
+      <ReactQueryProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
           <App />
           <ToastContainer
             theme="light"
@@ -31,8 +27,8 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
             closeOnClick
             pauseOnHover={false}
           />
-        </AntdApp>
-      </ThemeProvider>
-    </ReactQueryProvider>
+        </ThemeProvider>
+      </ReactQueryProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 );

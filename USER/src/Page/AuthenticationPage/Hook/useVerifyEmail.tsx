@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { auth_api_handler } from "../../../Api/Api_Handler/auth_api";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { message } from "antd";
+import { toast } from 'react-toastify';
 
 type UseVerifyEmailOptions = Omit<
   UseMutationOptions<
@@ -21,7 +21,7 @@ export const useVerifyEmail = (options?: UseVerifyEmailOptions) => {
       queryClient.invalidateQueries({ queryKey: ['Verify Email'] }); 
     },
     onError: (error: Error) => {
-      message.error(error.message);
+      toast.error(error.message);
     },
     ...options,
   });

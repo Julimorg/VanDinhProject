@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { Card, Avatar, Button, Tag, Divider, Spin, Alert } from 'antd';
-import {
-  UserOutlined,
-  EditOutlined,
-  MailOutlined,
-  PhoneOutlined,
-  HomeOutlined,
-  CalendarOutlined,
-  CameraOutlined,
-  IdcardOutlined,
-} from '@ant-design/icons';
+import { Card, CardHeader, CardContent, Avatar, Button, Chip, Divider, CircularProgress, Alert, Box } from '@mui/material';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import MailRoundedIcon from '@mui/icons-material/MailRounded';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
+import CameraAltRoundedIcon from '@mui/icons-material/CameraAltRounded';
+import BadgeRoundedIcon from '@mui/icons-material/BadgeRounded';
 import dayjs from 'dayjs';
 import InfoItem from './Components/InfoItem';
 import EditProfileModal from './Components/EditProfileModal';
@@ -36,9 +34,9 @@ const MyProfile: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-        <Spin size="large" />
-      </div>
+      <Box className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+        <CircularProgress size={40} />
+      </Box>
     );
   }
 
@@ -46,12 +44,9 @@ const MyProfile: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
-          <Alert
-            message="Lỗi tải thông tin hồ sơ"
-            description="Không thể tải dữ liệu. Vui lòng thử lại sau."
-            type="error"
-            showIcon
-          />
+          <Alert severity="error">
+            Không thể tải dữ liệu. Vui lòng thử lại sau.
+          </Alert>
         </div>
       </div>
     );
@@ -78,124 +73,123 @@ const MyProfile: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Avatar & Basic Info */}
           <div className="lg:col-span-1">
-            <Card className="shadow-sm border-0">
-              <div className="flex flex-col items-center text-center">
-                {/* Avatar Section */}
-                <div className="relative mb-6">
-                  <Avatar
-                    size={180}
-                    src={getAvatarSrc(userProfile)}
-                    icon={<UserOutlined />}
-                    className="border-4 border-white shadow-xl"
+            <Card variant="outlined" className="shadow-sm border-0">
+              <CardContent>
+                <div className="flex flex-col items-center text-center">
+                  {/* Avatar Section */}
+                  <div className="relative mb-6">
+                    <Avatar
+                      src={getAvatarSrc(userProfile)}
+                      className="border-4 border-white shadow-xl"
+                      sx={{ width: 180, height: 180 }}
+                    >
+                      <PersonRoundedIcon sx={{ fontSize: 90 }} />
+                    </Avatar>
+                    <button className="absolute bottom-2 right-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110">
+                      <CameraAltRoundedIcon className="text-xl" />
+                    </button>
+                  </div>
+                  {/* Name & Username */}
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    {userProfile.firstName} {userProfile.lastName}
+                  </h2>
+                  <p className="text-gray-500 text-lg mb-4">@{userProfile.userName}</p>
+                  {/* Status Badge */}
+                  <Chip
+                    label={getUserStatusText(userProfile.status)}
+                    color={userProfile.status === 'ACTIVE' ? 'success' : 'error'}
+                    className="text-sm px-2 mb-6"
                   />
-                  <button className="absolute bottom-2 right-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 shadow-lg transition-all duration-200 hover:scale-110">
-                    <CameraOutlined className="text-xl" />
-                  </button>
+                  {/* Edit Button */}
+                  <Button
+                    variant="contained"
+                    startIcon={<EditRoundedIcon />}
+                    onClick={handleEdit}
+                    size="large"
+                    fullWidth
+                    className="h-12"
+                  >
+                    Chỉnh sửa thông tin
+                  </Button>
                 </div>
-                {/* Name & Username */}
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {userProfile.firstName} {userProfile.lastName}
-                </h2>
-                <p className="text-gray-500 text-lg mb-4">@{userProfile.userName}</p>
-                {/* Status Badge */}
-                <Tag
-                  color={userProfile.status === 'ACTIVE' ? 'green' : 'red'}
-                  className="text-sm px-6 py-2 mb-6"
-                >
-                  {getUserStatusText(userProfile.status)}
-                </Tag>
-                {/* User ID */}
-                {/* <div className="w-full bg-gray-50 rounded-lg p-4 mb-6">
-                  <p className="text-xs text-gray-500 mb-1">Mã người dùng</p>
-                  <p className="text-sm font-mono font-semibold text-gray-900">{userProfile.id}</p>
-                </div> */}
-                {/* Edit Button */}
-                <Button
-                  type="primary"
-                  icon={<EditOutlined />}
-                  onClick={handleEdit}
-                  size="large"
-                  block
-                  className="h-12"
-                >
-                  Chỉnh sửa thông tin
-                </Button>
-              </div>
+              </CardContent>
             </Card>
           </div>
           {/* Right Column - Detailed Information */}
           <div className="lg:col-span-2">
-            <Card
-              className="shadow-sm border-0"
-              title={
-                <div className="flex items-center gap-2">
-                  <IdcardOutlined className="text-xl text-blue-500" />
-                  <span className="text-xl font-semibold">Thông tin chi tiết</span>
-                </div>
-              }
-            >
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-1">
-                <InfoItem
-                  icon={<UserOutlined className="text-lg text-blue-500" />}
-                  label="Họ"
-                  value={userProfile.firstName}
-                />
-
-                <InfoItem
-                  icon={<UserOutlined className="text-lg text-blue-500" />}
-                  label="Tên"
-                  value={userProfile.lastName}
-                />
-
-                <InfoItem
-                  icon={<MailOutlined className="text-lg text-green-500" />}
-                  label="Email"
-                  value={userProfile.email}
-                />
-
-                <InfoItem
-                  icon={<PhoneOutlined className="text-lg text-orange-500" />}
-                  label="Số điện thoại"
-                  value={userProfile.phone}
-                />
-
-                <InfoItem
-                  icon={<CalendarOutlined className="text-lg text-purple-500" />}
-                  label="Ngày sinh"
-                  value={dayjs(userProfile.userDob).format('DD/MM/YYYY')}
-                />
-
-                <InfoItem
-                  icon={<HomeOutlined className="text-lg text-red-500" />}
-                  label="Địa chỉ"
-                  value={userProfile.userAddress}
-                  fullWidth
-                />
-              </div>
-              <Divider className="my-6" />
-              {/* Additional Info Section */}
-              <div className="bg-blue-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin tài khoản</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Ngày tạo tài khoản</p>
-                    <p className="text-base font-medium text-gray-900">
-                      {dayjs(userProfile.createAt).format('DD/MM/YYYY')}
-                    </p>
+            <Card variant="outlined" className="shadow-sm border-0">
+              <CardHeader
+                title={
+                  <div className="flex items-center gap-2">
+                    <BadgeRoundedIcon className="text-xl text-blue-500" />
+                    <span className="text-xl font-semibold">Thông tin chi tiết</span>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Lần cập nhật cuối</p>
-                    <p className="text-base font-medium text-gray-900">
-                      {dayjs(userProfile.updateAt).format('DD/MM/YYYY')}
-                    </p>
+                }
+              />
+              <CardContent sx={{ pt: 0 }}>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-1">
+                  <InfoItem
+                    icon={<PersonRoundedIcon className="text-lg text-blue-500" />}
+                    label="Họ"
+                    value={userProfile.firstName}
+                  />
+
+                  <InfoItem
+                    icon={<PersonRoundedIcon className="text-lg text-blue-500" />}
+                    label="Tên"
+                    value={userProfile.lastName}
+                  />
+
+                  <InfoItem
+                    icon={<MailRoundedIcon className="text-lg text-green-500" />}
+                    label="Email"
+                    value={userProfile.email}
+                  />
+
+                  <InfoItem
+                    icon={<PhoneRoundedIcon className="text-lg text-orange-500" />}
+                    label="Số điện thoại"
+                    value={userProfile.phone}
+                  />
+
+                  <InfoItem
+                    icon={<CalendarMonthRoundedIcon className="text-lg text-purple-500" />}
+                    label="Ngày sinh"
+                    value={dayjs(userProfile.userDob).format('DD/MM/YYYY')}
+                  />
+
+                  <InfoItem
+                    icon={<HomeRoundedIcon className="text-lg text-red-500" />}
+                    label="Địa chỉ"
+                    value={userProfile.userAddress}
+                    fullWidth
+                  />
+                </div>
+                <Divider className="my-6" />
+                {/* Additional Info Section */}
+                <div className="bg-blue-50 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Thông tin tài khoản</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Ngày tạo tài khoản</p>
+                      <p className="text-base font-medium text-gray-900">
+                        {dayjs(userProfile.createAt).format('DD/MM/YYYY')}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 mb-1">Lần cập nhật cuối</p>
+                      <p className="text-base font-medium text-gray-900">
+                        {dayjs(userProfile.updateAt).format('DD/MM/YYYY')}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </CardContent>
             </Card>
           </div>
         </div>
         {/* Edit Profile Modal - Truyền userProfile và callbacks */}
-        <EditProfileModal open={isEditing} userData={userProfile} onCancel={handleCancel} />
+        {isEditing && <EditProfileModal open={isEditing} userData={userProfile} onCancel={handleCancel} />}
       </div>
     </div>
   );

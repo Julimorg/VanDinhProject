@@ -1,28 +1,26 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Row,
-  Col,
+  Box,
   Card,
-  Form,
-  Steps,
-  Tag,
+  CardContent,
+  CardHeader,
+  Stepper,
+  Step,
+  StepLabel,
+  Chip,
   Avatar,
-  Space,
   Typography,
-  Spin,
-  Result,
+  CircularProgress,
   Divider,
-} from 'antd';
-import {
-  UserOutlined,
-  PhoneOutlined,
-  MailOutlined,
-  HomeOutlined,
-  CreditCardOutlined,
-  CheckCircleOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons';
+  Grid,
+} from '@mui/material';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import EmailRoundedIcon from '@mui/icons-material/EmailRounded';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import { useParams } from 'react-router-dom';
 import { useGetOrderDetail } from '../OrderDetailPage/Hook/useGetOrderDetail';
 import ShippingAddressForm from './Components/ShippAddressForm';
@@ -32,40 +30,42 @@ import { formatCurrency } from '../../Utils/utils';
 import ConfirmPaymentButton from './Components/ConfirmPaymentButton';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
-const { Title, Text } = Typography;
-
 const TransactionPage: React.FC = () => {
-  const [form] = Form.useForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('CASH');
+  const [shipAddress, setShipAddress] = useState('');
 
   const { orderId } = useParams<{ orderId: string }>();
-  const userId = useAuthStore(state => state.id);
-
+  const userId = useAuthStore((state) => state.id);
 
   const { data: orderResponse, isLoading, isError } = useGetOrderDetail(orderId || '');
   const order = orderResponse?.data;
 
-  const paymentMethod = Form.useWatch('paymentMethod', form) || 'CASH';
-  const shipAddress = Form.useWatch('address', form) || order?.shipAddress || order?.userAddress || '';
-
-
+  useEffect(() => {
+    if (order) {
+      setPaymentMethod(order.paymentMethod === 'VN_PAY' ? 'CASH' : order.paymentMethod || 'CASH');
+      setShipAddress(order.shipAddress || order.userAddress || '');
+    }
+  }, [order]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Spin size="large" tip="Đang tải thông tin đơn hàng..." />
-      </div>
+      <Box className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-3">
+        <CircularProgress size={40} />
+        <Typography color="text.secondary">Đang tải thông tin đơn hàng...</Typography>
+      </Box>
     );
   }
 
-
   if (isError || !order) {
     return (
-      <Result
-        status="404"
-        title="Không tìm thấy đơn hàng"
-        subTitle="Mã đơn hàng không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại."
-      />
+      <Box className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-2 text-center px-4">
+        <Typography variant="h4" fontWeight={700}>404</Typography>
+        <Typography variant="h6">Không tìm thấy đơn hàng</Typography>
+        <Typography color="text.secondary">
+          Mã đơn hàng không hợp lệ hoặc đã hết hạn. Vui lòng kiểm tra lại.
+        </Typography>
+      </Box>
     );
   }
 
@@ -73,83 +73,100 @@ const TransactionPage: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Progress Steps */}
-        <div className="mb-12">
-          <Steps
-            current={1}
-            responsive
-            items={[
-              { title: 'Giỏ hàng', icon: <ShoppingCartOutlined /> },
-              { title: 'Thanh toán & Địa chỉ', icon: <CreditCardOutlined /> },
-              { title: 'Hoàn tất', icon: <CheckCircleOutlined /> },
-            ]}
-            className="site-steps"
-          />
-        </div>
+        <Box className="mb-12">
+          <Stepper activeStep={1} alternativeLabel>
+            <Step>
+              <StepLabel StepIconComponent={() => <ShoppingCartRoundedIcon color="success" />}>Giỏ hàng</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel StepIconComponent={() => <CreditCardRoundedIcon sx={{ color: '#4f46e5' }} />}>
+                Thanh toán &amp; Địa chỉ
+              </StepLabel>
+            </Step>
+            <Step>
+              <StepLabel StepIconComponent={() => <CheckCircleRoundedIcon color="disabled" />}>Hoàn tất</StepLabel>
+            </Step>
+          </Stepper>
+        </Box>
 
-        <Row gutter={[32, 32]}>
+        <Grid container spacing={4}>
           {/* Cột trái: Thông tin đơn hàng + Sản phẩm */}
-          <Col xs={24} lg={16}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             {/* Header đơn hàng */}
-            <Card className="mb-6 border-0 shadow-sm">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <Title level={2} className="mb-1 text-gray-800">
-                    Đơn hàng{' '}
-                    <span className="text-indigo-600 font-bold">#{order.orderCode}</span>
-                  </Title>
-                  <Space size="middle">
-                    <Tag color="processing" icon={<CheckCircleOutlined />}>
-                      Chờ thanh toán
-                    </Tag>
-                    <Text type="secondary">
-                      Ngày tạo: {new Date(order.createAt).toLocaleDateString('vi-VN')}
-                    </Text>
-                  </Space>
+            <Card variant="outlined" className="mb-6 border-0 shadow-sm">
+              <CardContent>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <Typography variant="h5" className="mb-1 text-gray-800" fontWeight={700}>
+                      Đơn hàng{' '}
+                      <span className="text-indigo-600 font-bold">#{order.orderCode}</span>
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                      <Chip
+                        label="Chờ thanh toán"
+                        color="info"
+                        size="small"
+                        icon={<CheckCircleRoundedIcon fontSize="small" />}
+                      />
+                      <Typography color="text.secondary" variant="body2">
+                        Ngày tạo: {new Date(order.createAt).toLocaleDateString('vi-VN')}
+                      </Typography>
+                    </Box>
+                  </div>
+                  <Avatar sx={{ width: 64, height: 64, bgcolor: '#4f46e5' }}>
+                    <ShoppingCartRoundedIcon />
+                  </Avatar>
                 </div>
-                <Avatar size={64} icon={<ShoppingCartOutlined />} className="bg-indigo-600" />
-              </div>
+              </CardContent>
             </Card>
 
-      
             <TransactionItemCard
               items={order.items}
               totalAmount={order.amount}
               formatCurrency={formatCurrency}
             />
-          </Col>
+          </Grid>
 
           {/* Cột phải: Form xác nhận thanh toán */}
-          <Col xs={24} lg={8}>
-            <Card
-              title={<Title level={3} className="text-center mb-0 text-gray-800">Xác nhận thanh toán</Title>}
-              className="shadow-xl border-0 sticky top-6"
-            >
-              <Form
-                form={form}
-                layout="vertical"
-                initialValues={{
-                  fullName: order.userName,
-                  email: order.email,
-                  phone: order.phone,
-                  address: order.shipAddress || order.userAddress,
-                  paymentMethod: order.paymentMethod || 'CASH',
-                }}
-              >
+          <Grid size={{ xs: 12, lg: 4 }}>
+            <Card variant="outlined" className="shadow-xl border-0 sticky top-6">
+              <CardHeader
+                title={
+                  <Typography variant="h6" className="text-center text-gray-800" fontWeight={700}>
+                    Xác nhận thanh toán
+                  </Typography>
+                }
+              />
+              <CardContent sx={{ pt: 0 }}>
                 {/* Thông tin khách hàng nhanh */}
-                <Card size="small" className="mb-6 bg-gray-50 border-0">
-                  <Space direction="vertical" size="middle" className="w-full text-gray-700">
-                    <Space><UserOutlined className="text-indigo-600" /><Text strong>{order.userName}</Text></Space>
-                    <Space><MailOutlined className="text-indigo-600" /><Text>{order.email}</Text></Space>
-                    <Space><PhoneOutlined className="text-indigo-600" /><Text>{order.phone}</Text></Space>
-                    <Space><HomeOutlined className="text-indigo-600" /><Text>{order.shipAddress || order.userAddress}</Text></Space>
-                  </Space>
+                <Card variant="outlined" className="mb-6 bg-gray-50 border-0">
+                  <CardContent>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PersonRoundedIcon fontSize="small" sx={{ color: '#4f46e5' }} />
+                        <Typography fontWeight={600}>{order.userName}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <EmailRoundedIcon fontSize="small" sx={{ color: '#4f46e5' }} />
+                        <Typography>{order.email}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <PhoneRoundedIcon fontSize="small" sx={{ color: '#4f46e5' }} />
+                        <Typography>{order.phone}</Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <HomeRoundedIcon fontSize="small" sx={{ color: '#4f46e5' }} />
+                        <Typography>{order.shipAddress || order.userAddress}</Typography>
+                      </Box>
+                    </Box>
+                  </CardContent>
                 </Card>
 
                 {/* Form địa chỉ giao hàng */}
-                <ShippingAddressForm form={form} />
+                <ShippingAddressForm value={shipAddress} onChange={setShipAddress} />
 
                 {/* Phương thức thanh toán */}
-                <PaymentMethodCard />
+                <PaymentMethodCard value={paymentMethod} onChange={setPaymentMethod} />
 
                 <Divider className="my-6" />
 
@@ -163,41 +180,18 @@ const TransactionPage: React.FC = () => {
                   setIsSubmitting={setIsSubmitting}
                 />
 
-                <Text type="secondary" className="block text-center mt-4 text-xs">
+                <Typography color="text.secondary" className="block text-center mt-4 text-xs" variant="caption">
                   Bằng việc nhấn nút trên, bạn đồng ý với{' '}
                   <a href="/terms" className="text-indigo-600 underline hover:text-indigo-800">
                     điều khoản mua hàng
                   </a>{' '}
                   của chúng tôi.
-                </Text>
-              </Form>
+                </Typography>
+              </CardContent>
             </Card>
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
       </div>
-
-      <style>{`
-        /* Steps màu chuyên nghiệp */
-        :global(.site-steps .ant-steps-item-process .ant-steps-item-icon) {
-          background-color: #4f46e5 !important;
-          border-color: #4f46e5 !important;
-        }
-        :global(.site-steps .ant-steps-item-finish .ant-steps-item-icon) {
-          background-color: #10b981 !important;
-          border-color: #10b981 !important;
-        }
-        :global(.site-steps .ant-steps-item-wait .ant-steps-item-icon) {
-          background-color: #f3f4f6;
-          border-color: #d1d5db;
-        }
-
-        /* Hover card nhẹ */
-        .ant-card:hover {
-          transform: translateY(-2px);
-          transition: all 0.3s ease;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.08) !important;
-        }
-      `}</style>
     </div>
   );
 };

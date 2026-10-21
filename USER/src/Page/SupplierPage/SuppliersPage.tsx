@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pagination, Row, Col, Empty, Skeleton, message } from 'antd';
+import { Pagination, Grid, Skeleton, Box, Typography } from '@mui/material';
 import SearchFilterBar from './Components/SearchFilterBar';
 import SupplierCard from './Components/SupplierCard';
 import { useGetAllSupplier } from './Hook/useGetSupplier';
@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 const SupplierPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(6);
+  const [pageSize] = useState(6);
   const [sortValue, setSortValue] = useState('createAt,desc');
 
   const {
@@ -37,18 +37,14 @@ const SupplierPage: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handlePageChange = (page: number, newPageSize?: number) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
-    if (newPageSize) setPageSize(newPageSize);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (isError) {
-    // console.error('Lỗi fetch suppliers:', error);
-    message.error('Lỗi tải dữ liệu nhà cung cấp. Vui lòng thử lại!');
     toast.error('Lỗi tải dữ liệu nhà cung cấp. Vui lòng thử lại!');
   }
-  // console.log('Suppliers data:', { suppliers, totalSuppliers, fullData: suppliersData });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,46 +64,46 @@ const SupplierPage: React.FC = () => {
 
         {/* Supplier List */}
         {isLoading ? (
-          //? Skeleton loading
-          <Row gutter={[24, 24]} className="mb-8">
+          <Grid container spacing={3} className="mb-8">
             {Array.from({ length: pageSize }).map((_, index) => (
-              <Col key={`skeleton-${index}`} xs={24} sm={24} md={12} lg={8}>
-                <Skeleton active avatar paragraph={{ rows: 3 }} className="h-[300px]" />
-              </Col>
+              <Grid key={`skeleton-${index}`} size={{ xs: 12, md: 6, lg: 4 }}>
+                <Skeleton variant="rounded" height={300} />
+              </Grid>
             ))}
-          </Row>
+          </Grid>
         ) : suppliers.length > 0 ? (
           <>
-            <Row gutter={[24, 24]} className="mb-8">
+            <Grid container spacing={3} className="mb-8">
               {suppliers.map((supplier, i) => (
-                <Col key={supplier.supplierId} xs={24} sm={24} md={12} lg={8}>
+                <Grid key={supplier.supplierId} size={{ xs: 12, md: 6, lg: 4 }}>
                   <SupplierCard
                     supplier={supplier}
                     index={i}
                     linkTo={(id) => `/supplier-detail/${id}`}
                   />
-                </Col>
+                </Grid>
               ))}
-            </Row>
+            </Grid>
 
             {/* Pagination */}
-            <div className="flex justify-center mt-8">
+            <Box className="flex flex-col items-center gap-2 mt-8">
               <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={totalSuppliers}
+                page={currentPage}
+                count={Math.max(1, Math.ceil(totalSuppliers / pageSize))}
                 onChange={handlePageChange}
-                onShowSizeChange={handlePageChange}
-                showSizeChanger
-                showTotal={(total, range) => `${range[0]}-${range[1]} của ${total} nhà cung cấp`}
-                pageSizeOptions={['6', '12', '18', '24']}
+                color="primary"
                 className="bg-white px-4 py-3 rounded-lg shadow-sm"
               />
-            </div>
+              <Typography variant="caption" color="text.secondary">
+                {totalSuppliers === 0
+                  ? ''
+                  : `${(currentPage - 1) * pageSize + 1}-${Math.min(currentPage * pageSize, totalSuppliers)} của ${totalSuppliers} nhà cung cấp`}
+              </Typography>
+            </Box>
           </>
         ) : (
           <div className="flex justify-center items-center min-h-[400px]">
-            <Empty description="Không tìm thấy nhà cung cấp" className="text-gray-500" />
+            <Typography color="text.secondary">Không tìm thấy nhà cung cấp</Typography>
           </div>
         )}
       </div>

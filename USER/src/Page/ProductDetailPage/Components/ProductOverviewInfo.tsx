@@ -1,9 +1,7 @@
 // Components/ProductOverviewInfo.tsx
 import React from 'react';
-import { Typography, Tag } from 'antd';
+import { Typography, Chip } from '@mui/material';
 import { formatCurrency } from '../../../Utils/utils';
-
-const { Title, Text } = Typography;
 
 interface ProductOverviewInfoProps {
   productName: string;
@@ -22,9 +20,9 @@ interface ProductOverviewInfoProps {
 
 const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-    <Text type="secondary" className="text-sm">
+    <Typography color="text.secondary" className="text-sm">
       {label}
-    </Text>
+    </Typography>
     <span className="text-sm font-medium text-gray-800 text-right">{value ?? 'N/A'}</span>
   </div>
 );
@@ -54,21 +52,25 @@ const ProductOverviewInfo: React.FC<ProductOverviewInfoProps> = ({
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
         {isBestSeller && (
-          <Tag color="#f97316" className="!text-xs !font-semibold !border-0 !px-3 !py-1">
-            BEST SELLER
-          </Tag>
+          <Chip
+            label="BEST SELLER"
+            size="small"
+            sx={{ bgcolor: '#f97316', color: 'white', fontWeight: 600, fontSize: '0.75rem' }}
+          />
         )}
         {categoryName && (
-          <Tag className="!text-xs !font-semibold !border-gray-200 !bg-gray-50 !text-gray-700 !px-3 !py-1">
-            {categoryName.toUpperCase()}
-          </Tag>
+          <Chip
+            label={categoryName.toUpperCase()}
+            size="small"
+            sx={{ bgcolor: 'grey.50', color: 'grey.700', border: '1px solid', borderColor: 'grey.200', fontWeight: 600, fontSize: '0.75rem' }}
+          />
         )}
       </div>
 
       {/* Title */}
-      <Title level={3} className="!text-xl sm:!text-2xl !font-bold !text-gray-900 !m-0 !leading-snug">
+      <Typography variant="h5" className="!font-bold !text-gray-900 !leading-snug">
         {productName}
-      </Title>
+      </Typography>
 
       {/* Brand / SKU / Sold */}
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:text-sm text-gray-500">
@@ -96,19 +98,17 @@ const ProductOverviewInfo: React.FC<ProductOverviewInfoProps> = ({
         <span className="text-2xl sm:text-3xl font-extrabold text-red-600">{formatCurrency(finalPrice)}</span>
         {hasDiscount && (
           <>
-            <Text delete className="text-sm sm:text-base text-gray-400">
+            <Typography component="span" className="text-sm sm:text-base text-gray-400" sx={{ textDecoration: 'line-through' }}>
               {formatCurrency(productPrice)}
-            </Text>
-            <Tag color="red" className="!text-xs !font-bold">
-              -{Math.round((discount as number) * 100)}%
-            </Tag>
+            </Typography>
+            <Chip label={`-${Math.round((discount as number) * 100)}%`} size="small" color="error" sx={{ fontWeight: 700 }} />
           </>
         )}
       </div>
       {hasDiscount && (
-        <Text type="danger" className="text-xs sm:text-sm block -mt-2">
+        <Typography color="error" className="text-xs sm:text-sm block -mt-2">
           (You save {formatCurrency(savedAmount)})
-        </Text>
+        </Typography>
       )}
 
       {/* Info list */}

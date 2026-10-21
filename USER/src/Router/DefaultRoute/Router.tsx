@@ -13,26 +13,28 @@ import ProductDetailPage from '../../Page/ProductDetailPage/ProductDetailPage';
 import TransactionPage from '../../Page/TransactionPage/TransactionPage';
 import PaymentResultPage from '../../Page/PaymentResultPage/PaymentResultPage';
 import NotificationPage from '../../Page/NotificationPage/NotificationPage';
-import SendNotiToAdminPage from '../../Components/SendNotiToAdminPage';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 import SupplierDetailPage from '@/Page/SupplierPage/SupplierDetailPage';
+import NotFoundPage from '../../Page/NotFoundPage/NotFoundPage';
+import AboutPage from '../../Page/PolicyPage/AboutPage';
+import ContactPage from '../../Page/PolicyPage/ContactPage';
+import FaqPage from '../../Page/PolicyPage/FaqPage';
+import ShippingPolicyPage from '../../Page/PolicyPage/ShippingPolicyPage';
+import ReturnPolicyPage from '../../Page/PolicyPage/ReturnPolicyPage';
+import TermsPage from '../../Page/PolicyPage/TermsPage';
+import PrivacyPage from '../../Page/PolicyPage/PrivacyPage';
 
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
   if (!access_token) {
-    // console.log(access_token);
-    // console.log('No accessToken found, redirecting to /login');
     return <Navigate to="/login" replace />;
   }
-  // console.log('AccessToken found, rendering Outlet');
   return <Outlet />;
 };
 
 const UnAuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
   if (access_token) {
-    // console.log(access_token);
-    // console.log('AccessToken exists, redirecting to /dashboard'); // Fix: Thay /home bằng /dashboard
     return <Navigate to="/dashboard" replace />;
   }
   return <Outlet />;
@@ -61,9 +63,22 @@ const DefaultRouter = () => {
           <Route path="cart" element={<CartPage />} />
           <Route path="transaction/:orderId" element={<TransactionPage />} />
           <Route path="notifications" element={<NotificationPage />} />
-          <Route path="/send" element={<SendNotiToAdminPage />} />
         </Route>
       </Route>
+
+      {/* Trang thong tin/chinh sach - khong yeu cau dang nhap, van hien thi Header/Footer */}
+      <Route path="/" element={<MainLayout />}>
+        <Route path="about" element={<AboutPage />} />
+        <Route path="contact" element={<ContactPage />} />
+        <Route path="faq" element={<FaqPage />} />
+        <Route path="shipping-policy" element={<ShippingPolicyPage />} />
+        <Route path="return-policy" element={<ReturnPolicyPage />} />
+        <Route path="terms" element={<TermsPage />} />
+        <Route path="privacy" element={<PrivacyPage />} />
+        <Route path="policy" element={<Navigate to="/shipping-policy" replace />} />
+      </Route>
+
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 };

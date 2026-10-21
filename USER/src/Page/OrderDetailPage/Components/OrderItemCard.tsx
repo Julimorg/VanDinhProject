@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Tag } from 'antd';
+import { Chip } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination } from 'swiper/modules';
 import type { IOrderItemDetail } from '../../../Interface/Order/IGetOrderDetail';
@@ -18,7 +18,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
   const hasMultipleImages = item.productImage && item.productImage.length > 1;
 
   return (
-    <List.Item className="border-b border-gray-100 last:border-b-0 py-4">
+    <div className="border-b border-gray-100 last:border-b-0 py-4">
       <div className="w-full flex gap-4">
         {/* Image Swiper Section */}
         <div className="flex-shrink-0" style={{ width: '140px' }}>
@@ -30,7 +30,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
               navigation={false}
               pagination={hasMultipleImages ? { clickable: true } : false}
               className="rounded-lg overflow-hidden border border-gray-200"
-              style={{ 
+              style={{
                 height: '140px',
                 '--swiper-pagination-color': '#6b7280',
                 '--swiper-pagination-bullet-inactive-color': '#d1d5db',
@@ -70,11 +70,11 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
                 {item.productName}
               </h4>
               <div className="flex flex-wrap gap-2 mb-2">
-                <Tag>{item.productCode}</Tag>
-                {item.categoryName && <Tag>{item.categoryName}</Tag>}
-                {item.colorName && <Tag>{item.colorName}</Tag>}
+                <Chip label={item.productCode} size="small" variant="outlined" />
+                {item.categoryName && <Chip label={item.categoryName} size="small" variant="outlined" />}
+                {item.colorName && <Chip label={item.colorName} size="small" variant="outlined" />}
                 {item.productVolume && item.productUnit && (
-                  <Tag>{item.productVolume} / {item.productUnit}</Tag>
+                  <Chip label={`${item.productVolume} / ${item.productUnit}`} size="small" variant="outlined" />
                 )}
               </div>
               <p className="text-xs text-gray-500">
@@ -119,7 +119,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
           height: 10px;
         }
       `}</style>
-    </List.Item>
+    </div>
   );
 };
 

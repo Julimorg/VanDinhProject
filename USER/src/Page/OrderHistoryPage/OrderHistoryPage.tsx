@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Empty, Pagination, Skeleton } from 'antd';
+import { Pagination, Skeleton, Box, Typography } from '@mui/material';
 import type { IGetMyListOrder } from '../../Interface/Order/IGetMyListOrder';
 import OrderFilterSection from './Components/OrderFilterSection';
 import OrderCard from './Components/OrderCard';
@@ -16,7 +16,7 @@ const OrderHistoryCardList: React.FC = () => {
 
   const getStatusForApi = (status: string): string | undefined => {
     if (status === 'all') return undefined;
-    return status.charAt(0).toUpperCase() + status.slice(1); 
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   const { data: queryData, isLoading, error, refetch } = useGetMyListOrder(
@@ -24,12 +24,12 @@ const OrderHistoryCardList: React.FC = () => {
     {
       keyword: searchText || undefined,
       status: getStatusForApi(filterStatus),
-      page: currentPage - 1, 
+      page: currentPage - 1,
       size: pageSize,
       sort: 'createAt,desc'
     },
     {
-  
+
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000 // 5 phút cache
     }
@@ -43,7 +43,7 @@ const OrderHistoryCardList: React.FC = () => {
     setCurrentPage(1);
   }, [searchText, filterStatus]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = (_: React.ChangeEvent<unknown>, page: number) => {
     setCurrentPage(page);
   };
 
@@ -71,7 +71,10 @@ const OrderHistoryCardList: React.FC = () => {
     <div className="space-y-4 mb-6">
       {Array.from({ length: pageSize }).map((_, index) => (
         <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-          <Skeleton active paragraph={{ rows: 4 }} />
+          <Skeleton height={28} className="mb-2" />
+          <Skeleton height={20} width="60%" className="mb-2" />
+          <Skeleton height={20} width="80%" className="mb-2" />
+          <Skeleton height={20} width="40%" />
         </div>
       ))}
     </div>
@@ -101,11 +104,9 @@ const OrderHistoryCardList: React.FC = () => {
           renderSkeleton()
         ) : totalItems === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
-            <Empty
-              description={
-                <span className="text-gray-500">Không tìm thấy đơn hàng nào</span>
-              }
-            />
+            <Box className="flex flex-col items-center justify-center gap-2 py-8">
+              <Typography color="text.secondary">Không tìm thấy đơn hàng nào</Typography>
+            </Box>
           </div>
         ) : (
           <>
@@ -116,18 +117,16 @@ const OrderHistoryCardList: React.FC = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex justify-center">
+            <div className="flex flex-col items-center gap-2">
               <Pagination
-                current={currentPage}
+                page={currentPage}
                 onChange={handlePageChange}
-                total={totalItems}
-                pageSize={pageSize}
-                showSizeChanger={false}
-                showQuickJumper={false}
-                showTotal={(total, range) =>
-                  `Hiển thị ${range[0]}-${range[1]} của ${total} đơn hàng`
-                }
+                count={Math.max(1, Math.ceil(totalItems / pageSize))}
+                color="primary"
               />
+              <Typography variant="caption" color="text.secondary">
+                Hiển thị {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalItems)} của {totalItems} đơn hàng
+              </Typography>
             </div>
           </>
         )}

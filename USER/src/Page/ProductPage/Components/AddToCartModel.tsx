@@ -1,41 +1,35 @@
 import React from 'react';
-import { Modal } from 'antd';
-import { CheckCircleTwoTone, LoadingOutlined } from '@ant-design/icons';
+import { Dialog, Box, Typography, CircularProgress } from '@mui/material';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
 
 interface IAddToCartModalProps {
-    visible: boolean;
-    productName?: string;
-    status: 'loading' | 'success';
+  visible: boolean;
+  productName?: string;
+  status: 'loading' | 'success';
 }
 
 const AddToCartModal: React.FC<IAddToCartModalProps> = ({ visible, productName, status }) => {
-    return (
-    <Modal
-      open={visible}
-      footer={null}
-      closable={false}
-      centered
-    >
-      <div className="flex flex-col items-center gap-4 py-6 text-center">
-
+  return (
+    <Dialog open={visible} disableEscapeKeyDown slotProps={{ paper: { sx: { borderRadius: 3, minWidth: 320 } } }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, py: 5, px: 4, textAlign: 'center' }}>
         {status === 'loading' ? (
-          <LoadingOutlined className="text-4xl animate-spin" />
+          <CircularProgress size={42} sx={{ color: 'primary.main' }} />
         ) : (
-          <CheckCircleTwoTone twoToneColor="#52c41a" className="text-5xl" />
+          <CheckCircleRoundedIcon sx={{ fontSize: 56, color: 'success.main' }} />
         )}
 
         {status === 'loading' ? (
-          <p className="text-gray-800 text-base">
-            Đang thêm <strong>{productName}</strong> vào giỏ hàng...
-          </p>
+          <Typography sx={{ color: 'stone.700' }}>
+            Đang thêm <Box component="strong" sx={{ color: 'stone.900' }}>{productName}</Box> vào giỏ hàng...
+          </Typography>
         ) : (
-          <p className="text-green-700 text-base font-medium">
-            <strong>{productName}</strong> đã được thêm thành công!
-          </p>
+          <Typography sx={{ color: 'success.main', fontWeight: 600 }}>
+            <Box component="strong">{productName}</Box> đã được thêm thành công!
+          </Typography>
         )}
-      </div>
-    </Modal>
+      </Box>
+    </Dialog>
   );
-}
+};
 
 export default AddToCartModal;

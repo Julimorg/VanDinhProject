@@ -1,6 +1,7 @@
 import React from 'react';
-import { Button } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined } from '@ant-design/icons';
+import { IconButton } from '@mui/material';
+import AppsRoundedIcon from '@mui/icons-material/AppsRounded';
+import ViewListRoundedIcon from '@mui/icons-material/ViewListRounded';
 
 interface ViewToggleProps {
   viewMode: 'grid' | 'list';
@@ -8,19 +9,39 @@ interface ViewToggleProps {
   disabled?: boolean;
 }
 
-const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onChange }) => {
+const ViewToggle: React.FC<ViewToggleProps> = ({ viewMode, onChange, disabled }) => {
   return (
     <div className="flex gap-2">
-      <Button
-        icon={<AppstoreOutlined />}
-        type={viewMode === 'grid' ? 'primary' : 'default'}
+      <IconButton
         onClick={() => onChange('grid')}
-      />
-      <Button
-        icon={<UnorderedListOutlined />}
-        type={viewMode === 'list' ? 'primary' : 'default'}
+        disabled={disabled}
+        size="small"
+        sx={{
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: viewMode === 'grid' ? 'secondary.main' : 'stone.300',
+          bgcolor: viewMode === 'grid' ? 'secondary.main' : 'transparent',
+          color: viewMode === 'grid' ? 'white' : 'stone.600',
+          '&:hover': { bgcolor: viewMode === 'grid' ? 'secondary.dark' : 'stone.50' },
+        }}
+      >
+        <AppsRoundedIcon fontSize="small" />
+      </IconButton>
+      <IconButton
         onClick={() => onChange('list')}
-      />
+        disabled={disabled}
+        size="small"
+        sx={{
+          borderRadius: 2,
+          border: '1px solid',
+          borderColor: viewMode === 'list' ? 'secondary.main' : 'stone.300',
+          bgcolor: viewMode === 'list' ? 'secondary.main' : 'transparent',
+          color: viewMode === 'list' ? 'white' : 'stone.600',
+          '&:hover': { bgcolor: viewMode === 'list' ? 'secondary.dark' : 'stone.50' },
+        }}
+      >
+        <ViewListRoundedIcon fontSize="small" />
+      </IconButton>
     </div>
   );
 };

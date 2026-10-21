@@ -1,7 +1,7 @@
-import { Card } from "antd";
+import { Card } from "@mui/material";
 
 export const ProductSkeletonGrid = () => (
-  <Card className="rounded-2xl overflow-hidden">
+  <Card variant="outlined" className="rounded-2xl overflow-hidden">
     <div className="bg-gray-200 h-64 animate-pulse" />
     <div className="p-5 space-y-3">
       <div className="h-6 bg-gray-200 rounded animate-pulse" />

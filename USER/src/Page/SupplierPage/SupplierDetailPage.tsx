@@ -2,16 +2,14 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { useParams, useNavigate } from 'react-router-dom';
 import { animate, stagger } from 'animejs';
 import { toast } from 'react-toastify';
-import {
-  EnvironmentOutlined,
-  PhoneOutlined,
-  MailOutlined,
-  SearchOutlined,
-  ArrowLeftOutlined,
-  LeftOutlined,
-  RightOutlined,
-  ShopOutlined,
-} from '@ant-design/icons';
+import RoomRoundedIcon from '@mui/icons-material/RoomRounded';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import MailRoundedIcon from '@mui/icons-material/MailRounded';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import type { IGetAllColor } from '@/Interface/Color/IGetAllColor';
 import { useGetColors } from './Hook/useGetColorsBySupplier';
 import { useGetSupplierDetail } from './Hook/useGetSupplierDetail';
@@ -149,7 +147,7 @@ const Pager: React.FC<{
         onClick={() => onChange(page - 1)}
         className="w-8 h-8 flex items-center justify-center rounded border border-[#E4E2DD] text-[#6E6B66] disabled:opacity-30 hover:border-[#171716] hover:text-[#171716] transition-colors"
       >
-        <LeftOutlined style={{ fontSize: 11 }} />
+        <ChevronLeftRoundedIcon style={{ fontSize: 16 }} />
       </button>
 
       {pages[0] > 0 && <span className="px-1 text-[#ADA99F]">…</span>}
@@ -177,7 +175,7 @@ const Pager: React.FC<{
         onClick={() => onChange(page + 1)}
         className="w-8 h-8 flex items-center justify-center rounded border border-[#E4E2DD] text-[#6E6B66] disabled:opacity-30 hover:border-[#171716] hover:text-[#171716] transition-colors"
       >
-        <RightOutlined style={{ fontSize: 11 }} />
+        <ChevronRightRoundedIcon style={{ fontSize: 16 }} />
       </button>
     </div>
   );
@@ -266,7 +264,7 @@ const SupplierDetailPage: React.FC = () => {
         opacity: [0, 1],
         duration: 600,
         delay: stagger(80),
-        easing: 'easeOutExpo',
+        ease: 'outExpo',
       });
     }
   }, [supplier?.supplierId]);
@@ -282,7 +280,7 @@ const SupplierDetailPage: React.FC = () => {
       scale: [0.97, 1],
       duration: 420,
       delay: stagger(22),
-      easing: 'easeOutQuad',
+      ease: 'outQuad',
     });
   }, [displayedColors]);
 
@@ -299,7 +297,7 @@ const SupplierDetailPage: React.FC = () => {
             className="anim-in flex items-center gap-1.5 text-sm text-[#B5B2AB] hover:text-white transition-colors mb-5"
             style={{ opacity: 0 }}
           >
-            <ArrowLeftOutlined style={{ fontSize: 12 }} />
+            <ArrowBackRoundedIcon style={{ fontSize: 16 }} />
             Quay lại
           </button>
 
@@ -311,7 +309,7 @@ const SupplierDetailPage: React.FC = () => {
               {supplier?.supplierImg ? (
                 <img src={supplier.supplierImg} alt={supplier.supplierName} className="w-full h-full object-cover" />
               ) : (
-                <ShopOutlined style={{ fontSize: 24, color: '#5C5952' }} />
+                <StorefrontRoundedIcon style={{ fontSize: 24, color: '#5C5952' }} />
               )}
             </div>
 
@@ -325,15 +323,15 @@ const SupplierDetailPage: React.FC = () => {
               )}
               <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-[#B5B2AB]">
                 <span className="flex items-center gap-1.5">
-                  <EnvironmentOutlined style={{ fontSize: 12 }} />
+                  <RoomRoundedIcon style={{ fontSize: 16 }} />
                   {supplier?.supplierAddress ?? '—'}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <PhoneOutlined style={{ fontSize: 12 }} />
+                  <PhoneRoundedIcon style={{ fontSize: 16 }} />
                   {supplier?.supplierPhone ?? '—'}
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <MailOutlined style={{ fontSize: 12 }} />
+                  <MailRoundedIcon style={{ fontSize: 16 }} />
                   {supplier?.supplierEmail ?? '—'}
                 </span>
               </div>
@@ -350,7 +348,7 @@ const SupplierDetailPage: React.FC = () => {
           </h2>
 
           <div className="relative w-full sm:w-72">
-            <SearchOutlined className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ADA99F]" style={{ fontSize: 13 }} />
+            <SearchRoundedIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ADA99F]" style={{ fontSize: 16 }} />
             <input
               value={keywordInput}
               onChange={(e) => setKeywordInput(e.target.value)}

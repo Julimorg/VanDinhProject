@@ -8,7 +8,7 @@ import {
   Add,
   Remove,
 } from '@mui/icons-material';
-import { message } from 'antd';
+import { toast } from 'react-toastify';
 import type { IGetProductNewArrival } from '../../../Interface/Product/IGetProductNewArrival';
 import { useProductCardUtils } from '../../../Hook/useProductCardUltis';
 
@@ -35,7 +35,7 @@ const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({
   const handleQuantity = (value: number) => {
     const result = utils.validateQuantity(value);
     setQuantity(result.value);
-    if (result.warning) message.warning(result.warning);
+    if (result.warning) toast.warning(result.warning);
   };
 
   return (

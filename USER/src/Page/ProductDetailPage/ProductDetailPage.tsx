@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/Middleware/useAuthStoreWithLocal";
 import { useCartStore } from "@/Middleware/useCartStore";
-import { message, Spin, Button, Row, Col } from "antd";
+import { Box, Button, CircularProgress, Grid } from "@mui/material";
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -30,7 +30,7 @@ const ProductDetailPage: React.FC = () => {
   const product = data?.data as unknown as PublicProductDetail | undefined;
 
   const handleAddToCart = () => {
-    if (!userId) return message.error('Vui lòng đăng nhập!');
+    if (!userId) return toast.error('Vui lòng đăng nhập!');
     if (!product) return;
 
     addCartMutation.mutate(
@@ -40,23 +40,23 @@ const ProductDetailPage: React.FC = () => {
           toast.success(`${product.productName} đã thêm vào giỏ!`);
           setCartCount(useCartStore.getState().cartCount + quantity);
         },
-        onError: () => message.error('Thêm thất bại!'),
+        onError: () => toast.error('Thêm thất bại!'),
       }
     );
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Spin size="large" tip="Đang tải..." />
-      </div>
+      <Box className="min-h-screen flex items-center justify-center">
+        <CircularProgress size={40} />
+      </Box>
     );
   }
 
   if (isError || !product) {
     return (
       <div className="text-center py-20 px-4">
-        <Button type="primary" size="large" onClick={() => navigate('/products')}>
+        <Button variant="contained" size="large" onClick={() => navigate('/products')}>
           Quay lại danh sách sản phẩm
         </Button>
       </div>
@@ -73,17 +73,17 @@ const ProductDetailPage: React.FC = () => {
 
         {/* Card tổng quan: ảnh | thông tin + giá + list + nút mua */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
-          <Row gutter={[24, 24]}>
-            <Col xs={24} md={10} lg={9}>
+          <Grid container spacing={3}>
+            <Grid size={{ xs: 12, md: 5, lg: 5 }}>
               <ProductGallery
                 images={product.productImage}
                 productName={product.productName}
                 previewImage={previewImage}
                 setPreviewImage={setPreviewImage}
               />
-            </Col>
+            </Grid>
 
-            <Col xs={24} md={14} lg={15}>
+            <Grid size={{ xs: 12, md: 7, lg: 7 }}>
               <ProductOverviewInfo
                 productName={product.productName}
                 supplierName={product.supplierName}
@@ -109,23 +109,23 @@ const ProductDetailPage: React.FC = () => {
                   isPending={addCartMutation.isPending}
                 />
               </div>
-            </Col>
-          </Row>
+            </Grid>
+          </Grid>
         </div>
 
         {/* Hàng 3 card: About | Chi tiết loại | Supplier — 3 cột desktop, 2 cột tablet, 1 cột mobile */}
-        <Row gutter={[16, 16]} className="mt-4 sm:mt-6">
-          <Col xs={24} md={12} lg={8}>
+        <Grid container spacing={2} className="mt-4 sm:mt-6">
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <ProductAboutCard description={product.productDescription} />
-          </Col>
-          <Col xs={24} md={12} lg={8}>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <ProductDetailInfo
               paintDetail={product.paintDetail}
               toolDetail={product.toolDetail}
               chemicalDetail={product.chemicalDetail}
             />
-          </Col>
-          <Col xs={24} md={24} lg={8}>
+          </Grid>
+          <Grid size={{ xs: 12, md: 12, lg: 4 }}>
             <ProductSupplierInfo
               supplierName={product.supplierName}
               categoryName={product.categoryName}
@@ -133,8 +133,8 @@ const ProductDetailPage: React.FC = () => {
               createAt={product.createAt}
               updateAt={product.updateAt}
             />
-          </Col>
-        </Row>
+          </Grid>
+        </Grid>
 
         {/* Extra Specifications — full width, 3 cột */}
         <div className="mt-4 sm:mt-6">

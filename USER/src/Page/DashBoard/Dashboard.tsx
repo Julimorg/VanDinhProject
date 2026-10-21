@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { message } from 'antd';
+import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useGetProductNewArrival } from './Hooks/useGetProductNewArrival';
 import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
 
   const handleAddToCart = (product: IGetProductNewArrival[0], quantity: number) => {
     if (!userId) {
-      message.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
       return;
     }
     setAddingProduct({ visible: true, productName: product.productName, status: 'loading' });
@@ -57,7 +57,7 @@ const Dashboard: React.FC = () => {
         },
         onError: (err) => {
           setAddingProduct({ visible: false, status: 'loading' });
-          message.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
+          toast.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
         },
       }
     );

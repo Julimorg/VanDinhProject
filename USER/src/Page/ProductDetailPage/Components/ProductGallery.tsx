@@ -1,7 +1,5 @@
-// Components/ProductGallery.tsx
 import React from 'react';
-import { Image } from 'antd';
-import { ZoomInOutlined } from '@ant-design/icons';
+import ZoomInRoundedIcon from '@mui/icons-material/ZoomInRounded';
 
 interface ProductGalleryProps {
   images: string[];
@@ -51,16 +49,17 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({
 
       <div className="flex-1 order-1 md:order-2 min-w-0">
         <div className="aspect-square rounded-xl overflow-hidden bg-white border border-gray-100">
-          <Image
+          <img
             src={previewImage || 'https://via.placeholder.com/500'}
             alt={productName}
-            preview={{ src: previewImage }}
             className="w-full h-full object-contain p-4"
-            fallback="https://via.placeholder.com/500?text=No+Image"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500?text=No+Image';
+            }}
           />
         </div>
         <div className="text-center text-xs text-gray-400 flex items-center justify-center gap-1 mt-2">
-          <ZoomInOutlined /> Click image to zoom
+          <ZoomInRoundedIcon sx={{ fontSize: 14 }} /> Click image to zoom
         </div>
       </div>
     </div>

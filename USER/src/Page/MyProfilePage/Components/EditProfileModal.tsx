@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react';
-import { Button, Upload, Modal, message, Form, Input, DatePicker, Spin } from 'antd'; 
-import { UploadOutlined } from '@ant-design/icons';
-import dayjs, { Dayjs } from 'dayjs';
+import React, { useEffect, useState } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Stack, Typography } from '@mui/material';
+import FileUploadRoundedIcon from '@mui/icons-material/FileUploadRounded';
+import dayjs from 'dayjs';
 import { useUploadImgFile } from '../../../Hook/useUploadImgFile';
 import { useUpdateMyProfile } from '../Hook/useUpdateUser';
 import { toast } from 'react-toastify';
 import type { IUdpateMyProfileRequest } from '../../../Interface/Users/IUpdateMyProfile';
-
 
 interface UserData {
   id: string;
@@ -17,19 +16,8 @@ interface UserData {
   userImg?: string;
   phone: string;
   userAddress: string;
-  userDob: string; 
+  userDob: string;
   status: string;
-}
-
-interface EditForm {
-  firstName: string;
-  lastName: string;
-  userName: string;
-  email: string;
-  phone: string;
-  userAddress: string;
-  userDob: Dayjs; 
-  userImg?: File; 
 }
 
 interface EditProfileModalProps {
@@ -38,28 +26,27 @@ interface EditProfileModalProps {
   onCancel: () => void;
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, userData, onCancel }) => {
-  const [form] = Form.useForm<EditForm>();
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  const { uploadProps, getCurrentFile, reset } = useUploadImgFile({
-    maxSize: 2 * 1024 * 1024,
-    maxCount: 1,
-    onFileChange: (file: File | null) => {
-      if (file) {
-        form.setFieldsValue({ userImg: file }); 
-        message.success('File ảnh đã được chọn!');
-      } else {
-        form.setFieldsValue({ userImg: undefined });
-      }
-    },
-    listType: 'picture', 
+const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, userData, onCancel }) => {
+  const [values, setValues] = useState({
+    firstName: '',
+    lastName: '',
+    userName: '',
+    email: '',
+    phone: '',
+    userAddress: '',
+    userDob: '',
+  });
+
+  const { previewUrl, handleFileChange, getCurrentFile, reset } = useUploadImgFile({
+    onFileChange: () => toast.success('File ảnh đã được chọn!'),
   });
 
   const { mutate: updateProfile, isPending } = useUpdateMyProfile(userData.id, {
     onSuccess: () => {
       toast.success('Cập nhật thông tin thành công!');
-      form.resetFields(); 
-      reset(); 
+      reset();
       onCancel();
     },
     onError: (error) => {
@@ -69,130 +56,117 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, userData, onC
 
   useEffect(() => {
     if (open) {
-      form.setFieldsValue({
+      setValues({
         firstName: userData.firstName,
         lastName: userData.lastName,
         userName: userData.userName,
         email: userData.email,
         phone: userData.phone,
         userAddress: userData.userAddress,
-        userDob: dayjs(userData.userDob), 
-        userImg: undefined, 
+        userDob: dayjs(userData.userDob).format('YYYY-MM-DD'),
       });
-      reset(); 
+      reset();
     }
-  }, [open, userData, form, reset]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, userData]);
 
+  const handleChange = (field: keyof typeof values) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValues((prev) => ({ ...prev, [field]: e.target.value }));
+  };
 
-  const handleSave = async () => {
-    try {
-      const values = await form.validateFields();
+  const handleSave = () => {
+    if (!values.firstName.trim()) return toast.error('Vui lòng nhập họ!');
+    if (!values.lastName.trim()) return toast.error('Vui lòng nhập tên!');
+    if (!values.userName.trim()) return toast.error('Vui lòng nhập tên người dùng!');
+    if (!EMAIL_REGEX.test(values.email)) return toast.error('Vui lòng nhập email hợp lệ!');
+    if (!values.phone.trim()) return toast.error('Vui lòng nhập số điện thoại!');
+    if (!values.userAddress.trim()) return toast.error('Vui lòng nhập địa chỉ!');
+    if (!values.userDob) return toast.error('Vui lòng chọn ngày sinh!');
 
-      const requestBody: IUdpateMyProfileRequest = {
-        firstName: values.firstName,
-        lastName: values.lastName,
-        userName: values.userName,
-        email: values.email,
-        phone: values.phone,
-        userAddress: values.userAddress,
-        userDob: values.userDob.format('YYYY-MM-DD'), 
-        userImg: values.userImg, 
-      };
+    const requestBody: IUdpateMyProfileRequest = {
+      firstName: values.firstName,
+      lastName: values.lastName,
+      userName: values.userName,
+      email: values.email,
+      phone: values.phone,
+      userAddress: values.userAddress,
+      userDob: values.userDob,
+      userImg: getCurrentFile() ?? undefined,
+    };
 
-      updateProfile(requestBody);
-    } catch (error) {
-      message.error(`Vui lòng kiểm tra thông tin - ${error}`);
-    }
+    updateProfile(requestBody);
   };
 
   const handleCancel = () => {
-    form.resetFields();
-    reset(); 
+    reset();
     onCancel();
   };
 
-  if (!open) return null;
-
   return (
-    <Modal
-      title="Chỉnh sửa thông tin cá nhân"
-      open={open}
-      onCancel={handleCancel}
-      footer={[
-        <Button key="cancel" size="large" onClick={handleCancel} disabled={isPending}>
-          Hủy
-        </Button>,
-        <Button 
-          key="save" 
-          type="primary" 
-          size="large" 
-          onClick={handleSave}
-          loading={isPending}
-          disabled={isPending}
-        >
-          {isPending ? <Spin size="small" /> : 'Lưu thay đổi'}
-        </Button>,
-      ]}
-      width={800}
-      destroyOnClose
-      maskClosable={false}
-      bodyStyle={isPending ? { opacity: 0.6, pointerEvents: 'none' } : {}}
-    >
-      <Form form={form} layout="vertical" className="space-y-4">
-        <Form.Item label={<span className="text-sm">Ảnh đại diện (JPG, PNG, max 2MB)</span>} name="userImg">
-          <Upload
-            {...uploadProps}
-            accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
-          >
-            <Button icon={<UploadOutlined />} size="small">Chọn ảnh</Button> 
-          </Upload>
-          {getCurrentFile() && (
-            <div className="mt-2 flex items-center gap-2">
-              <img
-                src={URL.createObjectURL(getCurrentFile()!)}
-                alt="Avatar preview"
-                className="w-12 h-12 rounded-lg object-cover border-2 border-gray-200" 
+    <Dialog open={open} onClose={handleCancel} maxWidth="sm" fullWidth disableEscapeKeyDown={isPending}>
+      <DialogTitle>Chỉnh sửa thông tin cá nhân</DialogTitle>
+      <DialogContent sx={{ opacity: isPending ? 0.6 : 1, pointerEvents: isPending ? 'none' : 'auto' }}>
+        <Stack spacing={2.5} className="mt-1">
+          <div>
+            <Typography variant="caption" color="text.secondary" className="block mb-1">
+              Ảnh đại diện (JPG, PNG, max 2MB)
+            </Typography>
+            <Button component="label" variant="outlined" size="small" startIcon={<FileUploadRoundedIcon />} disabled={isPending}>
+              Chọn ảnh
+              <input
+                type="file"
+                hidden
+                accept=".jpg,.jpeg,.png,.gif,.bmp,.webp"
+                onChange={handleFileChange}
               />
-              <span className="text-xs text-gray-600">Preview: {getCurrentFile()?.name}</span> 
-            </div>
-          )}
-        </Form.Item>
+            </Button>
+            {previewUrl && getCurrentFile() && (
+              <div className="mt-2 flex items-center gap-2">
+                <img src={previewUrl} alt="Avatar preview" className="w-12 h-12 rounded-lg object-cover border-2 border-gray-200" />
+                <span className="text-xs text-gray-600">Preview: {getCurrentFile()?.name}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Form.Item label="Họ" name="firstName" rules={[{ required: true, message: 'Vui lòng nhập họ!' }]}>
-            <Input placeholder="Nhập họ" disabled={isPending} />
-          </Form.Item>
-          <Form.Item label="Tên" name="lastName" rules={[{ required: true, message: 'Vui lòng nhập tên!' }]}>
-            <Input placeholder="Nhập tên" disabled={isPending} />
-          </Form.Item>
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TextField label="Họ" value={values.firstName} onChange={handleChange('firstName')} disabled={isPending} fullWidth required />
+            <TextField label="Tên" value={values.lastName} onChange={handleChange('lastName')} disabled={isPending} fullWidth required />
+          </div>
 
-        <Form.Item label="Tên người dùng" name="userName" rules={[{ required: true, message: 'Vui lòng nhập tên người dùng!' }]}>
-          <Input placeholder="Nhập tên người dùng" disabled={isPending} />
-        </Form.Item>
-
-        <Form.Item label="Email" name="email" rules={[{ required: true, type: 'email', message: 'Vui lòng nhập email hợp lệ!' }]}>
-          <Input placeholder="Nhập email" disabled={isPending} />
-        </Form.Item>
-
-        <Form.Item label="Số điện thoại" name="phone" rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}>
-          <Input placeholder="Nhập số điện thoại" disabled={isPending} />
-        </Form.Item>
-
-        <Form.Item label="Địa chỉ" name="userAddress" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}>
-          <Input.TextArea rows={3} placeholder="Nhập địa chỉ" disabled={isPending} />
-        </Form.Item>
-
-        <Form.Item label="Ngày sinh" name="userDob" rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}>
-          <DatePicker 
-            style={{ width: '100%' }} 
-            format="YYYY-MM-DD" 
-            placeholder="Chọn ngày sinh" 
+          <TextField label="Tên người dùng" value={values.userName} onChange={handleChange('userName')} disabled={isPending} fullWidth required />
+          <TextField label="Email" type="email" value={values.email} onChange={handleChange('email')} disabled={isPending} fullWidth required />
+          <TextField label="Số điện thoại" value={values.phone} onChange={handleChange('phone')} disabled={isPending} fullWidth required />
+          <TextField
+            label="Địa chỉ"
+            value={values.userAddress}
+            onChange={handleChange('userAddress')}
             disabled={isPending}
+            fullWidth
+            multiline
+            rows={3}
+            required
           />
-        </Form.Item>
-      </Form>
-    </Modal>
+          <TextField
+            label="Ngày sinh"
+            type="date"
+            value={values.userDob}
+            onChange={handleChange('userDob')}
+            disabled={isPending}
+            fullWidth
+            required
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+        </Stack>
+      </DialogContent>
+      <DialogActions>
+        <Button size="large" onClick={handleCancel} disabled={isPending}>
+          Hủy
+        </Button>
+        <Button variant="contained" size="large" onClick={handleSave} loading={isPending} disabled={isPending}>
+          Lưu thay đổi
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
 

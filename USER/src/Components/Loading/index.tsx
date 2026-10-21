@@ -1,12 +1,23 @@
-import { Spin } from 'antd';
+import { Box, CircularProgress, Typography } from '@mui/material';
 
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[99999] bg-black bg-opacity-70 flex flex-col items-center justify-center space-y-4">
-      <div className="flex space-x-4">
-        <Spin size="large" />
-      </div>
-      <p className="text-xl font-semibold text-white">Loading...</p>
-    </div>
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        bgcolor: 'rgba(12, 10, 9, 0.72)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 2,
+        backdropFilter: 'blur(2px)',
+      }}
+    >
+      <CircularProgress size={48} thickness={4} sx={{ color: 'primary.main' }} />
+      <Typography sx={{ color: 'white', fontWeight: 600 }}>Đang tải...</Typography>
+    </Box>
   );
 }

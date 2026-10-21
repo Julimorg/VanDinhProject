@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Typography, Grid } from '@mui/material';
+import { Link } from 'react-router-dom';
 import {
   Facebook,
   Instagram,
@@ -15,10 +16,11 @@ const Footer: React.FC = () => {
 
   const links = [
     { label: 'Sản phẩm', href: '/products' },
-    { label: 'Khuyến mãi', href: '/promotions' },
     { label: 'Giới thiệu', href: '/about' },
     { label: 'Liên hệ', href: '/contact' },
-    { label: 'Chính sách', href: '/policy' },
+    { label: 'Câu hỏi thường gặp', href: '/faq' },
+    { label: 'Vận chuyển & Thanh toán', href: '/shipping-policy' },
+    { label: 'Đổi trả & Bảo hành', href: '/return-policy' },
   ];
 
   const socials = [
@@ -98,8 +100,8 @@ const Footer: React.FC = () => {
               {links.map(link => (
                 <Box
                   key={link.href}
-                  component="a"
-                  href={link.href}
+                  component={Link}
+                  to={link.href}
                   sx={{
                     display: 'flex', alignItems: 'center', gap: 0.75,
                     color: '#78716c', fontSize: '0.82rem',
@@ -213,10 +215,18 @@ const Footer: React.FC = () => {
         </Grid>
 
         {/* ── Bottom bar ── */}
-        <Box sx={{ mt: 8, pt: 3, borderTop: '1px solid #292524', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
+        <Box sx={{ mt: 8, pt: 3, borderTop: '1px solid #292524', display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
           <Typography sx={{ color: '#57534e', fontSize: '0.75rem' }}>
             © {currentYear} Cửa hàng sơn Vạn Đinh. All rights reserved.
           </Typography>
+          <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Box component={Link} to="/terms" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#f59e0b' } }}>
+              Điều khoản dịch vụ
+            </Box>
+            <Box component={Link} to="/privacy" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#f59e0b' } }}>
+              Chính sách bảo mật
+            </Box>
+          </Box>
           <Typography sx={{ color: '#3c3835', fontSize: '0.7rem' }}>
             Thiết kế & phát triển bởi{' '}
             <Box component="span" sx={{ color: '#78716c' }}>Fong & GDKelvin</Box>

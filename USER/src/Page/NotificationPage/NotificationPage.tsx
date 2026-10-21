@@ -1,6 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { Card, Badge, Empty, Button, Segmented, Pagination } from 'antd';
-import { BellOutlined, CheckCircleOutlined, CheckOutlined, MailOutlined } from '@ant-design/icons';
+import { Card, CardContent, Badge, Button, Tabs, Tab, Pagination, Box, Typography } from '@mui/material';
+import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
+import CheckCircleRoundedIcon from '@mui/icons-material/CheckCircleRounded';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
+import MarkEmailReadRoundedIcon from '@mui/icons-material/MarkEmailReadRounded';
 import type { NotificationType } from '../../Interface/Notification/INotification';
 import { useGetAllNotifications } from './Hook/useGetAllNotifications';
 import dayjs from 'dayjs';
@@ -120,7 +123,7 @@ const NotificationPage: React.FC = () => {
           <div className="flex justify-between items-center">
             <div className="flex gap-3 items-center">
               <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <BellOutlined className="text-2xl text-blue-600" />
+                <NotificationsRoundedIcon className="text-2xl text-blue-600" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold">Thông báo</h1>
@@ -133,7 +136,9 @@ const NotificationPage: React.FC = () => {
             </div>
 
             <Button
-              icon={<CheckOutlined />}
+              variant="outlined"
+              color="secondary"
+              startIcon={<CheckRoundedIcon />}
               onClick={handleMarkAllRead}
               disabled={totalUnread === 0}
             >
@@ -141,81 +146,83 @@ const NotificationPage: React.FC = () => {
             </Button>
           </div>
 
-          <div className="mt-5">
-            <Segmented
+          <Box className="mt-5">
+            <Tabs
               value={filter}
-              onChange={(v) => {
-                setFilter(v as any);
+              onChange={(_, v) => {
+                setFilter(v);
                 setPage(1);
               }}
-              block
-              options={[
-                { label: <>Tất cả <Badge count={totalAll} /></>, value: 'all' },
-                { label: <>Chưa đọc <Badge count={totalUnread} /></>, value: 'unread' },
-                { label: <>Đã đọc <Badge count={totalRead} /></>, value: 'read' },
-              ]}
-            />
-          </div>
+              variant="fullWidth"
+            >
+              <Tab value="all" label={<Badge badgeContent={totalAll} color="default" max={999}>Tất cả</Badge>} />
+              <Tab value="unread" label={<Badge badgeContent={totalUnread} color="primary" max={999}>Chưa đọc</Badge>} />
+              <Tab value="read" label={<Badge badgeContent={totalRead} color="default" max={999}>Đã đọc</Badge>} />
+            </Tabs>
+          </Box>
         </div>
       </div>
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-6 py-6">
         {isLoading ? (
-          <Card><Empty description="Đang tải thông báo..." /></Card>
+          <Card variant="outlined"><CardContent><Typography color="text.secondary" className="text-center">Đang tải thông báo...</Typography></CardContent></Card>
         ) : notifications.length === 0 ? (
-          <Card><Empty description="Không có thông báo" /></Card>
+          <Card variant="outlined"><CardContent><Typography color="text.secondary" className="text-center">Không có thông báo</Typography></CardContent></Card>
         ) : (
           <div className="space-y-4">
             {notifications.map((n) => (
               <Card
                 key={n.id}
+                variant="outlined"
                 className={`rounded-xl ${!n.read ? 'border-l-4 border-blue-500' : ''}`}
               >
-                <div className="flex gap-4">
-                  <div className="mt-1">
-                    <div className={`w-3 h-3 rounded-full ${n.read ? 'bg-gray-300' : 'bg-blue-600'}`} />
-                  </div>
+                <CardContent>
+                  <div className="flex gap-4">
+                    <div className="mt-1">
+                      <div className={`w-3 h-3 rounded-full ${n.read ? 'bg-gray-300' : 'bg-blue-600'}`} />
+                    </div>
 
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h3 className="font-semibold">{n.title}</h3>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-semibold">{n.title}</h3>
 
-                      <div className="flex items-center gap-2">
-                        {/* Type badge */}
-                        <span className={`text-xs px-2 py-1 rounded ${getTypeColor(n.type)}`}>
-                          {getTypeLabel(n.type)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          {/* Type badge */}
+                          <span className={`text-xs px-2 py-1 rounded ${getTypeColor(n.type)}`}>
+                            {getTypeLabel(n.type)}
+                          </span>
 
-                        {/* Mark as read icon */}
+                          {/* Mark as read icon */}
+                          {!n.read && (
+                            <CheckCircleRoundedIcon
+                              titleAccess="Đánh dấu đã đọc"
+                              className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                              onClick={() => handleMarkOneRead(n.id)}
+                              fontSize="small"
+                            />
+                          )}
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-gray-600 mt-1">{n.description}</p>
+
+                      <div className="flex justify-between mt-3">
+                        <span className="text-xs text-gray-500">{n.time}</span>
+
                         {!n.read && (
-                          <CheckCircleOutlined
-                            title="Đánh dấu đã đọc"
-                            className="text-blue-500 hover:text-blue-700 cursor-pointer"
+                          <Button
+                            size="small"
+                            startIcon={<MarkEmailReadRoundedIcon fontSize="small" />}
                             onClick={() => handleMarkOneRead(n.id)}
-                          />
+                          >
+                            Đánh dấu đã đọc
+                          </Button>
                         )}
                       </div>
                     </div>
-
-                    <p className="text-sm text-gray-600 mt-1">{n.description}</p>
-
-                    <div className="flex justify-between mt-3">
-                      <span className="text-xs text-gray-500">{n.time}</span>
-
-                      {!n.read && (
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<MailOutlined />}
-                          onClick={() => handleMarkOneRead(n.id)}
-                        >
-                          Đánh dấu đã đọc
-                        </Button>
-                      )}
-                    </div>
                   </div>
-                </div>
+                </CardContent>
               </Card>
             ))}
           </div>
@@ -224,11 +231,10 @@ const NotificationPage: React.FC = () => {
         {totalAll > PAGE_SIZE && (
           <div className="flex justify-center mt-6">
             <Pagination
-              current={page}
-              pageSize={PAGE_SIZE}
-              total={totalAll}
-              onChange={setPage}
-              showSizeChanger={false}
+              page={page}
+              count={Math.max(1, Math.ceil(totalAll / PAGE_SIZE))}
+              onChange={(_, p) => setPage(p)}
+              color="primary"
             />
           </div>
         )}

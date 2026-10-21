@@ -1,7 +1,7 @@
-import { Card } from "antd";
+import { Card } from "@mui/material";
 
 export const ProductSkeletonList = () => (
-  <Card className="rounded-2xl">
+  <Card variant="outlined" className="rounded-2xl">
     <div className="flex flex-col md:flex-row gap-6">
       <div className="bg-gray-200 rounded-xl w-full md:w-80 h-64 animate-pulse" />
       <div className="flex-1 space-y-4 py-4">

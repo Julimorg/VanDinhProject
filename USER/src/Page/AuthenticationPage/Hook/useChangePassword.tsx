@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { auth_api_handler } from "../../../Api/Api_Handler/auth_api";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { message } from "antd";
+import { toast } from 'react-toastify';
 import type { IChangePassword } from "../../../Interface/Auth/IChangePassword";
 
 type UseChangePasswordOptions = Omit<
@@ -22,7 +22,7 @@ export const useChangePassword = (options?: UseChangePasswordOptions) => {
       queryClient.invalidateQueries({ queryKey: ['Change Password'] }); 
     },
     onError: (error: Error) => {
-      message.error(error.message);
+      toast.error(error.message);
     },
     ...options,
   });

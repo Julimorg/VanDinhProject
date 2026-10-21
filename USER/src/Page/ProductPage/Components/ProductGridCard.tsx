@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
-import { Card, Button, message } from 'antd';
-import { EyeOutlined, ShoppingCartOutlined, PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { Card, Button } from '@mui/material';
+import { toast } from 'react-toastify';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import RemoveRoundedIcon from '@mui/icons-material/RemoveRounded';
 import ImageSwiper from './ImageSwiper';
 import type { IGetAllProductResponse } from '../../../Interface/Product/IGetAllProducts';
 import { useProductCardUtils } from '../../../Hook/useProductCardUltis';
@@ -23,7 +27,7 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
     setQuantity(result.value);
     
     if (result.warning) {
-      message.warning(result.warning);
+      toast.warning(result.warning);
     }
   };
 
@@ -38,12 +42,11 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
 
   return (
     <Card
-      hoverable
+      variant="outlined"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className="group h-full flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.18)] hover:border-gray-300"
-      bodyStyle={{ padding: 0, display: 'flex', flexDirection: 'column', height: '100%' }}
-      style={{ boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.08)' : '0 1px 3px rgba(0,0,0,0.04)' }}
+      sx={{ boxShadow: isHovered ? '0 4px 12px rgba(0,0,0,0.08)' : '0 1px 3px rgba(0,0,0,0.04)' }}
     >
       {/* Image Section */}
       <div className="relative bg-gray-50">
@@ -84,11 +87,12 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
           }`}
         >
           <Button
-            icon={<EyeOutlined />}
+            startIcon={<VisibilityRoundedIcon />}
             onClick={() => onViewDetail(product.productId)}
-            block
+            fullWidth
             size="small"
-            className="bg-white/95 hover:bg-white border-0 font-medium"
+            variant="contained"
+            sx={{ bgcolor: 'rgba(255,255,255,0.95)', color: 'stone.900', '&:hover': { bgcolor: 'white' } }}
           >
             Xem nhanh
           </Button>
@@ -152,7 +156,7 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
                   disabled={quantity <= 1}
                   className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  <MinusOutlined className="text-[10px]" />
+                  <RemoveRoundedIcon sx={{ fontSize: 12 }} />
                 </button>
                 <input
                   type="text"
@@ -165,7 +169,7 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
                   disabled={quantity >= utils.maxOrderQuantity}
                   className="w-8 h-8 flex items-center justify-center hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  <PlusOutlined className="text-[10px]" />
+                  <AddRoundedIcon sx={{ fontSize: 12 }} />
                 </button>
               </div>
             </div>
@@ -174,19 +178,22 @@ const ProductGridCard: React.FC<ProductGridCardProps> = ({ product, onViewDetail
           {/* Action Buttons */}
           <div className="flex gap-2 pt-1">
             <Button
-              type="default"
-              icon={<EyeOutlined />}
+              variant="outlined"
+              color="secondary"
+              startIcon={<VisibilityRoundedIcon sx={{ fontSize: 16 }} />}
               onClick={() => onViewDetail(product.productId)}
-              className="flex-1 h-9 font-medium text-xs border-gray-300 hover:border-gray-400 hover:bg-gray-50"
+              className="flex-1 h-9 font-medium text-xs"
+              sx={{ borderColor: 'stone.300', '&:hover': { borderColor: 'stone.400', bgcolor: 'stone.50' } }}
             >
               Chi tiết
             </Button>
             <Button
-              type="primary"
-              icon={<ShoppingCartOutlined />}
+              variant="contained"
+              color="secondary"
+              startIcon={<ShoppingCartRoundedIcon sx={{ fontSize: 16 }} />}
               onClick={() => onAddToCart(product, quantity)}
               disabled={!utils.canAddToCart}
-              className="flex-1 h-9 font-semibold text-xs bg-gray-900 hover:bg-gray-800 border-0 disabled:bg-gray-300"
+              className="flex-1 h-9 font-semibold text-xs"
             >
               Thêm vào giỏ
             </Button>

@@ -1,6 +1,20 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Drawer, Badge, Button } from 'antd';
-import { MenuOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Container,
+  IconButton,
+  Badge,
+  Button,
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemText,
+  Divider,
+} from '@mui/material';
+import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import { useNavigate } from 'react-router-dom';
 import BrandLogo from './Components/BrandLogo';
 import UserProfileDropdown from './Components/UserProfileDropdown';
@@ -20,11 +34,19 @@ interface HeaderProps {
   isMobile: boolean;
 }
 
+const NAV_ITEMS = [
+  { key: 'dashboard', label: 'Trang chủ', path: '/dashboard' },
+  { key: 'products', label: 'Sản phẩm', path: '/products' },
+  { key: 'suppliers', label: 'Nhà cung cấp', path: '/suppliers' },
+];
+
 const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const [scrolled, setScrolled] = useState(false);
-  const [mobileNavVisible, setMobileNavVisible] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const { id: userId, userName, email, userImg, accessToken } = useAuthStore();
+  const isLoggedIn = Boolean(accessToken);
+
   const setCartCount = useCartStore((state) => state.setCartCount);
   const cartCount = useCartStore((state) => state.cartCount);
 
@@ -32,18 +54,15 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   const { data: unreadRes } = useGetUnreadNotificationCount(userId || undefined);
   const { refetch: refetchUnreadCount } = useGetUnreadNotificationCount(userId || undefined);
 
-  const shouldFetch = !!(userId && accessToken);
+  const shouldFetch = Boolean(userId && accessToken);
 
-  const { data: cartResponse } = useGetAllCarts(userId ?? '', {
-    enabled: shouldFetch,
-  });
-
-  const { data, isLoading, refetch } = useGetNotifications(userId ?? undefined, {
-    enabled: shouldFetch,
-  });
+  const { data: cartResponse } = useGetAllCarts(userId ?? '', { enabled: shouldFetch });
+  const { data, isLoading, refetch } = useGetNotifications(userId ?? undefined, { enabled: shouldFetch });
 
   const navigate = useNavigate();
   const markAsRead = useMarkNotificationAsRead();
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const setUnreadCount = useNotificationStore((s) => s.setUnreadCount);
 
   const handleMarkAllRead = () => {
     const unread = finalNotifications.filter((n) => !n.read);
@@ -53,10 +72,7 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
 
     unread.forEach((noti) => {
       markAsRead.mutate(
-        {
-          userNotificationId: noti.id,
-          body: { isRead: true },
-        },
+        { userNotificationId: noti.id, body: { isRead: true } },
         {
           onSuccess: () => {
             toast.success('Đã đánh dấu tất cả thông báo là đã đọc!');
@@ -71,40 +87,27 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
     });
   };
 
-  const fiveNotifications = useMemo(() => {
-    return Array.isArray(data?.data) ? data.data : [];
-  }, [data?.data]);
+  const fiveNotifications = useMemo(() => (Array.isArray(data?.data) ? data.data : []), [data?.data]);
 
-  const apiNotifications: NotificationType[] = useMemo(() => {
-    return fiveNotifications.map((n) => ({
-      id: n.userNotificationId,
-      title: n.title,
-      description: n.message,
-      type: n.type || 'info',
-      read: n.isRead,
-      time: new Date(n.createdAt).toLocaleString(),
-    }));
-  }, [fiveNotifications]);
+  const apiNotifications: NotificationType[] = useMemo(
+    () =>
+      fiveNotifications.map((n) => ({
+        id: n.userNotificationId,
+        title: n.title,
+        description: n.message,
+        type: n.type || 'info',
+        read: n.isRead,
+        time: new Date(n.createdAt).toLocaleString(),
+      })),
+    [fiveNotifications]
+  );
 
   const finalNotifications = useMemo(() => {
     const map = new Map<string, NotificationType>();
-
     apiNotifications.forEach((n) => map.set(n.id, n));
-
     notifications.forEach((n) => map.set(n.id, n));
-
-    return Array.from(map.values())
-      .slice(0, 5);
+    return Array.from(map.values()).slice(0, 5);
   }, [apiNotifications, notifications]);
-
-  //const finalUnreadCount = notifications.length > 0 ? unreadCount : apiNotifications.filter((n) => !n.read).length;
-  const unreadCount = useNotificationStore((s) => s.unreadCount);
-  const setUnreadCount = useNotificationStore((s) => s.setUnreadCount);
-  //const finalUnreadCount = unreadRes?.data ?? 0;
-  const finalUnreadCount = unreadCount;
-
-  //Elasticsearch
-
 
   useEffect(() => {
     if (cartResponse?.data?.items) {
@@ -117,176 +120,164 @@ const Header: React.FC<HeaderProps> = ({ isMobile }) => {
   }, [cartResponse, setCartCount]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
-    if (!accessToken) {
-      setCartCount(0);
-    }
+    if (!accessToken) setCartCount(0);
   }, [accessToken, setCartCount]);
 
   useEffect(() => {
-    if (unreadRes?.data !== undefined) {
-      setUnreadCount(unreadRes.data);
-    }
+    if (unreadRes?.data !== undefined) setUnreadCount(unreadRes.data);
   }, [unreadRes?.data, setUnreadCount]);
-
-  const navItems = [
-    { key: 'dashboard', label: 'Trang Chủ', path: '/dashboard' },
-    { key: 'products', label: 'Sản phẩm', path: '/products' },
-    { key: 'suppliers', label: 'Nhà Cung Cấp', path: '/suppliers' },
-    { key: 'colors', label: 'Mã Màu', path: '/colors' },
-  ];
 
   const handleNavClick = (path: string) => {
     navigate(path);
-    setMobileNavVisible(false);
+    setMobileNavOpen(false);
   };
-
-  const mobileDrawer = (
-    <Drawer
-      title="Menu"
-      placement="left"
-      onClose={() => setMobileNavVisible(false)}
-      open={mobileNavVisible}
-      width={256}
-    >
-      <div className="space-y-4">
-        {navItems.map((item) => (
-          <Button
-            key={item.key}
-            type="text"
-            block
-            className="justify-start text-left py-3"
-            onClick={() => handleNavClick(item.path)}
-          >
-            {item.label}
-          </Button>
-        ))}
-        <Button
-          type="text"
-          block
-          className="justify-start text-left py-3"
-          onClick={() => handleNavClick('/cart')}
-          icon={<ShoppingCartOutlined />}
-        >
-          Giỏ hàng ({cartCount})
-        </Button>
-      </div>
-    </Drawer>
-  );
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white shadow-md py-3' : 'bg-white/95 backdrop-blur-sm py-4'
-          }`}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        sx={{
+          bgcolor: scrolled ? 'rgba(255,255,255,0.96)' : 'rgba(255,255,255,0.88)',
+          backdropFilter: 'blur(10px)',
+          borderBottom: '1px solid',
+          borderColor: scrolled ? 'divider' : 'transparent',
+          transition: 'all 0.25s ease',
+          color: 'stone.900',
+        }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+        <Container maxWidth="xl">
+          <Toolbar disableGutters sx={{ minHeight: '72px !important', gap: 1.5 }}>
             <BrandLogo />
-            {/* Search Bar */}
-            <div className="flex-1 flex justify-end md:justify-center items-center mr-2 md:mr-0">
-              <div className="flex-1 flex justify-end md:justify-center items-center mr-2 md:mr-0">
-              {/* Đã gỡ bỏ dữ liệu giả, HeaderSearch giờ tự quản lý fetch data */}
-              <HeaderSearch /> 
-            </div>
-            </div>
-            {/* Desktop Menu */}
-            <nav className="hidden md:flex items-center gap-6 mx-2">
-              {navItems.map((item) => (
-                <button
+
+            <HeaderSearch />
+
+            {/* Desktop nav */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.5, mx: 1 }}>
+              {NAV_ITEMS.map((item) => (
+                <Button
                   key={item.key}
                   onClick={() => handleNavClick(item.path)}
-                  className="text-gray-700 hover:text-blue-600 font-medium transition-colors px-3 py-2 rounded-md hover:bg-gray-100"
+                  sx={{ color: 'stone.700', fontWeight: 600, px: 1.5, '&:hover': { bgcolor: 'stone.100' } }}
                 >
                   {item.label}
-                </button>
-              ))}
-            </nav>
-
-            
-
-            {/* Desktop Right Section */}
-            <div className="hidden md:flex items-center gap-2">
-              <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
-                <Button
-                  type="text"
-                  onClick={() => navigate('/cart')}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <ShoppingCartOutlined className="text-lg text-gray-700" />
                 </Button>
-              </Badge>
+              ))}
+            </Box>
 
-              <NotificationsDropdown
-                notifications={finalNotifications}
-                unreadCount={finalUnreadCount}
-                navigate={navigate}
-                isMobile={isMobile}
-                onOpen={() => { }}
-                onMarkAllRead={handleMarkAllRead}
-                loading={isLoading}
-                refetch={refetch}
-              />
+            {/* Desktop right */}
+            <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 0.75 }}>
+              {isLoggedIn ? (
+                <>
+                  <IconButton onClick={() => navigate('/cart')}>
+                    <Badge
+                      badgeContent={cartCount}
+                      color="primary"
+                      max={99}
+                      sx={{ '& .MuiBadge-badge': { fontSize: '0.62rem', fontWeight: 700 } }}
+                    >
+                      <ShoppingCartRoundedIcon sx={{ color: 'stone.700' }} />
+                    </Badge>
+                  </IconButton>
 
-              <UserProfileDropdown
-                userName={userName || 'unknown'}
-                email={email || 'unknown'}
-                userImg={userImg || 'unknown'}
-                navigate={navigate}
-                isMobile={isMobile}
-              />
-            </div>
+                  <NotificationsDropdown
+                    notifications={finalNotifications}
+                    unreadCount={unreadCount}
+                    navigate={navigate}
+                    isMobile={isMobile}
+                    onOpen={() => {}}
+                    onMarkAllRead={handleMarkAllRead}
+                    loading={isLoading}
+                    refetch={refetch}
+                  />
+
+                  <UserProfileDropdown
+                    userName={userName || 'unknown'}
+                    email={email || 'unknown'}
+                    userImg={userImg || 'unknown'}
+                    navigate={navigate}
+                    isMobile={isMobile}
+                  />
+                </>
+              ) : (
+                <Button variant="contained" color="primary" onClick={() => navigate('/login')}>
+                  Đăng nhập
+                </Button>
+              )}
+            </Box>
 
             {/* Mobile */}
-            <div className="flex md:hidden items-center gap-2">
-              <Button
-                type="text"
-                icon={<MenuOutlined className="text-lg" />}
-                onClick={() => setMobileNavVisible(true)}
-                className="p-2"
-              />
-              <Badge count={cartCount} offset={[-5, 5]} className="cursor-pointer">
-                <Button
-                  type="text"
-                  onClick={() => navigate('/cart')}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <ShoppingCartOutlined className="text-lg text-gray-700" />
-                </Button>
-              </Badge>
+            <Box sx={{ display: { xs: 'flex', md: 'none' }, alignItems: 'center', gap: 0.25, ml: 'auto' }}>
+              {isLoggedIn && (
+                <IconButton onClick={() => navigate('/cart')}>
+                  <Badge badgeContent={cartCount} color="primary" max={99}>
+                    <ShoppingCartRoundedIcon sx={{ color: 'stone.700', fontSize: 22 }} />
+                  </Badge>
+                </IconButton>
+              )}
+              {isLoggedIn && (
+                <NotificationsDropdown
+                  notifications={finalNotifications}
+                  unreadCount={unreadCount}
+                  navigate={navigate}
+                  isMobile={isMobile}
+                  onOpen={() => {}}
+                  onMarkAllRead={handleMarkAllRead}
+                  loading={isLoading}
+                  refetch={refetch}
+                />
+              )}
+              <IconButton onClick={() => setMobileNavOpen(true)}>
+                <MenuRoundedIcon />
+              </IconButton>
+            </Box>
+          </Toolbar>
+        </Container>
+      </AppBar>
 
-              <NotificationsDropdown
-                notifications={finalNotifications}
-                unreadCount={finalUnreadCount}
-                navigate={navigate}
-                isMobile={isMobile}
-                onOpen={() => { }}
-                onMarkAllRead={handleMarkAllRead}
-                loading={isLoading}
-                refetch={refetch}
-              />
-
-              <UserProfileDropdown
-                userName={userName || 'unknown'}
-                email={email || 'unknown'}
-                userImg={userImg || 'unknown'}
-                navigate={navigate}
-                isMobile={isMobile}
-              />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Drawer */}
-      {mobileDrawer}
+      {/* Mobile drawer */}
+      <Drawer anchor="left" open={mobileNavOpen} onClose={() => setMobileNavOpen(false)}>
+        <Box sx={{ width: 272, pt: 2 }}>
+          <Box sx={{ px: 2, pb: 1.5 }}>
+            <BrandLogo />
+          </Box>
+          <Divider />
+          <List>
+            {NAV_ITEMS.map((item) => (
+              <ListItemButton key={item.key} onClick={() => handleNavClick(item.path)}>
+                <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>{item.label}</ListItemText>
+              </ListItemButton>
+            ))}
+            {isLoggedIn ? (
+              <>
+                <ListItemButton onClick={() => handleNavClick('/cart')}>
+                  <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>
+                    Giỏ hàng ({cartCount})
+                  </ListItemText>
+                </ListItemButton>
+                <ListItemButton onClick={() => handleNavClick('/profile')}>
+                  <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Thông tin cá nhân</ListItemText>
+                </ListItemButton>
+                <ListItemButton onClick={() => handleNavClick('/order-history')}>
+                  <ListItemText primaryTypographyProps={{ fontWeight: 600 }}>Đơn hàng của tôi</ListItemText>
+                </ListItemButton>
+              </>
+            ) : (
+              <ListItemButton onClick={() => handleNavClick('/login')}>
+                <ListItemText primaryTypographyProps={{ fontWeight: 700, color: 'primary.dark' }}>
+                  Đăng nhập
+                </ListItemText>
+              </ListItemButton>
+            )}
+          </List>
+        </Box>
+      </Drawer>
     </>
   );
 };

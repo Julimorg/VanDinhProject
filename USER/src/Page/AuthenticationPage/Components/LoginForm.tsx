@@ -1,13 +1,15 @@
-import React from 'react';
-import { Form, Input, Button, Typography, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import React, { useRef, useState } from 'react';
+import { Box, Typography, TextField, Button, InputAdornment, IconButton, Divider } from '@mui/material';
+import PersonRoundedIcon from '@mui/icons-material/PersonRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
 import { useNavigate } from 'react-router-dom';
 import type { ILoginRequest } from '../../../Interface/Auth/ILogin';
 import { useLogin } from '../Hook/useLogin';
 import { useCartStore } from '../../../Middleware/useCartStore';
 import { toast } from 'react-toastify';
-
-const { Text, Title } = Typography;
+import { shake } from '../../../Utils/animations';
 
 interface LoginFormProps {
   onSwitchToRegister: () => void;
@@ -19,105 +21,126 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onSwitchToFor
   const { mutate: loginMutate, isPending } = useLogin();
   const setCartCount = useCartStore((state) => state.setCartCount);
 
-  const onFinish = (values: ILoginRequest) => {
+  const [values, setValues] = useState<ILoginRequest>({ username: '', password: '' });
+  const [errors, setErrors] = useState<Partial<ILoginRequest>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  const validate = (): boolean => {
+    const next: Partial<ILoginRequest> = {};
+    if (!values.username.trim()) next.username = 'Vui lòng nhập tên đăng nhập!';
+    else if (values.username.trim().length < 3) next.username = 'Tên đăng nhập phải có ít nhất 3 ký tự!';
+    if (!values.password) next.password = 'Vui lòng nhập mật khẩu!';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) {
+      if (formRef.current) shake(formRef.current);
+      return;
+    }
+
     loginMutate(values, {
-      onSuccess: async () => {
+      onSuccess: () => {
         useCartStore.persist.clearStorage();
         setCartCount(0);
-
-        toast.success('Login Successfully!');
-
-        console.log('navigate: ', navigate('/dashboard'));
+        toast.success('Đăng nhập thành công!');
         navigate('/dashboard');
       },
-      onError: (error) => {
-        console.log(import.meta.env);
-
-        console.error('Login error:', error);
-        message.error('Đăng nhập thất bại. Vui lòng thử lại!');
+      onError: () => {
+        toast.error('Đăng nhập thất bại. Vui lòng thử lại!');
       },
     });
   };
 
   return (
-    <div className="w-full">
-      <div className="mb-8">
-        <Title level={3} className="!text-2xl !font-semibold !text-gray-900 !mb-2">
+    <Box ref={formRef}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h5" sx={{ fontSize: '1.5rem', color: 'stone.900', mb: 0.5 }}>
           Đăng nhập
-        </Title>
-        <Text className="text-gray-600">Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục.</Text>
-      </div>
+        </Typography>
+        <Typography sx={{ color: 'text.secondary', fontSize: '0.9rem' }}>
+          Chào mừng trở lại! Vui lòng đăng nhập để tiếp tục.
+        </Typography>
+      </Box>
 
-      <Form
-        name="login"
-        onFinish={onFinish}
-        autoComplete="off"
-        layout="vertical"
-        size="large"
-        className="space-y-1"
-      >
-        <Form.Item
-          name="username"
-          label={<span className="text-sm font-medium text-gray-700">Tên đăng nhập</span>}
-          rules={[
-            { required: true, message: 'Vui lòng nhập tên đăng nhập!' },
-            { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự!' },
-          ]}
-        >
-          <Input
-            prefix={<UserOutlined className="text-gray-400" />}
-            placeholder="Nhập tên đăng nhập của bạn"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
+      <Box component="form" onSubmit={handleSubmit} noValidate>
+        <TextField
+          fullWidth
+          label="Tên đăng nhập"
+          placeholder="Nhập tên đăng nhập của bạn"
+          value={values.username}
+          onChange={(e) => setValues((v) => ({ ...v, username: e.target.value }))}
+          error={!!errors.username}
+          helperText={errors.username}
+          autoComplete="off"
+          sx={{ mb: 2.5 }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <PersonRoundedIcon sx={{ color: 'stone.400' }} />
+              </InputAdornment>
+            ),
+          }}
+        />
 
-        <Form.Item
-          name="password"
-          label={<span className="text-sm font-medium text-gray-700">Mật khẩu</span>}
-          rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-        >
-          <Input.Password
-            prefix={<LockOutlined className="text-gray-400" />}
-            placeholder="Nhập mật khẩu của bạn"
-            className="h-12 rounded-lg hover:border-gray-400 focus:border-gray-900 transition-colors"
-          />
-        </Form.Item>
+        <TextField
+          fullWidth
+          type={showPassword ? 'text' : 'password'}
+          label="Mật khẩu"
+          placeholder="Nhập mật khẩu của bạn"
+          value={values.password}
+          onChange={(e) => setValues((v) => ({ ...v, password: e.target.value }))}
+          error={!!errors.password}
+          helperText={errors.password}
+          autoComplete="off"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <LockRoundedIcon sx={{ color: 'stone.400' }} />
+              </InputAdornment>
+            ),
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword((s) => !s)} edge="end" size="small">
+                  {showPassword ? <VisibilityOffRoundedIcon fontSize="small" /> : <VisibilityRoundedIcon fontSize="small" />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
 
-        <div className="flex items-center justify-end mb-6">
-          <Button
-            type="link"
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1, mb: 3 }}>
+          <Typography
             onClick={onSwitchToForgot}
-            className="!p-0 !h-auto text-sm text-gray-600 hover:!text-gray-900 transition-colors"
+            sx={{ fontSize: '0.85rem', color: 'text.secondary', cursor: 'pointer', '&:hover': { color: 'stone.900', textDecoration: 'underline' } }}
           >
             Quên mật khẩu?
-          </Button>
-        </div>
+          </Typography>
+        </Box>
 
-        <Form.Item className="!mb-6">
-          <Button
-            type="primary"
-            htmlType="submit"
-            loading={isPending} // Sử dụng isPending từ mutation
-            className="w-full h-12 !bg-gray-900 hover:!bg-gray-800 !text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
-          >
-            Đăng nhập
-          </Button>
-        </Form.Item>
+        <Button type="submit" fullWidth size="large" variant="contained" color="secondary" loading={isPending} sx={{ mb: 3 }}>
+          Đăng nhập
+        </Button>
 
-        <div className="text-center pt-6 border-t border-gray-200">
-          <Text className="text-sm text-gray-600">
+        <Divider />
+
+        <Box sx={{ textAlign: 'center', pt: 3 }}>
+          <Typography sx={{ fontSize: '0.88rem', color: 'text.secondary' }}>
             Chưa có tài khoản?{' '}
-            <Button
-              type="link"
+            <Box
+              component="span"
               onClick={onSwitchToRegister}
-              className="!p-0 !h-auto text-sm font-medium text-gray-900 hover:!text-gray-700 transition-colors hover:underline"
+              sx={{ fontWeight: 700, color: 'stone.900', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
             >
               Đăng ký ngay
-            </Button>
-          </Text>
-        </div>
-      </Form>
-    </div>
+            </Box>
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

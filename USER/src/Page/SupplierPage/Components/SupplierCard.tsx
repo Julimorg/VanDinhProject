@@ -1,6 +1,9 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { EnvironmentOutlined, PhoneOutlined, RightOutlined, ShopOutlined } from '@ant-design/icons';
+import RoomRoundedIcon from '@mui/icons-material/RoomRounded';
+import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
 import type { IGetAllSupplierResponse } from '../../../Interface/Supplier/IGetAllSuppliers';
 
 interface SupplierCardProps {
@@ -60,7 +63,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[#C9C6BE]">
-            <ShopOutlined style={{ fontSize: 28 }} />
+            <StorefrontRoundedIcon sx={{ fontSize: 28 }} />
           </div>
         )}
       </div>
@@ -73,14 +76,14 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           </h3>
 
           <div className="mt-1.5 flex items-start gap-1.5 text-sm text-[#8A867E]">
-            <EnvironmentOutlined className="mt-0.5 flex-shrink-0 text-[#ADA99F]" />
+            <RoomRoundedIcon className="mt-0.5 flex-shrink-0 text-[#ADA99F]" sx={{ fontSize: 16 }} />
             <span className="line-clamp-1">
               {supplier.supplierAddress || 'Chưa cập nhật địa chỉ'}
             </span>
           </div>
 
           <div className="mt-1 flex items-center gap-1.5 text-sm text-[#6E6B66]">
-            <PhoneOutlined className="flex-shrink-0 text-[#ADA99F]" />
+            <PhoneRoundedIcon className="flex-shrink-0 text-[#ADA99F]" sx={{ fontSize: 16 }} />
             <span>{supplier.supplierPhone || 'Chưa cập nhật'}</span>
           </div>
         </div>
@@ -89,7 +92,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           <span className="text-xs text-[#ADA99F]">
             Cập nhật {formatDate(supplier.updateAt)}
           </span>
-          <RightOutlined className="text-xs text-[#C9C6BE] group-hover:text-[#171716] group-hover:translate-x-0.5 transition-all duration-300" />
+          <ChevronRightRoundedIcon className="text-xs text-[#C9C6BE] group-hover:text-[#171716] group-hover:translate-x-0.5 transition-all duration-300" sx={{ fontSize: 16 }} />
         </div>
       </div>
     </div>

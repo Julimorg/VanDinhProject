@@ -1,10 +1,8 @@
-
 import React from 'react';
-import { Button, Spin } from 'antd';
+import { Button, Box, CircularProgress, Typography } from '@mui/material';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useConfirmOrder } from '../Hook/useConfirmOrder';
-
 
 interface ConfirmPaymentButtonProps {
   userId: string;
@@ -26,23 +24,13 @@ const ConfirmPaymentButton: React.FC<ConfirmPaymentButtonProps> = ({
   const navigate = useNavigate();
 
   const mutation = useConfirmOrder(userId, orderId, {
-    onSuccess: (response) => {
-      const data = response.data;
-
-      if (paymentMethod === 'VN_PAY' && data.paymentUrl) {
-        toast.success('Đang chuyển hướng đến cổng thanh toán VNPAY...');
-        
-        window.location.href = data.paymentUrl;
-      } else {
- 
-        toast.success('Đơn hàng đã được xác nhận thành công!');
-        setTimeout(() => {
-          navigate('/products'); 
-        }, 1500);
-      }
+    onSuccess: () => {
+      toast.success('Đơn hàng đã được xác nhận thành công!');
+      setTimeout(() => {
+        navigate('/products');
+      }, 1500);
     },
     onError: (error) => {
-    //   console.error('Xác nhận đơn hàng thất bại:', error);
       toast.error(`Thanh toán thất bại, vui lòng thử lại - ${error}`);
       setIsSubmitting(false);
     },
@@ -62,23 +50,26 @@ const ConfirmPaymentButton: React.FC<ConfirmPaymentButtonProps> = ({
   return (
     <>
       <Button
-        type="primary"
+        variant="contained"
         size="large"
-        block
-        htmlType="button"
+        fullWidth
+        type="button"
         loading={mutation.isPending}
         disabled={isSubmitting || mutation.isPending}
         onClick={handleClick}
         className="h-14 text-lg font-semibold rounded-xl shadow-lg"
-        style={{ backgroundColor: '#4f46e5', border: 'none' }}
+        sx={{ bgcolor: '#4f46e5', '&:hover': { bgcolor: '#4338ca' } }}
       >
         {mutation.isPending ? 'Đang xử lý...' : 'HOÀN TẤT THANH TOÁN'}
       </Button>
 
       {isSubmitting && mutation.isPending && (
-        <div className="text-center mt-4">
-          <Spin tip="Đang xác nhận đơn hàng..." />
-        </div>
+        <Box className="text-center mt-4" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+          <CircularProgress size={24} />
+          <Typography variant="caption" color="text.secondary">
+            Đang xác nhận đơn hàng...
+          </Typography>
+        </Box>
       )}
     </>
   );

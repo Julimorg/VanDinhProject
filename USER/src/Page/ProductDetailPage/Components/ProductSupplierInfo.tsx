@@ -1,8 +1,6 @@
 // Components/ProductSupplierInfo.tsx
 import React from 'react';
-import { Card, Typography } from 'antd';
-
-const { Text } = Typography;
+import { Card, CardHeader, CardContent, Typography } from '@mui/material';
 
 interface ProductSupplierInfoProps {
   supplierName: string;
@@ -14,9 +12,9 @@ interface ProductSupplierInfoProps {
 
 const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
   <div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-    <Text type="secondary" className="text-sm">
+    <Typography color="text.secondary" className="text-sm">
       {label}
-    </Text>
+    </Typography>
     <span className="text-sm font-medium text-gray-800 text-right">{value ?? 'N/A'}</span>
   </div>
 );
@@ -34,12 +32,15 @@ const ProductSupplierInfo: React.FC<ProductSupplierInfoProps> = ({
   createAt,
   updateAt,
 }) => (
-  <Card title="Supplier Information" className="!border-gray-100 !shadow-sm h-full">
-    <Row label="Supplier Name" value={<span className="text-blue-600">{supplierName}</span>} />
-    {categoryName && <Row label="Category Name" value={categoryName} />}
-    <Row label="Product Quantity" value={`${productQuantity} cans`} />
-    {createAt && <Row label="Create At" value={formatDate(createAt)} />}
-    {updateAt && <Row label="Update At" value={formatDate(updateAt)} />}
+  <Card variant="outlined" className="!border-gray-100 !shadow-sm h-full">
+    <CardHeader title="Supplier Information" titleTypographyProps={{ fontSize: '1rem', fontWeight: 600 }} />
+    <CardContent sx={{ pt: 0 }}>
+      <Row label="Supplier Name" value={<span className="text-blue-600">{supplierName}</span>} />
+      {categoryName && <Row label="Category Name" value={categoryName} />}
+      <Row label="Product Quantity" value={`${productQuantity} cans`} />
+      {createAt && <Row label="Create At" value={formatDate(createAt)} />}
+      {updateAt && <Row label="Update At" value={formatDate(updateAt)} />}
+    </CardContent>
   </Card>
 );
 

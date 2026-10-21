@@ -1,6 +1,23 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Input, Dropdown, List, Avatar, Modal, Spin } from 'antd';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import {
+  TextField,
+  InputAdornment,
+  Popper,
+  Paper,
+  List,
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  Dialog,
+  IconButton,
+  CircularProgress,
+  Box,
+  Typography,
+  ClickAwayListener,
+} from '@mui/material';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import { useNavigate } from 'react-router-dom';
 import { useSearchAll } from '../Hook/useSearchAll';
 import type { ISearchAllResponse } from '../../../Interface/Elasticsearch/ISearchAll';
@@ -9,43 +26,29 @@ interface HeaderSearchProps {
   placeholder?: string;
 }
 
-const HeaderSearch: React.FC<HeaderSearchProps> = ({
-  placeholder = 'Tìm kiếm sản phẩm...',
-}) => {
+const HeaderSearch: React.FC<HeaderSearchProps> = ({ placeholder = 'Tìm kiếm sản phẩm...' }) => {
   const navigate = useNavigate();
 
-  // States cho Desktop và Mobile
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileQuery, setMobileQuery] = useState('');
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
-  // Lấy query hiện tại đang được sử dụng (ưu tiên mobile nếu modal đang mở)
   const activeQuery = mobileOpen ? mobileQuery : query;
 
-  // Debounce query để không spam API
   const [debouncedQuery, setDebouncedQuery] = useState('');
   useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedQuery(activeQuery);
-    }, 300);
-
+    const handler = setTimeout(() => setDebouncedQuery(activeQuery), 300);
     return () => clearTimeout(handler);
   }, [activeQuery]);
 
-  // Gọi API thông qua Hook
   const { data: searchData, isFetching } = useSearchAll(
-    {
-      keyword: debouncedQuery,
-      page: 0,
-      size: 10,
-    },
-    {
-      enabled: debouncedQuery.trim().length > 0,
-    }
+    { keyword: debouncedQuery, page: 0, size: 10 },
+    { enabled: debouncedQuery.trim().length > 0 }
   );
 
-  const es = useMemo(() => {
+  const results = useMemo(() => {
     const content = searchData?.data?.content;
     return Array.isArray(content) ? (content as unknown as ISearchAllResponse[]) : [];
   }, [searchData?.data?.content]);
@@ -55,181 +58,113 @@ const HeaderSearch: React.FC<HeaderSearchProps> = ({
     setMobileOpen(false);
     setQuery('');
     setMobileQuery('');
-
     if (type === 'PRODUCT') {
       navigate(`/products/${entityId}`);
     }
   };
 
-  /* ── Desktop dropdown list ── */
-  const dropdownContent = (
-    <div
-      className="bg-white rounded-lg shadow-lg border border-gray-100"
-      style={{ minWidth: 250, maxWidth: 400 }}
-    >
-      <Spin spinning={isFetching} size="small">
-        <List
-          itemLayout="horizontal"
-          dataSource={es}
-          locale={{ emptyText: debouncedQuery ? 'Không tìm thấy kết quả' : 'Nhập để tìm kiếm' }}
-          renderItem={(item) => (
-            <List.Item
-              onClick={() => handleItemClick(item.entityId, item.type)}
-              className="hover:bg-gray-50 cursor-pointer px-3 py-2 rounded-md transition-colors"
-              style={{ padding: '8px 12px' }}
-            >
-              <List.Item.Meta
-                avatar={
-                  <Avatar
-                    src={item.image}
-                    shape="square"
-                    size={40}
-                    style={{ borderRadius: 6, objectFit: 'cover' }}
-                  />
-                }
-                title={
-                  <span className="text-sm font-medium text-gray-800 line-clamp-1">
-                    {item.name}
-                  </span>
-                }
-                description={
-                  <span className="text-xs text-blue-600 font-semibold">
-                    {item.type === 'PRODUCT' ? `${item.price?.toLocaleString('vi-VN')} đ` : null}
-                  </span>
-                }
-              />
-            </List.Item>
-          )}
-        />
-      </Spin>
-    </div>
-  );
-
-  /* ── Mobile search modal ── */
-  const mobileModal = (
-    <Modal
-      open={mobileOpen}
-      onCancel={() => {
-        setMobileOpen(false);
-        setMobileQuery('');
-      }}
-      footer={null}
-      closable={false}
-      centered={false}
-      styles={{
-        body: { padding: 0 },
-        content: {
-          borderRadius: 12,
-          padding: 0,
-          top: 0,
-          margin: '0 8px',
-        },
-      }}
-      style={{ top: 8 }}
-      width="calc(100vw - 16px)"
-    >
-      {/* Modal Header */}
-      <div className="flex items-center gap-2 px-3 py-3 border-b border-gray-100">
-        <Input
-          autoFocus
-          placeholder={placeholder}
-          prefix={<SearchOutlined className="text-gray-400" />}
-          value={mobileQuery}
-          onChange={(e) => setMobileQuery(e.target.value)}
-          variant="borderless"
-          className="flex-1 text-base"
-          style={{ fontSize: 16 }} // Prevents iOS auto-zoom
-        />
-        <button
-          onClick={() => {
-            setMobileOpen(false);
-            setMobileQuery('');
-          }}
-          className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
-        >
-          <CloseOutlined className="text-gray-500 text-sm" />
-        </button>
-      </div>
-
-      {/* Mobile Results */}
-      {mobileQuery.length > 0 && (
-        <div className="overflow-y-auto relative" style={{ maxHeight: '60vh' }}>
-          <Spin spinning={isFetching} size="default" wrapperClassName="w-full mt-4">
-            <List
-              itemLayout="horizontal"
-              dataSource={es}
-              locale={{ emptyText: 'Không tìm thấy kết quả' }}
-              renderItem={(item) => (
-                <List.Item
-                  onClick={() => handleItemClick(item.entityId, item.type)}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
-                  style={{ padding: '10px 16px' }}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar
-                        src={item.image}
-                        shape="square"
-                        size={44}
-                        style={{ borderRadius: 8, objectFit: 'cover' }}
-                      />
-                    }
-                    title={
-                      <span className="text-sm font-medium text-gray-800">
-                        {item.name}
-                      </span>
-                    }
-                    description={
-                      <span className="text-xs text-blue-600 font-semibold">
-                        {item.type === 'PRODUCT' ? `${item.price?.toLocaleString('vi-VN')} đ` : null}
-                      </span>
-                    }
-                  />
-                </List.Item>
-              )}
+  const resultList = (emptyText: string) => (
+    <List disablePadding>
+      {isFetching ? (
+        <Box sx={{ py: 3, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress size={22} />
+        </Box>
+      ) : results.length === 0 ? (
+        <Box sx={{ py: 3, textAlign: 'center' }}>
+          <Typography sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>{emptyText}</Typography>
+        </Box>
+      ) : (
+        results.map((item) => (
+          <ListItemButton key={item.entityId} onClick={() => handleItemClick(item.entityId, item.type)}>
+            <ListItemAvatar>
+              <Avatar src={item.image} variant="rounded" sx={{ width: 42, height: 42 }} />
+            </ListItemAvatar>
+            <ListItemText
+              primary={item.name}
+              secondary={item.type === 'PRODUCT' ? `${item.price?.toLocaleString('vi-VN')} đ` : null}
+              primaryTypographyProps={{ fontSize: '0.86rem', fontWeight: 600, color: 'stone.900', noWrap: true }}
+              secondaryTypographyProps={{ fontSize: '0.78rem', fontWeight: 700, color: 'primary.dark' }}
             />
-          </Spin>
-        </div>
+          </ListItemButton>
+        ))
       )}
-    </Modal>
+    </List>
   );
 
   return (
     <>
-      {/* ── Desktop: full input with dropdown ── */}
-      <div className="hidden md:flex w-full flex-1 justify-center px-4 max-w-lg mx-auto">
-        <Dropdown
-          dropdownRender={() => dropdownContent}
-          open={open && query.length > 0}
-          trigger={['click']}
-          placement="bottomLeft"
-        >
-          <Input
-            placeholder={placeholder}
-            prefix={<SearchOutlined className="text-gray-400" />}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => setOpen(true)}
-            onBlur={() => setTimeout(() => setOpen(false), 200)} // Tăng delay xíu để click vào item không bị miss
-            className="w-full"
-            style={{ maxWidth: 420 }}
-          />
-        </Dropdown>
-      </div>
+      {/* Desktop */}
+      <Box sx={{ display: { xs: 'none', md: 'flex' }, flex: 1, justifyContent: 'center', px: 2, maxWidth: 480, mx: 'auto' }}>
+        <ClickAwayListener onClickAway={() => setOpen(false)}>
+          <Box sx={{ width: '100%' }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder={placeholder}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={(e) => {
+                setOpen(true);
+                setAnchorEl(e.currentTarget);
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchRoundedIcon sx={{ color: 'stone.400', fontSize: 20 }} />
+                  </InputAdornment>
+                ),
+                sx: { bgcolor: 'stone.50', borderRadius: 2 },
+              }}
+            />
+            <Popper open={open && query.length > 0} anchorEl={anchorEl} placement="bottom-start" style={{ zIndex: 1300, width: anchorEl?.clientWidth }}>
+              <Paper elevation={6} sx={{ mt: 1, borderRadius: 2, maxHeight: 420, overflowY: 'auto' }}>
+                {resultList(debouncedQuery ? 'Không tìm thấy kết quả' : 'Nhập để tìm kiếm')}
+              </Paper>
+            </Popper>
+          </Box>
+        </ClickAwayListener>
+      </Box>
 
-      {/* ── Mobile: icon button that opens full-screen modal ── */}
-      <div className="flex md:hidden">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label="Tìm kiếm"
-        >
-          <SearchOutlined className="text-gray-700 text-lg" />
-        </button>
-      </div>
+      {/* Mobile trigger */}
+      <IconButton
+        onClick={() => setMobileOpen(true)}
+        sx={{ display: { xs: 'inline-flex', md: 'none' } }}
+        aria-label="Tìm kiếm"
+      >
+        <SearchRoundedIcon sx={{ color: 'stone.700' }} />
+      </IconButton>
 
       {/* Mobile modal */}
-      {mobileModal}
+      <Dialog
+        fullScreen
+        open={mobileOpen}
+        onClose={() => {
+          setMobileOpen(false);
+          setMobileQuery('');
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <SearchRoundedIcon sx={{ color: 'stone.400' }} />
+          <TextField
+            autoFocus
+            fullWidth
+            variant="standard"
+            placeholder={placeholder}
+            value={mobileQuery}
+            onChange={(e) => setMobileQuery(e.target.value)}
+            InputProps={{ disableUnderline: true, sx: { fontSize: 16 } }}
+          />
+          <IconButton
+            onClick={() => {
+              setMobileOpen(false);
+              setMobileQuery('');
+            }}
+          >
+            <CloseRoundedIcon />
+          </IconButton>
+        </Box>
+        {mobileQuery.length > 0 && <Box sx={{ overflowY: 'auto' }}>{resultList('Không tìm thấy kết quả')}</Box>}
+      </Dialog>
     </>
   );
 };

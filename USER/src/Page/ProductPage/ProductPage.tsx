@@ -1,15 +1,22 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Dropdown, Empty, Menu, message, Pagination } from 'antd';
+import { toast } from 'react-toastify';
 import {
-  CloseOutlined,
-  FilterOutlined,
-  LoadingOutlined,
-  SearchOutlined,
-  ShoppingCartOutlined,
-  SortAscendingOutlined,
-} from '@ant-design/icons';
+  Popover,
+  Pagination as MuiPagination,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  Typography,
+  CircularProgress,
+} from '@mui/material';
+import CloseOutlinedIcon from '@mui/icons-material/CloseOutlined';
+import FilterListRoundedIcon from '@mui/icons-material/FilterListRounded';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 
 import { useGetAllCarts } from '../CartPage/Hook/useGetAllCarts';
 import { useCartStore } from '../../Middleware/useCartStore';
@@ -31,6 +38,31 @@ import { useAuthStore } from '../../Middleware/useAuthStoreWithLocal';
 
 const pageSize = 12;
 
+interface FilterOptionRowProps {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}
+
+const FilterOptionRow: React.FC<FilterOptionRowProps> = ({ label, active, onClick }) => (
+  <Box
+    onClick={onClick}
+    sx={{
+      px: 1,
+      py: 0.75,
+      borderRadius: 1,
+      fontSize: '0.85rem',
+      fontWeight: active ? 700 : 500,
+      color: active ? 'primary.dark' : 'stone.700',
+      bgcolor: active ? 'amber.50' : 'transparent',
+      cursor: 'pointer',
+      '&:hover': { bgcolor: active ? 'amber.50' : 'stone.100' },
+    }}
+  >
+    {label}
+  </Box>
+);
+
 const ProductsPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +78,7 @@ const ProductsPage: React.FC = () => {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filterAnchorEl, setFilterAnchorEl] = useState<HTMLElement | null>(null);
 
   const { id: userId } = useAuthStore();
   const { data: cartData, refetch: refetchCart } = useGetAllCarts(userId ?? '');
@@ -143,7 +176,7 @@ const ProductsPage: React.FC = () => {
 
   const handleAddToCart = (product: IGetAllProductResponse, quantity: number) => {
     if (!userId) {
-      message.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
       return;
     }
 
@@ -176,7 +209,7 @@ const ProductsPage: React.FC = () => {
             visible: false,
             status: 'loading',
           })
-          message.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
+          toast.error(`Thêm thất bại: ${err.message || 'Lỗi không xác định'}`);
         }
       }
     );
@@ -202,71 +235,90 @@ const ProductsPage: React.FC = () => {
 
   const activeFilters = getActiveFilterNames();
 
-  // Filter Menu
-  const filterMenu = (
-    <Menu
-      style={{ minWidth: 240, borderRadius: 12, padding: '8px 0' }}
-      onClick={(e) => {
-        const key = e.key as string;
-        if (key === 'reset') return handleResetFilters();
-        const [type, value] = key.split(/-(.+)/);
-        handleFilterChange(type, value === 'all' ? null : value);
-      }}
-    >
-      <Menu.SubMenu
-        key="category"
-        title="Danh mục"
-        onTitleMouseEnter={() => {
-          if (!categoryData) refetchCategory();
-        }}
+  const sortOptions: Array<{ key: string; label: string }> = [
+    { key: 'default', label: 'Mới nhất' },
+    { key: 'price-asc', label: 'Giá: Thấp → Cao' },
+    { key: 'price-desc', label: 'Giá: Cao → Thấp' },
+    { key: 'name-asc', label: 'Tên: A → Z' },
+    { key: 'name-desc', label: 'Tên: Z → A' },
+    { key: 'stock-desc', label: 'Tồn kho nhiều nhất' },
+  ];
+
+  const filterPopover = (
+    <Box sx={{ width: 280, py: 1 }}>
+      <Accordion
+        disableGutters
+        elevation={0}
+        defaultExpanded
+        onChange={(_, expanded) => expanded && !categoryData && refetchCategory()}
+        sx={{ '&:before': { display: 'none' } }}
       >
-        {loadingCategory ? (
-          <Menu.Item key="category-loading" disabled icon={<LoadingOutlined spin />}>
-            Đang tải...
-          </Menu.Item>
-        ) : (
-          <>
-            <Menu.Item key="category-all">Tất cả danh mục</Menu.Item>
-            {categories.map((cat: string) => (
-              <Menu.Item key={`category-${cat}`}>{cat}</Menu.Item>
-            ))}
-          </>
-        )}
-      </Menu.SubMenu>
+        <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem' }}>Danh mục</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ maxHeight: 220, overflowY: 'auto', pt: 0 }}>
+          {loadingCategory ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress size={18} />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <FilterOptionRow label="Tất cả danh mục" active={!filters.category} onClick={() => handleFilterChange('category', null)} />
+              {categories.map((cat: string) => (
+                <FilterOptionRow key={cat} label={cat} active={filters.category === cat} onClick={() => handleFilterChange('category', cat)} />
+              ))}
+            </Box>
+          )}
+        </AccordionDetails>
+      </Accordion>
 
-      <Menu.SubMenu
-        key="supplier"
-        title="Nhà cung cấp"
-        onTitleMouseEnter={() => {
-          if (!supplierData) refetchSupplier();
-        }}
+      <Accordion
+        disableGutters
+        elevation={0}
+        onChange={(_, expanded) => expanded && !supplierData && refetchSupplier()}
+        sx={{ '&:before': { display: 'none' } }}
       >
-        {loadingSupplier ? (
-          <Menu.Item key="supplier-loading" disabled icon={<LoadingOutlined spin />}>
-            Đang tải...
-          </Menu.Item>
-        ) : (
-          <>
-            <Menu.Item key="supplier-all">Tất cả nhà cung cấp</Menu.Item>
-            {suppliers.map((sup: string) => (
-              <Menu.Item key={`supplier-${sup}`}>{sup}</Menu.Item>
+        <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem' }}>Nhà cung cấp</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ maxHeight: 220, overflowY: 'auto', pt: 0 }}>
+          {loadingSupplier ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+              <CircularProgress size={18} />
+            </Box>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <FilterOptionRow label="Tất cả nhà cung cấp" active={!filters.supplier} onClick={() => handleFilterChange('supplier', null)} />
+              {suppliers.map((sup: string) => (
+                <FilterOptionRow key={sup} label={sup} active={filters.supplier === sup} onClick={() => handleFilterChange('supplier', sup)} />
+              ))}
+            </Box>
+          )}
+        </AccordionDetails>
+      </Accordion>
+
+      <Accordion disableGutters elevation={0} sx={{ '&:before': { display: 'none' } }}>
+        <AccordionSummary expandIcon={<ExpandMoreRoundedIcon />}>
+          <Typography sx={{ fontWeight: 700, fontSize: '0.88rem' }}>Sắp xếp</Typography>
+        </AccordionSummary>
+        <AccordionDetails sx={{ pt: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            {sortOptions.map((opt) => (
+              <FilterOptionRow key={opt.key} label={opt.label} active={filters.sortBy === opt.key} onClick={() => handleFilterChange('sortBy', opt.key)} />
             ))}
-          </>
-        )}
-      </Menu.SubMenu>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
-      <Menu.SubMenu key="sortBy" title={<><SortAscendingOutlined /> Sắp xếp</>}>
-        <Menu.Item key="sortBy-default">Mới nhất</Menu.Item>
-        <Menu.Item key="sortBy-price-asc">Giá: Thấp → Cao</Menu.Item>
-        <Menu.Item key="sortBy-price-desc">Giá: Cao → Thấp</Menu.Item>
-        <Menu.Item key="sortBy-name-asc">Tên: A → Z</Menu.Item>
-        <Menu.Item key="sortBy-name-desc">Tên: Z → A</Menu.Item>
-        <Menu.Item key="sortBy-stock-desc">Tồn kho nhiều nhất</Menu.Item>
-      </Menu.SubMenu>
-
-      <Menu.Divider />
-      <Menu.Item key="reset" danger>Xóa tất cả bộ lọc</Menu.Item>
-    </Menu>
+      <Box sx={{ px: 2, pt: 1.5 }}>
+        <Typography
+          onClick={handleResetFilters}
+          sx={{ color: 'error.main', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
+        >
+          Xóa tất cả bộ lọc
+        </Typography>
+      </Box>
+    </Box>
   );
 
   if (isChildRoute) return <Outlet />;
@@ -289,7 +341,7 @@ const ProductsPage: React.FC = () => {
               className="flex items-center gap-3 px-6 py-3 bg-black text-white rounded-xl hover:bg-gray-800 transition-all"
             >
               <div className="relative">
-                <ShoppingCartOutlined className="text-2xl" />
+                <ShoppingCartOutlinedIcon className="text-2xl" />
                 {cartItemCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
                     {cartItemCount > 99 ? '99+' : cartItemCount}
@@ -304,7 +356,7 @@ const ProductsPage: React.FC = () => {
           <div className="flex flex-col lg:flex-row gap-4">
             {/* Search Bar - Chỉ search khi Enter hoặc bấm icon */}
             <div className="flex-1 relative">
-              <SearchOutlined
+              <SearchOutlinedIcon
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg z-10 cursor-pointer hover:text-black transition"
                 onClick={handleSearch}
               />
@@ -325,29 +377,40 @@ const ProductsPage: React.FC = () => {
                   }}
                   className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-black"
                 >
-                  <CloseOutlined />
+                  <CloseOutlinedIcon />
                 </button>
               )}
               <button
                 onClick={handleSearch}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-black text-white w-9 h-9 rounded-lg flex items-center justify-center hover:bg-gray-800 transition"
               >
-                <SearchOutlined />
+                <SearchOutlinedIcon />
               </button>
             </div>
 
             <div className="flex gap-3">
-              <Dropdown overlay={filterMenu} trigger={['click']} disabled={isLoading}>
-                <button className="h-12 px-5 border border-gray-300 rounded-xl hover:border-black flex items-center gap-2 bg-white transition">
-                  <FilterOutlined />
-                  <span className="font-medium">Bộ lọc</span>
-                  {activeFilters.length > 0 && (
-                    <span className="ml-2 bg-black text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
-                      {activeFilters.length}
-                    </span>
-                  )}
-                </button>
-              </Dropdown>
+              <button
+                onClick={(e) => setFilterAnchorEl(e.currentTarget)}
+                disabled={isLoading}
+                className="h-12 px-5 border border-gray-300 rounded-xl hover:border-black flex items-center gap-2 bg-white transition disabled:opacity-50"
+              >
+                <FilterListRoundedIcon sx={{ fontSize: 20 }} />
+                <span className="font-medium">Bộ lọc</span>
+                {activeFilters.length > 0 && (
+                  <span className="ml-2 bg-black text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center">
+                    {activeFilters.length}
+                  </span>
+                )}
+              </button>
+              <Popover
+                open={Boolean(filterAnchorEl)}
+                anchorEl={filterAnchorEl}
+                onClose={() => setFilterAnchorEl(null)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+                slotProps={{ paper: { sx: { mt: 1, borderRadius: 2 } } }}
+              >
+                {filterPopover}
+              </Popover>
 
               <ViewToggle viewMode={viewMode} onChange={setViewMode} disabled={isLoading} />
             </div>
@@ -372,7 +435,7 @@ const ProductsPage: React.FC = () => {
                     }}
                     className="hover:bg-gray-300 rounded-full p-1 transition"
                   >
-                    <CloseOutlined className="text-xs" />
+                    <CloseOutlinedIcon className="text-xs" />
                   </button>
                 </span>
               ))}
@@ -408,14 +471,9 @@ const ProductsPage: React.FC = () => {
           )
         ) : products.length === 0 ? (
           <div className="text-center py-20">
-            <Empty
-              description={
-                <div className="mt-4">
-                  <p className="text-xl font-semibold text-gray-800">Không tìm thấy sản phẩm nào</p>
-                  <p className="text-gray-600 mt-2">Hãy thử thay đổi từ khóa hoặc bộ lọc</p>
-                </div>
-              }
-            />
+            <SearchOutlinedIcon sx={{ fontSize: 56, color: 'stone.300', mb: 2 }} />
+            <p className="text-xl font-semibold text-gray-800">Không tìm thấy sản phẩm nào</p>
+            <p className="text-gray-600 mt-2">Hãy thử thay đổi từ khóa hoặc bộ lọc</p>
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-5 xl:gap-7">
@@ -444,13 +502,12 @@ const ProductsPage: React.FC = () => {
         {/* Pagination */}
         {!isLoading && totalProducts > pageSize && (
           <div className="mt-16 flex justify-center">
-            <Pagination
-              current={currentPage}
-              total={totalProducts}
-              pageSize={pageSize}
-              onChange={handlePageChange}
-              showSizeChanger={false}
-              responsive
+            <MuiPagination
+              page={currentPage}
+              count={Math.ceil(totalProducts / pageSize)}
+              onChange={(_, page) => handlePageChange(page)}
+              color="primary"
+              shape="rounded"
             />
           </div>
         )}

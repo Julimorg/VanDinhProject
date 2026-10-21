@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Empty, Button } from 'antd';
-import { ShoppingCartOutlined } from '@ant-design/icons';
+import { Button } from '@mui/material';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useGetAllCarts } from './Hook/useGetAllCarts';
 import { useUpdateCartItemQuantity } from './Hook/useUpdateCartItemQuantity';
 import { useDeleteCartItem } from './Hook/useDeleteCartItem';
@@ -23,7 +23,6 @@ const CartPage: React.FC = () => {
       refetch();
     },
     onError: (err) => {
-      // Sử dụng toast thay vì message để nhất quán
       toast.error('Cập nhật thất bại: ' + err.message);
     },
   });
@@ -62,11 +61,6 @@ const CartPage: React.FC = () => {
           : item
       )
     );
-
-    // if (debounceRef.current) clearTimeout(debounceRef.current);
-    // debounceRef.current = setTimeout(() => {
-    //   updateCartItemQuantityMutation.mutate({ cartItemId, quantity: value });
-    // }, 500);
   };
 
   const handleUpdateItem = (cartItemId: string) => {
@@ -91,29 +85,28 @@ const CartPage: React.FC = () => {
       },
       onError: (err) => {
         toast.error('Xóa thất bại: ' + err.message);
-        // Khôi phục local state nếu lỗi
         setLocalCart((prev) => [...prev]);
       },
     });
   };
 
-  // Xử lý lỗi
   if (isError) return <p className="p-8 text-center text-red-600">Không thể tải giỏ hàng.</p>;
 
-  // Xử lý empty state
   if (!localCart.length && !isLoading)
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description="Giỏ hàng của bạn đang trống"
-            className="my-16"
-          >
-            <Button type="primary" onClick={() => navigate("/products")} icon={<ShoppingCartOutlined />} size="large">
+          <div className="flex flex-col items-center justify-center my-16 gap-4 text-center">
+            <p className="text-2xl font-semibold text-gray-800">Giỏ hàng của bạn đang trống</p>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/products')}
+              startIcon={<ShoppingCartOutlinedIcon />}
+              size="large"
+            >
               Tiếp tục mua sắm
             </Button>
-          </Empty>
+          </div>
         </div>
       </div>
     );

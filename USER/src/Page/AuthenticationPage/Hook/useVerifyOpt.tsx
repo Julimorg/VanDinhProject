@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { auth_api_handler } from "../../../Api/Api_Handler/auth_api";
 import type { IApiResponse } from "../../../Interface/IApiResponse";
-import { message } from "antd";
+import { toast } from 'react-toastify';
 import type { IVerifyOtp } from "../../../Interface/Auth/IVerifyOtp";
 
 type UseVerifyOptOptions = Omit<
@@ -22,7 +22,7 @@ export const useVerifyOpt = (options?: UseVerifyOptOptions) => {
       queryClient.invalidateQueries({ queryKey: ['Verify Opt'] }); 
     },
     onError: (error: Error) => {
-      message.error(error.message);
+      toast.error(error.message);
     },
     ...options,
   });
