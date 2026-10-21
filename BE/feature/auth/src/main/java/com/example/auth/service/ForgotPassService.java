@@ -125,7 +125,7 @@ public class ForgotPassService {
         ForgotPassword forgotPassword = forgotPasswordRepository.findByUser(user)
                 .orElseThrow(() -> new AppException(ErrorCode.OTP_NOT_VERIFIED));
 
-        if (!forgotPassword.isVerified()) {
+        if (!Boolean.TRUE.equals(forgotPassword.getVerified())) {
             throw new AppException(ErrorCode.OTP_NOT_VERIFIED);
         }
 

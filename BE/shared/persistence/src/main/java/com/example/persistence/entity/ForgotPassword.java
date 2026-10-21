@@ -25,9 +25,12 @@ public class ForgotPassword {
     @Column(nullable = false)
     private LocalDateTime expirationTime;
 
+    // De nullable (khong set nullable=false): neu set NOT NULL, Hibernate ALTER TABLE them cot nay
+    // vao bang da co du lieu san (ddl-auto=update tren DB that) se bi Postgres tu choi vi khong co
+    // gia tri backfill cho cac dong cu ("contains null values"). Cac dong cu se co verified=null,
+    // ForgotPassService coi null la "chua verify" (an toan, dung default).
     @Builder.Default
-    @Column(nullable = false)
-    private boolean verified = false;
+    private Boolean verified = false;
 
     @OneToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
