@@ -220,30 +220,50 @@ public class OrderService {
 
         }
 
-        if (request.getPaymentMethod() == PaymentMethod.VN_PAY) {
-            payment.setPaymentMethod(PaymentMethod.VN_PAY);
+        if (request.getPaymentMethod() == PaymentMethod.BANK_TRANSFER) {
+
             userOrder.setShipAddress(request.getShipAddress());
             userOrder.setUpdateBy(user.getUserName());
             userOrder.setUpdateAt(LocalDateTime.now());
-
-            // TODO
-            //      --> Config VnPay
-            //            paymentUrl = vnPayService.createOrder(httpRequest, orderId);
-            log.info("VNPay payment URL created for order [{}]", orderId);
-
             orderRepository.save(userOrder);
 
+            // Chuyen khoan thu cong qua QR - chua co gi xac nhan da nhan duoc tien nen
+            // de Pending, staff/admin se tu xac nhan Paid sau khi kiem tra tai khoan ngan hang.
             paymentInternalService
                     .updatePaymentMethod(
                             orderId,
-                            PaymentMethod.VN_PAY,
+                            PaymentMethod.BANK_TRANSFER,
                             PaymentMethodStatus.Pending
                     );
 
-            // TODO
-            //      --> Config VnPay
-            //            paymentUrl = vnPayService.createOrder(httpRequest, orderId);
+            clearCart(user.getCart());
+
+            notificationInterface.notifyAdminsOrderConfirmed(userId);
         }
+
+        // Cong thanh toan online (VNPay) dang KHONG duoc su dung cho USER - chi comment lai,
+        // khong xoa, de bat lai sau nay neu can. Hien tai chi ho tro CASH (ship code) va
+        // BANK_TRANSFER (QR chuyen khoan) o tren.
+        // if (request.getPaymentMethod() == PaymentMethod.VN_PAY) {
+        //     payment.setPaymentMethod(PaymentMethod.VN_PAY);
+        //     userOrder.setShipAddress(request.getShipAddress());
+        //     userOrder.setUpdateBy(user.getUserName());
+        //     userOrder.setUpdateAt(LocalDateTime.now());
+        //
+        //     // TODO
+        //     //      --> Config VnPay
+        //     //            paymentUrl = vnPayService.createOrder(httpRequest, orderId);
+        //     log.info("VNPay payment URL created for order [{}]", orderId);
+        //
+        //     orderRepository.save(userOrder);
+        //
+        //     paymentInternalService
+        //             .updatePaymentMethod(
+        //                     orderId,
+        //                     PaymentMethod.VN_PAY,
+        //                     PaymentMethodStatus.Pending
+        //             );
+        // }
 
         UpdateOrderByUserRes response = orderMapper.toGetOrderResponse(userOrder);
         response.setPaymentUrl(paymentUrl);
