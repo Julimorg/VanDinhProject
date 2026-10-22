@@ -1,5 +1,6 @@
 package com.example.security.config;
 
+import com.example.security.filter.CookieBearerTokenFilter;
 import com.example.security.jwt.CustomJwtDecoder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,8 @@ public class SecurityConfiguration {
 //    private final JwtAuthFilter  jwtAuthFilter;
 
     private final CustomJwtDecoder customJwtDecoder;
+
+    private final CookieBearerTokenFilter cookieBearerTokenFilter;
 
     // ---- Public endpoints ----
     private static final String[] PUBLIC_POST_ENDPOINTS = {
@@ -109,6 +112,10 @@ public class SecurityConfiguration {
                         .jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
         );
+
+        // USER app luu token trong cookie httpOnly (khong co header Authorization) ->
+        // filter nay chay truoc BearerTokenAuthenticationFilter de gia lap header tu cookie.
+        httpSecurity.addFilterBefore(cookieBearerTokenFilter, BearerTokenAuthenticationFilter.class);
 
 //         httpSecurity.addFilterAfter(jwtAuthFilter, BearerTokenAuthenticationFilter.class);
 
