@@ -3,7 +3,6 @@ import type { ILogOutRequest } from "../../Interface/Auth/ILogOut";
 import type { IRefreshTokenResponse } from "../../Interface/Auth/IRefreshToken";
 import type { IRegisterRequest, IRegisterResponse } from "../../Interface/Auth/IRegister";
 import type { IApiResponse } from "../../Interface/IApiResponse";
-import { useAuthStore } from "../../Middleware/useAuthStoreWithLocal";
 import axiosClient from "../Axios/axiosClient";
 
 export const auth_api_handler = {
@@ -20,20 +19,12 @@ export const auth_api_handler = {
     },
 
      RefreshToken: async (): Promise<IApiResponse<IRefreshTokenResponse>> => {
+        // Refresh token la cookie httpOnly do backend set - trinh duyet tu gui kem
+        // request nay (axiosClient co withCredentials: true), FE khong can giu/gui gi.
         const url = '/auth/refresh-token';
-        const refreshToken = useAuthStore.getState().refreshToken;
-
-        if (!refreshToken) {
-        throw new Error('Không có refresh token');
-        }
-
-        const res = await axiosClient.get<IApiResponse<IRefreshTokenResponse>>(url, {
-            headers: {
-            Authorization: `Bearer ${refreshToken}`,
-            },
-        });
+        const res = await axiosClient.get<IApiResponse<IRefreshTokenResponse>>(url);
         if (!res.data.data.accessToken) {
-            throw new Error('Response refresh token không hợp lệ');
+        throw new Error('Response refresh token không hợp lệ');
         }
         return res.data;
     },

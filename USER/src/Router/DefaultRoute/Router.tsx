@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { Box, CircularProgress } from '@mui/material';
 import WelcomePage from '../../Page/WelcomePage/WelcomePage';
 import AuthPage from '../../Page/AuthenticationPage/AuthPage';
 import MainLayout from '../../Page/Main/MainLayout';
@@ -24,8 +25,18 @@ import ReturnPolicyPage from '../../Page/PolicyPage/ReturnPolicyPage';
 import TermsPage from '../../Page/PolicyPage/TermsPage';
 import PrivacyPage from '../../Page/PolicyPage/PrivacyPage';
 
+const BootstrapGate: React.FC = () => (
+  <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <CircularProgress sx={{ color: 'stone.900' }} />
+  </Box>
+);
+
 const AuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
+  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
+  if (!isBootstrapped) {
+    return <BootstrapGate />;
+  }
   if (!access_token) {
     return <Navigate to="/login" replace />;
   }
@@ -34,6 +45,10 @@ const AuthorizedRoute: React.FC = () => {
 
 const UnAuthorizedRoute: React.FC = () => {
   const access_token = useAuthStore((state) => state.accessToken);
+  const isBootstrapped = useAuthStore((state) => state.isBootstrapped);
+  if (!isBootstrapped) {
+    return <BootstrapGate />;
+  }
   if (access_token) {
     return <Navigate to="/dashboard" replace />;
   }

@@ -36,19 +36,19 @@ const UserProfileDropdown: React.FC<UserProfileDropdownProps> = ({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const navigateHook = useNavigate();
   const navigateTo = navigate || navigateHook;
-  const { accessToken: token, clearTokens } = useAuthStore();
+  const { accessToken: token, clearAuth } = useAuthStore();
   const open = Boolean(anchorEl);
 
   const { mutate: logOut, isPending } = useLogOut({
     onSuccess: () => {
-      clearTokens();
+      clearAuth();
       toast.success('Đăng xuất thành công!');
       setAnchorEl(null);
       navigateTo('/login');
     },
     onError: (error) => {
       toast.error(`Lỗi đăng xuất: ${error || 'Vui lòng thử lại!'}`);
-      clearTokens();
+      clearAuth();
       setAnchorEl(null);
       navigateTo('/login');
     },

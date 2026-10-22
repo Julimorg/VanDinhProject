@@ -23,7 +23,10 @@ interface ErrorResponse {
 // AXIOS INSTANCE
 // ============================================
 const axiosClient = axios.create({
-  baseURL: PUBLIC_API, 
+  baseURL: PUBLIC_API,
+  // Bat buoc de trinh duyet gui/nhan cookie httpOnly (access_token/refresh_token) -
+  // BE da cho phep qua CORS allowCredentials + danh sach origin cu the (khong dung "*").
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -89,7 +92,7 @@ axiosClient.interceptors.response.use(
 
     //? Xử lý lỗi refresh token endpoint
     if (originalRequest.url?.includes('/auth/refresh-token')) {
-      useAuthStore.getState().clearTokens();
+      useAuthStore.getState().clearAuth();
       window.location.href = '/login';
       return Promise.reject(error);
     }
@@ -117,31 +120,17 @@ axiosClient.interceptors.response.use(
       }
 
       isRefreshing = true;
-      const refreshToken = useAuthStore.getState().refreshToken;
-
-      if (!refreshToken) {
-        isRefreshing = false;
-        processQueue(new Error('Không có refresh token'), null);
-        useAuthStore.getState().clearTokens();
-        toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
-        return Promise.reject(error);
-      }
 
       try {
+        // Refresh token la cookie httpOnly - trinh duyet tu gui kem, khong can
+        // FE doc/truyen gi them (xem auth_api.ts RefreshToken).
         const res = await auth_api_handler.RefreshToken();
         const { accessToken } = res.data;
 
-        const {
-          refreshToken: currentRefreshToken, 
-          userName, 
-          email, 
-          userImg, 
-          id 
-        } = useAuthStore.getState();
+        const { userName, email, userImg, id } = useAuthStore.getState();
 
-        useAuthStore.getState().setTokens(
+        useAuthStore.getState().setAuth(
           accessToken,
-          currentRefreshToken,
           userName,
           email ?? null,
           userImg ?? null,
@@ -157,7 +146,7 @@ axiosClient.interceptors.response.use(
         return axiosClient(originalRequest);
       } catch (refreshError) {
         processQueue(new Error('Refresh token failed'), null);
-        useAuthStore.getState().clearTokens();
+        useAuthStore.getState().clearAuth();
         toast.error('Không thể làm mới phiên đăng nhập. Vui lòng đăng nhập lại!');
 
         window.location.href = '/login';
