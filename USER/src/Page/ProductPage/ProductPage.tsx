@@ -54,9 +54,9 @@ const FilterOptionRow: React.FC<FilterOptionRowProps> = ({ label, active, onClic
       fontSize: '0.85rem',
       fontWeight: active ? 700 : 500,
       color: active ? 'primary.dark' : 'stone.700',
-      bgcolor: active ? 'amber.50' : 'transparent',
+      bgcolor: active ? 'stone.200' : 'transparent',
       cursor: 'pointer',
-      '&:hover': { bgcolor: active ? 'amber.50' : 'stone.100' },
+      '&:hover': { bgcolor: active ? 'stone.200' : 'stone.100' },
     }}
   >
     {label}

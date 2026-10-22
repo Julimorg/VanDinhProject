@@ -1,54 +1,73 @@
-# React + TypeScript + Vite
+# Vạn Đinh Paint — USER
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Giao diện mua hàng dành cho khách (end-user) của hệ thống Vạn Đinh Paint.
+React 19 + Vite + TypeScript, UI dựng bằng MUI + Tailwind CSS, data-fetching
+bằng `@tanstack/react-query`, state auth/cart bằng `zustand`.
 
-Currently, two official plugins are available:
+## Yêu cầu
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 20+
+- Backend API của project (xem repo `BE/`) đang chạy và có thể truy cập được
 
-## Expanding the ESLint configuration
+## Cài đặt
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Biến môi trường
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Tạo file `.env` ở thư mục gốc `USER/` (file này không được commit vào repo —
+mỗi môi trường deploy tự tạo file riêng) với 2 biến sau:
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+| Biến                     | Mô tả                                                                 | Ví dụ                                  |
+| ------------------------- | ---------------------------------------------------------------------- | --------------------------------------- |
+| `VITE_PUBLIC_API`         | Base URL của backend API (bao gồm `/api/v1` nếu backend cần)          | `http://localhost:8080/api/v1`          |
+| `VITE_VIETNAM_ADDRESS_API`| Base URL của API tra tỉnh/huyện/xã Việt Nam dùng cho form địa chỉ      | `https://provinces.open-api.vn/api`     |
+
+Đây là 2 biến duy nhất thực sự được code sử dụng. Mọi biến môi trường khác
+không còn được tham chiếu ở đâu trong code.
+
+## Chạy dev
+
+```bash
+npm run dev
 ```
+
+Mặc định chạy ở `http://localhost:5174`.
+
+## Build production
+
+```bash
+npm run build
+```
+
+Lệnh này chạy `tsc -b` (kiểm tra type) rồi `vite build`, xuất ra thư mục
+`dist/`. Khi build production, toàn bộ `console.*`/`debugger` trong code được
+Vite tự động loại bỏ (xem `esbuild.drop` trong `vite.config.ts`) — không lo
+lộ log ra DevTools Console trên bản production.
+
+Xem trước bản build:
+
+```bash
+npm run preview
+```
+
+## Deploy
+
+`dist/` sau khi build là một static site thuần (HTML/CSS/JS) — deploy được
+trên bất kỳ static hosting nào (Vercel, Netlify, Nginx, S3+CloudFront...).
+Lưu ý:
+
+- Phải cấu hình server trả về `index.html` cho mọi route không khớp file
+  tĩnh nào (SPA fallback), vì app dùng `react-router-dom` (client-side
+  routing).
+- Nhớ set đúng `VITE_PUBLIC_API`/`VITE_VIETNAM_ADDRESS_API` **tại thời điểm
+  build** (biến môi trường Vite được inline vào bundle lúc build, không đọc
+  được lúc runtime).
+
+## Thanh toán
+
+App hiện chỉ hỗ trợ **COD (thanh toán khi nhận hàng)** và **chuyển khoản
+ngân hàng qua QR** — không dùng cổng thanh toán online (VNPay đã được tắt ở
+cả FE và BE, xem `PaymentMethod.tsx`).

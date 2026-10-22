@@ -1,10 +1,9 @@
 import React from 'react';
 import { Button, Divider } from '@mui/material';
 import RoomRoundedIcon from '@mui/icons-material/RoomRounded';
-import CalendarMonthRoundedIcon from '@mui/icons-material/CalendarMonthRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import ShoppingBagRoundedIcon from '@mui/icons-material/ShoppingBagRounded';
-import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { getStatusConfig } from './OrderStatusConfig';
@@ -24,84 +23,65 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-200">
-      {/* Status Bar */}
-      <div
-        className="h-1.5 rounded-t-lg"
-        style={{ backgroundColor: statusConfig.color }}
-      />
+    <div
+      onClick={handleViewDetail}
+      className="bg-white rounded-lg border border-stone-200 hover:border-stone-900 hover:shadow-[0_12px_28px_-16px_rgba(0,0,0,0.2)] transition-all duration-200 cursor-pointer overflow-hidden"
+    >
+      {/* Header Row */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5 bg-stone-50 border-b border-stone-100">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-sm font-bold text-stone-900">{order.orderCode}</span>
+          <span className="text-xs text-stone-400">
+            {dayjs(order.createAt).format('DD/MM/YYYY · HH:mm')}
+          </span>
+        </div>
 
-      <div className="p-5">
-        {/* Header Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-          <div className="flex items-center gap-4">
-            <DescriptionRoundedIcon className="text-2xl text-gray-400" />
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">
-                {order.orderCode}
-              </h3>
-              <p className="text-sm text-gray-500">
-                ID: {order.orderId}
-              </p>
-            </div>
+        <div
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+          style={{
+            color: statusConfig.color,
+            backgroundColor: statusConfig.bgColor,
+            border: `1px solid ${statusConfig.borderColor}`,
+          }}
+        >
+          {statusConfig.icon}
+          <span>{statusConfig.text}</span>
+        </div>
+      </div>
+
+      <div className="px-5 py-4">
+        <div className="flex flex-wrap gap-x-6 gap-y-2.5 text-sm text-stone-600 mb-3">
+          <div className="flex items-center gap-1.5">
+            <ShoppingBagRoundedIcon sx={{ fontSize: 17 }} className="text-stone-400" />
+            <span>{order.total_quantity} sản phẩm</span>
           </div>
-
-          <div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-base font-semibold w-fit"
-            style={{
-              color: statusConfig.color,
-              backgroundColor: statusConfig.bgColor,
-              border: `1px solid ${statusConfig.borderColor}`
-            }}
-          >
-            {statusConfig.icon}
-            <span>{statusConfig.text}</span>
+          <div className="flex items-center gap-1.5">
+            <CreditCardRoundedIcon sx={{ fontSize: 17 }} className="text-stone-400" />
+            <span>{order.paymentMethod}</span>
+          </div>
+          <div className="flex items-center gap-1.5 min-w-0">
+            <RoomRoundedIcon sx={{ fontSize: 17 }} className="text-stone-400 flex-shrink-0" />
+            <span className="truncate max-w-[14rem] sm:max-w-xs">{order.shipAddress}</span>
           </div>
         </div>
-        <Divider sx={{ margin: '16px 0' }} />
-        {/* Order Details */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div className="flex items-start gap-3">
-            <RoomRoundedIcon className="text-lg text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Địa chỉ giao hàng</p>
-              <p className="text-sm text-gray-900">{order.shipAddress}</p>
-            </div>
+
+        <Divider className="mb-3" />
+
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <span className="text-xs text-stone-500 mr-1.5">Tổng cộng:</span>
+            <span className="text-lg font-bold text-stone-900">{formatPrice(order.orderAmount)}</span>
           </div>
-          <div className="flex items-start gap-3">
-            <CreditCardRoundedIcon className="text-lg text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Phương thức thanh toán</p>
-              <p className="text-sm text-gray-900">{order.paymentMethod}</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <CalendarMonthRoundedIcon className="text-lg text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Ngày tạo</p>
-              <p className="text-sm text-gray-900">
-                {dayjs(order.createAt).format('DD/MM/YYYY - HH:mm')}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <ShoppingBagRoundedIcon className="text-lg text-gray-400 mt-0.5" />
-            <div>
-              <p className="text-xs text-gray-500 mb-1">Tổng tiền</p>
-              <p className="text-base font-semibold text-gray-900">
-                {formatPrice(order.orderAmount)}
-              </p>
-            </div>
-          </div>
-        </div>
-        {/* Action Button */}
-        <div className="flex justify-end pt-2">
           <Button
             variant="outlined"
             color="secondary"
-            onClick={handleViewDetail}
-            className="text-gray-700 border-gray-300 hover:border-gray-400 hover:text-gray-900"
-            sx={{ borderRadius: '6px' }}
+            size="small"
+            endIcon={<ChevronRightRoundedIcon sx={{ fontSize: 16 }} />}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleViewDetail();
+            }}
+            sx={{ borderRadius: '4px', flexShrink: 0 }}
           >
             Xem chi tiết
           </Button>

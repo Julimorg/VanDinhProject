@@ -4,8 +4,8 @@ import { Box } from '@mui/material';
 
 /**
  * Hero 3D nhe - vai khoi mau son (icosahedron) lo lung xoay cham, phoi mau
- * amber/stone theo thuong hieu. Dung three.js thuan (khong fiber) de giu
- * dependency toi thieu va de kiem soat vong doi (mount/unmount/resize).
+ * den/trang/xam theo tong mau thuong hieu. Dung three.js thuan (khong fiber)
+ * de giu dependency toi thieu va de kiem soat vong doi (mount/unmount/resize).
  *
  * Thiet ke co y: it polygon, khong bong do nang -> nhe cho may yeu,
  * khong lam phan tan khoi noi dung chinh cua hero section.
@@ -33,15 +33,15 @@ export default function ThreeHero() {
     // Anh sang
     const ambient = new THREE.AmbientLight(0xffffff, 0.75);
     scene.add(ambient);
-    const key = new THREE.DirectionalLight(0xf59e0b, 1.4);
+    const key = new THREE.DirectionalLight(0xffffff, 1.4);
     key.position.set(4, 6, 6);
     scene.add(key);
     const rim = new THREE.DirectionalLight(0x1c1917, 0.5);
     rim.position.set(-6, -3, -4);
     scene.add(rim);
 
-    // Cac khoi "giot son" - icosahedron be nho, phoi mau thuong hieu
-    const colors = [0xf59e0b, 0x1c1917, 0xfcd34d, 0x44403c, 0xd97706];
+    // Cac khoi "giot son" - icosahedron be nho, phoi mau den/trang/xam
+    const colors = [0xffffff, 0x1c1917, 0xe7e5e4, 0x44403c, 0x78716c];
     const meshes: THREE.Mesh[] = [];
     const group = new THREE.Group();
 

@@ -89,7 +89,6 @@ axiosClient.interceptors.response.use(
 
     //? Xử lý lỗi refresh token endpoint
     if (originalRequest.url?.includes('/auth/refresh-token')) {
-      console.log('Refresh token API failed, clearing tokens');
       useAuthStore.getState().clearTokens();
       window.location.href = '/login';
       return Promise.reject(error);
@@ -104,7 +103,6 @@ axiosClient.interceptors.response.use(
 
       //? Nếu đang refresh, đưa request vào queue
       if (isRefreshing) {
-        console.log(' Already refreshing, adding to queue. Queue size:', failedQueue.length + 1);
         return new Promise<string | null>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
@@ -112,7 +110,6 @@ axiosClient.interceptors.response.use(
             if (!token) {
               throw new Error('No token received from queue');
             }
-            console.log(' Queue processed, retrying request:', originalRequest.url);
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return axiosClient(originalRequest);
           })
@@ -123,7 +120,6 @@ axiosClient.interceptors.response.use(
       const refreshToken = useAuthStore.getState().refreshToken;
 
       if (!refreshToken) {
-        console.error('Không có refresh token');
         isRefreshing = false;
         processQueue(new Error('Không có refresh token'), null);
         useAuthStore.getState().clearTokens();
@@ -132,14 +128,10 @@ axiosClient.interceptors.response.use(
       }
 
       try {
-        console.log('Bắt đầu refresh token...');
-
         const res = await auth_api_handler.RefreshToken();
         const { accessToken } = res.data;
 
-        console.log('Refresh token thành công, new AT:', accessToken?.substring(0, 20) + '...');
-
-        const { 
+        const {
           refreshToken: currentRefreshToken, 
           userName, 
           email, 
@@ -158,32 +150,12 @@ axiosClient.interceptors.response.use(
 
         axiosClient.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
-        console.log(' Processing queue:', failedQueue.length, 'requests');
         processQueue(null, accessToken);
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        console.log(' Retrying original request:', originalRequest.url);
-
-        console.log('Debug state:', {
-          status: error.response?.status,
-          url: originalRequest.url,
-          isRefreshing,
-          queueSize: failedQueue.length,
-          hasRetried: originalRequest._retry,
-          currentAT: useAuthStore.getState().accessToken?.substring(0, 20),
-          currentRT: useAuthStore.getState().refreshToken?.substring(0, 20),
-        });
 
         return axiosClient(originalRequest);
       } catch (refreshError) {
-        const err = refreshError as AxiosError<ErrorResponse>;
-        
-        console.error('Lỗi khi refresh token:', {
-          message: err.message,
-          status: err.response?.status,
-          data: err.response?.data,
-        });
-
         processQueue(new Error('Refresh token failed'), null);
         useAuthStore.getState().clearTokens();
         toast.error('Không thể làm mới phiên đăng nhập. Vui lòng đăng nhập lại!');
@@ -192,7 +164,6 @@ axiosClient.interceptors.response.use(
 
         return Promise.reject(refreshError);
       } finally {
-        console.log(' Reset isRefreshing flag');
         isRefreshing = false;
       }
     }
@@ -200,12 +171,6 @@ axiosClient.interceptors.response.use(
   
     const errorMessage =
       error.response?.data?.message || error.message || 'Đã có lỗi xảy ra';
-    
-    console.error('Response error:', {
-      message: errorMessage,
-      status: error.response?.status,
-      url: originalRequest?.url,
-    });
 
     toast.error(errorMessage);
     return Promise.reject(error);

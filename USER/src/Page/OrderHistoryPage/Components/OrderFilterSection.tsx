@@ -17,7 +17,7 @@ const OrderFilterSection: React.FC<OrderFilterSectionProps> = ({
   onFilterChange
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+    <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-4 mb-6">
       <div className="flex flex-col md:flex-row gap-3">
         <TextField
           placeholder="Tìm kiếm theo mã đơn hàng hoặc địa chỉ..."
@@ -28,7 +28,7 @@ const OrderFilterSection: React.FC<OrderFilterSectionProps> = ({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchRoundedIcon className="text-gray-400" />
+                  <SearchRoundedIcon className="text-stone-400" />
                 </InputAdornment>
               ),
             },
@@ -43,7 +43,7 @@ const OrderFilterSection: React.FC<OrderFilterSectionProps> = ({
             input: {
               startAdornment: (
                 <InputAdornment position="start">
-                  <FilterListRoundedIcon className="text-gray-400" />
+                  <FilterListRoundedIcon className="text-stone-400" />
                 </InputAdornment>
               ),
             },

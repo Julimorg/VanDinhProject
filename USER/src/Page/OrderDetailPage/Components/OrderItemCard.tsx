@@ -18,7 +18,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
   const hasMultipleImages = item.productImage && item.productImage.length > 1;
 
   return (
-    <div className="border-b border-gray-100 last:border-b-0 py-4">
+    <div className="border-b border-stone-100 last:border-b-0 py-4">
       <div className="w-full flex gap-4">
         {/* Image Swiper Section */}
         <div className="flex-shrink-0" style={{ width: '140px' }}>
@@ -29,20 +29,20 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
               slidesPerView={1}
               navigation={false}
               pagination={hasMultipleImages ? { clickable: true } : false}
-              className="rounded-lg overflow-hidden border border-gray-200"
+              className="rounded-lg overflow-hidden border border-stone-200"
               style={{
                 height: '140px',
-                '--swiper-pagination-color': '#6b7280',
-                '--swiper-pagination-bullet-inactive-color': '#d1d5db',
+                '--swiper-pagination-color': '#78716c',
+                '--swiper-pagination-bullet-inactive-color': '#d6d3d1',
                 '--swiper-pagination-bullet-size': '8px',
                 '--swiper-pagination-bullet-width': '8px',
                 '--swiper-pagination-bullet-height': '8px',
-                '--swiper-pagination-bullet-active-color': '#3b82f6',
+                '--swiper-pagination-bullet-active-color': '#1c1917',
               } as React.CSSProperties}
             >
               {item.productImage.map((img, imgIndex) => (
                 <SwiperSlide key={imgIndex}>
-                  <div className="relative w-full h-full bg-gray-50">
+                  <div className="relative w-full h-full bg-stone-50">
                     <img
                       src={img}
                       alt={`${item.productName} - ${imgIndex + 1}`}
@@ -56,8 +56,8 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
               ))}
             </Swiper>
           ) : (
-            <div className="w-full h-[140px] bg-gray-50 rounded-lg border border-gray-200 flex items-center justify-center">
-              <span className="text-gray-400 text-xs">Không có ảnh</span>
+            <div className="w-full h-[140px] bg-stone-50 rounded-lg border border-stone-200 flex items-center justify-center">
+              <span className="text-stone-400 text-xs">Không có ảnh</span>
             </div>
           )}
         </div>
@@ -66,7 +66,7 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
         <div className="flex-grow">
           <div className="flex justify-between items-start mb-2">
             <div className="flex-grow pr-4">
-              <h4 className="text-base font-medium text-gray-900 mb-2">
+              <h4 className="text-base font-medium text-stone-900 mb-2">
                 {item.productName}
               </h4>
               <div className="flex flex-wrap gap-2 mb-2">
@@ -77,27 +77,27 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
                   <Chip label={`${item.productVolume} / ${item.productUnit}`} size="small" variant="outlined" />
                 )}
               </div>
-              <p className="text-xs text-gray-500">
-                Tồn kho: <span className="font-medium text-gray-700">{item.productQuantity}</span>
+              <p className="text-xs text-stone-500">
+                Tồn kho: <span className="font-medium text-stone-700">{item.productQuantity}</span>
               </p>
             </div>
           </div>
 
           {/* Price Info */}
-          <div className="bg-gray-50 rounded-lg p-3 space-y-2 mt-3">
+          <div className="bg-stone-50 rounded-lg p-3 space-y-2 mt-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Đơn giá:</span>
-              <span className="text-sm font-medium text-gray-900">
+              <span className="text-sm text-stone-600">Đơn giá:</span>
+              <span className="text-sm font-medium text-stone-900">
                 {formatCurrency(item.productPrice)}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Số lượng:</span>
-              <span className="text-sm font-medium text-gray-900">x{item.quantity}</span>
+              <span className="text-sm text-stone-600">Số lượng:</span>
+              <span className="text-sm font-medium text-stone-900">x{item.quantity}</span>
             </div>
-            <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-              <span className="text-sm font-medium text-gray-900">Thành tiền:</span>
-              <span className="text-base font-semibold text-gray-900">
+            <div className="flex justify-between items-center pt-2 border-t border-stone-200">
+              <span className="text-sm font-medium text-stone-900">Thành tiền:</span>
+              <span className="text-base font-semibold text-stone-900">
                 {formatCurrency(item.productPrice * item.quantity)}
               </span>
             </div>
@@ -107,14 +107,14 @@ const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
 
       <style>{`
         .swiper-pagination-bullet {
-          background: #d1d5db;
+          background: #d6d3d1;
           opacity: 1;
           width: 8px;
           height: 8px;
         }
 
         .swiper-pagination-bullet-active {
-          background: #3b82f6;
+          background: #1c1917;
           width: 10px;
           height: 10px;
         }

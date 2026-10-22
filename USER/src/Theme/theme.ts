@@ -1,22 +1,12 @@
 import { createTheme, alpha } from '@mui/material/styles';
 
 /**
- * Bang mau thuong hieu "Van Dinh Paint" - ke thua tu Footer.tsx (ban thiet ke goc),
- * dua tren thang mau "stone" (trung tinh am) + amber lam mau nhan dien.
+ * Bang mau thuong hieu "Van Dinh Paint" - tong mau chu dao den/trang, dua tren
+ * thang mau "stone" (trung tinh am). Khong dung mau accent noi bat cho branding/
+ * trang tri; cac mau success/error/warning chi giu lai o nhung noi can bao hieu
+ * trang thai (het hang, don bi huy...), khong dung trang tri.
  */
 export const palette = {
-  amber: {
-    50: '#fffbeb',
-    100: '#fef3c7',
-    200: '#fde68a',
-    300: '#fcd34d',
-    400: '#fbbf24',
-    500: '#f59e0b',
-    600: '#d97706',
-    700: '#b45309',
-    800: '#92400e',
-    900: '#78350f',
-  },
   stone: {
     50: '#fafaf9',
     100: '#f5f5f4',
@@ -32,7 +22,7 @@ export const palette = {
   },
   success: '#16a34a',
   error: '#dc2626',
-  warning: '#f59e0b',
+  warning: '#d97706',
   info: '#2563eb',
 };
 
@@ -49,10 +39,10 @@ const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: palette.amber[500],
-      light: palette.amber[300],
-      dark: palette.amber[700],
-      contrastText: palette.stone[900],
+      main: palette.stone[900],
+      light: palette.stone[700],
+      dark: palette.stone[950],
+      contrastText: '#fff',
     },
     secondary: {
       main: palette.stone[900],
@@ -106,7 +96,7 @@ const theme = createTheme({
           backgroundColor: palette.stone[50],
         },
         '::selection': {
-          backgroundColor: alpha(palette.amber[500], 0.35),
+          backgroundColor: alpha(palette.stone[900], 0.15),
         },
       },
     },
@@ -120,8 +110,8 @@ const theme = createTheme({
           paddingBlock: 10,
         },
         containedPrimary: {
-          color: palette.stone[900],
-          '&:hover': { backgroundColor: palette.amber[600] },
+          color: '#fff',
+          '&:hover': { backgroundColor: palette.stone[700] },
         },
         outlined: {
           borderWidth: 1.5,

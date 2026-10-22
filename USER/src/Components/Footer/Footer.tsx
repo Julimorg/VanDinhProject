@@ -38,7 +38,7 @@ const Footer: React.FC = () => {
         pt: { xs: 8, md: 12 },
         pb: 4,
         mt: 'auto',
-        borderTop: '3px solid #f59e0b',
+        borderTop: '3px solid #ffffff',
       }}
     >
       <Box sx={{ maxWidth: 1280, mx: 'auto', px: { xs: 3, md: 6, lg: 8 } }}>
@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
               <Box
                 sx={{
                   width: 36, height: 36,
-                  bgcolor: '#f59e0b',
+                  bgcolor: '#ffffff',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
               >
@@ -82,7 +82,7 @@ const Footer: React.FC = () => {
 
             {/* Tagline */}
             <Box sx={{ mt: 3, pt: 3, borderTop: '1px solid #292524' }}>
-              <Typography sx={{ color: '#f59e0b', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+              <Typography sx={{ color: '#ffffff', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
                 Uy tín · Chất lượng · Giá tốt nhất TP.HCM
               </Typography>
             </Box>
@@ -106,7 +106,7 @@ const Footer: React.FC = () => {
                     display: 'flex', alignItems: 'center', gap: 0.75,
                     color: '#78716c', fontSize: '0.82rem',
                     textDecoration: 'none', transition: 'color 0.2s',
-                    '&:hover': { color: '#f59e0b' },
+                    '&:hover': { color: '#ffffff' },
                     '&:hover .arrow': { opacity: 1, transform: 'translateX(2px)' },
                   }}
                 >
@@ -131,17 +131,17 @@ const Footer: React.FC = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
               {[
                 {
-                  icon: <LocationOn sx={{ fontSize: '0.9rem', color: '#f59e0b', mt: '2px', flexShrink: 0 }} />,
+                  icon: <LocationOn sx={{ fontSize: '0.9rem', color: '#ffffff', mt: '2px', flexShrink: 0 }} />,
                   content: '123 Đường Sơn, Phường 10, Quận 3, TP. Hồ Chí Minh',
                   href: undefined,
                 },
                 {
-                  icon: <Phone sx={{ fontSize: '0.9rem', color: '#f59e0b', flexShrink: 0 }} />,
+                  icon: <Phone sx={{ fontSize: '0.9rem', color: '#ffffff', flexShrink: 0 }} />,
                   content: '0123 456 789',
                   href: 'tel:0123456789',
                 },
                 {
-                  icon: <Email sx={{ fontSize: '0.9rem', color: '#f59e0b', flexShrink: 0 }} />,
+                  icon: <Email sx={{ fontSize: '0.9rem', color: '#ffffff', flexShrink: 0 }} />,
                   content: 'info@vandinh.com',
                   href: 'mailto:info@vandinh.com',
                 },
@@ -151,7 +151,7 @@ const Footer: React.FC = () => {
                   {item.href ? (
                     <Box component="a" href={item.href} sx={{
                       color: '#78716c', fontSize: '0.8rem', textDecoration: 'none',
-                      transition: 'color 0.2s', '&:hover': { color: '#f59e0b' },
+                      transition: 'color 0.2s', '&:hover': { color: '#ffffff' },
                     }}>
                       {item.content}
                     </Box>
@@ -201,7 +201,7 @@ const Footer: React.FC = () => {
 
             {/* Working hours */}
             <Box sx={{ mt: 2.5, p: 1.5, border: '1px solid #292524' }}>
-              <Typography sx={{ color: '#f59e0b', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.75 }}>
+              <Typography sx={{ color: '#ffffff', fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', mb: 0.75 }}>
                 Giờ mở cửa
               </Typography>
               <Typography sx={{ color: '#78716c', fontSize: '0.75rem' }}>
@@ -220,10 +220,10 @@ const Footer: React.FC = () => {
             © {currentYear} Cửa hàng sơn Vạn Đinh. All rights reserved.
           </Typography>
           <Box sx={{ display: 'flex', gap: 2.5, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Box component={Link} to="/terms" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#f59e0b' } }}>
+            <Box component={Link} to="/terms" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#ffffff' } }}>
               Điều khoản dịch vụ
             </Box>
-            <Box component={Link} to="/privacy" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#f59e0b' } }}>
+            <Box component={Link} to="/privacy" sx={{ color: '#78716c', fontSize: '0.72rem', textDecoration: 'none', '&:hover': { color: '#ffffff' } }}>
               Chính sách bảo mật
             </Box>
           </Box>

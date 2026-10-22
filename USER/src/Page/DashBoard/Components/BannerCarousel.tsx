@@ -11,7 +11,7 @@ const banners = [
     title: 'Giảm đến 30%',
     subtitle: 'Sơn Dulux, Jotun, Nippon chính hãng — chất lượng châu Âu, giá Việt Nam.',
     cta: 'Xem khuyến mãi',
-    gradient: 'linear-gradient(to right, rgba(120,53,15,0.85), rgba(28,25,23,0.5) 60%, transparent)',
+    gradient: 'linear-gradient(to right, rgba(12,10,9,0.85), rgba(28,25,23,0.5) 60%, transparent)',
   },
   {
     image: 'https://images2.thanhnien.vn/zoom/1200_630/528068263637045248/2025/10/22/1-17611322634222119188377-38-0-786-1429-crop-17611325524301732071931.jpg',
@@ -128,11 +128,11 @@ const BannerCarousel: React.FC = () => {
                 <Box sx={{ maxWidth: 600 }}>
                   {/* Eyebrow */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-                    <Box sx={{ height: '1px', width: 32, bgcolor: '#f59e0b' }} />
+                    <Box sx={{ height: '1px', width: 32, bgcolor: 'white' }} />
                     <Typography
                       variant="overline"
                       sx={{
-                        color: '#f59e0b',
+                        color: 'white',
                         fontWeight: 700,
                         letterSpacing: '0.3em',
                         fontSize: '0.7rem',
@@ -176,7 +176,7 @@ const BannerCarousel: React.FC = () => {
                     variant="contained"
                     endIcon={<ArrowForward sx={{ fontSize: '1rem !important' }} />}
                     sx={{
-                      bgcolor: '#f59e0b',
+                      bgcolor: 'white',
                       color: '#1c1917',
                       fontWeight: 700,
                       fontSize: { xs: '0.75rem', md: '0.85rem' },
@@ -187,7 +187,7 @@ const BannerCarousel: React.FC = () => {
                       py: { xs: 1.2, md: 1.6 },
                       boxShadow: 'none',
                       '&:hover': {
-                        bgcolor: '#fbbf24',
+                        bgcolor: '#f5f5f4',
                         boxShadow: 'none',
                         transform: 'none',
                       },
@@ -278,7 +278,7 @@ const BannerCarousel: React.FC = () => {
             sx={{
               height: '2px',
               width: i === selectedIndex ? 32 : 12,
-              bgcolor: i === selectedIndex ? '#f59e0b' : 'rgba(255,255,255,0.4)',
+              bgcolor: i === selectedIndex ? '#ffffff' : 'rgba(255,255,255,0.4)',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               '&:hover': { bgcolor: 'rgba(255,255,255,0.7)' },
@@ -295,7 +295,7 @@ const BannerCarousel: React.FC = () => {
           left: 0,
           right: 0,
           height: '2px',
-          background: 'linear-gradient(to right, #f59e0b, #fcd34d, transparent)',
+          background: 'linear-gradient(to right, #ffffff, rgba(255,255,255,0.4), transparent)',
         }}
       />
     </Box>

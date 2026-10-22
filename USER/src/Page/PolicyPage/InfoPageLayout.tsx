@@ -85,7 +85,7 @@ export default function InfoPageLayout({ eyebrow, title, subtitle, children }: P
                       py: 1.25,
                       borderLeft: '3px solid',
                       borderLeftColor: active ? 'primary.main' : 'transparent',
-                      bgcolor: active ? 'amber.50' : 'transparent',
+                      bgcolor: active ? 'stone.100' : 'transparent',
                       '&:hover': { bgcolor: 'stone.100' },
                     }}
                   >

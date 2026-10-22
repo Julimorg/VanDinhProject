@@ -1,9 +1,12 @@
 import React from 'react';
+import { Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import RoomRoundedIcon from '@mui/icons-material/RoomRounded';
 import PhoneRoundedIcon from '@mui/icons-material/PhoneRounded';
+import MailRoundedIcon from '@mui/icons-material/MailRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import StorefrontRoundedIcon from '@mui/icons-material/StorefrontRounded';
+import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import type { IGetAllSupplierResponse } from '../../../Interface/Supplier/IGetAllSuppliers';
 
 interface SupplierCardProps {
@@ -47,52 +50,70 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       tabIndex={0}
       onClick={goToDetail}
       onKeyDown={handleKeyDown}
-      className="supplier-card-enter group flex gap-4 p-4 bg-white border border-[#ECEAE5] rounded-lg cursor-pointer transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_24px_-12px_rgba(23,23,22,0.18)] hover:border-[#D8D5CE] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#171716] focus-visible:ring-offset-2"
+      className="supplier-card-enter group flex flex-col h-full bg-white border border-stone-200 rounded-lg overflow-hidden cursor-pointer transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_18px_40px_-16px_rgba(23,23,22,0.28)] hover:border-stone-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2"
       style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
     >
-      {/* Thumbnail — grayscale ở trạng thái nghỉ, hiện màu thật khi hover */}
-      <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 overflow-hidden rounded-md bg-[#F1F0EC]">
+      {/* Cover image — to, full mau, khong grayscale */}
+      <div className="relative w-full aspect-[16/9] flex-shrink-0 overflow-hidden bg-stone-100">
         {supplier.supplierImg ? (
           <img
             alt={supplier.supplierName}
             src={supplier.supplierImg}
-            className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 ease-out"
+            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
             onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-[#C9C6BE]">
-            <StorefrontRoundedIcon sx={{ fontSize: 28 }} />
+          <div className="w-full h-full flex items-center justify-center text-stone-300">
+            <StorefrontRoundedIcon sx={{ fontSize: 56 }} />
           </div>
         )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-transparent" />
+        <h3 className="absolute bottom-3 left-4 right-4 text-lg font-bold text-white leading-snug line-clamp-1">
+          {supplier.supplierName}
+        </h3>
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between">
-        <div>
-          <h3 className="text-base font-semibold text-[#171716] truncate">
-            {supplier.supplierName}
-          </h3>
-
-          <div className="mt-1.5 flex items-start gap-1.5 text-sm text-[#8A867E]">
-            <RoomRoundedIcon className="mt-0.5 flex-shrink-0 text-[#ADA99F]" sx={{ fontSize: 16 }} />
-            <span className="line-clamp-1">
-              {supplier.supplierAddress || 'Chưa cập nhật địa chỉ'}
-            </span>
-          </div>
-
-          <div className="mt-1 flex items-center gap-1.5 text-sm text-[#6E6B66]">
-            <PhoneRoundedIcon className="flex-shrink-0 text-[#ADA99F]" sx={{ fontSize: 16 }} />
-            <span>{supplier.supplierPhone || 'Chưa cập nhật'}</span>
-          </div>
+      <div className="flex-1 flex flex-col p-4 gap-2.5">
+        <div className="flex items-start gap-2 text-sm text-stone-600">
+          <RoomRoundedIcon className="mt-0.5 flex-shrink-0 text-stone-400" sx={{ fontSize: 18 }} />
+          <span className="line-clamp-2">
+            {supplier.supplierAddress || 'Chưa cập nhật địa chỉ'}
+          </span>
         </div>
 
-        <div className="mt-3 pt-2 border-t border-[#F1F0EC] flex items-center justify-between">
-          <span className="text-xs text-[#ADA99F]">
+        <div className="flex items-center gap-2 text-sm text-stone-600">
+          <PhoneRoundedIcon className="flex-shrink-0 text-stone-400" sx={{ fontSize: 18 }} />
+          <span className="truncate">{supplier.supplierPhone || 'Chưa cập nhật'}</span>
+        </div>
+
+        {supplier.supplierEmail && (
+          <div className="flex items-center gap-2 text-sm text-stone-600">
+            <MailRoundedIcon className="flex-shrink-0 text-stone-400" sx={{ fontSize: 18 }} />
+            <span className="truncate">{supplier.supplierEmail}</span>
+          </div>
+        )}
+
+        <div className="mt-auto pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+          <span className="text-xs text-stone-400">
             Cập nhật {formatDate(supplier.updateAt)}
           </span>
-          <ChevronRightRoundedIcon className="text-xs text-[#C9C6BE] group-hover:text-[#171716] group-hover:translate-x-0.5 transition-all duration-300" sx={{ fontSize: 16 }} />
+          <Button
+            size="small"
+            variant="outlined"
+            color="secondary"
+            onClick={(e) => {
+              e.stopPropagation();
+              goToDetail();
+            }}
+            startIcon={<PaletteOutlinedIcon sx={{ fontSize: 16 }} />}
+            endIcon={<ChevronRightRoundedIcon sx={{ fontSize: 16 }} className="transition-transform duration-300 group-hover:translate-x-0.5" />}
+            sx={{ borderRadius: '4px', fontSize: '0.72rem', flexShrink: 0 }}
+          >
+            Bảng màu
+          </Button>
         </div>
       </div>
     </div>

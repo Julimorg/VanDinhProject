@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 const SupplierPage: React.FC = () => {
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(6);
+  const [pageSize] = useState(9);
   const [sortValue, setSortValue] = useState('createAt,desc');
 
   const {
@@ -67,7 +67,7 @@ const SupplierPage: React.FC = () => {
           <Grid container spacing={3} className="mb-8">
             {Array.from({ length: pageSize }).map((_, index) => (
               <Grid key={`skeleton-${index}`} size={{ xs: 12, md: 6, lg: 4 }}>
-                <Skeleton variant="rounded" height={300} />
+                <Skeleton variant="rounded" height={360} />
               </Grid>
             ))}
           </Grid>

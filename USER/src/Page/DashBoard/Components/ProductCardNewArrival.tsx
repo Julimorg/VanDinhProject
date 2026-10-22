@@ -71,7 +71,7 @@ const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({
         {/* Badges */}
         <Box sx={{ position: 'absolute', top: 6, left: 6, display: 'flex', flexDirection: 'column', gap: 0.5 }}>
           <Chip label="MỚI" size="small" sx={{
-            bgcolor: '#f59e0b', color: '#1c1917', fontWeight: 800,
+            bgcolor: '#1c1917', color: '#fff', fontWeight: 800,
             fontSize: '0.55rem', letterSpacing: '0.12em', height: 16,
             borderRadius: 0, '& .MuiChip-label': { px: 0.75 },
           }} />
@@ -212,7 +212,7 @@ const ProductCardNewArrival: React.FC<ProductCardNewArrivalProps> = ({
               bgcolor: utils.canAddToCart ? '#1c1917' : '#e7e5e4',
               cursor: utils.canAddToCart ? 'pointer' : 'not-allowed',
               transition: 'all 0.2s',
-              '&:hover': utils.canAddToCart ? { bgcolor: '#f59e0b' } : {},
+              '&:hover': utils.canAddToCart ? { bgcolor: '#44403c' } : {},
             }}
           >
             <ShoppingCart sx={{ fontSize: '0.7rem', color: utils.canAddToCart ? 'white' : '#a8a29e' }} />

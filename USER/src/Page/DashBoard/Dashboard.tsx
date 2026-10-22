@@ -86,7 +86,7 @@ const Dashboard: React.FC = () => {
             <Typography
               variant="overline"
               sx={{
-                color: '#b45309',
+                color: '#1c1917',
                 fontWeight: 700,
                 letterSpacing: '0.25em',
                 display: 'block',

@@ -20,17 +20,12 @@ export const user_api = {
       const url = `/users/update-profile/${userId}`;
       const formData = buildFormData(body);
 
-      // for (const pair of formData.entries()) {
-      //   console.log(pair[0] + ': ' + pair[1]);
-      // }
-
       const res = await axiosClient.patch(url, formData, {
         headers: {
           'Content-Type': 'multipart/form-data; charset=utf-8',
         },
       });
 
-      console.log('API Response:', res.data);
       return res.data;
     },
   

@@ -108,7 +108,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                   py: 1.5,
                   display: 'flex',
                   gap: 1.25,
-                  bgcolor: !notif.read ? 'amber.50' : 'transparent',
+                  bgcolor: !notif.read ? 'stone.100' : 'transparent',
                   '&:hover': { bgcolor: 'stone.50' },
                   cursor: 'pointer',
                 }}

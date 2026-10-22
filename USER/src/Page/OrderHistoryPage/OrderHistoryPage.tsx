@@ -50,13 +50,13 @@ const OrderHistoryCardList: React.FC = () => {
   // Handle error
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-stone-50 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="bg-white rounded-lg shadow-sm border border-red-200 p-12 text-center">
-            <p className="text-red-500 mb-4">Lỗi tải dữ liệu</p>
+            <p className="text-red-600 mb-4">Lỗi tải dữ liệu</p>
             <button
               onClick={() => refetch()}
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              className="px-4 py-2 bg-stone-900 text-white rounded hover:bg-stone-700"
             >
               Thử lại
             </button>
@@ -70,7 +70,7 @@ const OrderHistoryCardList: React.FC = () => {
   const renderSkeleton = () => (
     <div className="space-y-4 mb-6">
       {Array.from({ length: pageSize }).map((_, index) => (
-        <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div key={index} className="bg-white rounded-lg shadow-sm border border-stone-200 p-5">
           <Skeleton height={28} className="mb-2" />
           <Skeleton height={20} width="60%" className="mb-2" />
           <Skeleton height={20} width="80%" className="mb-2" />
@@ -81,14 +81,14 @@ const OrderHistoryCardList: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-stone-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-semibold text-gray-900 mb-2">
+          <h1 className="text-3xl font-semibold text-stone-900 mb-2">
             Lịch sử đơn hàng
           </h1>
-          <p className="text-gray-500">Quản lý và theo dõi các đơn hàng của bạn</p>
+          <p className="text-stone-500">Quản lý và theo dõi các đơn hàng của bạn</p>
         </div>
 
         {/* Filter Section */}
@@ -103,7 +103,7 @@ const OrderHistoryCardList: React.FC = () => {
         {isLoading ? (
           renderSkeleton()
         ) : totalItems === 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
+          <div className="bg-white rounded-lg shadow-sm border border-stone-200 p-12">
             <Box className="flex flex-col items-center justify-center gap-2 py-8">
               <Typography color="text.secondary">Không tìm thấy đơn hàng nào</Typography>
             </Box>
