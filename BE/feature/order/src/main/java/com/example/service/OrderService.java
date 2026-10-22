@@ -18,6 +18,7 @@ import com.example.messaging.service.MailService;
 import com.example.persistence.entity.*;
 import com.example.persistence.enumTable.*;
 import com.example.repository.OrderRepository;
+import com.example.security.Util.UtilSecurityClass;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -66,10 +67,14 @@ public class OrderService {
 
     private final NotificationInterface notificationInterface;
 
+    private final UtilSecurityClass utilSecurityClass;
+
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_STAFF', 'ROLE_USER')")
     public Page<GetUserOrderRes> getUserOrderHistory(String userId,
                                                    String status,
                                                    Pageable pageable) {
+        utilSecurityClass.requireOwnerOrAdmin(userId);
+
         Specification<Order> spec = OrderSpecification
                 .from(OrderSpecification
                         .OrderFilter
@@ -94,6 +99,9 @@ public class OrderService {
     public GetUserOrdersDetailRes getUserOrderDetails(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+
+        utilSecurityClass.requireOwnerOrAdmin(order.getUser().getId());
+
         return orderMapper.toGetUserOrdersDetailRes(order);
     }
 
@@ -186,6 +194,8 @@ public class OrderService {
                                                    String orderId,
                                                    UpdateOrderReq request,
                                                    HttpServletRequest httpRequest) throws UnsupportedEncodingException {
+
+        utilSecurityClass.requireOwnerOrAdmin(userId);
 
         User user = userInternalService.getUserById(userId);
 
